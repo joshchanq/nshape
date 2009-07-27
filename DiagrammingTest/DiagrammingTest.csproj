@@ -1,0 +1,90 @@
+﻿<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{32FE8B99-4091-4B3B-95EF-53976217B8EB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DiagrammingTest</RootNamespace>
+    <AssemblyName>DiagrammingTest</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\Binaries\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\Binaries\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=9.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.SqlServerCe, Version=3.5.1.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="System.Design" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Comparer.cs" />
+    <Compile Include="DiagramBaseTest.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AuthoringTests.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Shadow Include="Test References\Dataweb.Diagramming.Core.accessor" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\Diagramming.csproj">
+      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
+      <Name>Diagramming</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\ElectricalShapes\ElectricalShapes.csproj">
+      <Project>{D8A7182E-BE69-4B4D-B20D-851FE1800C3C}</Project>
+      <Name>ElectricalShapes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\FlowChartShapes\FlowChartShapes.csproj">
+      <Project>{DB90D9B2-D4F8-4D09-92C5-A7C1AC57FA4E}</Project>
+      <Name>FlowChartShapes</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GeneralShapes\GeneralShapes.csproj">
+      <Project>{1272F77E-D926-4310-AE8B-858909B10F0C}</Project>
+      <Name>GeneralShapes</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\SoftwareArchitectureShapes\SoftwareArchitectureShapes.csproj">
+      <Project>{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}</Project>
+      <Name>SoftwareArchitectureShapes</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
