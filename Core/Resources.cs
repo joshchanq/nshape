@@ -60,8 +60,7 @@ namespace Dataweb.Utilities {
 		// Makes sure the resource manager is isInitialized.
 		private static void EnsureResourceManager() {
 			if (resourceManager == null) {
-				// resourceManager = new ResourceManager(typeof(Resources));
-				resourceManager = new ResourceManager("Dataweb.Diagramming.Properties.Resources", Assembly.GetExecutingAssembly());
+				resourceManager = new ResourceManager("Dataweb.nShape.Properties.Resources", Assembly.GetExecutingAssembly());
 			}
 		}
 

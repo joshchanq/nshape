@@ -2,11 +2,11 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.GeneralModelObjects;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.GeneralModelObjects;
 
 
-namespace Dataweb.Diagramming.ElectricalModelObjects {
+namespace Dataweb.nShape.ElectricalModelObjects {
 
 	public enum StateEnum { On, Off, Blocked, Defect, Unknown };
 
@@ -281,9 +281,11 @@ namespace Dataweb.Diagramming.ElectricalModelObjects {
 	}
 
 
-	public static class DiagrammingLibraryInitializer {
+	public static class nShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
+			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
+
 			registrar.RegisterModelObjectType(new GenericModelObjectType("AutoDisconnector", namespaceName, categoryTitle, 
 				modelObjectType => new AutoDisconnector(modelObjectType), 
 				AutoDisconnector.GetPropertyDefinitions, 2));
@@ -321,6 +323,6 @@ namespace Dataweb.Diagramming.ElectricalModelObjects {
 
 		private const string namespaceName = "ElectricalModelObjects";
 		private const string categoryTitle = "Electrical";
-		private const int version = 1;
+		private const int preferredRepositoryVersion = 2;
 	}
 }

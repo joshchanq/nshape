@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Drawing;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public class TextMeasurer {
 

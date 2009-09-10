@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using System.Drawing;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
-	public abstract class DiagrammingAction {
+	public abstract class nShapeAction {
 
-		protected DiagrammingAction() {
+		protected nShapeAction() {
 		}
 
 
-		protected DiagrammingAction(string title)
+		protected nShapeAction(string title)
 			: this() {
 			this.title = title;
 		}
 
 
-		protected DiagrammingAction(string title, Bitmap image, Color imageTransparentColor) 
+		protected nShapeAction(string title, Bitmap image, Color imageTransparentColor) 
 			:this(title) {
 			this.image = image;
 			this.transparentColor = imageTransparentColor;
@@ -25,7 +25,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		protected DiagrammingAction(string title, Bitmap image, string description, bool isFeasible)
+		protected nShapeAction(string title, Bitmap image, string description, bool isFeasible)
 			: this(title) {
 			this.image = image;
 			this.description = description;
@@ -33,7 +33,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		protected DiagrammingAction(string title, Bitmap image, Color transparentColor,
+		protected nShapeAction(string title, Bitmap image, Color transparentColor,
 			string name, string description, bool isChecked, bool isFeasible)
 			: this(title, image, transparentColor) {
 			this.name = name;
@@ -85,7 +85,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Subitems of the action.
 		/// </summary>
-		public virtual DiagrammingAction[] SubItems {
+		public virtual nShapeAction[] SubItems {
 			get { return subItems; }
 		}
 
@@ -137,12 +137,12 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public abstract void Execute(DiagrammingAction action, Project project);
+		public abstract void Execute(nShapeAction action, Project project);
 
 
 		#region Fields
 
-		protected DiagrammingAction[] subItems = null;
+		protected nShapeAction[] subItems = null;
 
 		private object tag = null;
 		private string title = string.Empty;
@@ -160,12 +160,12 @@ namespace Dataweb.Diagramming.Advanced {
 	/// <summary>
 	/// Dummy action for creating MenuSeperators
 	/// </summary>
-	public class SeparatorAction : DiagrammingAction {
+	public class SeparatorAction : nShapeAction {
 
 		public SeparatorAction() : base() { }
 
 
-		public override void Execute(DiagrammingAction action, Project project) {
+		public override void Execute(nShapeAction action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
 			// nothing to do
@@ -229,13 +229,13 @@ namespace Dataweb.Diagramming.Advanced {
 	/// Throws a NotImplementedException. 
 	/// This class is meant as a placeholder and should never be used in a productive environment.
 	/// </summary>
-	public class NotImplementedAction : DiagrammingAction {
+	public class NotImplementedAction : nShapeAction {
 
 		public NotImplementedAction(string title)
 			: base(title) {
 		}
 
-		public override void Execute(DiagrammingAction action, Project project) {
+		public override void Execute(nShapeAction action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
 			throw new NotImplementedException();
@@ -276,41 +276,41 @@ namespace Dataweb.Diagramming.Advanced {
 	}
 
 
-	public class DiagrammingActionGroup : DiagrammingAction {
+	public class nShapeActionGroup : nShapeAction {
 
-		public DiagrammingActionGroup()
+		public nShapeActionGroup()
 			: base() {
 		}
 
 
-		public DiagrammingActionGroup(string title)
+		public nShapeActionGroup(string title)
 			: base(title) {
 		}
 
 
-		public DiagrammingActionGroup(string title, Bitmap image, Color imageTransparentColor)
+		public nShapeActionGroup(string title, Bitmap image, Color imageTransparentColor)
 			: base(title, image, imageTransparentColor) {
 		}
 
 
-		public DiagrammingActionGroup(string title, Bitmap image, string description, bool isFeasible)
+		public nShapeActionGroup(string title, Bitmap image, string description, bool isFeasible)
 			: base(title, image, description, isFeasible) {
 		}
 
 
-		public DiagrammingActionGroup(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible)
+		public nShapeActionGroup(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible)
 			: base(title, image, transparentColor, name, description, isChecked, isFeasible) {
 		}
 
 
-		public DiagrammingActionGroup(string title, Bitmap image, string description, bool isFeasible, DiagrammingAction[] actions, int defaultActionIndex)
+		public nShapeActionGroup(string title, Bitmap image, string description, bool isFeasible, nShapeAction[] actions, int defaultActionIndex)
 			: base(title, image, description, isFeasible) {
 			this.subItems = actions;
 			this.defaultActionIdx = defaultActionIndex;
 		}
 
 
-		public DiagrammingActionGroup(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible, DiagrammingAction[] actions, int defaultActionIndex)
+		public nShapeActionGroup(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible, nShapeAction[] actions, int defaultActionIndex)
 			: base(title, image, transparentColor, name, description, isChecked, isFeasible) {
 			this.subItems = actions;
 			this.defaultActionIdx = defaultActionIndex;
@@ -323,14 +323,14 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override void Execute(DiagrammingAction action, Project project) {
+		public override void Execute(nShapeAction action, Project project) {
 			//if (action == null) throw new ArgumentNullException("action");
 			//if (project == null) throw new ArgumentNullException("project");
 			//if (DefaultAction != null) DefaultAction.Execute(DefaultAction, project);
 		}
 
 
-		public DiagrammingAction DefaultAction {
+		public nShapeAction DefaultAction {
 			get { return (subItems == null || defaultActionIdx < 0 || defaultActionIdx >= subItems.Length) ? null : subItems[defaultActionIdx]; }
 		}
 		
@@ -342,9 +342,9 @@ namespace Dataweb.Diagramming.Advanced {
 	/// <summary>
 	/// Executed a given delegate.
 	/// </summary>
-	public class DelegateAction : DiagrammingAction {
+	public class DelegateAction : nShapeAction {
 
-		public delegate void ActionExecuteDelegate(DiagrammingAction action, Project project);
+		public delegate void ActionExecuteDelegate(nShapeAction action, Project project);
 
 		
 		public DelegateAction(string text)
@@ -371,7 +371,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override void Execute(DiagrammingAction action, Project project) {
+		public override void Execute(nShapeAction action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
 			executeDelegate(action, project);
@@ -405,7 +405,7 @@ namespace Dataweb.Diagramming.Advanced {
 	/// <summary>
 	/// Adds a Command to the History and executes it.
 	/// </summary>
-	public class CommandAction : DiagrammingAction {
+	public class CommandAction : nShapeAction {
 
 		public CommandAction()
 			: base() { }
@@ -446,7 +446,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 		
 		
-		public override void Execute(DiagrammingAction action, Project project) {
+		public override void Execute(nShapeAction action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
 			if (command != null) project.ExecuteCommand(command);

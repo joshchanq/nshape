@@ -7,11 +7,11 @@ using System.IO;
 using System.Xml;
 using System.Text;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.ComponentModel;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
 	/// Uses an XML file as the data store.
@@ -36,7 +36,7 @@ namespace Dataweb.Diagramming {
 
 
 		/// <summary>
-		/// Defines the directory, where the diagramming project is stored.
+		/// Defines the directory, where the nShape project is stored.
 		/// </summary>
 		public string DirectoryName {
 			get { return directory; }
@@ -60,7 +60,7 @@ namespace Dataweb.Diagramming {
 
 
 		/// <summary>
-		/// Defines the file projectName without extension, where the diagramming designs are stored.
+		/// Defines the file projectName without extension, where the nShape designs are stored.
 		/// </summary>
 		public string DesignFileName {
 			get { return designFileName; }
@@ -94,7 +94,7 @@ namespace Dataweb.Diagramming {
 				string result;
 				if (string.IsNullOrEmpty(directory)) {
 					result = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					result += Path.DirectorySeparatorChar + "Dataweb" + Path.DirectorySeparatorChar + "Diagramming";
+					result += Path.DirectorySeparatorChar + "Dataweb" + Path.DirectorySeparatorChar + "nShape";
 				} else result = directory;
 				if (string.IsNullOrEmpty(DesignFileName)) throw new InvalidOperationException("Project name for XML repository not set.");
 				result += Path.DirectorySeparatorChar;
@@ -229,18 +229,15 @@ namespace Dataweb.Diagramming {
 		/// <override></override>
 		public override void SaveChanges(IStoreCache cache) {
 			if (cache == null) throw new ArgumentNullException("cache");
-			if (!isOpen) throw new DiagrammingException("Store is not open.");
-			if (string.IsNullOrEmpty(ProjectFilePath)) throw new DiagrammingException("File name was not specified.");
+			if (!isOpen) throw new nShapeException("Store is not open.");
+			if (string.IsNullOrEmpty(ProjectFilePath)) throw new nShapeException("File name was not specified.");
 			// If it is a new project, we must create the file. Otherwise it is already open.
 			if (cache.ProjectId == null) {
 				CreateFile(cache, ProjectFilePath, false);
 			} else if (cache.LoadedProjects[cache.ProjectId].State == ItemState.Deleted) {
-				string imageDirectoryName = CalcImageDirectoryName(ProjectFilePath);
 				// First delete the file, so the image directory still exists, when the file cannot be deleted.
-				if (File.Exists(ProjectFilePath))
-					File.Delete(ProjectFilePath);
-				if (Directory.Exists(imageDirectoryName))
-					Directory.Delete(imageDirectoryName, true);
+				if (File.Exists(ProjectFilePath)) File.Delete(ProjectFilePath);
+				if (Directory.Exists(ImageDirectory)) Directory.Delete(ImageDirectory, true);
 			} else {
 				OpenComplete(cache);
 				// TODO 2: We should keep the file open and clear it here instead of re-creating it.
@@ -277,10 +274,10 @@ namespace Dataweb.Diagramming {
 				try {
 					xmlReader.MoveToContent();
 					if (xmlReader.Name != rootTag || !xmlReader.HasAttributes)
-						throw new DiagrammingException("XML file '{0}' is not a valid diagramming project file.", ProjectFilePath);
+						throw new nShapeException("XML file '{0}' is not a valid nShape project file.", ProjectFilePath);
 					version = int.Parse(xmlReader.GetAttribute(0));
 					if (version < 1 || version > currentVersion)
-						throw new DiagrammingException("XML file has an invalid version or is newer than this version of Diagramming.");
+						throw new nShapeException("XML file has an invalid version or is newer than this version of nShape.");
 					cache.SetRepositoryBaseVersion(version);
 					// Reading functions check whether cache is open.
 					// isOpen = true;
@@ -303,7 +300,7 @@ namespace Dataweb.Diagramming {
 		#region Read from XML file
 
 		private void ReadProjectSettings(IStoreCache cache, XmlReader xmlReader) {
-			if (!XmlSkipToElement(projectTag)) throw new DiagrammingException("Invalid XML file. Project tag not found.");
+			if (!XmlSkipToElement(projectTag)) throw new nShapeException("Invalid XML file. Project tag not found.");
 			// Load project data
 			IEntityType projectSettingsEntityType = cache.FindEntityTypeByName(ProjectSettings.EntityTypeName);
 			ProjectSettings project = (ProjectSettings)projectSettingsEntityType.CreateInstanceForLoading();
@@ -380,7 +377,7 @@ namespace Dataweb.Diagramming {
 
 		private void ReadStyles(IStoreCache cache, XmlReader xmlReader, Design design, IEntityType styleEntityType) {
 			if (!xmlReader.IsStartElement(GetElementCollectionTag(styleEntityType)))
-				throw new DiagrammingException("Element '{0}' expected but not found.", GetElementCollectionTag(styleEntityType));
+				throw new nShapeException("Element '{0}' expected but not found.", GetElementCollectionTag(styleEntityType));
 			xmlReader.Read(); // Read over the collection tag
 			repositoryReader.ResetFieldReading(styleEntityType.PropertyDefinitions);
 			while (xmlReader.Name == GetElementTag(styleEntityType)) {
@@ -438,7 +435,7 @@ namespace Dataweb.Diagramming {
 			string templateCollectionTag = GetElementCollectionTag(templateEntityType);
 			string templateTag = GetElementTag(templateEntityType);
 			if (!xmlReader.IsStartElement(templateCollectionTag))
-				throw new DiagrammingException("Element '{0}' expected but not found.", templateCollectionTag);
+				throw new nShapeException("Element '{0}' expected but not found.", templateCollectionTag);
 			xmlReader.Read(); // Read over the collection tag
 			repositoryReader.ResetFieldReading(templateEntityType.PropertyDefinitions);
 			XmlStoreReader innerReader = new XmlStoreReader(xmlReader, this, cache);
@@ -490,7 +487,7 @@ namespace Dataweb.Diagramming {
 			string modelMappingTag = xmlReader.Name;
 			IEntityType entityType = cache.FindEntityTypeByElementName(modelMappingTag);
 			if (entityType == null)
-				throw new DiagrammingException("No shape type found for tag '{0}'.", modelMappingTag);
+				throw new nShapeException("No shape type found for tag '{0}'.", modelMappingTag);
 			XmlSkipStartElement(modelMappingTag);
 			IModelMapping modelMapping = (IModelMapping)entityType.CreateInstanceForLoading();
 			reader.ResetFieldReading(entityType.PropertyDefinitions);
@@ -556,7 +553,7 @@ namespace Dataweb.Diagramming {
 			string shapeTag = xmlReader.Name;
 			IEntityType shapeEntityType = cache.FindEntityTypeByElementName(shapeTag);
 			if (shapeEntityType == null)
-				throw new DiagrammingException("No shape type found for tag '{0}'.", shapeTag);
+				throw new nShapeException("No shape type found for tag '{0}'.", shapeTag);
 			XmlSkipStartElement(shapeTag);
 			Shape shape = (Shape)shapeEntityType.CreateInstanceForLoading();
 			reader.ResetFieldReading(shapeEntityType.PropertyDefinitions);
@@ -573,7 +570,7 @@ namespace Dataweb.Diagramming {
 					Shape s = ReadShape(cache, reader, shape);
 					shape.Children.Add(s);
 				} while (xmlReader.Name != childrenTag && xmlReader.NodeType != XmlNodeType.EndElement);
-				if (xmlReader.Name != childrenTag) throw new DiagrammingException("Shape children are invalid in XML document.");
+				if (xmlReader.Name != childrenTag) throw new nShapeException("Shape children are invalid in XML document.");
 				XmlReadEndElement(childrenTag);
 			}
 			// Reads the shape's end element
@@ -622,7 +619,7 @@ namespace Dataweb.Diagramming {
 			string modelObjectTag = xmlReader.Name;
 			IEntityType entityType = cache.FindEntityTypeByElementName(modelObjectTag);
 			if (entityType == null)
-				throw new DiagrammingException("No model object type found for tag '{0}'.", modelObjectTag);
+				throw new nShapeException("No model object type found for tag '{0}'.", modelObjectTag);
 			XmlSkipStartElement(modelObjectTag);
 			IModelObject modelObject = (IModelObject)entityType.CreateInstanceForLoading();
 			reader.ResetFieldReading(entityType.PropertyDefinitions);
@@ -638,7 +635,7 @@ namespace Dataweb.Diagramming {
 				do {
 					IModelObject m = ReadModelObject(cache, reader, modelObject);
 				} while (xmlReader.Name != childrenTag && xmlReader.NodeType != XmlNodeType.EndElement);
-				if (xmlReader.Name != childrenTag) throw new DiagrammingException("Shape children are invalid in XML document.");
+				if (xmlReader.Name != childrenTag) throw new nShapeException("Shape children are invalid in XML document.");
 				XmlReadEndElement(childrenTag);
 			}
 			// Reads the shape's end element
@@ -655,7 +652,7 @@ namespace Dataweb.Diagramming {
 
 		private void CreateFile(IStoreCache cache, string pathName, bool overwrite) {
 			Debug.Assert(repositoryWriter == null);
-			string imageDirectoryName = CalcImageDirectoryName(pathName);
+			string imageDirectoryName = CalcImageDirectoryName();
 			if (!overwrite) {
 				if (File.Exists(pathName))
 					throw new IOException(string.Format("File {0} already exists.", pathName));
@@ -707,7 +704,7 @@ namespace Dataweb.Diagramming {
 			WriteTemplates(cache);
 			WriteDiagrams(cache);
 			XmlCloseElement(); // project tag
-			XmlCloseElement(); // Diagramming tag
+			XmlCloseElement(); // nShape tag
 			xmlWriter.WriteEndDocument();
 		}
 
@@ -749,7 +746,7 @@ namespace Dataweb.Diagramming {
 						WriteDesign(cache, designItem.ObjectRef);
 						break;
 					default:
-						throw new DiagrammingUnsupportedValueException(designItem.State.GetType(), designItem.State);
+						throw new nShapeUnsupportedValueException(designItem.State.GetType(), designItem.State);
 				}
 			}
 			// Save new designs
@@ -888,7 +885,7 @@ namespace Dataweb.Diagramming {
 			if (modelMapping is NumericModelMapping) entityTypeName = NumericModelMapping.EntityTypeName;
 			else if (modelMapping is FormatModelMapping) entityTypeName = FormatModelMapping.EntityTypeName;
 			else if (modelMapping is StyleModelMapping) entityTypeName = StyleModelMapping.EntityTypeName;
-			else throw new DiagrammingUnsupportedValueException(modelMapping);
+			else throw new nShapeUnsupportedValueException(modelMapping);
 			
 			IEntityType entityType = cache.FindEntityTypeByName(entityTypeName);
 			// write Shape-Tag with EntityType
@@ -1068,8 +1065,6 @@ namespace Dataweb.Diagramming {
 
 
 		//-------------------------------------------------------------------------
-		#region XmlStoreWriter
-
 		/// <summary>
 		/// Writes fields and inner objects to XML.
 		/// </summary>
@@ -1092,9 +1087,9 @@ namespace Dataweb.Diagramming {
 			private string GetXmlAttributeName(int propertyIndex) {
 				/* Not required for inner objects
 				 * if (Entity == null) 
-					throw new DiagrammingException("Persistable object to store is not set. Please assign an IEntity object to the property Object before calling a save method.");*/
+					throw new nShapeException("Persistable object to store is not set. Please assign an IEntity object to the property Object before calling a save method.");*/
 				if (propertyInfos == null)
-					throw new DiagrammingException("EntityType is not set. Please assign an EntityType to the property EntityType before calling a save method.");
+					throw new nShapeException("EntityType is not set. Please assign an EntityType to the property EntityType before calling a save method.");
 				return propertyIndex == -1 ? "id" : propertyInfos[propertyIndex].ElementName;
 			}
 
@@ -1195,26 +1190,25 @@ namespace Dataweb.Diagramming {
 					else Debug.Fail("Unsupported image format.");
 
 					if (image is Metafile) {
-						Graphics gfx = Graphics.FromHwnd(IntPtr.Zero);
-						IntPtr hdc = gfx.GetHdc();
-						Metafile metaFile = new Metafile(filePath, hdc);
-						gfx.ReleaseHdc(hdc);
-						Graphics metaFileGfx = Graphics.FromImage(metaFile);
-
-						Rectangle bounds = Rectangle.Empty;
-						bounds.Width = image.Width;
-						bounds.Height = image.Height;
-						ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(DiagrammingImageLayout.Original);
-						GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, DiagrammingImageLayout.Original, bounds, bounds);
-						metaFileGfx.Dispose();
-						gfx.Dispose();
+						using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
+							IntPtr hdc = gfx.GetHdc();
+							Metafile metaFile = new Metafile(filePath, hdc);
+							gfx.ReleaseHdc(hdc);
+							using (Graphics metaFileGfx = Graphics.FromImage(metaFile)) {
+								Rectangle bounds = Rectangle.Empty;
+								bounds.Width = image.Width;
+								bounds.Height = image.Height;
+								ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(nShapeImageLayout.Original);
+								GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, nShapeImageLayout.Original, bounds, bounds);
+							}
+						}
 					} else image.Save(filePath, image.RawFormat);
 
 					string currentDirName = Path.GetDirectoryName(store.ProjectFilePath);
 					if (!string.IsNullOrEmpty(currentDirName))
-						filePath = filePath.Replace(currentDirName, ".\\");
+						filePath = filePath.Replace(currentDirName, ".");
 					else
-						filePath = filePath.Replace(Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath)), ".\\");
+						filePath = filePath.Replace(Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath)), ".");
 					XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), filePath);
 				}
 			}
@@ -1284,9 +1278,7 @@ namespace Dataweb.Diagramming {
 			#endregion
 		}
 
-		#endregion
-
-
+		
 		/// <summary>
 		/// Implements a cache repositoryReader for XML.
 		/// </summary>
@@ -1348,7 +1340,7 @@ namespace Dataweb.Diagramming {
 			#region RepositoryReader Implementation
 
 			public override void BeginReadInnerObjects() {
-				if (propertyInfos == null) throw new DiagrammingException("Property EntityType is not set.");
+				if (propertyInfos == null) throw new nShapeException("Property EntityType is not set.");
 				if (innerObjectsReader != null) throw new InvalidOperationException("EndReadInnerObjects was not called.");
 				++PropertyIndex;
 				string elementName = Cache.CalculateElementName(propertyInfos[PropertyIndex].Name);
@@ -1458,10 +1450,7 @@ namespace Dataweb.Diagramming {
 				string filePath = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
 				xmlReader.MoveToNextAttribute();
 				if (!string.IsNullOrEmpty(filePath)) {
-					string directoryName = Path.GetDirectoryName(store.ProjectFilePath);
-					if (string.IsNullOrEmpty(directoryName))
-						directoryName = Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath));
-					string fileName = filePath.Replace(".\\", directoryName + "\\");
+					string fileName = Path.Combine(store.ImageDirectory, Path.GetFileName(filePath));
 					FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read);
 					byte[] buffer = new byte[fileStream.Length];
 					fileStream.Read(buffer, 0, buffer.Length);
@@ -1480,7 +1469,7 @@ namespace Dataweb.Diagramming {
 			protected override void ValidatePropertyIndex() {
 				base.ValidatePropertyIndex();
 				if (PropertyIndex >= xmlReader.AttributeCount)
-					throw new DiagrammingException("Element {0} of entity '{1}' could not be loaded because the repository is invalid. Check whether it is a valid and up-to-date Diagramming repository.", PropertyIndex, propertyInfos[PropertyIndex].Name);
+					throw new nShapeException("Element {0} of the entity could not be loaded because the repository is invalid. Check whether it is a valid and/or up-to-date repository.", PropertyIndex);
 			}
 
 
@@ -1519,7 +1508,7 @@ namespace Dataweb.Diagramming {
 		internal string ImageDirectory {
 			get {
 				if (string.IsNullOrEmpty(imageDirectory))
-					imageDirectory = CalcImageDirectoryName(ProjectFilePath);
+					imageDirectory = CalcImageDirectoryName();
 				return imageDirectory;
 			}
 		}
@@ -1532,10 +1521,10 @@ namespace Dataweb.Diagramming {
 		/// </summary>
 		/// <param name="pathName"></param>
 		/// <returns></returns>
-		protected string CalcImageDirectoryName(string pathName) {
-			string result = Path.GetDirectoryName(pathName);
+		protected string CalcImageDirectoryName() {
+			string result = Path.GetDirectoryName(ProjectFilePath);
 			if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
-			result = Path.Combine(result, Path.GetFileNameWithoutExtension(pathName) + " Images");
+			result = Path.Combine(result, ProjectName + " Images");
 			return result;
 		}
 
@@ -1630,7 +1619,7 @@ namespace Dataweb.Diagramming {
 		private const string projectTag = "project";
 		private const string shapesTag = "shapes";
 		private const string modelObjectsTag = "model_objects";
-		private const string rootTag = "dataweb_diagramming";
+		private const string rootTag = "dataweb_nshape";
 		private const string templateTag = "template";
 		private const string modelmappingsTag = "model_mappings";
 		private const string connectionsTag = "shape_connections";

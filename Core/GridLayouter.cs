@@ -5,10 +5,10 @@ using System.Text;
 using System.Drawing;
 
 using Dataweb.Utilities;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Layouters {
+namespace Dataweb.nShape.Layouters {
 
 	/// <summary>
 	/// Positions all shapes on the nodes of a rectangular grid.
@@ -329,7 +329,7 @@ namespace Dataweb.Diagramming.Layouters {
 
 
 		public override void Prepare() {
-			if (selectedShapes.Count <= 0) throw new DiagrammingException("There are no shapes.");
+			if (selectedShapes.Count <= 0) throw new nShapeException("There are no shapes.");
 			// Wir mache die Gitterlinien soweit auseinander, das das durchschnittliche 
 			// Shape noch einen Abstand von 0.1 durchschnittlicher Shape-Größe hat
 			int sumWidths = 0;

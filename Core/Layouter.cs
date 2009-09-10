@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 
-using Dataweb.Diagramming;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Layouters {
+namespace Dataweb.nShape.Layouters {
 
 	public interface ILayouter {
 
@@ -276,7 +276,7 @@ namespace Dataweb.Diagramming.Layouters {
 			foreach (Shape s in Shapes) if (!(s is ILinearShape)) {
 				int nx = s.X + displacements[i].Width;
 				int ny = s.Y + displacements[i].Height;
-				s.MoveControlPointTo(ControlPointId.Reference, nx, ny, ResizeModifiers.None);
+				s.MoveTo(nx, ny);
 				int displacement = (int)Geometry.DistancePointPoint(displacements[i].Width, displacements[i].Height, 0, 0);
 				if (displacement > maxDisplacement) maxDisplacement = displacement;
 				++i;

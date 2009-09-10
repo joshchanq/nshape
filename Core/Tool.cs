@@ -6,10 +6,10 @@ using System.IO;
 using System.Reflection;
 using System.Timers;
 
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public class CursorProvider {
 
@@ -239,7 +239,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <param name="display">Display where the event occurred.</param>
 		/// <param name="e">Description of the mouse event.</param>
 		/// <returns>True if the event was handled, false if the event was not handled.</returns>
-		public virtual bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, DiagrammingMouseEventArgs e) {
+		public virtual bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, nShapeMouseEventArgs e) {
 			if (diagramPresenter == null) throw new ArgumentNullException("display");
 			currentMouseState.Buttons = e.Buttons;
 			currentMouseState.Modifiers = e.Modifiers;
@@ -253,12 +253,12 @@ namespace Dataweb.Diagramming.Advanced {
 		/// </summary>
 		/// <param name="e">Description of the keyboard event.</param>
 		/// <returns>True if the event was handled, false if the event was not handled.</returns>
-		public virtual bool ProcessKeyEvent(DiagrammingKeyEventArgs e) {
+		public virtual bool ProcessKeyEvent(nShapeKeyEventArgs e) {
 			bool result = false;
 			switch (e.EventType) {
 				case KeyEventType.KeyDown:
 					// Cancel tool
-					if (e.KeyCode == (int)DiagrammingKeys.Escape) {
+					if (e.KeyCode == (int)nShapeKeys.Escape) {
 						Cancel();
 						result = true;
 					}
@@ -269,7 +269,7 @@ namespace Dataweb.Diagramming.Advanced {
 				case KeyEventType.KeyUp:
 					// do nothing
 					break;
-				default: throw new DiagrammingUnsupportedValueException(e.EventType);
+				default: throw new nShapeUnsupportedValueException(e.EventType);
 			}
 			return result;
 		}
@@ -291,7 +291,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public abstract IEnumerable<DiagrammingAction> GetActions(IDiagramPresenter diagramPresenter);
+		public abstract IEnumerable<nShapeAction> GetActions(IDiagramPresenter diagramPresenter);
 
 
 		public abstract void Invalidate(IDiagramPresenter diagramPresenter);
@@ -686,7 +686,7 @@ namespace Dataweb.Diagramming.Advanced {
 				// If there is no ControlPoint under the Cursor and the cursor is over a shape, draw the shape's outline
 				if (!shapeAtCursor.IsEmpty && shapeAtCursor.ControlPointId == ControlPointId.Reference
 					&& shapeAtCursor.Shape.ContainsPoint(x, y)) {
-					diagramPresenter.DrawShapeOutline(DiagrammingDrawMode.Highlighted, shapeAtCursor.Shape);
+					diagramPresenter.DrawShapeOutline(nShapeDrawMode.Highlighted, shapeAtCursor.Shape);
 				}
 				
 				// Draw all connectionPoints of all shapes in range (except the excluded ones, see above)
@@ -694,9 +694,9 @@ namespace Dataweb.Diagramming.Advanced {
 				try {
 					for (int i = shapeBuffer.Count-1; i >= 0; --i) {
 						foreach (int ptId in shapeBuffer[i].GetControlPointIds(ControlPointCapabilities.Connect)) {
-							DiagrammingDrawMode drawMode = DiagrammingDrawMode.Normal;
+							nShapeDrawMode drawMode = nShapeDrawMode.Normal;
 							if (shapeBuffer[i] == shapeAtCursor.Shape && ptId == shapeAtCursor.ControlPointId)
-								drawMode = DiagrammingDrawMode.Highlighted;
+								drawMode = nShapeDrawMode.Highlighted;
 							diagramPresenter.DrawConnectionPoint(drawMode, shapeBuffer[i], ptId);
 						}
 					}
@@ -718,6 +718,11 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
+		public bool ToolActionPending {
+			get { return actionDiagramPresenter != null; }
+		}
+		
+		
 		/// <summary>
 		/// Ends a tool's action. Crears the start position for the action and the display used for the action.
 		/// </summary>
@@ -760,7 +765,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// </summary>
 		protected IDiagramPresenter ActionDiagramPresenter { 
 			get {
-				if (actionDiagramPresenter == null) throw new DiagrammingException("The action's current display was not set yet. Call StartToolAction method to set the action's current display.");
+				if (actionDiagramPresenter == null) throw new nShapeException("The action's current display was not set yet. Call StartToolAction method to set the action's current display.");
 				return actionDiagramPresenter;
 			}
 		}
@@ -773,7 +778,7 @@ namespace Dataweb.Diagramming.Advanced {
 		protected Point ActionStartPos {
 			get {
 				if (actionStartPos == Geometry.InvalidPoint)
-					throw new DiagrammingInternalException("The action's start position was not set yet. Call SetActionStartPosition method to set the start position.");
+					throw new nShapeInternalException("The action's start position was not set yet. Call SetActionStartPosition method to set the start position.");
 				return actionStartPos;
 			}
 		}
@@ -795,14 +800,16 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		internal void Assert(bool condition) {
+#if DEBUG
 			Assert(condition, null);
+#endif
 		}
 
 
 		internal void Assert(bool condition, string message) {
 			if (condition == false) {
-				if (string.IsNullOrEmpty(message)) throw new DiagrammingInternalException("Assertion Failure.");
-				else throw new DiagrammingInternalException(string.Format("Assertion Failure: {0}", message));
+				if (string.IsNullOrEmpty(message)) throw new nShapeInternalException("Assertion Failure.");
+				else throw new nShapeInternalException(string.Format("Assertion Failure: {0}", message));
 			}
 		}
 
@@ -833,15 +840,15 @@ namespace Dataweb.Diagramming.Advanced {
 			
 			public Point Position;
 
-			public DiagrammingKeys Modifiers;
+			public nShapeKeys Modifiers;
 
-			public DiagrammingMouseButtons Buttons;
+			public nShapeMouseButtons Buttons;
 
-			public bool IsButtonDown(DiagrammingMouseButtons button) {
+			public bool IsButtonDown(nShapeMouseButtons button) {
 				return (Buttons & button) != 0;
 			}
 
-			public bool IsKeyPressed(DiagrammingKeys modifier) {
+			public bool IsKeyPressed(nShapeKeys modifier) {
 				return (Modifiers & modifier) != 0;
 			}
 
@@ -851,7 +858,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 			static MouseState() {
 				Empty.Position = Geometry.InvalidPoint;
-				Empty.Modifiers = DiagrammingKeys.None;
+				Empty.Modifiers = nShapeKeys.None;
 				Empty.Buttons = 0;
 			}
 		}
@@ -991,7 +998,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, DiagrammingMouseEventArgs e) {
+		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, nShapeMouseEventArgs e) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			bool result = false;
 			// get new mouse state
@@ -1024,7 +1031,7 @@ namespace Dataweb.Diagramming.Advanced {
 								result = ProcessDoubleClick(diagramPresenter, newMouseState, e.Clicks);
 							break;
 
-						default: throw new DiagrammingUnsupportedValueException(e.EventType);
+						default: throw new nShapeUnsupportedValueException(e.EventType);
 					}
 				}
 			} finally { diagramPresenter.ResumeUpdate(); }
@@ -1034,7 +1041,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessKeyEvent(DiagrammingKeyEventArgs e) {
+		public override bool ProcessKeyEvent(nShapeKeyEventArgs e) {
 			bool result = base.ProcessKeyEvent(e);
 			// if the keyPress was not handled by the base class, try to handle it here
 			if (!result) {
@@ -1046,32 +1053,32 @@ namespace Dataweb.Diagramming.Advanced {
 					case KeyEventType.KeyUp:
 						// handle Function keys
 						switch (e.KeyCode) {
-							case (int)DiagrammingKeys.F1: break;
-							case (int)DiagrammingKeys.F2:
+							case (int)nShapeKeys.F1: break;
+							case (int)nShapeKeys.F2:
 								//ToDo: Start caption editing here?
 								break;
-							case (int)DiagrammingKeys.F3: break;
-							case (int)DiagrammingKeys.F4: break;
-							case (int)DiagrammingKeys.F5: break;
-							case (int)DiagrammingKeys.F6: break;
-							case (int)DiagrammingKeys.F7: break;
-							case (int)DiagrammingKeys.F8: break;
-							case (int)DiagrammingKeys.F9: break;
-							case (int)DiagrammingKeys.F10: break;
-							case (int)DiagrammingKeys.F11: break;
-							case (int)DiagrammingKeys.F12: break;
-							case (int)DiagrammingKeys.F13: break;
-							case (int)DiagrammingKeys.F14: break;
-							case (int)DiagrammingKeys.F15: break;
-							case (int)DiagrammingKeys.F16: break;
-							case (int)DiagrammingKeys.F17: break;
-							case (int)DiagrammingKeys.F18: break;
-							case (int)DiagrammingKeys.F19: break;
-							case (int)DiagrammingKeys.F20: break;
-							case (int)DiagrammingKeys.F21: break;
-							case (int)DiagrammingKeys.F22: break;
-							case (int)DiagrammingKeys.F23: break;
-							case (int)DiagrammingKeys.F24: break;
+							case (int)nShapeKeys.F3: break;
+							case (int)nShapeKeys.F4: break;
+							case (int)nShapeKeys.F5: break;
+							case (int)nShapeKeys.F6: break;
+							case (int)nShapeKeys.F7: break;
+							case (int)nShapeKeys.F8: break;
+							case (int)nShapeKeys.F9: break;
+							case (int)nShapeKeys.F10: break;
+							case (int)nShapeKeys.F11: break;
+							case (int)nShapeKeys.F12: break;
+							case (int)nShapeKeys.F13: break;
+							case (int)nShapeKeys.F14: break;
+							case (int)nShapeKeys.F15: break;
+							case (int)nShapeKeys.F16: break;
+							case (int)nShapeKeys.F17: break;
+							case (int)nShapeKeys.F18: break;
+							case (int)nShapeKeys.F19: break;
+							case (int)nShapeKeys.F20: break;
+							case (int)nShapeKeys.F21: break;
+							case (int)nShapeKeys.F22: break;
+							case (int)nShapeKeys.F23: break;
+							case (int)nShapeKeys.F24: break;
 						}
 						// ToDo: handle ShortCuts (Ctrl + ?)
 						//result = true;
@@ -1083,7 +1090,7 @@ namespace Dataweb.Diagramming.Advanced {
 						//result = true;
 						break;
 					default:
-						throw new DiagrammingException(string.Format("Unexpected {0} value '{1}'.", e.EventType.GetType(), e.EventType));
+						throw new nShapeException(string.Format("Unexpected {0} value '{1}'.", e.EventType.GetType(), e.EventType));
 				}
 			}
 			return result;
@@ -1102,7 +1109,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(IDiagramPresenter diagramPresenter) {
+		public override IEnumerable<nShapeAction> GetActions(IDiagramPresenter diagramPresenter) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			int mouseX = CurrentMouseState.Position.X;
 			int mouseY = CurrentMouseState.Position.Y;
@@ -1111,18 +1118,18 @@ namespace Dataweb.Diagramming.Advanced {
 			if (!SelectedShapeAtCursor.IsEmpty) {
 				// Deliver Template's actions
 				if (SelectedShapeAtCursor.Shape.Template != null) {
-					foreach (DiagrammingAction action in SelectedShapeAtCursor.Shape.Template.GetActions()) {
+					foreach (nShapeAction action in SelectedShapeAtCursor.Shape.Template.GetActions()) {
 						if (!separatorRequired) separatorRequired = true;
 						yield return action;
 					}
 				}
-				foreach (DiagrammingAction action in SelectedShapeAtCursor.Shape.GetActions(mouseX, mouseY, diagramPresenter.ZoomedGripSize)) {
+				foreach (nShapeAction action in SelectedShapeAtCursor.Shape.GetActions(mouseX, mouseY, diagramPresenter.ZoomedGripSize)) {
 					if (separatorRequired) yield return new SeparatorAction();
 					yield return action;
 				}
 				if (SelectedShapeAtCursor.Shape.ModelObject != null) {
 					if (separatorRequired) yield return new SeparatorAction();
-					foreach (DiagrammingAction action in SelectedShapeAtCursor.Shape.ModelObject.GetActions())
+					foreach (nShapeAction action in SelectedShapeAtCursor.Shape.ModelObject.GetActions())
 						yield return action;
 				}
 			} else {
@@ -1148,7 +1155,7 @@ namespace Dataweb.Diagramming.Advanced {
 					if (SelectedShapeAtCursor.IsCursorAtCaption) {
 						diagramPresenter.ResetTransformation();
 						try {
-							diagramPresenter.DrawCaptionBounds(DiagrammingDrawMode.Highlighted, (ICaptionedShape)SelectedShapeAtCursor.Shape, SelectedShapeAtCursor.CaptionIndex);
+							diagramPresenter.DrawCaptionBounds(nShapeDrawMode.Highlighted, (ICaptionedShape)SelectedShapeAtCursor.Shape, SelectedShapeAtCursor.CaptionIndex);
 						} finally { diagramPresenter.RestoreTransformation(); }
 					}
 					break;
@@ -1195,7 +1202,7 @@ namespace Dataweb.Diagramming.Advanced {
 					} finally { diagramPresenter.RestoreTransformation(); }
 					break;
 				
-				default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+				default: throw new nShapeUnsupportedValueException(CurrentAction);
 			}
 		}
 
@@ -1236,7 +1243,7 @@ namespace Dataweb.Diagramming.Advanced {
 					InvalidateAnglePreview(diagramPresenter);
 					break;
 
-				default: throw new DiagrammingUnsupportedValueException(typeof(DiagrammingAction), CurrentAction);
+				default: throw new nShapeUnsupportedValueException(typeof(nShapeAction), CurrentAction);
 			}
 		}
 
@@ -1323,7 +1330,7 @@ namespace Dataweb.Diagramming.Advanced {
 						case ToolAction.Rotate:
 							CreatePreviewShapes(diagramPresenter);
 							break;
-						default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+						default: throw new nShapeUnsupportedValueException(CurrentAction);
 					}
 
 					Invalidate(ActionDiagramPresenter);
@@ -1361,7 +1368,7 @@ namespace Dataweb.Diagramming.Advanced {
 				case ToolAction.Select:
 					// Find unselected shape under the mouse cursor
 					ShapeAtCursorInfo shapeAtCursor = ShapeAtCursorInfo.Empty;
-					if (mouseState.IsButtonDown(DiagrammingMouseButtons.Left))
+					if (mouseState.IsButtonDown(nShapeMouseButtons.Left))
 						shapeAtCursor = FindShapeAtCursor(ActionDiagramPresenter, ActionStartPos.X, ActionStartPos.Y, ControlPointCapabilities.None, 0, true);
 
 					ToolAction newAction = DetermineMouseMoveAction(ActionDiagramPresenter, mouseState, shapeAtCursor);
@@ -1379,7 +1386,7 @@ namespace Dataweb.Diagramming.Advanced {
 							Assert(!SelectedShapeAtCursor.IsEmpty);
 							CreatePreviewShapes(ActionDiagramPresenter);
 							result = PrepareMoveShapePreview(ActionDiagramPresenter, mouseState);
-						} else throw new DiagrammingInternalException("Unhandled change of CurrentAction.");
+						} else throw new nShapeInternalException("Unhandled change of CurrentAction.");
 					} 
 					Invalidate(ActionDiagramPresenter);
 					break;
@@ -1398,7 +1405,6 @@ namespace Dataweb.Diagramming.Advanced {
 					break;
 
 				case ToolAction.MoveShape:
-					Assert(IsMoveShapeFeasible(ActionDiagramPresenter, SelectedShapeAtCursor));
 					Invalidate(ActionDiagramPresenter);
 					result = PrepareMoveShapePreview(diagramPresenter, mouseState);
 					Invalidate(ActionDiagramPresenter);
@@ -1411,7 +1417,7 @@ namespace Dataweb.Diagramming.Advanced {
 					Invalidate(ActionDiagramPresenter);
 					break;
 
-				default: throw new DiagrammingUnsupportedValueException(typeof(ToolAction), CurrentAction);
+				default: throw new nShapeUnsupportedValueException(typeof(ToolAction), CurrentAction);
 			}
 			
 			int cursorId = DetermineCursor(diagramPresenter, mouseState);
@@ -1486,7 +1492,7 @@ namespace Dataweb.Diagramming.Advanced {
 					EndToolAction();
 					break;
 
-				default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+				default: throw new nShapeUnsupportedValueException(CurrentAction);
 			}
 			
 			diagramPresenter.SetCursor(DetermineCursor(diagramPresenter, mouseState));
@@ -1520,7 +1526,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// Decide which tool action is suitable for the current mouse state.
 		/// </summary>
 		private ToolAction DetermineMouseDownAction(IDiagramPresenter diagramPresenter, MouseState mouseState) {
-			if (mouseState.IsButtonDown(DiagrammingMouseButtons.Left)) {
+			if (mouseState.IsButtonDown(nShapeMouseButtons.Left)) {
 				if (!SelectedShapeAtCursor.IsEmpty) {
 					// Check if cursor is over a control point and moving grips or rotating is feasible
 					if (SelectedShapeAtCursor.IsCursorAtGrip) {
@@ -1543,7 +1549,7 @@ namespace Dataweb.Diagramming.Advanced {
 				if (IsEditCaptionFeasible(diagramPresenter, SelectedShapeAtCursor))
 					return ToolAction.EditCaption;
 				else return ToolAction.Select;
-			} else if (mouseState.IsButtonDown(DiagrammingMouseButtons.Right)) {
+			} else if (mouseState.IsButtonDown(nShapeMouseButtons.Right)) {
 				// Abort current action when clicking right mouse button
 				return ToolAction.None;
 			} else {
@@ -1568,16 +1574,16 @@ namespace Dataweb.Diagramming.Advanced {
 					return CurrentAction;
 
 				case ToolAction.Select:
-					if (mouseState.IsButtonDown(DiagrammingMouseButtons.Left)) {
+					if (mouseState.IsButtonDown(nShapeMouseButtons.Left)) {
 						// If there is no shape under the cursor, start a SelectWithFrame action,
 						// otherwise start a MoveShape action
-						if (IsMoveShapeFeasible(diagramPresenter, SelectedShapeAtCursor)
-							|| IsMoveShapeFeasible(diagramPresenter, shapeAtCursor))
+						if (IsMoveShapeFeasible(diagramPresenter, mouseState, SelectedShapeAtCursor)
+							|| IsMoveShapeFeasible(diagramPresenter, mouseState, shapeAtCursor))
 							return ToolAction.MoveShape;
 						else return ToolAction.SelectWithFrame;
 					} else return CurrentAction;
 				
-				default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+				default: throw new nShapeUnsupportedValueException(CurrentAction);
 			}
 		}
 
@@ -1591,7 +1597,7 @@ namespace Dataweb.Diagramming.Advanced {
 		// (Un)Select shape unter the mouse pointer
 		private bool PerformSelection(IDiagramPresenter diagramPresenter, MouseState mouseState, ShapeAtCursorInfo shapeAtCursor) {
 			bool result = false;
-			bool multiSelect = mouseState.IsKeyPressed(DiagrammingKeys.Control) || mouseState.IsKeyPressed(DiagrammingKeys.Shift);
+			bool multiSelect = mouseState.IsKeyPressed(nShapeKeys.Control) || mouseState.IsKeyPressed(nShapeKeys.Shift);
 
 			// When selecting shapes conteolpoints should be ignored as the user does not see them 
 			// until a shape is selected
@@ -1630,7 +1636,7 @@ namespace Dataweb.Diagramming.Advanced {
 			// If there was a shape to select related to the selected shape under the cursor
 			// (a child or a sibling of the selected shape or a shape below it),
 			// try to select the first non-selected shape under the cursor
-			if (shapeToSelect == null && shapeAtCursor.Shape != null 
+			if (shapeToSelect == null && shapeAtCursor.Shape != null
 				&& shapeAtCursor.Shape.ContainsPoint(mouseState.Position.X, mouseState.Position.Y))
 				shapeToSelect = shapeAtCursor.Shape;
 
@@ -1701,7 +1707,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 		// Select shapes inside the selection frame
 		private bool PerformFrameSelection(IDiagramPresenter diagramPresenter, MouseState mouseState) {
-			bool multiSelect = mouseState.IsKeyPressed(DiagrammingKeys.Control) || mouseState.IsKeyPressed(DiagrammingKeys.Shift);
+			bool multiSelect = mouseState.IsKeyPressed(nShapeKeys.Control) || mouseState.IsKeyPressed(nShapeKeys.Shift);
 			diagramPresenter.SelectShapes(frameRect, multiSelect);
 			return true;
 		}
@@ -1724,7 +1730,7 @@ namespace Dataweb.Diagramming.Advanced {
 					// disconnect GluePoints if they are moved together with their targets
 					bool skip = false;
 					foreach (ShapeConnectionInfo ci in selectedShape.GetConnectionInfos(ptId, null)) {
-						if (ci.OwnPointId != ptId) throw new DiagrammingInternalException("Fatal error: Unexpected ShapeConnectionInfo was returned.");
+						if (ci.OwnPointId != ptId) throw new nShapeInternalException("Fatal error: Unexpected ShapeConnectionInfo was returned.");
 						if (diagramPresenter.SelectedShapes.Contains(ci.OtherShape)) {
 							skip = false;
 							break;
@@ -1741,7 +1747,7 @@ namespace Dataweb.Diagramming.Advanced {
 								if (sci.OwnPointId == ptId) {
 									isConnected = true;
 									break;
-								} else throw new DiagrammingInternalException("Fatal error: Unexpected ShapeConnectionInfo was returned.");
+								} else throw new nShapeInternalException("Fatal error: Unexpected ShapeConnectionInfo was returned.");
 							}
 							if (isConnected) {
 								ICommand cmd = new DisconnectCommand(selectedShape, ptId);
@@ -1952,13 +1958,13 @@ namespace Dataweb.Diagramming.Advanced {
 			int deltaX = newMouseState.Position.X - prevMousePos.X;
 			int deltaY = newMouseState.Position.Y - prevMousePos.Y;
 			int result = (3600 + Geometry.RadiansToTenthsOfDegree((float)Math.Atan2(deltaY, deltaX))) % 3600;
-			if (newMouseState.IsKeyPressed(DiagrammingKeys.Control) && newMouseState.IsKeyPressed(DiagrammingKeys.Shift)) {
+			if (newMouseState.IsKeyPressed(nShapeKeys.Control) && newMouseState.IsKeyPressed(nShapeKeys.Shift)) {
 				// rotate by tenths of degrees
 				// do nothing 
-			} else if (newMouseState.IsKeyPressed(DiagrammingKeys.Control)) {
+			} else if (newMouseState.IsKeyPressed(nShapeKeys.Control)) {
 				// rotate by full degrees
 				result -= (result % 10);
-			} else if (newMouseState.IsKeyPressed(DiagrammingKeys.Shift)) {
+			} else if (newMouseState.IsKeyPressed(nShapeKeys.Shift)) {
 				// rotate by 5 degrees
 				result -= (result % 50);
 			} else {
@@ -1988,7 +1994,7 @@ namespace Dataweb.Diagramming.Advanced {
 						rotatePtId = id;
 						break;
 					}
-					if (rotatePtId == ControlPointId.None) throw new DiagrammingInternalException("{0} has no rotate control point.");
+					if (rotatePtId == ControlPointId.None) throw new nShapeInternalException("{0} has no rotate control point.");
 					rotationCenter = previewShape.GetControlPointPosition(rotatePtId);
 
 					// restore original shapeAngle
@@ -2164,7 +2170,7 @@ namespace Dataweb.Diagramming.Advanced {
 		private void RemovePreview(Shape previewShape) {
 			Shape origShape = null;
 			if (!originalShapes.TryGetValue(previewShape, out origShape))
-				throw new DiagrammingInternalException("This preview shape has no associated original shape in this tool.");
+				throw new nShapeInternalException("This preview shape has no associated original shape in this tool.");
 			else {
 				// Invalidate Preview Shape
 				previewShape.Invalidate();
@@ -2178,8 +2184,6 @@ namespace Dataweb.Diagramming.Advanced {
 		private void ClearPreviews() {
 			foreach (KeyValuePair<Shape, Shape> item in previewShapes) {
 				Shape preview = item.Value;
-				foreach (ControlPointId gluePointId in preview.GetControlPointIds(ControlPointCapabilities.Glue))
-					preview.Disconnect(gluePointId);
 				preview.Invalidate();
 				preview.DisplayService = null;
 				preview.Dispose();
@@ -2258,7 +2262,7 @@ namespace Dataweb.Diagramming.Advanced {
 					previewTargetShape = connectionInfo.OtherShape.Type.CreatePreviewInstance(connectionInfo.OtherShape);
 					AddPreview(connectionInfo.OtherShape, previewTargetShape, diagramPresenter.DisplayService);
 				}
-				// add passiveShape and it's clone to the passiveShape dictionary
+				// Add passive shape and it's clone to the passive shape dictionary
 				targetShapeBuffer.Add(connectionInfo.OtherShape, previewTargetShape);
 			}
 			// Connect the (new or existing) preview shapes
@@ -2349,7 +2353,7 @@ namespace Dataweb.Diagramming.Advanced {
 							else return cursors[ToolCursor.Default];
 						}
 						// Check if cursor is inside the shape and move shape is feasible
-						if (IsMoveShapeFeasible(diagramPresenter, SelectedShapeAtCursor))
+						if (IsMoveShapeFeasible(diagramPresenter, mouseState, SelectedShapeAtCursor))
 							return cursors[ToolCursor.MoveShape];
 					}
 					return cursors[ToolCursor.Default];
@@ -2385,10 +2389,10 @@ namespace Dataweb.Diagramming.Advanced {
 				case ToolAction.Rotate:
 					return cursors[ToolCursor.Rotate];
 
-				default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+				default: throw new nShapeUnsupportedValueException(CurrentAction);
 			}
 		}
-
+		
 
 		/// <summary>
 		/// Create Previews of all shapes selected in the CurrentDisplay.
@@ -2427,10 +2431,12 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		private bool IsMoveShapeFeasible(IDiagramPresenter diagramPresenter, ShapeAtCursorInfo shapeAtCursor) {
+		private bool IsMoveShapeFeasible(IDiagramPresenter diagramPresenter, MouseState mouseState, ShapeAtCursorInfo shapeAtCursor) {
 			if (shapeAtCursor.IsEmpty)
 				return false;
 			if (!diagramPresenter.Project.SecurityManager.IsGranted(Permission.Layout, diagramPresenter.SelectedShapes))
+				return false;
+			if (!shapeAtCursor.Shape.ContainsPoint(mouseState.Position.X, mouseState.Position.Y))
 				return false;
 			//if (CurrentAction == ToolAction.None && (shapeAtCursor.IsCursorAtGrip || shapeAtCursor.IsCursorAtCaption))
 			//   return false;
@@ -2534,10 +2540,10 @@ namespace Dataweb.Diagramming.Advanced {
 			Title = "Pointer";
 			ToolTipText = "Select one or more objects by clicking or drawing a frame.\n\rSelected objects can be moved by dragging them to the target position or resized by dragging a control point to the target position.";
 
-			SmallIcon = global::Dataweb.Diagramming.Properties.Resources.PointerIconSmall;
+			SmallIcon = global::Dataweb.nShape.Properties.Resources.PointerIconSmall;
 			SmallIcon.MakeTransparent(Color.Fuchsia);
 
-			LargeIcon = global::Dataweb.Diagramming.Properties.Resources.PointerIconLarge;
+			LargeIcon = global::Dataweb.nShape.Properties.Resources.PointerIconLarge;
 			LargeIcon.MakeTransparent(Color.Fuchsia);
 
 			frameRect = Rectangle.Empty;
@@ -2741,14 +2747,14 @@ namespace Dataweb.Diagramming.Advanced {
 		#endregion
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(IDiagramPresenter diagramPresenter) {
+		public override IEnumerable<nShapeAction> GetActions(IDiagramPresenter diagramPresenter) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			yield break;
 		}
 
 
 		/// <override></override>
-		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, DiagrammingMouseEventArgs e) {
+		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, nShapeMouseEventArgs e) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			bool result = false;
 
@@ -2761,23 +2767,23 @@ namespace Dataweb.Diagramming.Advanced {
 			try {
 				switch (e.EventType) {
 					case MouseEventType.MouseMove:
-						if (CurrentMouseState.Position != newMouseState.Position) {
+						if (CurrentMouseState.Position != newMouseState.Position)
 							ProcessMouseMove(diagramPresenter, newMouseState);
-						}
 						break;
 					case MouseEventType.MouseDown:
 						// MouseDown starts drag-based actions
 						// ToDo: Implement these features: Adding Segments to existing Lines, Move existing Lines and their ControlPoints
 						if (e.Clicks > 1) result = ProcessDoubleClick(diagramPresenter, newMouseState);
+						else result = ProcessMouseClick(diagramPresenter, newMouseState);
 						break;
 
 					case MouseEventType.MouseUp:
 						// MouseUp finishes drag-actions. Click-based actions are handled by the MouseClick event
 						// ToDo: Implement these features: Adding Segments to existing Lines, Move existing Lines and their ControlPoints
-						result = ProcessMouseClick(diagramPresenter, newMouseState);
+						//if (e.Clicks <= 1) result = ProcessMouseClick(diagramPresenter, newMouseState);
 						break;
 
-					default: throw new DiagrammingUnsupportedValueException(e.EventType);
+					default: throw new nShapeUnsupportedValueException(e.EventType);
 				}
 				base.ProcessMouseEvent(diagramPresenter, e);
 			} finally { diagramPresenter.ResumeUpdate(); }
@@ -2786,9 +2792,8 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessKeyEvent(DiagrammingKeyEventArgs e) {
-			// nothing to do here
-			return false;
+		public override bool ProcessKeyEvent(nShapeKeyEventArgs e) {
+			return base.ProcessKeyEvent(e);
 		}
 
 
@@ -2829,7 +2834,7 @@ namespace Dataweb.Diagramming.Advanced {
 				diagramPresenter.ResetTransformation();
 				try {
 					foreach (ControlPointId pointId in PreviewShape.GetControlPointIds(ControlPointCapabilities.Glue | ControlPointCapabilities.Resize))
-						diagramPresenter.DrawResizeGrip(DiagrammingDrawMode.Normal, PreviewShape, pointId);
+						diagramPresenter.DrawResizeGrip(nShapeDrawMode.Normal, PreviewShape, pointId);
 				} finally { diagramPresenter.RestoreTransformation(); }
 			} else gluePtPos = CurrentMouseState.Position;
 
@@ -2858,12 +2863,14 @@ namespace Dataweb.Diagramming.Advanced {
 
 		/// <override></override>
 		public override void StartToolAction(IDiagramPresenter diagramPresenter, Point startPos, bool wantAutoScroll) {
+			Debug.Print("StartToolAction");
 			base.StartToolAction(diagramPresenter, startPos, wantAutoScroll);
 		}
 
 
 		/// <override></override>
 		public override void EndToolAction() {
+			Debug.Print("EndToolAction");
 			base.EndToolAction();
 			ClearPreview();
 			lastInsertedPointId = ControlPointId.None;
@@ -2898,7 +2905,7 @@ namespace Dataweb.Diagramming.Advanced {
 		
 		private void Construct(Template template) {
 			if (!(template.Shape is ILinearShape))
-				throw new DiagrammingException("The template's shape does not implement {0}.", typeof(ILinearShape).Name);
+				throw new nShapeException("The template's shape does not implement {0}.", typeof(ILinearShape).Name);
 			if (template.Shape is PolylineBase)
 				ToolTipText += "\n\rPolylines are finished by double clicking.";
 		}
@@ -2925,13 +2932,15 @@ namespace Dataweb.Diagramming.Advanced {
 								p = shapeAtCursor.Shape.GetControlPointPosition(shapeAtCursor.ControlPointId);
 							else p = mouseState.Position;
 							// ToDo: Restore ResizeModifiers
-							PreviewShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
+							if (PreviewShape != null)
+								PreviewShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
 						} else {
 							int snapDeltaX = 0, snapDeltaY = 0;
 							if (diagramPresenter.SnapToGrid)
 								FindNearestSnapPoint(diagramPresenter, mouseState.Position.X, mouseState.Position.Y, out snapDeltaX, out snapDeltaY);
 							// ToDo: Restore ResizeModifiers
-							PreviewShape.MoveControlPointTo(ControlPointId.LastVertex, mouseState.Position.X + snapDeltaX, mouseState.Position.Y + snapDeltaY, ResizeModifiers.None);
+							if (PreviewShape != null)
+								PreviewShape.MoveControlPointTo(ControlPointId.LastVertex, mouseState.Position.X + snapDeltaX, mouseState.Position.Y + snapDeltaY, ResizeModifiers.None);
 						}
 						Invalidate(ActionDiagramPresenter);
 					break;
@@ -2940,7 +2949,7 @@ namespace Dataweb.Diagramming.Advanced {
 				case ToolAction.MovePoint:
 					throw new NotImplementedException();
 				
-				default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+				default: throw new nShapeUnsupportedValueException(CurrentAction);
 			}
 			// set cursor depending on the object under the mouse cursor
 			int currentCursorId = DetermineCursor(diagramPresenter, shapeAtCursor.Shape, shapeAtCursor.ControlPointId);
@@ -2951,23 +2960,24 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		private bool ProcessMouseDown(IDiagramPresenter diagramPresenter, MouseState mouseState) {
-			bool result = false;
-			return result;
-		}
+		//private bool ProcessMouseDown(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		//   bool result = false;
+		//   return result;
+		//}
 
 
-		private bool ProcessMouseUp(IDiagramPresenter diagramPresenter, MouseState mouseState) {
-			bool result = false;
-			return result;
-		}
+		//private bool ProcessMouseUp(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		//   bool result = false;
+		//   return result;
+		//}
 
 
 		private bool ProcessMouseClick(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+			Debug.Print("ProcessMouseClick");
 			bool result = false;
 			switch (CurrentAction) {
 				case ToolAction.None:
-					if (mouseState.IsButtonDown(DiagrammingMouseButtons.Left)) {
+					if (mouseState.IsButtonDown(nShapeMouseButtons.Left)) {
 						// If no other ToolAction is in Progress (e.g. drawing a line or moving a point),
 						// a normal MouseClick starts a new line in Point-By-Point mode
 						if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
@@ -2975,19 +2985,26 @@ namespace Dataweb.Diagramming.Advanced {
 							StartLine(diagramPresenter, mouseState);
 							Invalidate(diagramPresenter);
 						}
-					} else if (mouseState.IsButtonDown(DiagrammingMouseButtons.Right)) {
+					} else if (mouseState.IsButtonDown(nShapeMouseButtons.Right)) {
 						Cancel();
 						result = true;
 					}
 					break;
 
 				case ToolAction.AddPoint:
-					if (mouseState.IsButtonDown(DiagrammingMouseButtons.Left)) {
+					if (mouseState.IsButtonDown(nShapeMouseButtons.Left)) {
 						Invalidate(ActionDiagramPresenter);
 						InsertNewPoint(ActionDiagramPresenter, mouseState);
+						// if the line has not yet been ended due to the MaxVertexCount limit, 
+						// check if it has to be connected to a shape or connection point
+						if (CurrentAction == ToolAction.AddPoint) {
+							ShapeAtCursorInfo shapeAtCursor = base.FindShapeAtCursor(ActionDiagramPresenter, mouseState.Position.X, mouseState.Position.Y, ControlPointCapabilities.Connect, diagramPresenter.ZoomedGripSize, false);
+							if (!shapeAtCursor.IsEmpty && !shapeAtCursor.IsCursorAtGluePoint)
+								FinishLine(ActionDiagramPresenter, mouseState, false);
+						}
 						result = true;
 						Invalidate(diagramPresenter);
-					} else if (mouseState.IsButtonDown(DiagrammingMouseButtons.Right)) {
+					} else if (mouseState.IsButtonDown(nShapeMouseButtons.Right)) {
 						Assert(PreviewShape != null);
 						if (PreviewLinearShape.VertexCount <= PreviewLinearShape.MinVertexCount)
 							Cancel();
@@ -3003,19 +3020,21 @@ namespace Dataweb.Diagramming.Advanced {
 				case ToolAction.DrawLine:
 				case ToolAction.MovePoint:
 					throw new NotImplementedException();
-				default: throw new DiagrammingUnsupportedValueException(CurrentAction);
+				default: throw new nShapeUnsupportedValueException(CurrentAction);
 			}
 			return result;
 		}
 
 
 		private bool ProcessDoubleClick(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+			Debug.Print("ProcessDoubleClick");
 			bool result = false;
-			Assert(PreviewShape != null);
-			FinishLine(ActionDiagramPresenter, mouseState, true);
-			EndToolAction();
-			result = true;
-
+			if (ToolActionPending) {
+				Assert(PreviewShape != null);
+				FinishLine(ActionDiagramPresenter, mouseState, true);
+				EndToolAction();
+				result = true;
+			}
 			OnToolExecuted(ExecutedEventArgs);
 			return result;
 		}
@@ -3171,6 +3190,11 @@ namespace Dataweb.Diagramming.Advanced {
 			ActionDiagramPresenter.Project.ExecuteCommand(aggregatedCommand);
 			// select the created ConnectorShape
 			ActionDiagramPresenter.SelectShape(newShape, false);
+			
+			// Reset Preview shape and tool state
+			ClearPreview();
+			action = ToolAction.None;
+
 			OnToolExecuted(ExecutedEventArgs);
 		}
 
@@ -3213,7 +3237,7 @@ namespace Dataweb.Diagramming.Advanced {
 					//else currentCursor = notAllowedCursor;
 					//break;
 
-				default: throw new DiagrammingUnsupportedValueException(action);
+				default: throw new nShapeUnsupportedValueException(action);
 			}
 		}
 
@@ -3263,7 +3287,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, DiagrammingMouseEventArgs e) {
+		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, nShapeMouseEventArgs e) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			bool result = false;
 
@@ -3300,7 +3324,7 @@ namespace Dataweb.Diagramming.Advanced {
 						break;
 
 					case MouseEventType.MouseUp:
-						if (newMouseState.IsButtonDown(DiagrammingMouseButtons.Left)) {
+						if (ToolActionPending && newMouseState.IsButtonDown(nShapeMouseButtons.Left)) {
 							// Left mouse button was pressed: Create shape
 							Invalidate(ActionDiagramPresenter);
 							int x = PreviewShape.X;
@@ -3321,7 +3345,7 @@ namespace Dataweb.Diagramming.Advanced {
 							result = true;
 
 							OnToolExecuted(ExecutedEventArgs);
-						} else if (newMouseState.IsButtonDown(DiagrammingMouseButtons.Right)) {
+						} else if (newMouseState.IsButtonDown(nShapeMouseButtons.Right)) {
 							// Right mouse button was pressed: Cancel Tool
 							Cancel();
 							result = true;
@@ -3333,7 +3357,7 @@ namespace Dataweb.Diagramming.Advanced {
 						// ToDo 3: Implement dragging a frame with the mouse and fit the shape into that frame when releasing the button
 						break;
 
-					default: throw new DiagrammingUnsupportedValueException(e.EventType);
+					default: throw new nShapeUnsupportedValueException(e.EventType);
 				}
 			} finally { diagramPresenter.ResumeUpdate(); }
 			base.ProcessMouseEvent(diagramPresenter, e);
@@ -3342,7 +3366,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessKeyEvent(DiagrammingKeyEventArgs e) {
+		public override bool ProcessKeyEvent(nShapeKeyEventArgs e) {
 			return base.ProcessKeyEvent(e);
 		}
 
@@ -3381,7 +3405,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(IDiagramPresenter diagramPresenter) {
+		public override IEnumerable<nShapeAction> GetActions(IDiagramPresenter diagramPresenter) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			yield break;
 		}
@@ -3419,7 +3443,7 @@ namespace Dataweb.Diagramming.Advanced {
 		
 		private void Construct(Template template) {
 			if (!(template.Shape is IPlanarShape))
-				throw new DiagrammingException("The template's shape does not implement {0}.", typeof(IPlanarShape).Name);
+				throw new nShapeException("The template's shape does not implement {0}.", typeof(IPlanarShape).Name);
 			drawPreview = false;
 		}
 
@@ -3465,7 +3489,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, DiagrammingMouseEventArgs e) {
+		public override bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, nShapeMouseEventArgs e) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			bool result = false;
 			
@@ -3483,7 +3507,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 					case MouseEventType.MouseMove:
 						if (CurrentMouseState.Position != newMouseState.Position) {
-							if (newMouseState.IsButtonDown(DiagrammingMouseButtons.Left)
+							if (newMouseState.IsButtonDown(nShapeMouseButtons.Left)
 								&& diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
 								diagramPresenter.ControlToDiagram(e.Position, out p);
 								currentStroke.Add(p.X, p.Y);
@@ -3494,7 +3518,7 @@ namespace Dataweb.Diagramming.Advanced {
 						break;
 
 					case MouseEventType.MouseUp:
-						if (newMouseState.IsButtonDown(DiagrammingMouseButtons.Left)
+						if (newMouseState.IsButtonDown(nShapeMouseButtons.Left)
 							&& diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
 							StartToolAction(diagramPresenter, newMouseState.Position, false);
 
@@ -3504,7 +3528,7 @@ namespace Dataweb.Diagramming.Advanced {
 						}
 						break;
 
-					default: throw new DiagrammingUnsupportedValueException(e.EventType);
+					default: throw new nShapeUnsupportedValueException(e.EventType);
 				}
 			} finally { diagramPresenter.ResumeUpdate(); }
 			base.ProcessMouseEvent(diagramPresenter, e);
@@ -3513,7 +3537,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <override></override>
-		public override bool ProcessKeyEvent(DiagrammingKeyEventArgs e) {
+		public override bool ProcessKeyEvent(nShapeKeyEventArgs e) {
 			// nothing to do
 			return false;
 		}
@@ -3575,7 +3599,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(IDiagramPresenter diagramPresenter) {
+		public override IEnumerable<nShapeAction> GetActions(IDiagramPresenter diagramPresenter) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			yield break;
 		}
@@ -3618,9 +3642,9 @@ namespace Dataweb.Diagramming.Advanced {
 			Title = "Freehand Pen";
 			ToolTipText = "Draw the symbol of the object which should be created.";
 
-			SmallIcon = global::Dataweb.Diagramming.Properties.Resources.FreehandIconSmall;
+			SmallIcon = global::Dataweb.nShape.Properties.Resources.FreehandIconSmall;
 			SmallIcon.MakeTransparent(Color.Fuchsia);
-			LargeIcon = global::Dataweb.Diagramming.Properties.Resources.FreehandIconLarge;
+			LargeIcon = global::Dataweb.nShape.Properties.Resources.FreehandIconLarge;
 			LargeIcon.MakeTransparent(Color.Fuchsia);
 
 			polygone = new PathFigureShape();

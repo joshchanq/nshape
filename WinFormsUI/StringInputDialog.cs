@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class StringInputDialog : Form {
 

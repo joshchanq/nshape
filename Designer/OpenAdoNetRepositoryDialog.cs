@@ -5,11 +5,11 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Data.SqlClient;
 
 
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	public partial class OpenAdoNetRepositoryDialog : Form {
 
@@ -25,7 +25,7 @@ namespace Dataweb.Diagramming.Designer {
 		
 		private void OpenAdoNetRepositoryDialog_Load(object sender, EventArgs e) {
 			serverNameTextBox.Text = Environment.MachineName;
-			databaseNameTextBox.Text = "Diagramming";
+			databaseNameTextBox.Text = "nShape";
 		}
 	}
 }

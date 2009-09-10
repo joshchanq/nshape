@@ -9,10 +9,10 @@ using System.IO;
 using System.Drawing.Imaging;
 
 using Dataweb.Utilities;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class ImageEditor : Form {
 

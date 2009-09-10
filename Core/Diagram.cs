@@ -11,15 +11,15 @@ using System.Drawing.Design;
 using System.Drawing.Text;
 
 using Dataweb.Utilities;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
 	/// Describes export image formats.
 	/// </summary>
-	public enum DiagrammingImageFormat {
+	public enum nShapeImageFormat {
 		Bmp,
 		Emf,
 		Gif,
@@ -187,7 +187,7 @@ namespace Dataweb.Diagramming {
 		public Layer GetLayer(LayerIds layerId) {
 			int layerBit = GetLowestLayerBit(layerId);
 			if (layerBit == -1)
-				throw new DiagrammingException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
+				throw new nShapeException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
 			return layers[layerBit];
 		}
 
@@ -484,7 +484,7 @@ namespace Dataweb.Diagramming {
 		protected override bool RemoveRangeCore(IEnumerable<Shape> collection) {
 			if (collection is ICollection) shapeCounter = ((ICollection)collection).Count;
 			else foreach (Shape s in collection) ++shapeCounter;
-			return base.RemoveRangeCore(shapes);
+			return base.RemoveRangeCore(collection);
 		}
 
 
@@ -712,7 +712,7 @@ namespace Dataweb.Diagramming {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("The background image of the diagram.")]
-		[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingNamedImageEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.nShape.WinFormsUI.nShapeNamedImageEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 		public NamedImage BackgroundImage {
 			get { return backImage; }
 			set {
@@ -728,7 +728,7 @@ namespace Dataweb.Diagramming {
 		/// </summary>
 		[Category("Appearance"),
 		Description("The display mode of the diagram's background image.")]
-		public DiagrammingImageLayout BackgroundImageLayout {
+		public nShapeImageLayout BackgroundImageLayout {
 			get { return imageLayout; }
 			set { 
 				imageLayout = value;
@@ -887,7 +887,7 @@ namespace Dataweb.Diagramming {
 		/// <summary>
 		/// Exports the contents of the diagram to an image of the given format.
 		/// </summary>
-		public Image CreateImage(DiagrammingImageFormat imageFormat) {
+		public Image CreateImage(nShapeImageFormat imageFormat) {
 			return CreateImage(imageFormat, null, 0, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -896,7 +896,7 @@ namespace Dataweb.Diagramming {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to export the whole diagram area.
 		/// </summary>
-		public Image CreateImage(DiagrammingImageFormat imageFormat, IEnumerable<Shape> shapes) {
+		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes) {
 			return CreateImage(imageFormat, shapes, 0, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -905,7 +905,7 @@ namespace Dataweb.Diagramming {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(DiagrammingImageFormat imageFormat, IEnumerable<Shape> shapes, bool withBackground) {
+		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, bool withBackground) {
 			return CreateImage(imageFormat, shapes, 0, withBackground, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -914,7 +914,7 @@ namespace Dataweb.Diagramming {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(DiagrammingImageFormat imageFormat, IEnumerable<Shape> shapes, int margin) {
+		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, int margin) {
 			return CreateImage(imageFormat, shapes, margin, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -923,7 +923,7 @@ namespace Dataweb.Diagramming {
 		/// Exports the part of the diagram that encloses all given shapes (plus margin on each side) to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(DiagrammingImageFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor) {
+		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor) {
 			return CreateImage(imageFormat, shapes, margin, withBackground, backgroundColor, (int)DisplayService.InfoGraphics.DpiY);
 		}
 		
@@ -932,7 +932,7 @@ namespace Dataweb.Diagramming {
 		/// Exports the part of the diagram that encloses all given shapes (plus margin on each side) to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(DiagrammingImageFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor, int dpi) {
+		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor, int dpi) {
 			Image result = null;
 			
 			// get bounding rectangle around the given shapes
@@ -965,29 +965,29 @@ namespace Dataweb.Diagramming {
 
 			float scaleX = 1, scaleY = 1;
 			switch (imageFormat) {
-				case DiagrammingImageFormat.Svg:
+				case nShapeImageFormat.Svg:
 					throw new NotImplementedException("Not yet implemented.");
 
-				case DiagrammingImageFormat.Emf:
-				case DiagrammingImageFormat.EmfPlus:
+				case nShapeImageFormat.Emf:
+				case nShapeImageFormat.EmfPlus:
 					// Create MetaFile and graphics context
 					IntPtr hdc = DisplayService.InfoGraphics.GetHdc();
 					try {
 						Rectangle bounds = Rectangle.Empty;
 						bounds.Size = imageBounds.Size;
 						result = new Metafile(hdc, bounds, MetafileFrameUnit.Pixel,
-							imageFormat == DiagrammingImageFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
+							imageFormat == nShapeImageFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
 							Name);
 					} finally {
 						DisplayService.InfoGraphics.ReleaseHdc(hdc);
 					}
 					break;
 
-				case DiagrammingImageFormat.Bmp:
-				case DiagrammingImageFormat.Gif:
-				case DiagrammingImageFormat.Jpeg:
-				case DiagrammingImageFormat.Png:
-				case DiagrammingImageFormat.Tiff:
+				case nShapeImageFormat.Bmp:
+				case nShapeImageFormat.Gif:
+				case nShapeImageFormat.Jpeg:
+				case nShapeImageFormat.Png:
+				case nShapeImageFormat.Tiff:
 					if (dpi > 0 && dpi != DisplayService.InfoGraphics.DpiX && dpi != DisplayService.InfoGraphics.DpiY) {
 						scaleX = dpi / DisplayService.InfoGraphics.DpiX;
 						scaleY = dpi / DisplayService.InfoGraphics.DpiY;
@@ -1003,18 +1003,18 @@ namespace Dataweb.Diagramming {
 					break;
 
 				default:
-					throw new DiagrammingUnsupportedValueException(typeof(DiagrammingImageFormat), imageFormat);
+					throw new nShapeUnsupportedValueException(typeof(nShapeImageFormat), imageFormat);
 			}
 
 			// Draw diagram
 			using (Graphics gfx = Graphics.FromImage(result)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, DiagrammingRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
 
 				// Fill background with background color
 				if (backgroundColor.A < 255) {
 					// For image formats that do not support transparency, fill background with the RGB part of 
 					// the given backgropund color
-					if (imageFormat == DiagrammingImageFormat.Bmp || imageFormat == DiagrammingImageFormat.Jpeg)
+					if (imageFormat == nShapeImageFormat.Bmp || imageFormat == nShapeImageFormat.Jpeg)
 						gfx.Clear(Color.FromArgb(255, backgroundColor));
 					else if (backgroundColor.A > 0) gfx.Clear(backgroundColor);
 					// Skip filling background for meta files if transparency is 100%: 
@@ -1186,7 +1186,7 @@ namespace Dataweb.Diagramming {
 			targetColor = Color.FromArgb(reader.ReadInt32());
 			backImage.Name = reader.ReadString();
 			backImage.Image = reader.ReadImage();
-			imageLayout = (DiagrammingImageLayout)reader.ReadByte();
+			imageLayout = (nShapeImageLayout)reader.ReadByte();
 			imageGamma = reader.ReadFloat();
 			imageTransparency = reader.ReadByte();
 			imageGrayScale = reader.ReadBool();
@@ -1291,53 +1291,6 @@ namespace Dataweb.Diagramming {
 				colorBrushBounds.Width = Width;
 				colorBrushBounds.Height = Height;
 			}
-			
-			//if (backImage != null && backImage.Image != null) {
-			//   if (imageBrush == null) {
-			//      WrapMode wrapMode;
-			//      switch (imageLayout) {
-			//         case DiagrammingImageLayout.CenterTile:
-			//         case DiagrammingImageLayout.FilpTile:
-			//         case DiagrammingImageLayout.Tile:
-			//            wrapMode = WrapMode.Tile;
-			//            break;
-			//         default:
-			//            wrapMode = WrapMode.Clamp;
-			//            break;
-			//      }
-			//      imageBrush = new TextureBrush(backImage.Image, wrapMode);
-			//      imageBrushBounds.Size = Size.Empty;
-			//   }
-
-			//   if (imageBrush != null && imageBrushBounds.Size != Size) {
-			//      // scale image
-			//      float scaleX, scaleY;
-			//      GdiHelpers.CalcImageScaleAndAspect(out scaleX, out scaleY, Width, Height, backImage.Image, imageLayout);
-			//      imageBrush.ResetTransform();
-			//      // scale image
-			//      switch (imageLayout) {
-			//         case DiagrammingImageLayout.Tile:
-			//         case DiagrammingImageLayout.FilpTile:
-			//            // nothing to do
-			//            break;
-			//         case DiagrammingImageLayout.Center:
-			//         case DiagrammingImageLayout.CenterTile:
-			//         case DiagrammingImageLayout.Original:
-			//            imageBrush.TranslateTransform((Width - backImage.Width) / 2, (Height - backImage.Height) / 2);
-			//            break;
-			//         case DiagrammingImageLayout.Stretch:
-			//         case DiagrammingImageLayout.Fit:
-			//            if (imageLayout == DiagrammingImageLayout.Fit)
-			//               imageBrush.TranslateTransform((Width - (backImage.Width * scaleX)) / 2, (Height - (backImage.Height * scaleY)) / 2);
-			//            imageBrush.ScaleTransform(scaleX, scaleY);
-			//            break;
-			//         default:
-			//            throw new DiagrammingException(string.Format("Unexpected {0} '{1}'.", imageLayout.GetType(), imageLayout));
-			//      }
-			//      imageBrushBounds.Width = Width;
-			//      imageBrushBounds.Height = Height;
-			//   }
-			//}
 		}
 
 		#endregion
@@ -1363,7 +1316,7 @@ namespace Dataweb.Diagramming {
 		private bool highQualityRendering = true;
 		// Background image stuff
 		private NamedImage backImage = new NamedImage();
-		private DiagrammingImageLayout imageLayout;
+		private nShapeImageLayout imageLayout;
 		private float imageGamma = 1.0f;
 		private byte imageTransparency = 0;
 		private bool imageGrayScale = false;

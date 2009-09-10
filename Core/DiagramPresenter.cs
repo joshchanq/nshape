@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	public enum ControlPointShape { Circle, Square, Diamond, Hexagon, RotateArrow };
 
@@ -14,17 +14,17 @@ namespace Dataweb.Diagramming.Controllers {
 
 	public class DiagramPresenterShapeClickEventArgs : EventArgs {
 
-		public DiagramPresenterShapeClickEventArgs(Shape shape, DiagrammingMouseEventArgs mouseEventArgs) {
+		public DiagramPresenterShapeClickEventArgs(Shape shape, nShapeMouseEventArgs mouseEventArgs) {
 			this.shape = shape;
 			this.mouseEventArgs = mouseEventArgs;
 		}
 
 		public Shape Shape { get { return shape; } }
 
-		public DiagrammingMouseEventArgs Mouse { get { return mouseEventArgs; } }
+		public nShapeMouseEventArgs Mouse { get { return mouseEventArgs; } }
 
 		private Shape shape;
-		private DiagrammingMouseEventArgs mouseEventArgs;
+		private nShapeMouseEventArgs mouseEventArgs;
 	}
 
 
@@ -298,15 +298,15 @@ namespace Dataweb.Diagramming.Controllers {
 
 		void DrawShapes(IEnumerable<Shape> shapes);
 
-		void DrawShapeOutline(DiagrammingDrawMode drawMode, Shape shape);
+		void DrawShapeOutline(nShapeDrawMode drawMode, Shape shape);
 
-		void DrawConnectionPoint(DiagrammingDrawMode drawMode, Shape shape, ControlPointId pointId);
+		void DrawConnectionPoint(nShapeDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawRotateGrip(DiagrammingDrawMode drawMode, Shape shape, ControlPointId pointId);
+		void DrawRotateGrip(nShapeDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawResizeGrip(DiagrammingDrawMode drawMode, Shape shape, ControlPointId pointId);
+		void DrawResizeGrip(nShapeDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawCaptionBounds(DiagrammingDrawMode drawMode, ICaptionedShape shape, int captionIndex);
+		void DrawCaptionBounds(nShapeDrawMode drawMode, ICaptionedShape shape, int captionIndex);
 
 		void DrawSnapIndicators(Shape shape);
 

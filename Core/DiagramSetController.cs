@@ -4,22 +4,22 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Collections;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	#region Enums
 
-	public enum DiagrammingDrawMode { Normal, Highlighted, Deactivated };
+	public enum nShapeDrawMode { Normal, Highlighted, Deactivated };
 
 
 	/// <summary>
-	/// This is the Diagramming representation of System.Windows.Forms.MouseButtons (Framework 2.0)
+	/// This is the nShape representation of System.Windows.Forms.MouseButtons (Framework 2.0)
 	/// </summary>
 	[Flags]
-	public enum DiagrammingMouseButtons {
+	public enum nShapeMouseButtons {
 		/// <summary>
 		/// No mouse button was pressed.
 		/// </summary>
@@ -54,9 +54,9 @@ namespace Dataweb.Diagramming.Controllers {
 
 
 	/// <summary>
-	/// This is the Diagramming representation of System.Windows.Forms.Keys (Framework 2.0)
+	/// This is the nShape representation of System.Windows.Forms.Keys (Framework 2.0)
 	/// </summary>
-	public enum DiagrammingKeys {
+	public enum nShapeKeys {
 		A = 0x41,
 		Add = 0x6b,
 		Alt = 0x40000,
@@ -258,9 +258,9 @@ namespace Dataweb.Diagramming.Controllers {
 
 	#region EventArgs
 
-	public class DiagrammingMouseEventArgs : EventArgs {
+	public class nShapeMouseEventArgs : EventArgs {
 
-		public DiagrammingMouseEventArgs(MouseEventType eventType, DiagrammingMouseButtons buttons, int clicks, int delta, Point location, DiagrammingKeys modifiers) {
+		public nShapeMouseEventArgs(MouseEventType eventType, nShapeMouseButtons buttons, int clicks, int delta, Point location, nShapeKeys modifiers) {
 			this.buttons = buttons;
 			this.clicks = clicks;
 			this.wheelDelta = delta;
@@ -281,7 +281,7 @@ namespace Dataweb.Diagramming.Controllers {
 		/// <summary>
 		/// Contains a combination of all MouseButtons that were pressed.
 		/// </summary>
-		public DiagrammingMouseButtons Buttons {
+		public nShapeMouseButtons Buttons {
 			get { return buttons; }
 		}
 
@@ -314,13 +314,13 @@ namespace Dataweb.Diagramming.Controllers {
 		/// <summary>
 		/// Contains the modifiers in case any modifier keys were pressed
 		/// </summary>
-		public DiagrammingKeys Modifiers {
+		public nShapeKeys Modifiers {
 			get { return modifiers; }
 		}
 
 
-		protected internal DiagrammingMouseEventArgs() {
-			this.buttons = DiagrammingMouseButtons.None;
+		protected internal nShapeMouseEventArgs() {
+			this.buttons = nShapeMouseButtons.None;
 			this.clicks = 0;
 			this.wheelDelta = 0;
 			this.eventType = MouseEventType.MouseMove;
@@ -331,19 +331,19 @@ namespace Dataweb.Diagramming.Controllers {
 		#region Fields
 
 		protected MouseEventType eventType;
-		protected DiagrammingMouseButtons buttons;
+		protected nShapeMouseButtons buttons;
 		protected Point position;
 		protected int wheelDelta;
 		protected int clicks;
-		protected DiagrammingKeys modifiers;
+		protected nShapeKeys modifiers;
 		
 		#endregion
 	}
 
 
-	public class DiagrammingKeyEventArgs : EventArgs {
+	public class nShapeKeyEventArgs : EventArgs {
 
-		public DiagrammingKeyEventArgs(KeyEventType eventType, int keyData, char keyChar, bool handled, bool suppressKeyPress) {
+		public nShapeKeyEventArgs(KeyEventType eventType, int keyData, char keyChar, bool handled, bool suppressKeyPress) {
 			this.eventType = eventType;
 			this.handled = handled;
 			this.keyChar = keyChar;
@@ -729,7 +729,7 @@ namespace Dataweb.Diagramming.Controllers {
 							cmd = new InsertShapeAndModelCommand(destination, activeLayers, editBuffer.shapes.BottomUp, true, offsetX, offsetY);
 						else cmd = new InsertShapeCommand(destination, activeLayers, editBuffer.shapes.BottomUp, true, offsetX, offsetY);
 						break;
-					default: throw new DiagrammingUnsupportedValueException(editBuffer.action);
+					default: throw new nShapeUnsupportedValueException(editBuffer.action);
 				}
 				// Execute InsertCommand and select inserted shapes
 				if (cmd != null) Project.ExecuteCommand(cmd);
@@ -898,9 +898,6 @@ namespace Dataweb.Diagramming.Controllers {
 				if (shape is IShapeGroup && shape.Parent == null)
 					return CanInsertShapes(diagram, shape.Children);
 				else return false;
-
-				//if (shape is IShapeGroup)
-				//   return CanInsertShapes(diagram, shape.Children);
 			}
 			return false;
 		}
@@ -988,11 +985,6 @@ namespace Dataweb.Diagramming.Controllers {
 		public DiagramController OpenDiagram(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			return DoAddDiagramController(diagram);
-		}
-
-
-		public DiagramController OpenDiagram() {
-			return DoAddDiagramController(null);
 		}
 
 
@@ -1188,8 +1180,8 @@ namespace Dataweb.Diagramming.Controllers {
 		#region [Private] Methods
 
 		private void AssertProjectIsOpen() {
-			if (project == null) throw new DiagrammingPropertyNotSetException(this, "Project");
-			if (!project.IsOpen) throw new DiagrammingException("Project is not open.");
+			if (project == null) throw new nShapePropertyNotSetException(this, "Project");
+			if (!project.IsOpen) throw new nShapeException("Project is not open.");
 		}
 
 
@@ -1212,7 +1204,8 @@ namespace Dataweb.Diagramming.Controllers {
 		
 		
 		private DiagramController DoAddDiagramController(Diagram diagram) {
-			DiagramController controller = new DiagramController(this, diagram);
+			if (DiagramControllerIndexOf(diagram) >= 0) throw new ArgumentException("The diagram was already opened.");
+			DiagramController controller= new DiagramController(this, diagram);
 			diagramControllers.Add(controller);
 			if (DiagramAdded != null) DiagramAdded(this, GetDiagramEventArgs(controller.Diagram));
 			return controller;
@@ -1305,7 +1298,7 @@ namespace Dataweb.Diagramming.Controllers {
 
 	#region Exceptions
 
-	public class DiagramControllerNotFoundException : DiagrammingException {
+	public class DiagramControllerNotFoundException : nShapeException {
 		public DiagramControllerNotFoundException(Diagram diagram)
 			: base("No {0} found for {1} '{2}'", typeof(DiagramController).Name, typeof(Diagram).Name, (diagram != null) ? diagram.Name : string.Empty) {
 		}
@@ -1435,9 +1428,9 @@ namespace Dataweb.Diagramming.Controllers {
 	}
 
 
-	public class ShapeMouseEventArgs : DiagrammingMouseEventArgs {
+	public class ShapeMouseEventArgs : nShapeMouseEventArgs {
 
-		public ShapeMouseEventArgs(IEnumerable<Shape> shapes, Diagram diagram, MouseEventType eventType, DiagrammingMouseButtons buttons, int clicks, int delta, Point location, DiagrammingKeys modifiers)
+		public ShapeMouseEventArgs(IEnumerable<Shape> shapes, Diagram diagram, MouseEventType eventType, nShapeMouseButtons buttons, int clicks, int delta, Point location, nShapeKeys modifiers)
 			: base(eventType, buttons, clicks, delta, location, modifiers) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			this.shapes.AddRange(shapes);

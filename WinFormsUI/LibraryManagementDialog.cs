@@ -2,10 +2,11 @@ using System;
 using System.Data;
 using System.Reflection;
 using System.Windows.Forms;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
+using System.Collections.Generic;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	
 	public partial class LibraryManagementDialog : Form {
 
@@ -33,11 +34,12 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			if (string.IsNullOrEmpty(openFileDialog.InitialDirectory))
 				openFileDialog.InitialDirectory = Application.StartupPath;
 			if (openFileDialog.ShowDialog() == DialogResult.OK) {
-				foreach (string assemblyName in openFileDialog.FileNames) {
+				List<string> fileNames = new List<string>(openFileDialog.FileNames);
+				fileNames.Sort();
+				for (int i = 0; i < fileNames.Count; ++i) {
 					try {
-						project.AddLibraryByFilePath(assemblyName);
-					}
-					catch (Exception ex) {
+						project.AddLibraryByFilePath(fileNames[i]);
+					} catch (Exception ex) {
 						RefreshList();
 						MessageBox.Show(ex.Message);
 					}

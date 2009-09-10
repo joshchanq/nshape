@@ -1158,7 +1158,7 @@ namespace Dataweb.Utilities
 	/// <summary>
 	/// This structure combines GDI+ images (bitmaps or metafiles) with a projectName (typically the filename withoout path and extension).
 	/// </summary>
-	[TypeConverter("Dataweb.Diagramming.WinFormsUI.DiagrammingNamedImageConverter, Dataweb.Diagramming.WinFormsUI")]
+	[TypeConverter("Dataweb.nShape.WinFormsUI.nShapeNamedImageConverter, Dataweb.nShape.WinFormsUI")]
 	public class NamedImage : IDisposable {
 
 		/// <summary>

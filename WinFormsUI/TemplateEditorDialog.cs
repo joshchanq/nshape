@@ -6,11 +6,11 @@ using System.Drawing.Drawing2D;
 using System.Reflection;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class TemplateEditorDialog : Form {
 

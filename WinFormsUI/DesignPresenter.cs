@@ -8,11 +8,11 @@ using System.Drawing.Text;
 using System.Reflection;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class DesignPresenter : UserControl, IDisplayService {
 
@@ -123,7 +123,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 					SelectedStyle = null;
 					selectedDesign = value;
 					
-					DiagrammingStyleEditor.Design = selectedDesign;
+					nShapeStyleEditor.Design = selectedDesign;
 					InitializeStyleCollectionList();
 					if (DesignSelected != null) DesignSelected(this, eventArgs);
 				}
@@ -369,10 +369,11 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				if (e.Style is ICapStyle || e.Style is ICharacterStyle || e.Style is ILineStyle) {
 					styleListBox.Items.RemoveAt(idx);
 					styleListBox.Items.Insert(idx, e.Style);
+					styleListBox.SelectedIndex = idx;
 				} else styleListBox.Invalidate();
 			}
 
-			DiagrammingStyleEditor.Design = e.Design;
+			nShapeStyleEditor.Design = e.Design;
 			if (propertyGrid.SelectedObject == e.Style)
 				propertyGrid.Refresh();
 		}
@@ -402,6 +403,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void designController_DesignCreated(object sender, DesignEventArgs e) {
 			// nothing to do
 		}
+
 
 		private void designController_DesignChanged(object sender, DesignEventArgs e) {
 			// nothing to do
@@ -436,7 +438,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				case lineStylesItemIdx: styleListBox.StyleCategory = StyleCategory.LineStyle; break;
 				case paragraphStylesItemIdx: styleListBox.StyleCategory = StyleCategory.ParagraphStyle; break;
 				//case shapeStylesItemIdx: styleListBox.StyleCategory = StyleCategory.ShapeStyle; break;
-				default: throw new DiagrammingException("Unexpected value.");
+				default: throw new nShapeException("Unexpected value.");
 			}
 			if (styleListBox.Items.Count > 0) styleListBox.SelectedIndex = 0;
 		}

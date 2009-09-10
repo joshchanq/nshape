@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	internal partial class StyleListBox {
 		/// <summary> 
 		/// Required designer variable.

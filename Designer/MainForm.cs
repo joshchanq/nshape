@@ -8,12 +8,12 @@ using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
-using Dataweb.Diagramming.WinFormsUI;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
+using Dataweb.nShape.WinFormsUI;
 
 
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	public partial class DiagramDesignerMainForm : Form {
 
@@ -22,7 +22,7 @@ namespace Dataweb.Diagramming.Designer {
 				InitializeComponent();
 				runtimeModeComboBox.SelectedIndex = 0;
 
-				configFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\dataweb\\Diagramming Designer\\";
+				configFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\dataweb\\nShape Designer\\";
 				if (!Directory.Exists(configFolder)) Directory.CreateDirectory(configFolder);
 				configFile = "Config.cfg";
 
@@ -40,23 +40,25 @@ namespace Dataweb.Diagramming.Designer {
 				ReadRecentProjectsFromConfigFile();
 				CreateRecentProjectsMenuItems();
 
-				XmlStore store = new XmlStore(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Diagramming Designer\\", ".xml");
+				XmlStore store = new XmlStore(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\nShape Designer\\", ".xml");
 				if (!Directory.Exists(store.DirectoryName))
 					Directory.CreateDirectory(store.DirectoryName);
 				CreateProject(newProjectName, store);
 
 #if DEBUG
+				project.LibrarySearchPaths.Clear();
+				project.LibrarySearchPaths.Add(Application.StartupPath);
+
 				// Shape libraries
-				project.AddLibraryByFilePath("Dataweb.Diagramming.GeneralShapes.dll");
-				//project.AddLibraryByFilePath("Diagramming.SoftwareArchitectureShapes.dll");
-				//project.AddLibraryByFilePath("Diagramming.FlowChartShapes.dll");
-				//project.AddLibraryByFilePath("Diagramming.ElectricalShapes.dll");
+				project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
+				//project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
+				//project.AddLibraryByName("Dataweb.nShape.FlowChartShapes");
+				//project.AddLibraryByName("Dataweb.nShape.ElectricalShapes");
 				// ModelObjectTypes libraries
-				//project.AddLibraryByFilePath("Dataweb.Diagramming.GeneralModelObjects.dll");
+				//project.AddLibraryByFilePath("Dataweb.nShape.GeneralModelObjects.dll");
 #endif
-			}
-			catch (Exception ex) {
-				MessageBox.Show(ex.Message);
+			} catch (Exception ex) {
+				MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -389,7 +391,7 @@ namespace Dataweb.Diagramming.Designer {
 				AddToRecentProjects(project);
 				UpdateRecentProjectsMenu();
 			} catch (Exception exc) {
-				MessageBox.Show(exc.Message, "Error while opening Repository.");
+				MessageBox.Show(this, exc.Message, "Error while opening Repository.", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -397,7 +399,7 @@ namespace Dataweb.Diagramming.Designer {
 		private bool CloseProject() {
 			bool result = true;
 			if (project.Repository.IsModified) {
-				DialogResult dlgResult = MessageBox.Show("Do you want to save your project before closing it?", "Save changes", MessageBoxButtons.YesNoCancel);
+				DialogResult dlgResult = MessageBox.Show(this, "Do you want to save your project before closing it?", "Save changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 				switch (dlgResult) {
 					case DialogResult.Yes:
 						project.Repository.SaveChanges();
@@ -624,10 +626,10 @@ namespace Dataweb.Diagramming.Designer {
 				UpdateRecentProjectsMenu();
 				result = true;
 			} catch (IOException exc) {
-				MessageBox.Show(exc.Message);
+				MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				result = false;
 			} catch (Exception exc) {
-				MessageBox.Show(exc.Message);
+				MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				result = true;
 			}
 			return result;
@@ -638,7 +640,8 @@ namespace Dataweb.Diagramming.Designer {
 		private bool SaveProjectAs() {
 			bool result;
 			if (project.Repository.Exists()) {
-				if (MessageBox.Show(string.Format("The repository already contains a project named '{0}'. Overwrite?", project.Name),
+				if (MessageBox.Show(this, 
+					string.Format("The repository already contains a project named '{0}'. Overwrite?", project.Name),
 					"Saving Project", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
 					project.Repository.Erase();
 					result = SaveProject();
@@ -703,6 +706,8 @@ namespace Dataweb.Diagramming.Designer {
 		private void project_Closed(object sender, EventArgs e) {
 			UnregisterRepositoryEvents();
 			Text = appTitle;
+			statusLabelMessage.Text =
+			statusLabelPosition.Text = string.Empty;
 		}
 
 
@@ -883,7 +888,7 @@ namespace Dataweb.Diagramming.Designer {
 
 		#region Event handler implementations
 
-		private void DiagrammingDemoFrm_Load(object sender, EventArgs e) {
+		private void nShapeDesignerMainForm_Load(object sender, EventArgs e) {
 			UpdateToolBarAndMenuItems();
 		}
 
@@ -900,9 +905,8 @@ namespace Dataweb.Diagramming.Designer {
 		}
 
 
-		private void DiagramDesignerMainForm_FormClosing(object sender, FormClosingEventArgs e) {
-			if (!CloseProject())
-				e.Cancel = true;
+		private void nShapeDesignerMainForm_FormClosing(object sender, FormClosingEventArgs e) {
+			if (!CloseProject()) e.Cancel = true;
 			else SaveRecentProjectsToConfigFile();
 		}
 
@@ -1053,13 +1057,13 @@ namespace Dataweb.Diagramming.Designer {
 					((SqlStore)store).ServerName = repositoryInfo.computerName;
 				}
 #if TdbRepository 
-			else if (projectInfo.typeName == typeof(TurboDBRepository).Name) {
-				repository = new TurboDBRepository();
-				((TurboDBRepository)repository).DataSource = projectInfo.dataSource;
-				((TurboDBRepository)repository).ServerName = projectInfo.serverName;
-			} 
+				else if (projectInfo.typeName == typeof(TurboDBRepository).Name) {
+					repository = new TurboDBRepository();
+					((TurboDBRepository)repository).DataSource = projectInfo.dataSource;
+					((TurboDBRepository)repository).ServerName = projectInfo.serverName;
+				} 
 #endif
- else MessageBox.Show("Unknown repository type in recent list.");
+				else MessageBox.Show(this, "Unknown repository type in recent list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				if (store != null) OpenProject(repositoryInfo.projectName, store);
 			}
 		}
@@ -1116,32 +1120,33 @@ namespace Dataweb.Diagramming.Designer {
 
 
 		private void exportDiagramAsMenuItem_Click(object sender, EventArgs e) {
-
+			using (ExportDiagramDialog dlg = new ExportDiagramDialog(CurrentDisplay))
+				dlg.ShowDialog(this);
 		}
 
 
 		private void emfPlusFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportMetaFile(DiagrammingImageFormat.EmfPlus);
+			ExportMetaFile(nShapeImageFormat.EmfPlus);
 		}
 
 
 		private void emfOnlyFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportMetaFile(DiagrammingImageFormat.Emf);
+			ExportMetaFile(nShapeImageFormat.Emf);
 		}
 
 
 		private void pngFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportBitmapFile(DiagrammingImageFormat.Png);
+			ExportBitmapFile(nShapeImageFormat.Png);
 		}
 
 
 		private void jpgFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportBitmapFile(DiagrammingImageFormat.Jpeg);
+			ExportBitmapFile(nShapeImageFormat.Jpeg);
 		}
 
 
 		private void bmpFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportBitmapFile(DiagrammingImageFormat.Bmp);
+			ExportBitmapFile(nShapeImageFormat.Bmp);
 		}
 
 
@@ -1150,7 +1155,7 @@ namespace Dataweb.Diagramming.Designer {
 		}
 
 
-		private Image GetImageFromDiagram(DiagrammingImageFormat imageFormat) {
+		private Image GetImageFromDiagram(nShapeImageFormat imageFormat) {
 			Image result = null;
 			Color backColor = Color.Transparent;
 			if (CurrentDisplay.SelectedShapes.Count > 0)
@@ -1161,7 +1166,7 @@ namespace Dataweb.Diagramming.Designer {
 		}
 		
 		
-		private void ExportMetaFile(DiagrammingImageFormat imageFormat) {
+		private void ExportMetaFile(nShapeImageFormat imageFormat) {
 			saveFileDialog.Filter = "Enhanced Meta Files|*.emf|All Files|*.*";
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
 				using (Image image = GetImageFromDiagram(imageFormat)) {
@@ -1171,15 +1176,15 @@ namespace Dataweb.Diagramming.Designer {
 		}
 
 
-		private void ExportBitmapFile(DiagrammingImageFormat imageFormat) {
+		private void ExportBitmapFile(nShapeImageFormat imageFormat) {
 			string fileFilter = null;
 			switch (imageFormat) {
-				case DiagrammingImageFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
-				case DiagrammingImageFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
-				case DiagrammingImageFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
-				case DiagrammingImageFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
-				case DiagrammingImageFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
-				default: throw new DiagrammingUnsupportedValueException(imageFormat);
+				case nShapeImageFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
+				case nShapeImageFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
+				case nShapeImageFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
+				case nShapeImageFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
+				case nShapeImageFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
+				default: throw new nShapeUnsupportedValueException(imageFormat);
 			}
 			saveFileDialog.Filter = fileFilter;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
@@ -1269,7 +1274,7 @@ namespace Dataweb.Diagramming.Designer {
 						else if (d > 0) project.History.Redo(d);
 						commandExecuted = true;
 					}
-				} catch (DiagrammingSecurityException exc) {
+				} catch (nShapeSecurityException exc) {
 					MessageBox.Show(this, exc.Message, "Command execution failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					commandExecuted = false;
 				} finally {
@@ -1408,18 +1413,18 @@ namespace Dataweb.Diagramming.Designer {
 
 		private void adoNetDatabaseGeneratorToolStripMenuItem_Click(object sender, EventArgs e) {
 			if (project.IsOpen) {
-				DialogResult result = MessageBox.Show("The project has to be closed before creating a new ADO.NET database repository.\nClose Project Now?", "", MessageBoxButtons.YesNo);
+				DialogResult result = MessageBox.Show(this, "The project has to be closed before creating a new ADO.NET database repository.\nClose Project Now?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 				if (result == DialogResult.Yes) CloseProject();
 				else return;
 			}
 
 			SqlStore store = new SqlStore();
 			store.ServerName = ".\\SQLEXPRESS";
-			store.DatabaseName = "TurboDiagram";
+			store.DatabaseName = "nShape";
 			((CachedRepository)project.Repository).Store = store;
 			project.RemoveAllLibraries();
 			store.DropDbSchema();
-			project.AddLibraryByFilePath("Dataweb.Diagramming.GeneralShapes");
+			project.AddLibraryByFilePath("Dataweb.nShape.GeneralShapes.dll");
 			project.RegisterEntityTypes();
 			store.CreateDbCommands((IStoreCache)project.Repository);
 			store.CreateDbSchema();
@@ -1431,10 +1436,10 @@ namespace Dataweb.Diagramming.Designer {
 
 		#region Fields
 
-		private const string newProjectName = "New Diagramming Project";
+		private const string newProjectName = "New nShape Project";
 		private const string xmlStoreTypeName = "XML";
 		private const string sqlServerStoreTypeName = "SQL Server";
-		private const string appTitle = "Diagramming Designer";
+		private const string appTitle = "nShape Designer";
 
 		private Point p;
 		private int currHistoryPos;
@@ -1533,7 +1538,7 @@ namespace Dataweb.Diagramming.Designer {
 		private const string dataSourceTag = "DataSource";
 
 #if TdbRepository
-		private const string fileFilterAllRepositories = "Diagramming Repository Files|*.xml;*.tdbd|XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
+		private const string fileFilterAllRepositories = "nShape Repository Files|*.xml;*.tdbd|XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
 		private const string fileFilterTurboDBRepository = "TurboDB Repository Databases|*.tdbd|All Files|*.*";
 #endif
 		private const string fileFilterXmlRepository = "XML Repository Files|*.xml|All Files|*.*";

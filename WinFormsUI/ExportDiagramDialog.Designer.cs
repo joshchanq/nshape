@@ -1,4 +1,4 @@
-﻿namespace Dataweb.Diagramming.WinFormsUI {
+﻿namespace Dataweb.nShape.WinFormsUI {
 	partial class ExportDiagramDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -492,7 +492,7 @@
 			this.Controls.Add(this.okButton);
 			this.Name = "ExportDiagramDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "ExportDiagramDialog";
+			this.Text = "Export Diagram";
 			this.FileFormatOptionsGroupBox.ResumeLayout(false);
 			this.FileFormatOptionsGroupBox.PerformLayout();
 			this.DestinationOptionsGroupBox.ResumeLayout(false);

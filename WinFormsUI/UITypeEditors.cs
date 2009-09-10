@@ -9,15 +9,15 @@ using System.Globalization;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using Dataweb.Utilities;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	#region TypeConverters
 
-	public class DiagrammingTextConverter : TypeConverter {
+	public class nShapeTextConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
@@ -57,7 +57,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingNamedImageConverter : TypeConverter {
+	public class nShapeNamedImageConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)) return true;
@@ -85,7 +85,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingStyleConverter : TypeConverter {
+	public class nShapeStyleConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)) return true;
@@ -100,7 +100,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingFontFamilyConverter : TypeConverter {
+	public class nShapeFontFamilyConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
@@ -118,7 +118,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingTextPaddingConverter : TypeConverter {
+	public class nShapeTextPaddingConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
@@ -189,7 +189,10 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	#region UITypeEditors
 
 
-	public class DiagrammingFontFamilyEditor : UITypeEditor {
+	/// <summary>
+	/// nShape UI type editor for choosing a character style's font from a drop down list.
+	/// </summary>
+	public class nShapeFontFamilyEditor : UITypeEditor {
 		
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
@@ -269,7 +272,10 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingTextEditor : UITypeEditor {
+	/// <summary>
+	/// nShape UI type editor for entering text.
+	/// </summary>
+	public class nShapeTextEditor : UITypeEditor {
 
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
@@ -321,7 +327,10 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingNamedImageEditor : UITypeEditor {
+	/// <summary>
+	/// nShape UI type editor for choosing an image and assinging a name.
+	/// </summary>
+	public class nShapeNamedImageEditor : UITypeEditor {
 
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
@@ -382,10 +391,13 @@ namespace Dataweb.Diagramming.WinFormsUI {
 	}
 
 
-	public class DiagrammingStyleEditor : UITypeEditor {
+	/// <summary>
+	/// nShape UI type editor for choosing a style from a drop down list.
+	/// </summary>
+	public class nShapeStyleEditor : UITypeEditor {
 
-		public DiagrammingStyleEditor() {
-			if (designBuffer == null) throw new DiagrammingInternalException("Design is not set. Set the static property DiagrammingStyleEditor.Design to a reference of the current design before creating the UI type editor.");
+		public nShapeStyleEditor() {
+			if (designBuffer == null) throw new nShapeInternalException("Design is not set. Set the static property nShapeStyleEditor.Design to a reference of the current design before creating the UI type editor.");
 			this.design = designBuffer;
 		}
 
@@ -406,8 +418,8 @@ namespace Dataweb.Diagramming.WinFormsUI {
 					bool showItemDefaultStyle = (shape != null && shape.Template != null);
 					StyleListBox styleListBox = null;
 					try {
+						Type styleType = null;
 						if (value == null) {
-							Type styleType = null;
 							if (context.PropertyDescriptor.PropertyType == typeof(ICapStyle))
 								styleType = typeof(CapStyle);
 							else if (context.PropertyDescriptor.PropertyType == typeof(IColorStyle))
@@ -423,7 +435,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 							else if (context.PropertyDescriptor.PropertyType == typeof(IShapeStyle))
 								styleType = typeof(ShapeStyle);
 							else
-								throw new DiagrammingException(string.Format("Unsopported Style Type {0}.", context.PropertyDescriptor.PropertyType));
+								throw new nShapeException(string.Format("Unsupported Style Type {0}.", context.PropertyDescriptor.PropertyType));
 
 							styleListBox = new StyleListBox(editorService, design, styleType, showItemDefaultStyle);
 						} else
@@ -466,7 +478,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				Matrix origTransform = e.Graphics.Transform;
 
 				// Set new GraphicsModes
-				GdiHelpers.ApplyGraphicsSettings(e.Graphics, DiagrammingRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, nShapeRenderingQuality.MaximumQuality);
 
 				Rectangle previewRect = Rectangle.Empty;
 				previewRect.X = e.Bounds.X + 1;
@@ -564,7 +576,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				((LinearGradientBrush)fillBrush).ScaleTransform(scale, scale);
 				((LinearGradientBrush)fillBrush).RotateTransform(fillStyle.GradientAngle);
 			} else if (fillBrush is TextureBrush) {
-				if (fillStyle.ImageLayout == DiagrammingImageLayout.Stretch) {
+				if (fillStyle.ImageLayout == nShapeImageLayout.Stretch) {
 					float scaleX = (float)previewBounds.Width / ((TextureBrush)fillBrush).Image.Width;
 					float scaleY = (float)previewBounds.Height / ((TextureBrush)fillBrush).Image.Height;
 					((TextureBrush)fillBrush).ScaleTransform(scaleX, scaleY);

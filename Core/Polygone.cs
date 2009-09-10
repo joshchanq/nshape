@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	public abstract class PolygonBase : CaptionedShapeBase {
 

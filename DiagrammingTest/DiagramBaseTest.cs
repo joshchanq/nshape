@@ -4,12 +4,12 @@ using System.Diagnostics;
 using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Dataweb.Diagramming;
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.GeneralShapes;
+using Dataweb.nShape;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.GeneralShapes;
 
 
-namespace DiagrammingTest {
+namespace nShapeTest {
 
 	/// <summary>
 	/// Summary description for UnitTest1
@@ -73,7 +73,7 @@ namespace DiagrammingTest {
 			project.Repository.Erase();
 			project.Create();
 		
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			//
 			Diagram diagram = new Diagram("All Shapes");
 			diagram.Width = 800;
@@ -162,7 +162,7 @@ namespace DiagrammingTest {
 			((CachedRepository)project.Repository).Store = new XmlStore("C:\\Temp", ".xml");
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			//
 			foreach (ShapeType st in project.ShapeTypes) {
 				Shape s = st.CreateInstance();
@@ -240,7 +240,7 @@ namespace DiagrammingTest {
 				bounds1.Inflate(10, 10);
 				Assert.IsTrue(bounds1.Contains(s.GetBoundingRectangle(true)));
 				//
-				foreach (DiagrammingAction a in s.GetActions(0, 0, 0))
+				foreach (nShapeAction a in s.GetActions(0, 0, 0))
 					Assert.IsNotNull(a.Name);
 				//
 				// Connections
@@ -277,7 +277,7 @@ namespace DiagrammingTest {
 			((CachedRepository)project.Repository).Store = new XmlStore("C:\\Temp", ".xml");
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			Diagram diagram = new Diagram("Diagram A");
 			// Create a group
 			ShapeGroup group = (ShapeGroup)project.ShapeTypes["ShapeGroup"].CreateInstance();
@@ -335,7 +335,7 @@ namespace DiagrammingTest {
 			((CachedRepository)project.Repository).Store = new XmlStore("C:\\Temp", ".xml");
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			Template template = new Template("Template1", project.ShapeTypes["RoundedBox"].CreateInstance());
 			((IPlanarShape)template.Shape).FillStyle = project.Design.FillStyles.Red;
 			project.Repository.InsertTemplate(template);
@@ -366,7 +366,7 @@ namespace DiagrammingTest {
 			project.Name = "Test";
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			// Create a diagram with one shape
 			Diagram diagram = new Diagram("Diagram A");
 			project.Repository.InsertDiagram(diagram);
@@ -397,7 +397,7 @@ namespace DiagrammingTest {
 			project.Name = "Test";
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			ColorStyle colorStyle = (ColorStyle)project.Design.ColorStyles.Blue;
 			colorStyle.Color = Color.LightBlue;
 			project.Repository.UpdateStyle(colorStyle);
@@ -422,13 +422,13 @@ namespace DiagrammingTest {
 
 			// Add Libraries:
 			// GeneralShapes
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 			// ElectricalShapes
-			project.AddLibrary(typeof(Dataweb.Diagramming.ElectricalShapes.AutoDisconnectorSymbol).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.ElectricalShapes.AutoDisconnectorSymbol).Assembly);
 			// FlowChartShapes
-			project.AddLibrary(typeof(Dataweb.Diagramming.FlowChartShapes.ProcessSymbol).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.FlowChartShapes.ProcessSymbol).Assembly);
 			// SoftwareArchitectureShapes
-			project.AddLibrary(typeof(Dataweb.Diagramming.SoftwareArchitectureShapes.CloudSymbol).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.SoftwareArchitectureShapes.CloudSymbol).Assembly);
 
 			//
 			Diagram diagram = new Diagram("All Shapes");
@@ -498,7 +498,7 @@ namespace DiagrammingTest {
 			((CachedRepository)project1.Repository).Store = store1;
 			project1.Repository.Erase();
 			project1.Create();
-			project1.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project1.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 
 			// Create test data, populate repository, save repository
 			string diagramName = "Diagram";
@@ -515,21 +515,21 @@ namespace DiagrammingTest {
 			// Compare the saved repository with the loaded repository
 			//
 			// Compare Designs
-			Comparer.Compare(((IStyleSetProvider)project1).StyleSet, ((IStyleSetProvider)project2).StyleSet);
+			nShapeComparer.Compare(((IStyleSetProvider)project1).StyleSet, ((IStyleSetProvider)project2).StyleSet);
 			foreach (Design d in project2.Repository.GetDesigns())
-				Comparer.Compare(d, project2.Repository.GetDesign(((IEntity)d).Id));
+				nShapeComparer.Compare(d, project2.Repository.GetDesign(((IEntity)d).Id));
 			
 			// Compare Templates
 			foreach (Template savedTemplate in project1.Repository.GetTemplates())
-			   Comparer.Compare(savedTemplate, project2.Repository.GetTemplate(savedTemplate.Id));
+			   nShapeComparer.Compare(savedTemplate, project2.Repository.GetTemplate(savedTemplate.Id));
 			
 			// Compare ModelObjects
 			foreach (IModelObject modelObject in project1.Repository.GetModelObjects(null))
-				Comparer.Compare(modelObject, project2.Repository.GetModelObject(modelObject.Id));
+				nShapeComparer.Compare(modelObject, project2.Repository.GetModelObject(modelObject.Id));
 			
 			// Compare Diagrams
 			foreach (Diagram diagram in project1.Repository.GetDiagrams()) {
-				Comparer.Compare(diagram, project2.Repository.GetDiagram(((IEntity)diagram).Id));
+				nShapeComparer.Compare(diagram, project2.Repository.GetDiagram(((IEntity)diagram).Id));
 
 				// Compare ZOrder and LayerIds
 				List<Shape> savedShapes = new List<Shape>(diagram.Shapes.BottomUp);
@@ -550,7 +550,7 @@ namespace DiagrammingTest {
 			((CachedRepository)project.Repository).Store = store;
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.Diagramming.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
 
 			string diagramName = "Large Diagram";
 			CreateLargeDiagram(project, diagramName);
@@ -754,7 +754,7 @@ namespace DiagrammingTest {
 
 			for (int rowIdx = 0; rowIdx < shapesPerRow; ++rowIdx) {
 				LayerIds rowLayer = ((rowIdx + 1) % 2 == 0) ? evenRowLayer : oddRowLayer;
-				for (int colIdx = 0; colIdx < shapesPerRow; ++rowIdx) {
+				for (int colIdx = 0; colIdx < shapesPerRow; ++colIdx) {
 					LayerIds colLayer = ((colIdx + 1) % 2 == 0) ? evenColLayer : oddColLayer;
 					int shapePosX = shapeSize + colIdx * (lineLength + shapeSize);
 					int shapePosY = shapeSize + rowIdx * (lineLength + shapeSize);
@@ -770,7 +770,7 @@ namespace DiagrammingTest {
 					diagram.Shapes.Add(circleShape, project.Repository.ObtainNewTopZOrder(diagram));
 					if (withLayers) diagram.AddShapeToLayers(circleShape, planarLayer | rowLayer | colLayer);
 					if (connectShapes) {
-						if (colIdx > 0) {
+						if (rowIdx > 0) {
 							Shape lineShape = linearTemplate.CreateShape();
 							lineShape.Connect(ControlPointId.FirstVertex, circleShape, topPoint);
 							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.FirstVertex, circleShape));
@@ -781,7 +781,7 @@ namespace DiagrammingTest {
 							if (withLayers) diagram.AddShapeToLayers(lineShape, linearLayer);
 							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.LastVertex, otherShape));
 						}
-						if (rowIdx > 0) {
+						if (colIdx > 0) {
 							Shape lineShape = linearTemplate.CreateShape();
 							lineShape.Connect(1, circleShape, leftPoint);
 							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.FirstVertex, circleShape));

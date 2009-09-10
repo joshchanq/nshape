@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	public class DiagramController {
 
@@ -72,7 +72,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		public IEnumerable<DiagrammingAction> GetActions(IShapeCollection selectedShapes) {
+		public IEnumerable<nShapeAction> GetActions(IShapeCollection selectedShapes) {
 			// ToDo: No actions at the moment
 			yield break;
 		}

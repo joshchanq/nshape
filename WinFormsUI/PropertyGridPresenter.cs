@@ -4,14 +4,14 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 using System.Runtime.CompilerServices;
 using Dataweb.Utilities;
 using System.Collections;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	/// <summary>
 	/// Uses a Windows Property Grid to edit properties of shapes, diagramControllers and model objects.
@@ -95,7 +95,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 					break;
 				default: Debug.Fail("PageIndex out of range."); break;
 			}
-			if (propertyGrid == null) throw new IndexOutOfRangeException(string.Format("Property page {0} does not exist.", pageIndex));
+			//if (propertyGrid == null) throw new IndexOutOfRangeException(string.Format("Property presenter has no PropertyGrid assigned for page {0}.", pageIndex));
 		}
 
 
@@ -127,30 +127,31 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void propertyController_ObjectsSet(object sender, PropertyControllerEventArgs e) {
 			if (propertyController.Project != null && propertyController.Project.IsOpen)
-				DiagrammingStyleEditor.Design = propertyController.Project.Design;
+				nShapeStyleEditor.Design = propertyController.Project.Design;
 
 			PropertyGrid grid = null;
-			Hashtable list;
+			Hashtable list = null;
 			GetPropertyGrid(e.PageIndex, out grid, out list);
-
-			// Do not assign to grid.SelectedObjects because the PropertyGrid's indexer 
-			// clones the object before returning it.
-			// Btw: It seems that the PropertyGrid class was not designed for displaying 
-			// large numbers of objects... :-/
-			object[] selectedObjectsBuffer = e.GetObjectArray();
-			list.Clear();
-			for (int i = selectedObjectsBuffer.Length - 1; i >= 0; --i) {
-				if (!list.Contains(selectedObjectsBuffer[i]))
-					list.Add(selectedObjectsBuffer[i], null);
+			if (grid != null && list != null) {
+				// Do not assign to grid.SelectedObjects because the PropertyGrid's indexer 
+				// clones the object before returning it.
+				// Btw: It seems that the PropertyGrid class was not designed for displaying 
+				// large numbers of objects... :-/
+				object[] selectedObjectsBuffer = e.GetObjectArray();
+				list.Clear();
+				for (int i = selectedObjectsBuffer.Length - 1; i >= 0; --i) {
+					if (!list.Contains(selectedObjectsBuffer[i]))
+						list.Add(selectedObjectsBuffer[i], null);
+				}
+				// Set objects and display page
+				grid.SelectedObjects = selectedObjectsBuffer;
+				grid.Visible = true;
 			}
-
-			grid.SelectedObjects = selectedObjectsBuffer;
-			grid.Visible = true;
 		}
 
 
 		private void propertyController_RefreshObjects(object sender, PropertyControllerEventArgs e) {
-			DiagrammingStyleEditor.Design = propertyController.Project.Design;
+			nShapeStyleEditor.Design = propertyController.Project.Design;
 			PropertyGrid grid = null;
 			switch (e.PageIndex) {
 				case 0: grid = primaryPropertyGrid; break;
@@ -174,18 +175,19 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			PropertyGrid grid = null;
 			Hashtable list = null;
 			GetPropertyGrid(e.PageIndex, out grid, out list);
-
-			if (grid.SelectedObjects != null && grid.SelectedObjects.Length > 1) {
-				foreach (object obj in e.Objects) {
-					if (list.ContainsKey(obj))
-						list.Remove(obj);
-				}
-				list.Keys.CopyTo(grid.SelectedObjects, 0);
-			} else {
-				foreach (object obj in e.Objects) {
-					if (grid.SelectedObject == obj) {
-						grid.SelectedObject = null;
-						break;
+			if (grid != null && list != null) {
+				if (grid.SelectedObjects != null && grid.SelectedObjects.Length > 1) {
+					foreach (object obj in e.Objects) {
+						if (list.ContainsKey(obj))
+							list.Remove(obj);
+					}
+					list.Keys.CopyTo(grid.SelectedObjects, 0);
+				} else {
+					foreach (object obj in e.Objects) {
+						if (grid.SelectedObject == obj) {
+							grid.SelectedObject = null;
+							break;
+						}
 					}
 				}
 			}
@@ -246,7 +248,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		/// Retrieve the changed value and notify the IPropertyWindow about the changes
 		/// </summary>
 		private void propertyGrid_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e) {
-			if (propertyController == null) throw new DiagrammingException("Property 'PropertyController' is not set.");
+			if (propertyController == null) throw new nShapeException("Property 'PropertyController' is not set.");
 			if (!(sender is PropertyGrid)) throw new ArgumentException("Argument 'sender' is not a PropertyGrid.");
 			
 			int pageIdx = -1;

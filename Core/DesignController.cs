@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Diagnostics;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	public class DesignEventArgs : EventArgs {
 
@@ -185,7 +185,7 @@ namespace Dataweb.Diagramming.Controllers {
 				case StyleCategory.LineStyle: style = new LineStyle(); break;
 				case StyleCategory.ParagraphStyle: style = new ParagraphStyle(); break;
 				//case StyleCategory.ShapeStyle: style = new ShapeStyle(); break;
-				default: throw new DiagrammingUnsupportedValueException(typeof(StyleCategory), category);
+				default: throw new nShapeUnsupportedValueException(typeof(StyleCategory), category);
 			}
 			ICommand cmd = new CreateStyleCommand(design, style);
 			project.ExecuteCommand(cmd);
@@ -196,7 +196,7 @@ namespace Dataweb.Diagramming.Controllers {
 			if (design == null) throw new ArgumentNullException("design");
 			if (style == null) throw new ArgumentNullException("style");
 			PropertyInfo propertyInfo = style.GetType().GetProperty(propertyName);
-			if (propertyInfo == null) throw new DiagrammingException("Property {0} not found in Type {1}.", propertyName, style.GetType().Name);
+			if (propertyInfo == null) throw new nShapeException("Property {0} not found in Type {1}.", propertyName, style.GetType().Name);
 
 			ICommand cmd = new StylePropertySetCommand(design, style, propertyInfo, oldValue, newValue);
 			project.ExecuteCommand(cmd);

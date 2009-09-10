@@ -7,7 +7,7 @@ using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Displays a text within a shape.
@@ -294,7 +294,7 @@ namespace Dataweb.Diagramming.Advanced {
 		[Category("Text Layout")]
 		[RefreshProperties(RefreshProperties.All)]
 		[Description("Text displayed inside the shape")]
-		[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingTextEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.nShape.WinFormsUI.nShapeTextEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 		public virtual string Text {
 			get {
 				if (caption == null) return string.Empty;
@@ -425,37 +425,37 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		public virtual string GetCaptionText(int index) {
-			if (index != 0) throw new DiagrammingException("NotSupported label index.");
+			if (index != 0) throw new nShapeException("NotSupported label index.");
 			else return Text;
 		}
 
 
 		public virtual ICharacterStyle GetCaptionCharacterStyle(int index) {
-			if (index != 0) throw new DiagrammingException("NotSupported label index.");
+			if (index != 0) throw new nShapeException("NotSupported label index.");
 			return CharacterStyle;
 		}
 
 
 		public virtual IParagraphStyle GetCaptionParagraphStyle(int index) {
-			if (index != 0) throw new DiagrammingException("NotSupported label index.");
+			if (index != 0) throw new nShapeException("NotSupported label index.");
 			return ParagraphStyle;
 		}
 
 
 		public virtual void SetCaptionText(int index, string text) {
-			if (index != 0) throw new DiagrammingException("NotSupported label index.");
+			if (index != 0) throw new nShapeException("NotSupported label index.");
 			else Text = text;
 		}
 
 
 		public virtual void SetCaptionCharacterStyle(int index, ICharacterStyle characterStyle) {
-			if (index != 0) throw new DiagrammingException("NotSupported label index.");
+			if (index != 0) throw new nShapeException("NotSupported label index.");
 			CharacterStyle = characterStyle;
 		}
 
 
 		public virtual void SetCaptionParagraphStyle(int index, IParagraphStyle paragraphStyle) {
-			if (index != 0) throw new DiagrammingException("NotSupported label index.");
+			if (index != 0) throw new nShapeException("NotSupported label index.");
 			ParagraphStyle = paragraphStyle;
 		}
 

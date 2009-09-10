@@ -8,13 +8,13 @@
     <ProjectGuid>{5EAB131C-1C93-4C3F-A1D8-D711053DE33C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.Diagramming.WinFormsUI</RootNamespace>
-    <AssemblyName>Dataweb.Diagramming.WinFormsUI</AssemblyName>
+    <RootNamespace>Dataweb.nShape.WinFormsUI</RootNamespace>
+    <AssemblyName>Dataweb.nShape.WinFormsUI</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Dataweb.Diagramming.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>..\Dataweb.nShape.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,15 +24,20 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\Binaries\Debug\Dataweb.nShape.WinFormsUI.xml</DocumentationFile>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Binaries\Release\</OutputPath>
     <DefineConstants>
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>..\Binaries\Release\Dataweb.nShape.WinFormsUI.xml</DocumentationFile>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -240,7 +245,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Dataweb.Diagramming.snk" />
+    <None Include="..\Dataweb.nShape.snk">
+      <Link>Dataweb.nShape.snk</Link>
+    </None>
     <None Include="Resources\Visible.bmp" />
     <None Include="Resources\ActivateDesign.bmp" />
     <None Include="Resources\CopyBtn.bmp" />
@@ -268,16 +275,21 @@
     <None Include="Resources\UngroupBtn.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Display.bmp" />
+    <EmbeddedResource Include="ModelTreeViewPresenter.bmp" />
+    <EmbeddedResource Include="PropertyGridPresenter.bmp" />
     <Content Include="Resources\AggregateShapeBtn.bmp" />
     <Content Include="Resources\Dataweb.Diagramming.ico" />
     <Content Include="Resources\ModelObjectAttached.bmp" />
     <Content Include="Resources\ModelObjectDetached.bmp" />
     <Content Include="Resources\SplitShapeAggregationBtn.bmp" />
+    <EmbeddedResource Include="ToolSetListViewPresenter.bmp" />
+    <EmbeddedResource Include="ToolSetToolStripPresenter.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Diagramming.csproj">
+    <ProjectReference Include="..\Core\nShape.csproj">
       <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>Diagramming</Name>
+      <Name>nShape</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -289,6 +301,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>"%25PROGRAMFILES%25\Microsoft SDKs\Windows\v6.0A\bin\gacutil" /if "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>REM "%25PROGRAMFILES%25\Microsoft SDKs\Windows\v6.0A\bin\gacutil" /if "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

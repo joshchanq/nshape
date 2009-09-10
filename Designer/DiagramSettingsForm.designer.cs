@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	partial class DiagramSettingsForm {
 		/// <summary>

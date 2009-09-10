@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	
 	public partial class LayerListView : ListView, ILayerView {
 
@@ -130,7 +130,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		public void OpenContextMenu(int x, int y, IEnumerable<DiagrammingAction> actions, Project project) {
+		public void OpenContextMenu(int x, int y, IEnumerable<nShapeAction> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
 			if (showDefaultContextMenu && contextMenuStrip != null) {
@@ -460,8 +460,8 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private class LayerListViewMouseEventArgs : LayerMouseEventArgs {
 			public LayerListViewMouseEventArgs(Layer layer, LayerItem item,
-				MouseEventType eventType, DiagrammingMouseButtons buttons, int clickCount, int wheelDelta,
-				Point position, DiagrammingKeys modifiers)
+				MouseEventType eventType, nShapeMouseButtons buttons, int clickCount, int wheelDelta,
+				Point position, nShapeKeys modifiers)
 				: base(layer, item, eventType, buttons, clickCount, wheelDelta, position, modifiers) {
 			}
 
@@ -471,13 +471,13 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		
 
 			protected internal void SetMouseEvent(Layer layer, LayerItem item, MouseEventType eventType, MouseEventArgs eventArgs) {
-				this.SetMouseEvent(eventType, (DiagrammingMouseButtons)eventArgs.Button, eventArgs.Clicks, eventArgs.Delta, eventArgs.Location, (DiagrammingKeys)Control.ModifierKeys);
+				this.SetMouseEvent(eventType, (nShapeMouseButtons)eventArgs.Button, eventArgs.Clicks, eventArgs.Delta, eventArgs.Location, (nShapeKeys)Control.ModifierKeys);
 				this.Layer = layer;
 				this.Item = item;
 			}
 
 
-			protected internal void SetMouseEvent(Layer layer, LayerItem item, MouseEventType eventType, DiagrammingMouseEventArgs eventArgs) {
+			protected internal void SetMouseEvent(Layer layer, LayerItem item, MouseEventType eventType, nShapeMouseEventArgs eventArgs) {
 				this.SetMouseEvent(eventType, eventArgs.Buttons, eventArgs.Clicks, eventArgs.WheelDelta, eventArgs.Position, eventArgs.Modifiers);
 				this.Item = item;
 				this.Layer = layer;

@@ -2,9 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Collections.Generic;
 using System.Text;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
-namespace Dataweb.Diagramming.GeneralModelObjects {
+namespace Dataweb.nShape.GeneralModelObjects {
 
 	public enum StateEnum { On, Off, Blocked, Defect, Unknown };
 
@@ -33,7 +33,7 @@ namespace Dataweb.Diagramming.GeneralModelObjects {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions() {
+		public override IEnumerable<nShapeAction> GetActions() {
 			throw new NotImplementedException();
 		}
 
@@ -75,7 +75,7 @@ namespace Dataweb.Diagramming.GeneralModelObjects {
 			set { maxValue = value; }
 		}
 
-		//public override IEnumerable<IDiagrammingAction> GetActions() {
+		//public override IEnumerable<nShapeAction> GetActions() {
 		//   // "Set State", "Set Min Value", "Set Max Value", "SetFloat";
 		//}
 
@@ -87,7 +87,7 @@ namespace Dataweb.Diagramming.GeneralModelObjects {
 	}
 
 
-	public static class DiagrammingLibraryInitializer {
+	public static class nShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);

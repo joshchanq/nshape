@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Collections;
 using System.Reflection;
 using System.Diagnostics;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	/// <summary>
 	/// Controller class providing access to the templates of a project.
@@ -167,10 +167,10 @@ namespace Dataweb.Diagramming.Controllers {
 		#region [Public] Properties
 
 		/// <summary>
-		/// Specifies the Diagramming project to which this toolbox belongs. This is 
+		/// Specifies the nShape project to which this toolbox belongs. This is 
 		/// a mandatory property.
 		/// </summary>
-		[Description("Specifies the Diagramming project to which this toolbox belongs. "
+		[Description("Specifies the nShape project to which this toolbox belongs. "
 		+ "This is a mandotory property.")]
 		public Project Project {
 			get { return (diagramSetController == null) ? null : diagramSetController.Project; }
@@ -227,14 +227,14 @@ namespace Dataweb.Diagramming.Controllers {
 		public void CreateTemplateTool(Template template, string categoryTitle) {
 			if (template == null) throw new ArgumentNullException("template");
 			if (FindTool(template) != null)
-				throw new DiagrammingException(string.Format("A tool for template '{0}' already exisis.", template.Name));
+				throw new nShapeException(string.Format("A tool for template '{0}' already exisis.", template.Name));
 			Tool tool = null;
 			if (template.Shape is ILinearShape) {
-				if (string.IsNullOrEmpty(null))
+				if (string.IsNullOrEmpty(categoryTitle))
 					tool = new LinearShapeCreationTool(template);
 				else tool = new LinearShapeCreationTool(template, categoryTitle);
 			} else {
-				if (string.IsNullOrEmpty(null))
+				if (string.IsNullOrEmpty(categoryTitle))
 					tool = new PlanarShapeCreationTool(template);
 				else tool = new PlanarShapeCreationTool(template, categoryTitle);
 			}
@@ -388,7 +388,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		public IEnumerable<DiagrammingAction> GetActions(Tool clickedTool) {
+		public IEnumerable<nShapeAction> GetActions(Tool clickedTool) {
 			// menu structure:
 			//
 			// Create Template...
@@ -744,7 +744,7 @@ namespace Dataweb.Diagramming.Controllers {
 				case ToolResult.Canceled:
 					if (!selecting) SelectDefaultTool(true);
 					break;
-				default: throw new DiagrammingUnsupportedValueException(e.EventType);
+				default: throw new nShapeUnsupportedValueException(e.EventType);
 			}
 		}
 

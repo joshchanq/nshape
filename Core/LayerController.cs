@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	#region EventArgs
 
@@ -195,7 +195,7 @@ namespace Dataweb.Diagramming.Controllers {
 			if (layerName == null) throw new ArgumentNullException("layerName");
 			AssertDiagramSetControllerIsSet();
 			if (diagram.Layers.FindLayer(layerName) != null) 
-				throw new DiagrammingException("Layer name '{0}' already exists.", layerName);
+				throw new nShapeException("Layer name '{0}' already exists.", layerName);
 			Command cmd = new AddLayerCommand(diagram, layerName);
 			Project.ExecuteCommand(cmd);
 			if (LayersAdded != null) LayersAdded(this, LayerHelper.GetLayersEventArgs(LayerHelper.GetLayers(layerName, diagram)));
@@ -217,7 +217,7 @@ namespace Dataweb.Diagramming.Controllers {
 			if (layerName == null) throw new ArgumentNullException("layerName");
 			AssertDiagramSetControllerIsSet();
 			Layer layer = diagram.Layers.FindLayer(layerName);
-			if (layer == null) throw new DiagrammingException("Layer '{0}' does not exist.", layerName);
+			if (layer == null) throw new nShapeException("Layer '{0}' does not exist.", layerName);
 			Command cmd = new RemoveLayerCommand(diagram, layer);
 			Project.ExecuteCommand(cmd);
 			if (LayersRemoved != null) LayersRemoved(this, LayerHelper.GetLayersEventArgs(LayerHelper.GetLayers(layerName, diagram)));
@@ -270,7 +270,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		public IEnumerable<DiagrammingAction> GetActions(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
+		public IEnumerable<nShapeAction> GetActions(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (selectedLayers == null) throw new ArgumentNullException("selectedLayers");
 			bool isFeasible;
@@ -344,18 +344,18 @@ namespace Dataweb.Diagramming.Controllers {
 		
 
 		private void AssertProjectIsSet() {
-			if (Project == null) throw new DiagrammingException("{0}'s property 'Project' is not set.", typeof(DiagramSetController).FullName);
+			if (Project == null) throw new nShapeException("{0}'s property 'Project' is not set.", typeof(DiagramSetController).FullName);
 		}
 
 
 		private void AssertRepositoryIsSet() {
 			AssertProjectIsSet();
-			if (Project.Repository == null) throw new DiagrammingException("Project's 'Repository' property is not set.");
+			if (Project.Repository == null) throw new nShapeException("Project's 'Repository' property is not set.");
 		}
 
 		
 		private void AssertDiagramSetControllerIsSet() {
-			if (diagramSetController == null) throw new DiagrammingException("Property 'DiagramController' is not set.");
+			if (diagramSetController == null) throw new nShapeException("Property 'DiagramController' is not set.");
 		}
 
 

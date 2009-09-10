@@ -10,7 +10,7 @@ using Dataweb.Utilities;
 using System.Collections;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	#region Class EntityBucket<TObject>
 
@@ -502,7 +502,7 @@ namespace Dataweb.Diagramming.Advanced {
 		protected virtual void ValidatePropertyIndex() {
 			// We cannot check propertyIndex < 0 because some readers use PropertyIndex == -1 for the id.
 			if (propertyIndex >= propertyInfos.Count)
-				throw new DiagrammingException("An entity tries to read more properties from the repository than there are defined.");
+				throw new nShapeException("An entity tries to read more properties from the repository than there are defined.");
 		}
 
 
@@ -860,10 +860,10 @@ namespace Dataweb.Diagramming.Advanced {
 		public void AddEntityType(IEntityType entityType) {
 			if (entityType == null) throw new ArgumentNullException("entityType");
 			if (entityTypes.ContainsKey(CalcElementName(entityType.FullName)))
-				throw new DiagrammingException("The repository already contains an entity type called '{0}'.", entityType.FullName);
+				throw new nShapeException("The repository already contains an entity type called '{0}'.", entityType.FullName);
 			foreach (KeyValuePair<string, IEntityType> item in entityTypes) {
 				if (item.Value.FullName.Equals(entityType.FullName, StringComparison.InvariantCultureIgnoreCase))
-					throw new DiagrammingException("The repository already contains an entity type called '{0}'.", entityType.FullName);
+					throw new nShapeException("The repository already contains an entity type called '{0}'.", entityType.FullName);
 			}
 			// Calculate the XML element names for all entity identifiers
 			entityType.ElementName = CalcElementName(entityType.FullName);
@@ -901,7 +901,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <override></override>
 		public virtual void Create() {
 			AssertClosed();
-			if (string.IsNullOrEmpty(projectName)) throw new DiagrammingException("No project name defined.");
+			if (string.IsNullOrEmpty(projectName)) throw new nShapeException("No project name defined.");
 			settings = new ProjectSettings();
 			newProjects.Add(settings, projectOwner);
 			projectDesign = new Design("Project");
@@ -917,7 +917,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <override></override>
 		public void Open() {
 			AssertClosed();
-			if (string.IsNullOrEmpty(projectName)) throw new DiagrammingException("No project name defined.");
+			if (string.IsNullOrEmpty(projectName)) throw new nShapeException("No project name defined.");
 			if (store == null) throw new InvalidOperationException("Repository has no store attached. An in-memory repository must be created, not opened.");
 			store.ProjectName = projectName;
 			store.Open(this);
@@ -925,18 +925,18 @@ namespace Dataweb.Diagramming.Advanced {
 			store.LoadProjects(this, FindEntityType(ProjectSettings.EntityTypeName, true));
 			IEnumerator<EntityBucket<ProjectSettings>> projectEnumerator = projects.Values.GetEnumerator();
 			if (!projectEnumerator.MoveNext())
-				throw new DiagrammingException("Project '{0}' not found in repository.", projectName);
+				throw new nShapeException("Project '{0}' not found in repository.", projectName);
 			settings = projectEnumerator.Current.ObjectRef;
 			if (projectEnumerator.MoveNext())
-				throw new DiagrammingException("Two projects named '{0}' found in repository.", projectName);
+				throw new nShapeException("Two projects named '{0}' found in repository.", projectName);
 			// Load the design, there must be exactly one returned
 			store.LoadDesigns(this, ((IEntity)settings).Id);
 			IEnumerator<EntityBucket<Design>> designEnumerator = designs.Values.GetEnumerator();
 			if (!designEnumerator.MoveNext())
-				throw new DiagrammingException("Project styles not found.");
+				throw new nShapeException("Project styles not found.");
 			projectDesign = designEnumerator.Current.ObjectRef;
 			if (designEnumerator.MoveNext())
-				throw new DiagrammingException("More than one project design found in repository.");
+				throw new nShapeException("More than one project design found in repository.");
 			isOpen = true;
 			isModified = false;
 		}
@@ -1100,7 +1100,7 @@ namespace Dataweb.Diagramming.Advanced {
 			if (!templates.TryGetValue(id, out result)) {
 				store.LoadTemplates(this, ((IEntity)settings).Id);
 				if (!templates.TryGetValue(id, out result))
-					throw new DiagrammingException("Template with id '{0}' not found in store.", id);
+					throw new nShapeException("Template with id '{0}' not found in store.", id);
 			}
 			return result.ObjectRef;
 		}
@@ -1198,7 +1198,7 @@ namespace Dataweb.Diagramming.Advanced {
 				DoUpdateModelMapping(modelMapping);
 				if (owner == null) owner = GetModelMappingOwner(modelMapping);
 				else if (owner != GetModelMappingOwner(modelMapping)) 
-					throw new DiagrammingException("Invalid model mapping owner.");
+					throw new nShapeException("Invalid model mapping owner.");
 			}
 			if (ModelMappingsUpdated != null) ModelMappingsUpdated(this, GetTemplateEventArgs(owner));
 		}
@@ -1217,7 +1217,7 @@ namespace Dataweb.Diagramming.Advanced {
 				DoDeleteModelMapping(modelMapping);
 				if (owner == null) owner = GetModelMappingOwner(modelMapping);
 				else if (owner != GetModelMappingOwner(modelMapping))
-					throw new DiagrammingException("Invalid model mapping owner.");
+					throw new nShapeException("Invalid model mapping owner.");
 			}
 			if (ModelMappingsDeleted != null) ModelMappingsDeleted(this, GetTemplateEventArgs(owner));
 		}
@@ -1253,7 +1253,7 @@ namespace Dataweb.Diagramming.Advanced {
 			if (!diagrams.TryGetValue(id, out result)) {
 				store.LoadDiagrams(this, ((IEntity)settings).Id);
 				if (!diagrams.TryGetValue(id, out result))
-					throw new DiagrammingException("Diagram with id '{0}' not found in repository.", id);
+					throw new nShapeException("Diagram with id '{0}' not found in repository.", id);
 			}
 			return result.ObjectRef;
 		}
@@ -1529,10 +1529,10 @@ namespace Dataweb.Diagramming.Advanced {
 		#region ModelObjects
 
 		private EntityBucket<IModelObject> GetModelObjectItem(object id) {
-			if (id == null) throw new DiagrammingException("ModelObject has no identifier.");
+			if (id == null) throw new nShapeException("ModelObject has no identifier.");
 			EntityBucket<IModelObject> item;
 			if (!modelObjects.TryGetValue(id, out item))
-				throw new DiagrammingException(string.Format("ModelObject {0} not found.", id));
+				throw new nShapeException(string.Format("ModelObject {0} not found.", id));
 			return item;
 		}
 
@@ -1553,7 +1553,7 @@ namespace Dataweb.Diagramming.Advanced {
 				if (modelObjects.TryGetValue(id, out moeb))
 					result = moeb.ObjectRef;
 			}
-			if (result == null) throw new DiagrammingException("Model object with id '{0}' not found in repository.", id);
+			if (result == null) throw new nShapeException("Model object with id '{0}' not found in repository.", id);
 			return result;
 		}
 
@@ -1688,7 +1688,7 @@ namespace Dataweb.Diagramming.Advanced {
 				if (designs.Count <= 0 && store != null)
 					store.LoadDesigns(this, null);
 				if (!designs.TryGetValue(id, out designBucket))
-					throw new DiagrammingException("Design with id '{0}' not found in repository.", id);
+					throw new nShapeException("Design with id '{0}' not found in repository.", id);
 				result = designBucket.ObjectRef;
 			}
 			return result;
@@ -1699,8 +1699,8 @@ namespace Dataweb.Diagramming.Advanced {
 		public void InsertDesign(Design design) {
 			if (design == null) throw new ArgumentNullException("design");
 			AssertOpen();
-			if (((IEntity)design).Id != null) throw new DiagrammingException("Can only insert new designs.");
-			if (newDesigns.ContainsKey(design)) throw new DiagrammingException("Design already exists in the repository.");
+			if (((IEntity)design).Id != null) throw new nShapeException("Can only insert new designs.");
+			if (newDesigns.ContainsKey(design)) throw new nShapeException("Design already exists in the repository.");
 			//
 			DoInsertDesign(design, settings);
 			if (DesignInserted != null) DesignInserted(this, GetDesignEventArgs(design));
@@ -2011,7 +2011,7 @@ namespace Dataweb.Diagramming.Advanced {
 		protected IStyle GetProjectStyle(object id) {
 			EntityBucket<IStyle> styleItem;
 			if (!styles.TryGetValue(id, out styleItem))
-				throw new DiagrammingException("Style with id '{0}' does not exist.", id);
+				throw new nShapeException("Style with id '{0}' does not exist.", id);
 			return styleItem.ObjectRef;
 		}
 
@@ -2044,11 +2044,11 @@ namespace Dataweb.Diagramming.Advanced {
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
 				if (!newEntities.ContainsKey(entity))
-					throw new DiagrammingException(string.Format("Entity not found in Repository."));
+					throw new nShapeException(string.Format("Entity not found in Repository."));
 			} else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
-					throw new DiagrammingException("Entity not found in repository.");
+					throw new nShapeException("Entity not found in repository.");
 				item.State = ItemState.Modified;
 			}
 			isModified = true;
@@ -2067,12 +2067,12 @@ namespace Dataweb.Diagramming.Advanced {
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
 				if (!newEntities.ContainsKey(entity))
-					throw new DiagrammingException(string.Format("Entity not found in repository.", entity.Id));
+					throw new nShapeException(string.Format("Entity not found in repository.", entity.Id));
 				newEntities.Remove(entity);
 			} else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
-					throw new DiagrammingException("Entity not found in repository.");
+					throw new nShapeException("Entity not found in repository.");
 				item.State = ItemState.Deleted;
 			}
 			isModified = true;
@@ -2118,6 +2118,7 @@ namespace Dataweb.Diagramming.Advanced {
 			AcceptEntities<Shape>(shapes, newShapes);
 			newShapeConnections.Clear();
 			deletedShapeConnections.Clear();
+			this.isModified = false;
 		}
 
 
@@ -2257,7 +2258,7 @@ namespace Dataweb.Diagramming.Advanced {
 			IEntityType result;
 			entityTypes.TryGetValue(CalcElementName(entityTypeName), out result);
 			if (mustExist && result == null)
-				throw new DiagrammingException("Entity type '{0}' does not exist in the repository.", entityTypeName);
+				throw new nShapeException("Entity type '{0}' does not exist in the repository.", entityTypeName);
 			return result;
 		}
 
@@ -2272,13 +2273,13 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		protected void AssertOpen() {
-			if (!isOpen) throw new DiagrammingException("Repository is not open.");
+			if (!isOpen) throw new nShapeException("Repository is not open.");
 			Debug.Assert(settings != null && projectDesign != null);
 		}
 
 
 		protected void AssertClosed() {
-			if (isOpen) throw new DiagrammingException("Repository is already open.");
+			if (isOpen) throw new nShapeException("Repository is already open.");
 		}
 
 

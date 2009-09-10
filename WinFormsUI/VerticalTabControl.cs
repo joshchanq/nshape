@@ -5,7 +5,7 @@ using System.Drawing.Text;
 using System.Windows.Forms;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	[ToolboxItem(false)]
 	public partial class VerticalTabControl : ListBox {

@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Drawing;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 	/// <summary>
 	/// Beschreibt einen Zug beim Zeichnen als Folge von Pixel-Koordinaten
 	/// </summary>

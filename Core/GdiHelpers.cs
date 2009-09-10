@@ -5,9 +5,9 @@ using System.Drawing.Imaging;
 using System.Diagnostics;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
-	public enum DiagrammingRenderingQuality {
+	public enum nShapeRenderingQuality {
 		/// <summary>
 		/// Best rendering Quality, lowest rendering speed.
 		/// </summary>
@@ -32,6 +32,14 @@ namespace Dataweb.Diagramming.Advanced {
 		#region Methods for drawing geometric primitives (debug mode obly)
 
 #if DEBUG
+		/// <summary>
+		/// Visualizing points - used for debugging purposes
+		/// </summary>
+		public static void DrawPoint(Graphics gfx, Pen pen, PointF point, int radius) {
+			DrawPoint(gfx, pen, point.X, point.Y, radius);
+		}
+
+
 		/// <summary>
 		/// Visualizing points - used for debugging purposes
 		/// </summary>
@@ -153,10 +161,10 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Sets all parameters that affect rendering quality / rendering speed
 		/// </summary>
-		public static void ApplyGraphicsSettings(Graphics graphics, DiagrammingRenderingQuality renderingQuality) {
+		public static void ApplyGraphicsSettings(Graphics graphics, nShapeRenderingQuality renderingQuality) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			switch (renderingQuality) {
-				case DiagrammingRenderingQuality.MaximumQuality:
+				case nShapeRenderingQuality.MaximumQuality:
 					graphics.SmoothingMode = SmoothingMode.HighQuality;
 					//graphics.TextRenderingHint = System.Drawing.Title.TextRenderingHint.AntiAliasGridFit;	// smoothed but blurry fonts
 					graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;	// sharp but slightly chunky fonts
@@ -166,7 +174,7 @@ namespace Dataweb.Diagramming.Advanced {
 					//graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;			// produces quite blurry results
 					break;
 
-				case DiagrammingRenderingQuality.HighQuality:
+				case nShapeRenderingQuality.HighQuality:
 					// antialiasing and nice font rendering
 					graphics.SmoothingMode = SmoothingMode.HighQuality;
 					//graphics.TextRenderingHint = System.Drawing.Title.TextRenderingHint.AntiAliasGridFit;	// smoothed but blurry fonts
@@ -174,7 +182,7 @@ namespace Dataweb.Diagramming.Advanced {
 					graphics.InterpolationMode = InterpolationMode.High;
 					break;
 
-				case DiagrammingRenderingQuality.LowQuality:
+				case nShapeRenderingQuality.LowQuality:
 					graphics.SmoothingMode = SmoothingMode.HighSpeed;
 					graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
 					graphics.InterpolationMode = InterpolationMode.Low;
@@ -183,7 +191,7 @@ namespace Dataweb.Diagramming.Advanced {
 					graphics.PixelOffsetMode = PixelOffsetMode.HighSpeed;
 					break;
 
-				case DiagrammingRenderingQuality.DefaultQuality:
+				case nShapeRenderingQuality.DefaultQuality:
 				default:
 					graphics.SmoothingMode = SmoothingMode.Default;
 					graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
@@ -218,21 +226,21 @@ namespace Dataweb.Diagramming.Advanced {
 		#region Drawing images
 
 		/// <summary>
-		/// Get a suitable GDI+ WrapMode out of the given DiagrammingImageLayout.
+		/// Get a suitable GDI+ WrapMode out of the given nShapeImageLayout.
 		/// </summary>
-		public static WrapMode GetWrapMode(DiagrammingImageLayout imageLayout) {
+		public static WrapMode GetWrapMode(nShapeImageLayout imageLayout) {
 			switch (imageLayout) {
-				case DiagrammingImageLayout.Center:
-				case DiagrammingImageLayout.Fit:
-				case DiagrammingImageLayout.Original:
-				case DiagrammingImageLayout.Stretch:
+				case nShapeImageLayout.Center:
+				case nShapeImageLayout.Fit:
+				case nShapeImageLayout.Original:
+				case nShapeImageLayout.Stretch:
 					return WrapMode.Clamp;
-				case DiagrammingImageLayout.CenterTile:
-				case DiagrammingImageLayout.Tile:
+				case nShapeImageLayout.CenterTile:
+				case nShapeImageLayout.Tile:
 					return WrapMode.Tile;
-				case DiagrammingImageLayout.FilpTile:
+				case nShapeImageLayout.FilpTile:
 					return WrapMode.TileFlipXY;
-				default: throw new DiagrammingUnsupportedValueException(imageLayout);
+				default: throw new nShapeUnsupportedValueException(imageLayout);
 			}
 		}
 
@@ -248,7 +256,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(DiagrammingImageLayout imageLayout) {
+		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout) {
 			return GetImageAttributes(imageLayout, -1f, 0, false, false, Color.Empty);
 		}
 
@@ -256,7 +264,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(DiagrammingImageLayout imageLayout, Color transparentColor) {
+		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, Color transparentColor) {
 			return GetImageAttributes(imageLayout, -1f, 0, false, false, transparentColor);
 		}
 
@@ -264,7 +272,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(DiagrammingImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
+		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
 			return GetImageAttributes(imageLayout, gamma, transparency, grayScale, false, Color.Empty);
 		}
 
@@ -272,7 +280,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(DiagrammingImageLayout imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview) {
+		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview) {
 			return GetImageAttributes(imageLayout, gamma, transparency, grayScale, forPreview, Color.Empty);
 		}
 
@@ -280,7 +288,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(DiagrammingImageLayout imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview, Color transparentColor) {
+		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview, Color transparentColor) {
 			if (transparency < 0 || transparency > 100) throw new ArgumentOutOfRangeException("transparency");
 			ImageAttributes imageAttribs = new ImageAttributes();
 
@@ -331,7 +339,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Draw an image into the specified bounds
 		/// </summary>
-		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, DiagrammingImageLayout imageLayout, Rectangle dstBounds, Rectangle srcBounds) {
+		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, nShapeImageLayout imageLayout, Rectangle dstBounds, Rectangle srcBounds) {
 			DrawImage(gfx, image, imageAttribs, imageLayout, dstBounds, srcBounds, 0);
 		}
 
@@ -339,7 +347,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <summary>
 		/// Draw an image into the specified bounds
 		/// </summary>
-		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, DiagrammingImageLayout imageLayout, Rectangle dstBounds, Rectangle srcBounds, float angle) {
+		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, nShapeImageLayout imageLayout, Rectangle dstBounds, Rectangle srcBounds, float angle) {
 			if (gfx == null) throw new ArgumentNullException("gfx");
 			if (image == null) throw new ArgumentNullException("image");
 			// ToDo: Optimize this (draw only the drawArea part of the image, optimize calculations and variable use, draw bitmaps by using a TextureBrush)
@@ -350,28 +358,28 @@ namespace Dataweb.Diagramming.Advanced {
 			Rectangle destinationBounds = Rectangle.Empty;
 			// transform image bounds
 			switch (imageLayout) {
-				case DiagrammingImageLayout.Tile:
-				case DiagrammingImageLayout.FilpTile:
+				case nShapeImageLayout.Tile:
+				case nShapeImageLayout.FilpTile:
 					destinationBounds = dstBounds;
 					break;
-				case DiagrammingImageLayout.Original:
+				case nShapeImageLayout.Original:
 					destinationBounds.X = dstBounds.X;
 					destinationBounds.Y = dstBounds.Y;
 					destinationBounds.Width = Math.Min(image.Width, dstBounds.Width);
 					destinationBounds.Height = Math.Min(image.Height, dstBounds.Height);
 					break;
-				case DiagrammingImageLayout.CenterTile:
-				case DiagrammingImageLayout.Center:
+				case nShapeImageLayout.CenterTile:
+				case nShapeImageLayout.Center:
 					destinationBounds.X = dstBounds.X + (int)Math.Round((dstBounds.Width - image.Width) / 2f);
 					destinationBounds.Y = dstBounds.Y + (int)Math.Round((dstBounds.Height - image.Height) / 2f);
 					destinationBounds.Width = image.Width;
 					destinationBounds.Height = image.Height;
 					break;
-				case DiagrammingImageLayout.Stretch:
-				case DiagrammingImageLayout.Fit:
+				case nShapeImageLayout.Stretch:
+				case nShapeImageLayout.Fit:
 					destinationBounds.X = dstBounds.X;
 					destinationBounds.Y = dstBounds.Y;
-					if (imageLayout == DiagrammingImageLayout.Fit) {
+					if (imageLayout == nShapeImageLayout.Fit) {
 						destinationBounds.X += (int)Math.Round((dstBounds.Width - (image.Width * scaleX)) / 2f);
 						destinationBounds.Y += (int)Math.Round((dstBounds.Height - (image.Height * scaleY)) / 2f);
 					}
@@ -379,7 +387,7 @@ namespace Dataweb.Diagramming.Advanced {
 					destinationBounds.Height = (int)Math.Round(image.Height * scaleY);
 					break;
 				default:
-					throw new DiagrammingException(string.Format("Unexpected {0} '{1}'.", imageLayout.GetType(), imageLayout));
+					throw new nShapeException(string.Format("Unexpected {0} '{1}'.", imageLayout.GetType(), imageLayout));
 			}
 
 			PointF center = PointF.Empty;
@@ -395,11 +403,11 @@ namespace Dataweb.Diagramming.Advanced {
 			RectangleF imageBounds = image.GetBounds(ref gfxUnit);
 			int srcX, srcY, srcWidth, srcHeight;
 			switch (imageLayout) {
-				case DiagrammingImageLayout.CenterTile:
-				case DiagrammingImageLayout.FilpTile:
-				case DiagrammingImageLayout.Tile:
+				case nShapeImageLayout.CenterTile:
+				case nShapeImageLayout.FilpTile:
+				case nShapeImageLayout.Tile:
 					int startX, startY, endX, endY;
-					if (imageLayout == DiagrammingImageLayout.CenterTile) {
+					if (imageLayout == nShapeImageLayout.CenterTile) {
 						int nX = (int)Math.Ceiling(dstBounds.Width / (float)image.Width);
 						int nY = (int)Math.Ceiling(dstBounds.Height / (float)image.Height);
 						if (nX == 1) startX = destinationBounds.X;
@@ -435,7 +443,7 @@ namespace Dataweb.Diagramming.Advanced {
 							else
 								srcHeight = r.Height = image.Height - srcY;
 
-							if (imageLayout == DiagrammingImageLayout.FilpTile) {
+							if (imageLayout == nShapeImageLayout.FilpTile) {
 								int modX = (x / image.Width) % 2;
 								int modY = (y / image.Height) % 2;
 								if (modX != 0) {
@@ -451,8 +459,8 @@ namespace Dataweb.Diagramming.Advanced {
 						}
 					}
 					break;
-				case DiagrammingImageLayout.Original:
-				case DiagrammingImageLayout.Center:
+				case nShapeImageLayout.Original:
+				case nShapeImageLayout.Center:
 					if (image.Width > dstBounds.Width || image.Height > dstBounds.Height) {
 						srcWidth = destinationBounds.Width = Math.Min(image.Width, dstBounds.Width);
 						srcHeight = destinationBounds.Height = Math.Min(image.Height, dstBounds.Height);
@@ -462,7 +470,7 @@ namespace Dataweb.Diagramming.Advanced {
 						srcWidth = image.Width;
 						srcHeight = image.Height;
 					}
-					if (imageLayout == DiagrammingImageLayout.Center) {
+					if (imageLayout == nShapeImageLayout.Center) {
 						srcX = image.Width - srcWidth;
 						srcY = image.Height - srcHeight;
 					} else {
@@ -471,11 +479,11 @@ namespace Dataweb.Diagramming.Advanced {
 					}
 					gfx.DrawImage(image, destinationBounds, srcX, srcY, srcWidth, srcHeight, GraphicsUnit.Pixel, imageAttribs);
 					break;
-				case DiagrammingImageLayout.Fit:
-				case DiagrammingImageLayout.Stretch:
+				case nShapeImageLayout.Fit:
+				case nShapeImageLayout.Stretch:
 					gfx.DrawImage(image, destinationBounds, imageBounds.X, imageBounds.Y, imageBounds.Width, imageBounds.Height, gfxUnit, imageAttribs);
 					break;
-				default: throw new DiagrammingUnsupportedValueException(imageLayout);
+				default: throw new nShapeUnsupportedValueException(imageLayout);
 			}
 			if (angle != 0) {
 				gfx.TranslateTransform(center.X, center.Y);
@@ -489,7 +497,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 		#region Creating and transforming brushes
 
-		public static TextureBrush CreateTextureBrush(Image image, DiagrammingImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
+		public static TextureBrush CreateTextureBrush(Image image, nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			return CreateTextureBrush(image, GetImageAttributes(imageLayout, gamma, transparency, grayScale));
 		}
@@ -525,7 +533,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public static void TransformTextureBrush(TextureBrush brush, DiagrammingImageLayout imageLayout, Rectangle unrotatedBounds, Point center, float angleDeg) {
+		public static void TransformTextureBrush(TextureBrush brush, nShapeImageLayout imageLayout, Rectangle unrotatedBounds, Point center, float angleDeg) {
 			if (brush == null) throw new ArgumentNullException("brush");
 			// scale image
 			float scaleX, scaleY;
@@ -537,22 +545,22 @@ namespace Dataweb.Diagramming.Advanced {
 			((TextureBrush)brush).TranslateTransform(-unrotatedBounds.Width / 2f, -unrotatedBounds.Height / 2f);
 			// scale image
 			switch (imageLayout) {
-				case DiagrammingImageLayout.Tile:
-				case DiagrammingImageLayout.FilpTile:
+				case nShapeImageLayout.Tile:
+				case nShapeImageLayout.FilpTile:
 					// nothing to do
 					break;
-				case DiagrammingImageLayout.Center:
-				case DiagrammingImageLayout.CenterTile:
-				case DiagrammingImageLayout.Original:
+				case nShapeImageLayout.Center:
+				case nShapeImageLayout.CenterTile:
+				case nShapeImageLayout.Original:
 					((TextureBrush)brush).TranslateTransform((unrotatedBounds.Width - brush.Image.Width) / 2f, (unrotatedBounds.Height - brush.Image.Height) / 2f);
 					break;
-				case DiagrammingImageLayout.Stretch:
-				case DiagrammingImageLayout.Fit:
-					if (imageLayout == DiagrammingImageLayout.Fit)
+				case nShapeImageLayout.Stretch:
+				case nShapeImageLayout.Fit:
+					if (imageLayout == nShapeImageLayout.Fit)
 						((TextureBrush)brush).TranslateTransform((unrotatedBounds.Width - (brush.Image.Width * scaleX)) / 2f, (unrotatedBounds.Height - (brush.Image.Height * scaleY)) / 2f);
 					((TextureBrush)brush).ScaleTransform(scaleX, scaleY);
 					break;
-				default: throw new DiagrammingUnsupportedValueException(imageLayout);
+				default: throw new nShapeUnsupportedValueException(imageLayout);
 			}
 		}
 
@@ -567,33 +575,33 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <param name="image">the untransformed Image object.</param>
 		/// <param name="imageLayout">ImageLayout enumeration. Deines the scaling behaviour.</param>
 		/// <returns>Aspect ratio of the image.</returns>
-		public static float CalcImageScaleAndAspect(out float scaleFactorX, out float scaleFactorY, int dstWidth, int dstHeight, Image image, DiagrammingImageLayout imageLayout) {
+		public static float CalcImageScaleAndAspect(out float scaleFactorX, out float scaleFactorY, int dstWidth, int dstHeight, Image image, nShapeImageLayout imageLayout) {
 			float aspectRatio = 1;
 			scaleFactorX = 1f;
 			scaleFactorY = 1f;
 			if (image != null) {
 				aspectRatio = (float)image.Width / image.Height;
 				switch (imageLayout) {
-					case DiagrammingImageLayout.Fit:
+					case nShapeImageLayout.Fit:
 						double lowestRatio = Math.Min((double)dstWidth / (double)image.Width, (double)dstHeight / (double)image.Height);
 						scaleFactorX = (float)Math.Round(lowestRatio, 6);
 						scaleFactorY = (float)Math.Round(lowestRatio, 6);
 						break;
-					case DiagrammingImageLayout.Stretch:
+					case nShapeImageLayout.Stretch:
 						scaleFactorX = (float)dstWidth / image.Width;
 						scaleFactorY = (float)dstHeight / image.Height;
 						break;
-					case DiagrammingImageLayout.Original:
-					case DiagrammingImageLayout.Center:
+					case nShapeImageLayout.Original:
+					case nShapeImageLayout.Center:
 						// nothing to do
 						break;
-					case DiagrammingImageLayout.CenterTile:
-					case DiagrammingImageLayout.Tile:
-					case DiagrammingImageLayout.FilpTile:
+					case nShapeImageLayout.CenterTile:
+					case nShapeImageLayout.Tile:
+					case nShapeImageLayout.FilpTile:
 						// nothing to do
 						break;
 					default:
-						throw new DiagrammingException(string.Format("Unexpected {0} '{1}'", imageLayout.GetType(), imageLayout));
+						throw new nShapeException(string.Format("Unexpected {0} '{1}'", imageLayout.GetType(), imageLayout));
 				}
 			}
 			return aspectRatio;
@@ -635,12 +643,12 @@ namespace Dataweb.Diagramming.Advanced {
 
 		#region Exporting Images
 
-		public static void SaveImageToFile(Image image, string filePath, DiagrammingImageFormat imageFormat) {
+		public static void SaveImageToFile(Image image, string filePath, nShapeImageFormat imageFormat) {
 			SaveImageToFile(image, filePath, imageFormat, 75);
 		}
 
 
-		public static void SaveImageToFile(Image image, string filePath, DiagrammingImageFormat imageFormat, int compressionQuality) {
+		public static void SaveImageToFile(Image image, string filePath, nShapeImageFormat imageFormat, int compressionQuality) {
 			if (image == null) throw new ArgumentNullException("image");
 			if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException("filePath");
 			if (image is Metafile) {
@@ -654,13 +662,13 @@ namespace Dataweb.Diagramming.Advanced {
 				//   hdc, 
 				//   Rectangle.FromLTRB(0, 0, image.Width, image.Height), 
 				//   MetafileFrameUnit.Pixel, 
-				//   (imageFormat == DiagrammingImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
+				//   (imageFormat == nShapeImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
 				//gfx.ReleaseHdc(hdc);
 				//gfx.Dispose();
 
 				//// Create graphics context for drawing
 				//gfx = Graphics.FromImage(metaFile);
-				//GdiHelpers.ApplyGraphicsSettings(gfx, DiagrammingRenderingQuality.MaximumQuality);
+				//GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
 				//// Draw image
 				//gfx.DrawImage(image, Point.Empty);
 				
@@ -678,7 +686,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public static void CreateMetafile(string filePath, DiagrammingImageFormat imageFormat, int width, int height, DrawCallback callback) {
+		public static void CreateMetafile(string filePath, nShapeImageFormat imageFormat, int width, int height, DrawCallback callback) {
 			if (callback == null) throw new ArgumentNullException("callback");
 			if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException("filePath");
 			Metafile metaFile = null;
@@ -690,13 +698,13 @@ namespace Dataweb.Diagramming.Advanced {
 						hdc,
 						Rectangle.FromLTRB(0, 0, width, height),
 						MetafileFrameUnit.Pixel,
-						(imageFormat == DiagrammingImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
+						(imageFormat == nShapeImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
 				} finally { gfx.ReleaseHdc(hdc); }
 			}
 			// Create graphics context for drawing
 			if (metaFile != null) {
 				using (Graphics gfx = Graphics.FromImage(metaFile)) {
-					GdiHelpers.ApplyGraphicsSettings(gfx, DiagrammingRenderingQuality.MaximumQuality);
+					GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
 					// Draw image
 					Rectangle bounds = Rectangle.Empty;
 					bounds.Width = width;
@@ -709,23 +717,23 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public static ImageFormat GetGdiImageFormat(DiagrammingImageFormat imageFormat) {
+		public static ImageFormat GetGdiImageFormat(nShapeImageFormat imageFormat) {
 			ImageFormat result;
 			switch (imageFormat) {
-				case DiagrammingImageFormat.Bmp: result = ImageFormat.Bmp; break;
-				case DiagrammingImageFormat.Emf:
-				case DiagrammingImageFormat.EmfPlus: result = ImageFormat.Emf; break;
-				case DiagrammingImageFormat.Gif: result = ImageFormat.Gif; break;
-				case DiagrammingImageFormat.Jpeg: result = ImageFormat.Jpeg; break;
-				case DiagrammingImageFormat.Png: result = ImageFormat.Png; break;
-				case DiagrammingImageFormat.Tiff: result = ImageFormat.Tiff; break;
+				case nShapeImageFormat.Bmp: result = ImageFormat.Bmp; break;
+				case nShapeImageFormat.Emf:
+				case nShapeImageFormat.EmfPlus: result = ImageFormat.Emf; break;
+				case nShapeImageFormat.Gif: result = ImageFormat.Gif; break;
+				case nShapeImageFormat.Jpeg: result = ImageFormat.Jpeg; break;
+				case nShapeImageFormat.Png: result = ImageFormat.Png; break;
+				case nShapeImageFormat.Tiff: result = ImageFormat.Tiff; break;
 				default: return result = ImageFormat.Bmp;
 			}
 			return result;
 		}
 		
 		
-		public static ImageCodecInfo GetEncoderInfo(DiagrammingImageFormat imageFormat) {
+		public static ImageCodecInfo GetEncoderInfo(nShapeImageFormat imageFormat) {
 			ImageFormat format = GetGdiImageFormat(imageFormat);
 			ImageCodecInfo result = null;
 			ImageCodecInfo[] encoders = ImageCodecInfo.GetImageEncoders();

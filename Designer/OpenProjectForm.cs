@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	public partial class OpenProjectForm : Form {
 		private const string fileFilterAllRepositories = "XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";

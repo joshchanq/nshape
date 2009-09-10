@@ -5,10 +5,10 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class TextEditorDialog : Form {
 
@@ -168,14 +168,14 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 
 	[ToolboxItem(false)]
-	public class DiagrammingTextBox : RichTextBox {
+	public class nShapeTextBox : RichTextBox {
 		
-		public DiagrammingTextBox() {
+		public nShapeTextBox() {
 			SetControlStyles();
 		}
 
 
-		public DiagrammingTextBox(string text, Font font) {
+		public nShapeTextBox(string text, Font font) {
 			if (font == null) throw new ArgumentNullException("font");
 			SetControlStyles();
 			Font = font;
@@ -183,7 +183,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		public DiagrammingTextBox(IEnumerable<string> lines, Font font) {
+		public nShapeTextBox(IEnumerable<string> lines, Font font) {
 			if (lines == null) throw new ArgumentNullException("lines");
 			if (font == null) throw new ArgumentNullException("font");
 			SetControlStyles();

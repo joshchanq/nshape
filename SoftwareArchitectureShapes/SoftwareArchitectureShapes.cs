@@ -5,11 +5,11 @@ using System.Drawing;
 using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Reflection;
 
 
-namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
+namespace Dataweb.nShape.SoftwareArchitectureShapes {
 
 	#region Commands for editing EntitySymbol columns
 
@@ -495,8 +495,8 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 
 		[Category("Text Layout"),
 		Description("The column names of this table."),
-		TypeConverter("Dataweb.Diagramming.WinFormsUI.DiagrammingTextConverter"),
-		Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingTextEditor", typeof(UITypeEditor))]
+		TypeConverter("Dataweb.nShape.WinFormsUI.nShapeTextConverter"),
+		Editor("Dataweb.nShape.WinFormsUI.nShapeTextEditor", typeof(UITypeEditor))]
 		public string[] ColumnNames {
 			get { return columnNames; }
 			set {
@@ -584,9 +584,9 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 		#endregion
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
 			// return actions of base class
-			IEnumerator<DiagrammingAction> enumerator = GetBaseActions(mouseX, mouseY, range);
+			IEnumerator<nShapeAction> enumerator = GetBaseActions(mouseX, mouseY, range);
 			while (enumerator.MoveNext()) yield return enumerator.Current;
 			// return own actions
 
@@ -645,7 +645,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 			UpdateDrawCache();
 			if (Path.PointCount > 0) {
 				float currDist, dist = float.MaxValue;
-				foreach (Point p in Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y)) {
+				foreach (Point p in Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true)) {
 					currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 					if (currDist < dist) {
 						dist = currDist;
@@ -653,8 +653,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 					}
 				}
 			}
-			else
-				result = base.CalculateConnectionFoot(startX, startY);
+			else result = base.CalculateConnectionFoot(startX, startY);
 			return result;
 		}
 
@@ -915,7 +914,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 		}
 
 
-		private IEnumerator<DiagrammingAction> GetBaseActions(int mouseX, int mouseY, int range) {
+		private IEnumerator<nShapeAction> GetBaseActions(int mouseX, int mouseY, int range) {
 			return base.GetActions(mouseX, mouseY, range).GetEnumerator();
 		}
 
@@ -1019,9 +1018,9 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Point.Empty;
-			result.X = X; result.Y = Y;
+			result.Offset(X, Y);
 			float currDist, dist = float.MaxValue;
-			foreach (Point p in Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y)) {
+			foreach (Point p in Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true)) {
 				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 				if (currDist < dist) {
 					dist = currDist;
@@ -1156,12 +1155,9 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 
 
 		public override Point CalculateConnectionFoot(int startX, int startY) {
-			Point result = Point.Empty;
-			result.X = X;
-			result.Y = Y;
 			UpdateDrawCache();
-			Point p = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y));
-			if (p != Geometry.InvalidPoint) result = p;
+			Point result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true));
+			if (result == Geometry.InvalidPoint) result = Center;
 			return result;
 		}
 
@@ -1460,119 +1456,134 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 
 
 	public class ClassSymbol : RectangleBase {
+		
+		protected internal ClassSymbol(ShapeType shapeType, Template template)
+			: base(shapeType, template) {
+		}
+
 
 		public override Shape Clone() {
 			Shape result = new ClassSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
 		}
-
-
-		protected internal ClassSymbol(ShapeType shapeType, Template template)
-			: base(shapeType, template) {
-			Text = "";
-		}
-
-
-		[Category("Appearance")]
-		public string Description {
-			get { return clsName; }
-			set {
-				clsName = value;
-				InvalidateDrawCache();
-			}
-		}
-
-
-		//protected override void GraphicalObjectsTransform(int changeX, int changeY, int changeWidth, int changeHeight, int changeAngle, Point shapeCenter) {
-		//   base.GraphicalObjectsTransform(changeX, changeY, changeWidth, changeHeight, changeAngle, shapeCenter);
-		//   if (clsNamePath != null)
-		//      clsNamePath.Transform(PathTransformationMatrix);
-		//}
-
-
-		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
-			if (index != 0) throw new IndexOutOfRangeException();
-			Font font = ToolCache.GetFont(CharacterStyle);
-			int lineHeight = TextMeasurer.MeasureText("A", font, Size.Empty, ParagraphStyle).Height * 2;
-			captionBounds = Rectangle.Empty;
-			captionBounds.X = X - Width / 2;
-			captionBounds.Y = Y - Height / 2;
-			captionBounds.Width = Width;
-			captionBounds.Height = lineHeight;
-			clsNameLayoutRectangle.X = captionBounds.X;
-			clsNameLayoutRectangle.Y = captionBounds.Bottom + lineHeight;
-			clsNameLayoutRectangle.Width = captionBounds.Width;
-			clsNameLayoutRectangle.Height = Height - captionBounds.Height - lineHeight;
-		}
-
-
-		protected override bool CalculatePath() {
-			if (base.CalculatePath()) {
-				Path.Reset();
-				Path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
-
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-
-				shapeRectangle.X = left;
-				shapeRectangle.Y = top;
-				shapeRectangle.Width = Width;
-				shapeRectangle.Height = Height;
-
-				Path.StartFigure();
-				Path.AddRectangle(shapeRectangle);
-				Path.CloseFigure();
-
-				Font font = ToolCache.GetFont(CharacterStyle);
-				int lineHeight = TextMeasurer.MeasureText("A", font, Size.Empty, ParagraphStyle).Height * 2;
-				shapeRectangle.Y += lineHeight;
-				shapeRectangle.Height = lineHeight;
-				Path.AddRectangle(shapeRectangle);
-				Path.CloseFigure();
-
-				//if (TextPath != null) {
-				//   // heading alignment can be user defined
-				//   //Formatter.Alignment = StringAlignmentVertical;
-				//   //Formatter.LineAlignment = StringAlignmentHorizontal;
-				//}
-
-				if (clsName != "") {
-					//if (clsNamePath == null)
-					//   CreateTextObjects();
-					// methods are always aligned left
-					//Formatter.Alignment = StringAlignment.Near;
-					//Formatter.LineAlignment = StringAlignment.Near;
-
-					//FontFamily fontFamily = new FontFamily(FontName);
-					//clsNamePath.Reset();
-					//clsNamePath.StartFigure();
-					//clsNamePath.AddString(clsName, fontFamily, (int)this.FontStyle, this.PointToPixel, Rectangle.FromLTRB(shapeRectangle.left, shapeRectangle.bottom, shapeRectangle.right, Y + (Height / 2)), Formatter);
-					//clsNamePath.CloseFigure();
-					//fontFamily.Dispose();
-					//fontFamily = null;
-				}
-				return true;
-			}
-			return false;
-		}
-
-
-		public override void Draw(Graphics graphics) {
-			base.Draw(graphics);
-		}
-
-
-		#region Fields
-		private Rectangle shapeRectangle;
-		private Rectangle clsNameLayoutRectangle;
-		private string clsName = "";
-		private List<string> methods = new List<string>();
-		private List<string> properties = new List<string>();
-		#endregion
 	}
+
+
+	//public class ClassSymbol : RectangleBase {
+
+	//   public override Shape Clone() {
+	//      Shape result = new ClassSymbol(Type, (Template)null);
+	//      result.CopyFrom(this);
+	//      return result;
+	//   }
+
+
+	//   protected internal ClassSymbol(ShapeType shapeType, Template template)
+	//      : base(shapeType, template) {
+	//      Text = "";
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   public string Description {
+	//      get { return clsName; }
+	//      set {
+	//         clsName = value;
+	//         InvalidateDrawCache();
+	//      }
+	//   }
+
+
+	//   //protected override void GraphicalObjectsTransform(int changeX, int changeY, int changeWidth, int changeHeight, int changeAngle, Point shapeCenter) {
+	//   //   base.GraphicalObjectsTransform(changeX, changeY, changeWidth, changeHeight, changeAngle, shapeCenter);
+	//   //   if (clsNamePath != null)
+	//   //      clsNamePath.Transform(PathTransformationMatrix);
+	//   //}
+
+
+	//   protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
+	//      if (index != 0) throw new IndexOutOfRangeException();
+	//      Font font = ToolCache.GetFont(CharacterStyle);
+	//      int lineHeight = TextMeasurer.MeasureText("A", font, Size.Empty, ParagraphStyle).Height * 2;
+	//      captionBounds = Rectangle.Empty;
+	//      captionBounds.X = X - Width / 2;
+	//      captionBounds.Y = Y - Height / 2;
+	//      captionBounds.Width = Width;
+	//      captionBounds.Height = lineHeight;
+	//      clsNameLayoutRectangle.X = captionBounds.X;
+	//      clsNameLayoutRectangle.Y = captionBounds.Bottom + lineHeight;
+	//      clsNameLayoutRectangle.Width = captionBounds.Width;
+	//      clsNameLayoutRectangle.Height = Height - captionBounds.Height - lineHeight;
+	//   }
+
+
+	//   protected override bool CalculatePath() {
+	//      if (base.CalculatePath()) {
+	//         Path.Reset();
+	//         Path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
+
+	//         int left = (int)Math.Round(-Width / 2f);
+	//         int top = (int)Math.Round(-Height / 2f);
+	//         int right = left + Width;
+	//         int bottom = top + Height;
+
+	//         shapeRectangle.X = left;
+	//         shapeRectangle.Y = top;
+	//         shapeRectangle.Width = Width;
+	//         shapeRectangle.Height = Height;
+
+	//         Path.StartFigure();
+	//         Path.AddRectangle(shapeRectangle);
+	//         Path.CloseFigure();
+
+	//         Font font = ToolCache.GetFont(CharacterStyle);
+	//         int lineHeight = TextMeasurer.MeasureText("A", font, Size.Empty, ParagraphStyle).Height * 2;
+	//         shapeRectangle.Y += lineHeight;
+	//         shapeRectangle.Height = lineHeight;
+	//         Path.AddRectangle(shapeRectangle);
+	//         Path.CloseFigure();
+
+	//         //if (TextPath != null) {
+	//         //   // heading alignment can be user defined
+	//         //   //Formatter.Alignment = StringAlignmentVertical;
+	//         //   //Formatter.LineAlignment = StringAlignmentHorizontal;
+	//         //}
+
+	//         if (clsName != "") {
+	//            //if (clsNamePath == null)
+	//            //   CreateTextObjects();
+	//            // methods are always aligned left
+	//            //Formatter.Alignment = StringAlignment.Near;
+	//            //Formatter.LineAlignment = StringAlignment.Near;
+
+	//            //FontFamily fontFamily = new FontFamily(FontName);
+	//            //clsNamePath.Reset();
+	//            //clsNamePath.StartFigure();
+	//            //clsNamePath.AddString(clsName, fontFamily, (int)this.FontStyle, this.PointToPixel, Rectangle.FromLTRB(shapeRectangle.left, shapeRectangle.bottom, shapeRectangle.right, Y + (Height / 2)), Formatter);
+	//            //clsNamePath.CloseFigure();
+	//            //fontFamily.Dispose();
+	//            //fontFamily = null;
+	//         }
+	//         return true;
+	//      }
+	//      return false;
+	//   }
+
+
+	//   public override void Draw(Graphics graphics) {
+	//      base.Draw(graphics);
+	//   }
+
+
+	//   #region Fields
+	//   private Rectangle shapeRectangle;
+	//   private Rectangle clsNameLayoutRectangle;
+	//   private string clsName = "";
+	//   private List<string> methods = new List<string>();
+	//   private List<string> properties = new List<string>();
+	//   #endregion
+	//}
 
 
 	public class ComponentSymbol : RectangleBase {
@@ -1897,7 +1908,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 		// ToDo: Rename Property to a more suitable projectName
 		public ICapStyle StartCapStyle {
 			get {
-				if (StartCapStyleInternal == null && Template == null) throw new DiagrammingException("Property StartCapStyle is not set.");
+				if (StartCapStyleInternal == null && Template == null) throw new nShapeException("Property StartCapStyle is not set.");
 				return StartCapStyleInternal == null ? ((DataFlowArrow)Template.Shape).StartCapStyle : StartCapStyleInternal;
 			}
 			set {
@@ -1912,7 +1923,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 		// ToDo: Rename Property to a more suitable projectName
 		public ICapStyle EndCapStyle {
 			get {
-				if (EndCapStyleInternal == null && Template == null) throw new DiagrammingException("Property EndCapStyle is not set.");
+				if (EndCapStyleInternal == null && Template == null) throw new nShapeException("Property EndCapStyle is not set.");
 				return EndCapStyleInternal == null ? ((DataFlowArrow)Template.Shape).EndCapStyle : EndCapStyleInternal;
 			}
 			set {
@@ -1942,7 +1953,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 		// ToDo: Rename Property to a more suitable projectName
 		public ICapStyle StartCapStyle {
 			get {
-				if (StartCapStyleInternal == null && Template == null) throw new DiagrammingException("Property StartCapStyle is not set.");
+				if (StartCapStyleInternal == null && Template == null) throw new nShapeException("Property StartCapStyle is not set.");
 				return StartCapStyleInternal == null ? ((DependencyArrow)Template.Shape).StartCapStyle : StartCapStyleInternal;
 			}
 			set {
@@ -1957,7 +1968,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 		// ToDo: Rename Property to a more suitable projectName
 		public ICapStyle EndCapStyle {
 			get {
-				if (EndCapStyleInternal == null && Template == null) throw new DiagrammingException("Property EndCapStyle is not set.");
+				if (EndCapStyleInternal == null && Template == null) throw new nShapeException("Property EndCapStyle is not set.");
 				return EndCapStyleInternal == null ? ((DependencyArrow)Template.Shape).EndCapStyle : EndCapStyleInternal;
 			}
 			set {
@@ -2053,7 +2064,7 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 	}
 
 
-	public static class DiagrammingLibraryInitializer {
+	public static class nShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
@@ -2092,43 +2103,43 @@ namespace Dataweb.Diagramming.SoftwareArchitectureShapes {
 				InterfaceUsageSymbol.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Server", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
-				VectorImage result = VectorImage.CreateInstance(shapeType, t, 
-					"Dataweb.Diagramming.SoftwareArchitectureShapes.Resources.PC2.emf", Assembly.GetExecutingAssembly());
+				VectorImage result = VectorImage.CreateInstance(shapeType, t,
+					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.PC2.emf", Assembly.GetExecutingAssembly());
 				result.Text = "PC N";
 				return result;
 				}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("RTU", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
-				VectorImage result = VectorImage.CreateInstance(shapeType, t, 
-					"Dataweb.Diagramming.SoftwareArchitectureShapes.Resources.RTU.emf", Assembly.GetExecutingAssembly());
+				VectorImage result = VectorImage.CreateInstance(shapeType, t,
+					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.RTU.emf", Assembly.GetExecutingAssembly());
 				result.Text = "RTU N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Actor", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
-				VectorImage result = VectorImage.CreateInstance(shapeType, t, 
-					"Dataweb.Diagramming.SoftwareArchitectureShapes.Resources.Actor.emf", Assembly.GetExecutingAssembly());
+				VectorImage result = VectorImage.CreateInstance(shapeType, t,
+					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.Actor.emf", Assembly.GetExecutingAssembly());
 				result.Text = "Actor";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Monitor", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
-				VectorImage result = VectorImage.CreateInstance(shapeType, t, 
-					"Dataweb.Diagramming.SoftwareArchitectureShapes.Resources.Monitor.emf", Assembly.GetExecutingAssembly());
+				VectorImage result = VectorImage.CreateInstance(shapeType, t,
+					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.Monitor.emf", Assembly.GetExecutingAssembly());
 				result.Text = "Monitor N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("PC", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
-				VectorImage result = VectorImage.CreateInstance(shapeType, t, 
-					"Dataweb.Diagramming.SoftwareArchitectureShapes.Resources.PC.emf", Assembly.GetExecutingAssembly());
+				VectorImage result = VectorImage.CreateInstance(shapeType, t,
+					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.PC.emf", Assembly.GetExecutingAssembly());
 				result.Text = "PC N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Tower", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
-				VectorImage result = VectorImage.CreateInstance(shapeType, t, 
-					"Dataweb.Diagramming.SoftwareArchitectureShapes.Resources.Tower.emf", Assembly.GetExecutingAssembly());
+				VectorImage result = VectorImage.CreateInstance(shapeType, t,
+					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.Tower.emf", Assembly.GetExecutingAssembly());
 				result.Text = "Tower N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));

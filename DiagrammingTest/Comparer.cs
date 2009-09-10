@@ -4,14 +4,14 @@ using System.Diagnostics;
 using System.Drawing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Dataweb.Diagramming;
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.GeneralShapes;
+using Dataweb.nShape;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.GeneralShapes;
 
 
-namespace DiagrammingTest {
+namespace nShapeTest {
 	
-	public class Comparer {
+	public class nShapeComparer {
 
 		public static void CompareId(IEntity savedEntity, IEntity loadedEntity) {
 			Assert.AreEqual<bool>(savedEntity != null, loadedEntity != null);
@@ -129,7 +129,7 @@ namespace DiagrammingTest {
 			//Assert.AreEqual<Dataweb.Utilities.NamedImage>(savedStyle.Image, loadedStyle.Image);
 			Assert.AreEqual<byte>(savedStyle.ImageCompressionQuality, loadedStyle.ImageCompressionQuality);
 			Assert.AreEqual<float>(savedStyle.ImageGammaCorrection, loadedStyle.ImageGammaCorrection);
-			Assert.AreEqual<DiagrammingImageLayout>(savedStyle.ImageLayout, loadedStyle.ImageLayout);
+			Assert.AreEqual<nShapeImageLayout>(savedStyle.ImageLayout, loadedStyle.ImageLayout);
 			Assert.AreEqual<byte>(savedStyle.ImageTransparency, loadedStyle.ImageTransparency);
 		}
 
@@ -251,7 +251,7 @@ namespace DiagrammingTest {
 				Assert.AreEqual<int>(savedDiagram.BackgroundImage.Height, loadedDiagram.BackgroundImage.Height);
 				Assert.AreEqual<float>(savedDiagram.BackgroundImageGamma, loadedDiagram.BackgroundImageGamma);
 				Assert.AreEqual<bool>(savedDiagram.BackgroundImageGrayScale, loadedDiagram.BackgroundImageGrayScale);
-				Assert.AreEqual<DiagrammingImageLayout>(savedDiagram.BackgroundImageLayout, loadedDiagram.BackgroundImageLayout);
+				Assert.AreEqual<nShapeImageLayout>(savedDiagram.BackgroundImageLayout, loadedDiagram.BackgroundImageLayout);
 				Assert.AreEqual<byte>(savedDiagram.BackgroundImageTransparency, loadedDiagram.BackgroundImageTransparency);
 				Assert.AreEqual<int>(savedDiagram.BackgroundImageTransparentColor.ToArgb(), loadedDiagram.BackgroundImageTransparentColor.ToArgb());
 				Assert.AreEqual<IDisplayService>(savedDiagram.DisplayService, loadedDiagram.DisplayService);

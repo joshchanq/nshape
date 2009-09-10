@@ -1,10 +1,10 @@
 using System;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.FlowChartShapes {
+namespace Dataweb.nShape.FlowChartShapes {
 
 	public abstract class FlowChartRectangleBase : RectangleBase {
 
@@ -452,6 +452,11 @@ namespace Dataweb.Diagramming.FlowChartShapes {
 			Shape result = new DecisionSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
+		}
+
+
+		public override void Draw(Graphics graphics) {
+			base.Draw(graphics);
 		}
 
 
@@ -2041,7 +2046,7 @@ namespace Dataweb.Diagramming.FlowChartShapes {
 	}
 
 
-	public static class DiagrammingLibraryInitializer {
+	public static class nShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);

@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	partial class ImageEditor {
 		/// <summary>
 		/// Required designer variable.
@@ -119,7 +119,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Diagramming Image Selector";
+			this.Text = "nShape Image Selector";
 			this.TopMost = true;
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
 			this.ResumeLayout(false);

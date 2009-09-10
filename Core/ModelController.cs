@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Reflection;
 using System.Collections;
 using System.Drawing;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	public class ModelController : Component, IPropertyController {
 
@@ -202,7 +202,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		public IEnumerable<DiagrammingAction> GetActions(IReadOnlyCollection<IModelObject> modelObjects) {
+		public IEnumerable<nShapeAction> GetActions(IReadOnlyCollection<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			
 			// New...
@@ -475,7 +475,7 @@ namespace Dataweb.Diagramming.Controllers {
 
 		#region [Private] Methods: Create actions
 
-		private DiagrammingAction CreateDeleteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private nShapeAction CreateDeleteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			string description;
 			bool isFeasible;
 			if (modelObjects != null && modelObjects.Count > 0) {
@@ -499,7 +499,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		private DiagrammingAction CreateCopyModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private nShapeAction CreateCopyModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (modelObjects != null && modelObjects.Count > 0);
 			string description;
 			if (isFeasible)
@@ -511,7 +511,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		private DiagrammingAction CreatePasteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private nShapeAction CreatePasteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (copyPasteBuffer.Count > 0 && modelObjects.Count <= 1);
 			string description;
 			if (isFeasible)
@@ -529,7 +529,7 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 
-		private DiagrammingAction CreateFindShapesAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private nShapeAction CreateFindShapesAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (diagramSetController != null);
 			string description = "Find and select all assigned shapes.";
 			return new DelegateAction("Find assigned shapes", null, Color.Empty, "FindShapesAction",

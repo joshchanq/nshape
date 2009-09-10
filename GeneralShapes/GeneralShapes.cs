@@ -6,12 +6,12 @@ using System.Drawing;
 using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using Dataweb.Utilities;
 using System.Drawing.Imaging;
 
 
-namespace Dataweb.Diagramming.GeneralShapes {
+namespace Dataweb.nShape.GeneralShapes {
 
 	public class Ellipse : EllipseBase {
 
@@ -502,10 +502,9 @@ namespace Dataweb.Diagramming.GeneralShapes {
 			Point startPoint = Point.Empty;
 			startPoint.X = startX;
 			startPoint.Y = startY;
-			Point pt = Geometry.GetNearestPoint(startPoint, Geometry.IntersectPolygonLine(shapePoints, startX, startY, X, Y));
-			if (pt != Geometry.InvalidPoint) 
-				return pt;
-			else return Center;
+			Point result = Geometry.GetNearestPoint(startPoint, Geometry.IntersectPolygonLine(shapePoints, startX, startY, X, Y, true));
+			if (result == Geometry.InvalidPoint) result = Center;
+			return result;
 		}
 
 
@@ -832,7 +831,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 		public override int Width {
 			get { return base.Width; }
 			set {
-				if (Image != null && ImageLayout == DiagrammingImageLayout.Original)
+				if (Image != null && ImageLayout == nShapeImageLayout.Original)
 					base.Width = Image.Width;
 				else base.Width = value;
 			}
@@ -842,7 +841,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 		public override int Height {
 			get { return base.Height; }
 			set {
-				if (Image != null && ImageLayout == DiagrammingImageLayout.Original)
+				if (Image != null && ImageLayout == nShapeImageLayout.Original)
 					base.Height = Image.Height;
 				else
 					base.Height = value;
@@ -852,13 +851,13 @@ namespace Dataweb.Diagramming.GeneralShapes {
 
 		[Category("Appearance")]
 		[Description("The shape's image.")]
-		[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingNamedImageEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.nShape.WinFormsUI.nShapeNamedImageEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 		public NamedImage Image {
 			get { return image; }
 			set {
 				Invalidate();
 				image = value;
-				if (layout == DiagrammingImageLayout.Original && image != null) {
+				if (layout == nShapeImageLayout.Original && image != null) {
 					Width = image.Width;
 					Height = image.Height;
 				}
@@ -870,12 +869,12 @@ namespace Dataweb.Diagramming.GeneralShapes {
 
 		[Category("Appearance"),
 		Description("Defines the layout of the displayed image.")]
-		public DiagrammingImageLayout ImageLayout {
+		public nShapeImageLayout ImageLayout {
 			get { return layout; }
 			set {
 				layout = value;
 				ClearImageDrawCache();
-				if (layout == DiagrammingImageLayout.Original && image != null) {
+				if (layout == nShapeImageLayout.Original && image != null) {
 					Width = image.Width;
 					Height = image.Height;
 				} else Invalidate();
@@ -936,7 +935,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			if (ImageLayout == DiagrammingImageLayout.Original) {
+			if (ImageLayout == nShapeImageLayout.Original) {
 				if ((controlPointCapability & ControlPointCapabilities.Glue) != 0) {
 					// always false
 				}
@@ -988,7 +987,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			base.LoadFieldsCore(reader, version);
-			layout = (DiagrammingImageLayout)reader.ReadByte();
+			layout = (nShapeImageLayout)reader.ReadByte();
 			transparency = reader.ReadByte();
 			gamma = reader.ReadFloat();
 			compressionQuality = reader.ReadByte();
@@ -1008,7 +1007,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 			writer.WriteByte(compressionQuality);
 			writer.WriteBool(grayScale);
 			writer.WriteString(image.Name);
-			if (image.Image != global::Dataweb.Diagramming.GeneralShapes.Properties.Resources.BitmapShapeIconLarge)
+			if (image.Image != global::Dataweb.nShape.GeneralShapes.Properties.Resources.BitmapShapeIconLarge)
 				writer.WriteImage(image.Image);
 			else writer.WriteImage(null);
 			writer.WriteInt32(transparentColor.ToArgb());
@@ -1080,7 +1079,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 			grayScale = false;
 			compressionQuality = 100;
 			gamma = 1;
-			layout = DiagrammingImageLayout.Fit;
+			layout = nShapeImageLayout.Fit;
 			transparency = 0;
 		}
 
@@ -1091,7 +1090,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 		private bool isPreview = false;
 
 		private NamedImage image;
-		private DiagrammingImageLayout layout = DiagrammingImageLayout.Fit;
+		private nShapeImageLayout layout = nShapeImageLayout.Fit;
 		private byte transparency = 0;
 		private float gamma = 1.0f;
 		private bool grayScale = false;
@@ -1337,7 +1336,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 	}
 
 
-	public static class DiagrammingLibraryInitializer {
+	public static class nShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			if (registrar == null) throw new ArgumentNullException("registrar");
@@ -1355,40 +1354,40 @@ namespace Dataweb.Diagramming.GeneralShapes {
 			// Planar GeneralShapes
 			registrar.RegisterShapeType(new ShapeType("Text", namespaceName, namespaceName, 
 				Text.CreateInstance, Text.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			registrar.RegisterShapeType(new ShapeType("Label", namespaceName, namespaceName, 
 				Label.CreateInstance, Label.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			// new Type("Triangle", lib, namespaceName, Triangle.CreateInstance, 
 			// Triangle.GetPropertyDefinitions(null), 
-			// Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceTriangle).Register(registrar);
+			// Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle).Register(registrar);
 			registrar.RegisterShapeType(new ShapeType("IsoscelesTriangle", namespaceName, namespaceName, 
 				IsoscelesTriangle.CreateInstance, IsoscelesTriangle.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceTriangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle));
 			registrar.RegisterShapeType(new ShapeType("Ellipse", namespaceName, namespaceName, 
 				Ellipse.CreateInstance, Ellipse.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
 			registrar.RegisterShapeType(new ShapeType("Circle", namespaceName, namespaceName, 
 				Circle.CreateInstance, Circle.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
 			registrar.RegisterShapeType(new ShapeType("Box", namespaceName, namespaceName, 
 				Box.CreateInstance, Box.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			registrar.RegisterShapeType(new ShapeType("Square", namespaceName, namespaceName, 
 				Square.CreateInstance, Square.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			registrar.RegisterShapeType(new ShapeType("Diamond", namespaceName, namespaceName, 
 				Diamond.CreateInstance, Diamond.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceDiamond));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceDiamond));
 			registrar.RegisterShapeType(new ShapeType("RoundedBox", namespaceName, namespaceName, 
 				RoundedBox.CreateInstance, RoundedBox.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			registrar.RegisterShapeType(new ShapeType("ThickArrow", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) { return (Shape)new ThickArrow(shapeType, t); }, 
 				ThickArrow.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Picture", namespaceName, namespaceName, 
 				Picture.CreateInstance, Picture.GetPropertyDefinitions, 
-				Dataweb.Diagramming.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			// new Type("Free Triangle", lib.Name, namespaceName, 
 			// delegate(Type shapeType, Template db) { return (Shape)new FreeTriangle(shapeType, db); }, 
 			// FreeTriangle.GetPropertyDefinitions(null)).Register(registrar);

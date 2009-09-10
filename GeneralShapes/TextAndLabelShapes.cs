@@ -1,7 +1,7 @@
-﻿using Dataweb.Diagramming.Advanced;
+﻿using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.GeneralShapes {
+namespace Dataweb.nShape.GeneralShapes {
 
 	public class Text: TextBase {
 

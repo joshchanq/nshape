@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Title shape.
@@ -380,6 +380,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 		public override void Connect(ControlPointId ownPointId, Shape otherShape, ControlPointId otherPointId) {
 			if (otherShape == null) throw new ArgumentNullException("otherShape");
+			// Calculate the relative position of the gluePoint on the other shape
 			CalcGluePointCalcInfo(ownPointId, otherShape, otherPointId);
 			InvalidateDrawCache();
 			base.Connect(ownPointId, otherShape, otherPointId);
@@ -695,11 +696,12 @@ namespace Dataweb.Diagramming.Advanced {
 
 		protected override Point CalcGluePoint(ControlPointId gluePointId, Shape shape) {
 			// Get current position of the GluePoint and the new position of the GluePoint
-			Point result = Point.Empty;
+			Point result = Geometry.InvalidPoint;
 			ControlPointId pointId = IsConnected(gluePointId, shape);
 			if (pointId == ControlPointId.Reference)
 				result = shape.CalculateAbsolutePosition(calcInfo.RelativePosition);
 			else result = shape.GetControlPointPosition(pointId);
+			if (result == Geometry.InvalidPoint) System.Diagnostics.Debug.Fail("Unable to calculate glue point position!");
 			return result;
 		}
 
@@ -751,7 +753,7 @@ namespace Dataweb.Diagramming.Advanced {
 			// calculate GluePoint position and AnchorPoint position
 			Point gluePtPos = GetControlPointPosition(gluePointId);
 			Point labelPos = Point.Empty;
-			labelPos.X = X; labelPos.Y = Y;
+			labelPos.Offset(X, Y);
 			int labelAngle;
 
 			//calculate target shape's outline intersection point and the relative position of the gluePoint in/on the target shape

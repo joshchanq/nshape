@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System;
 
 
-namespace Dataweb.Diagramming.GeneralShapes {
+namespace Dataweb.nShape.GeneralShapes {
 
 	/// <summary>
 	/// Line consisting of multiple line segments.
@@ -28,7 +28,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 		[Description("Defines the line cap appearance of the line's beginning.")]
 		public ICapStyle StartCapStyle {
 			get {
-				if (StartCapStyleInternal == null && Template == null) throw new DiagrammingException("Property StartCapStyle is not set.");
+				if (StartCapStyleInternal == null && Template == null) throw new nShapeException("Property StartCapStyle is not set.");
 				return StartCapStyleInternal == null ? ((Polyline)Template.Shape).StartCapStyle : StartCapStyleInternal;
 			}
 			set {
@@ -42,7 +42,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 		[Description("Defines the line cap appearance of the line's ending.")]
 		public ICapStyle EndCapStyle {
 			get {
-				if (EndCapStyleInternal == null && Template == null) throw new DiagrammingException("Property EndCapStyle is not set.");
+				if (EndCapStyleInternal == null && Template == null) throw new nShapeException("Property EndCapStyle is not set.");
 				return EndCapStyleInternal == null ? ((Polyline)Template.Shape).EndCapStyle : EndCapStyleInternal;
 			}
 			set {
@@ -102,7 +102,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 		[Description("Defines the line cap appearance of the line's ending.")]
 		public ICapStyle EndCapStyle {
 			get {
-				if (EndCapStyleInternal == null && Template == null) return null; //throw new DiagrammingException("Property EndCapStyle is not set.");
+				if (EndCapStyleInternal == null && Template == null) return null;
 				return EndCapStyleInternal == null ? ((CircularArc)Template.Shape).EndCapStyle : EndCapStyleInternal;
 			}
 			set {
@@ -318,8 +318,8 @@ namespace Dataweb.Diagramming.GeneralShapes {
 	//    }
 
 
-	//    public override IEnumerable<IDiagrammingAction> GetActions(int x, int mouseY, int connectionPointId) {
-	//        List<IDiagrammingAction> commands = new List<IDiagrammingAction>();
+	//    public override IEnumerable<nShapeAction> GetActions(int x, int mouseY, int connectionPointId) {
+	//        List<nShapeAction> commands = new List<nShapeAction>();
 	//        commands.Add(new InfoAction(this));
 	//        if (ContainsPoint(x, mouseY) && connectionPointId <= 0 && shapePoints.Length < 4)
 	//            commands.Add(new CommandAction("Insert Point", new InsertPointCommand(null, this, x, mouseY)));
@@ -612,7 +612,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 	//            //}
 	//            //LineStyle l1 = new LineStyle(null, "line 1");
 	//            //l1.ColorStyle = new ColorStyle(null, "red", Color.FromArgb(128, Color.Red));
-	//            //l1.DashStyle = Dataweb.Diagramming.DashStyle.Solid;
+	//            //l1.DashStyle = Dataweb.nShape.DashStyle.Solid;
 	//            //l1.LineJoin = LineJoin.Round;
 	//            //l1.LineWidth = 1;
 	//            //Pen pen1 = ToolCache.GetPen(l1, StartCapStyle, EndCapStyle);
@@ -643,7 +643,7 @@ namespace Dataweb.Diagramming.GeneralShapes {
 	//            //}
 	//            //LineStyle l2 = new LineStyle(null, "line 1");
 	//            //l2.ColorStyle = new ColorStyle(null, "yellow", Color.FromArgb(128, Color.Yellow));
-	//            //l2.DashStyle = Dataweb.Diagramming.DashStyle.Solid;
+	//            //l2.DashStyle = Dataweb.nShape.DashStyle.Solid;
 	//            //l2.LineJoin = LineJoin.Round;
 	//            //l2.LineWidth = 1;
 	//            //Pen pen2 = ToolCache.GetPen(l2, StartCapStyle, EndCapStyle);

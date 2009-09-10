@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Collections;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	public enum TemplateControllerEditMode { CreateTemplate, EditTemplate };
 
@@ -469,7 +469,7 @@ namespace Dataweb.Diagramming.Controllers {
 					break;
 				}
 			}
-			if (!templateSupportingShapeTypeFound) throw new DiagrammingException("No template supporting shape types found. Load a shape library first.");
+			if (!templateSupportingShapeTypeFound) throw new nShapeException("No template supporting shape types found. Load a shape library first.");
 
 			// Disable all controls if the user has not the appropriate access rights
 			if (!project.SecurityManager.IsGranted(Permission.Templates)) {
@@ -592,7 +592,7 @@ namespace Dataweb.Diagramming.Controllers {
 		/// Set the given Modelobject as the template's ModelObject
 		/// </summary>
 		public void SetTemplateModel(IModelObject newModelObject) {
-			if (workTemplate.Shape == null) throw new DiagrammingException("The template's shape property is not set to a reference of an object.");
+			if (workTemplate.Shape == null) throw new nShapeException("The template's shape property is not set to a reference of an object.");
 			IModelObject oldModelObject = workTemplate.Shape.ModelObject;
 			if (oldModelObject != null) {
 				// ToDo: Implement ModelObject.CopyFrom()
@@ -711,7 +711,7 @@ namespace Dataweb.Diagramming.Controllers {
 						project.ExecuteCommand(cmd);
 						break;
 
-					default: throw new DiagrammingUnsupportedValueException(typeof(TemplateControllerEditMode), editMode);
+					default: throw new nShapeUnsupportedValueException(typeof(TemplateControllerEditMode), editMode);
 				}
 				TemplateWasChanged = false;
 				if (ApplyingChanges != null) ApplyingChanges(this, eventArgs);

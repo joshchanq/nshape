@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	partial class TextEditorDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -26,7 +26,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditorDialog));
 			this.okButton = new System.Windows.Forms.Button();
 			this.cancelButton = new System.Windows.Forms.Button();
-			this.textBox = new Dataweb.Diagramming.WinFormsUI.DiagrammingTextBox();
+			this.textBox = new Dataweb.nShape.WinFormsUI.nShapeTextBox();
 			this.SuspendLayout();
 			// 
 			// okButton
@@ -80,7 +80,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Diagramming Text Editor";
+			this.Text = "nShape Text Editor";
 			this.TopMost = true;
 			this.FormClosed += this.TextEditor_FormClosed;
 			this.ResumeLayout(false);
@@ -91,6 +91,6 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private System.Windows.Forms.Button okButton;
 		private System.Windows.Forms.Button cancelButton;
-		private DiagrammingTextBox textBox;
+		private nShapeTextBox textBox;
 	}
 }

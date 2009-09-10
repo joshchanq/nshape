@@ -6,7 +6,7 @@ using System.Drawing.Text;
 using System.ComponentModel;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Marker interface for groups.
@@ -132,14 +132,14 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
 			// no actions for the moment...
 			if (template != null) {
-				foreach (DiagrammingAction action in template.GetActions())
+				foreach (nShapeAction action in template.GetActions())
 					yield return action;
 			}
 			if (modelObject != null) {
-				foreach (DiagrammingAction action in modelObject.GetActions())
+				foreach (nShapeAction action in modelObject.GetActions())
 					yield return action;
 			}
 		}
@@ -509,7 +509,7 @@ namespace Dataweb.Diagramming.Advanced {
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			if (image == null) throw new ArgumentNullException("image");
 			using (Graphics gfx = Graphics.FromImage(image)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, DiagrammingRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
 				gfx.Clear(transparentColor);
 
 				using (Font font = new Font(FontFamily.GenericSansSerif, 9)) {
@@ -668,9 +668,9 @@ namespace Dataweb.Diagramming.Advanced {
 
 		protected internal override void AttachGluePointToConnectionPoint(ControlPointId ownPointId, Shape otherShape, ControlPointId gluePointId) {
 			if (ownPointId != ControlPointId.Reference && !HasControlPointCapability(ownPointId, ControlPointCapabilities.Connect))
-				throw new DiagrammingException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
+				throw new nShapeException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
 			if (!otherShape.HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
-				throw new DiagrammingException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
+				throw new nShapeException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
 			throw new NotSupportedException();
 		}
 

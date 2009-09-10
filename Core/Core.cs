@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.Collections;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Simulates a string coming from a resource.

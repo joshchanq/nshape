@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing.Design;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public class TypeDescriptorRegistrar {
 		
@@ -53,20 +53,20 @@ namespace Dataweb.Diagramming.Advanced {
 	}
 	
 
-	public class DiagrammingStyleTypeDescriptionProvider : TypeDescriptionProvider {
-		public DiagrammingStyleTypeDescriptionProvider()
+	public class nShapeStyleTypeDescriptionProvider : TypeDescriptionProvider {
+		public nShapeStyleTypeDescriptionProvider()
 			: base(TypeDescriptor.GetProvider(typeof(Style))) {
 		}
 
 
 		public override ICustomTypeDescriptor GetTypeDescriptor(Type objectType, object instance) {
-			return new DiagrammingStyleTypeDescriptor(base.GetTypeDescriptor(objectType, instance));
+			return new nShapeStyleTypeDescriptor(base.GetTypeDescriptor(objectType, instance));
 		}
 	}
 
 
-	public class DiagrammingStyleTypeDescriptor : CustomTypeDescriptor {
-		public DiagrammingStyleTypeDescriptor(ICustomTypeDescriptor parent)
+	public class nShapeStyleTypeDescriptor : CustomTypeDescriptor {
+		public nShapeStyleTypeDescriptor(ICustomTypeDescriptor parent)
 			: base(parent) {
 		}
 

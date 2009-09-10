@@ -8,7 +8,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Base class for all graphical objects
@@ -18,6 +18,13 @@ namespace Dataweb.Diagramming.Advanced {
 
 		public override void Dispose() {
 			if (ModelObject != null) ModelObject = null;
+			if (connectionInfos != null) {
+				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
+					if (HasControlPointCapability(connectionInfos[i].OwnPointId, ControlPointCapabilities.Glue))
+						Disconnect(connectionInfos[i].OwnPointId);
+					else connectionInfos[i].OtherShape.Disconnect(connectionInfos[i].OtherPointId);
+				}
+			}
 		}
 
 
@@ -173,7 +180,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
 			bool isFeasible = ContainsPoint(mouseX, mouseY);
 			string description = "Create a new template.";
 			yield return new CommandAction("Create Template", null, Color.Empty, "CreateTemplateAction", 
@@ -201,7 +208,7 @@ namespace Dataweb.Diagramming.Advanced {
 				} else if (propertyMapping.CanSetString) {
 					Debug.Assert(!propertyMapping.CanSetInteger && !propertyMapping.CanSetFloat);
 					propertyMapping.SetString(ModelObject.GetString(propertyMapping.ModelPropertyId));
-				} else throw new DiagrammingException("PropertyMapping cannot set any of the supported types: Neither integer nor float nor string.");
+				} else throw new nShapeException("PropertyMapping cannot set any of the supported types: Neither integer nor float nor string.");
 				// Convert model value with the help of the propertyMapping and set the new value
 				ProcessExecModelPropertyChange(propertyMapping);
 			}
@@ -224,7 +231,7 @@ namespace Dataweb.Diagramming.Advanced {
 			// If the own ControlPoint is not a GluePoint, call the other shape's Connect method.
 			if (!HasControlPointCapability(ownPointId, ControlPointCapabilities.Glue)) {
 				if (!otherShape.HasControlPointCapability(otherPointId, ControlPointCapabilities.Glue))
-					throw new DiagrammingException(string.Format("Neither {0}'s point {1} nor {2}'s point {3} is a glue point. At least one glue point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
+					throw new nShapeException(string.Format("Neither {0}'s point {1} nor {2}'s point {3} is a glue point. At least one glue point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
 				otherShape.Connect(otherPointId, this, ownPointId);
 			} else {
 				// Check if connecting is possible:
@@ -233,13 +240,13 @@ namespace Dataweb.Diagramming.Advanced {
 				if (!ci.IsEmpty) throw new InvalidOperationException(string.Format("{0}'s glue point {1} is already connected to {2}.", Type.Name, ci.OwnPointId, ci.OtherShape.Type.Name));
 				// 2. The target shape's control point must not be a glue point
 				if (otherShape.HasControlPointCapability(otherPointId, ControlPointCapabilities.Glue))
-					throw new DiagrammingException(string.Format("{0}'s point {1} and {2}'s point {3} are both glue points. At least one connection point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
+					throw new nShapeException(string.Format("{0}'s point {1} and {2}'s point {3} are both glue points. At least one connection point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
 				// 3. The target shape's control point has to be a connection point
 				if (otherPointId != ControlPointId.Reference
 					&& !otherShape.HasControlPointCapability(otherPointId, ControlPointCapabilities.Connect))
-					throw new DiagrammingException(string.Format("{0}'s point {1} has to be a connection point.", otherShape.Type.Name, otherPointId));
+					throw new nShapeException(string.Format("{0}'s point {1} has to be a connection point.", otherShape.Type.Name, otherPointId));
 				//if (!IsConnectionPointEnabled(ownPointId))
-				//   throw new DiagrammingException(string.Format("{0}'s connection point {1} is disabled.", otherShape.Type.Name, ownPointId));
+				//   throw new nShapeException(string.Format("{0}'s connection point {1} is disabled.", otherShape.Type.Name, ownPointId));
 				//
 				// Perform the connection operation
 				ShapeConnectionInfo connectionInfo = ShapeConnectionInfo.Create(ownPointId, otherShape, otherPointId);
@@ -334,7 +341,8 @@ namespace Dataweb.Diagramming.Advanced {
 			if (connectionInfos != null) {
 				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
 					if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-						&& (ownPointId == ControlPointId.Any || GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId)))
+							&& (ownPointId == ControlPointId.Any 
+								|| GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId)))
 						return connectionInfos[i].OtherPointId;
 				}
 			}
@@ -375,8 +383,7 @@ namespace Dataweb.Diagramming.Advanced {
 			MoveConnectedGluePoint(gluePointId, dx, dy, ResizeModifiers.MaintainAspect);
 			
 			// Process all existing connections:
-			// If there is another point-to-shape connection, recalculate the position of this 
-			// glue point, too
+			// If there is another point-to-shape connection, recalculate the position of this glue point, too
 			if (connectionInfos != null) {
 				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
 					if (connectionInfos[i].OwnPointId != gluePointId
@@ -387,14 +394,8 @@ namespace Dataweb.Diagramming.Advanced {
 						if (newGluePtPos == Geometry.InvalidPoint) newGluePtPos = currGluePtPos;
 						dx = newGluePtPos.X - currGluePtPos.X;
 						dy = newGluePtPos.Y - currGluePtPos.Y;
+						// Perform movemant including notifications to owner and children
 						MoveConnectedGluePoint(connectionInfos[i].OwnPointId, dx, dy, ResizeModifiers.MaintainAspect);
-						//if (dx != 0 || dy != 0) {
-						//   // Notify owner and children of the point movement
-						//   if (Owner != null) Owner.NotifyChildResizing(this);
-						//   MovePointByCore(connectionInfos[i].OwnPointId, dx, dy, ResizeModifiers.MaintainAspect);
-						//   if (children != null) children.NotifyParentSized(dx, dy);
-						//   if (Owner != null) Owner.NotifyChildResized(this);
-						//}
 					}
 				}
 			}
@@ -479,10 +480,12 @@ namespace Dataweb.Diagramming.Advanced {
 				if (tight) {
 					if (boundingRectangleTight == Geometry.InvalidRectangle)
 						boundingRectangleTight = CalculateBoundingRectangle(tight);
+					Debug.Assert(boundingRectangleTight != Geometry.InvalidRectangle);
 					return boundingRectangleTight;
 				} else {
 					if (boundingRectangleLoose == Geometry.InvalidRectangle)
 						boundingRectangleLoose = CalculateBoundingRectangle(tight);
+					Debug.Assert(boundingRectangleLoose != Geometry.InvalidRectangle);
 					return boundingRectangleLoose;
 				}
 			} else {
@@ -502,7 +505,7 @@ namespace Dataweb.Diagramming.Advanced {
 			Rectangle r = GetBoundingRectangle(false);
 			// This not 100% correct as cell 0 will be occupied by objects at 10/10 
 			// as well as objects at -10/-10, 10/-10 and -10/10. 
-			// On the other side, integer division is >20 times faster than floored float divisions
+			// On the other hand, integer division is >20 times faster than floored float divisions
 			// and for this simple "bounding rectangle" approach, it works ok.
 			int leftIdx = r.Left / cellSize;
 			int topIdx = r.Top / cellSize;
@@ -705,7 +708,7 @@ namespace Dataweb.Diagramming.Advanced {
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			if (image == null) throw new ArgumentNullException("image");
 			using (Graphics g = Graphics.FromImage(image)) {
-				GdiHelpers.ApplyGraphicsSettings(g, DiagrammingRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(g, nShapeRenderingQuality.MaximumQuality);
 				g.Clear(transparentColor);
 
 				Rectangle srcRectangle = GetBoundingRectangle(true);
@@ -831,9 +834,9 @@ namespace Dataweb.Diagramming.Advanced {
 		protected internal override sealed void AttachGluePointToConnectionPoint(ControlPointId ownPointId, Shape otherShape, ControlPointId gluePointId) {
 			if (ownPointId != ControlPointId.Reference
 				&& !HasControlPointCapability(ownPointId, ControlPointCapabilities.Connect))
-				throw new DiagrammingException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
+				throw new nShapeException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
 			if (!otherShape.HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
-				throw new DiagrammingException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
+				throw new nShapeException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
 			// store the ShapeConnectionInfo
 			ShapeConnectionInfo connectionInfo = ShapeConnectionInfo.Create(ownPointId, otherShape, gluePointId);
 			if (connectionInfos == null) connectionInfos = new List<ShapeConnectionInfo>();
@@ -864,7 +867,7 @@ namespace Dataweb.Diagramming.Advanced {
 					ModelObject.Disconnect(Template.GetMappedTerminalId(ownPointId), otherShape.ModelObject, otherShape.Template.GetMappedTerminalId(gluePointId));
 				// delete list if there are no more connections
 				if (connectionInfos.Count == 0) connectionInfos = null;
-			} else throw new DiagrammingException("The connection does not exist.");
+			} else throw new nShapeException("The connection does not exist.");
 		}
 
 
@@ -951,9 +954,9 @@ namespace Dataweb.Diagramming.Advanced {
 		/// </summary>
 		protected virtual Point CalcGluePoint(ControlPointId gluePointId, Shape shape) {
 			if (HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
-				throw new DiagrammingException("This Method has to be implemented. Base Method may not be called.");
+				throw new nShapeException("This Method has to be implemented. Base Method may not be called.");
 			else
-				throw new DiagrammingException("'{0}' has no GluePoints.", this.Type.Name);
+				throw new nShapeException("'{0}' has no GluePoints.", this.Type.Name);
 		}
 
 

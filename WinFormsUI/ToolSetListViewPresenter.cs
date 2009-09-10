@@ -3,15 +3,15 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming;
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	/// <summary>
-	/// Connects any ListView to a Diagramming toolbox.
+	/// Connects any ListView to a nShape toolbox.
 	/// </summary>
 	public partial class ToolSetListViewPresenter : Component {
 		
@@ -132,7 +132,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		
 		private void AssertListViewAvailable() {
-			if (listView == null) throw new DiagrammingException("Toolbox requires a ListView.");
+			if (listView == null) throw new nShapeException("Toolbox requires a ListView.");
 		}
 
 
@@ -217,7 +217,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			// SaveChanges the list view: Move this to ToolSetListViewPresenter
 			if (listView != null) {
 				if (FindItem(e.Tool) != null)
-					throw new DiagrammingException(string.Format("Tool {0} already exists.", e.Tool.Title));
+					throw new nShapeException(string.Format("Tool {0} already exists.", e.Tool.Title));
 				ListViewItem item = CreateItem(e.Tool);
 				// Put the tool into the right group
 				if (!string.IsNullOrEmpty(e.Tool.Category)) {
@@ -305,7 +305,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 
 		private void listView_MouseUp(object sender, MouseEventArgs e) {
-			if (keepLastSelectedItem) {
+			if (keepLastSelectedItem && lastSelectedItem != null) {
 				keepLastSelectedItem = false;
 				listView.SelectedIndices.Clear();
 				lastSelectedItem.Selected = true;

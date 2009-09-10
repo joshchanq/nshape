@@ -5,11 +5,11 @@ using System.Drawing;
 using System.Text;
 using System.Data.SqlClient;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Reflection;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
 	/// Cache implementation for MS SQL Server
@@ -20,7 +20,7 @@ namespace Dataweb.Diagramming {
 			: base() {
 			ProviderName = "System.Data.SqlClient";
 			serverName = "localhost";
-			databaseName = "DiagrammingDB";
+			databaseName = "nShapeDB";
 			ConnectionString = CalcConnectionString(serverName, databaseName);
 		}
 

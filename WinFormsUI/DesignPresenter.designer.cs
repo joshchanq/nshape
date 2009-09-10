@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	partial class DesignPresenter {
 		/// <summary>
@@ -15,8 +15,8 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void InitializeComponent() {
 			this.propertyGrid = new System.Windows.Forms.PropertyGrid();
 			this.splitter1 = new System.Windows.Forms.Splitter();
-			this.styleListBox = new Dataweb.Diagramming.WinFormsUI.StyleListBox();
-			this.styleCollectionListBox = new Dataweb.Diagramming.WinFormsUI.VerticalTabControl();
+			this.styleListBox = new Dataweb.nShape.WinFormsUI.StyleListBox();
+			this.styleCollectionListBox = new Dataweb.nShape.WinFormsUI.VerticalTabControl();
 			this.SuspendLayout();
 			// 
 			// propertyGrid
@@ -58,7 +58,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			this.styleListBox.Name = "styleListBox";
 			this.styleListBox.SelectedStyle = null;
 			this.styleListBox.Size = new System.Drawing.Size(243, 432);
-			this.styleListBox.StyleCategory = Dataweb.Diagramming.StyleCategory.CapStyle;
+			this.styleListBox.StyleCategory = Dataweb.nShape.StyleCategory.CapStyle;
 			this.styleListBox.TabIndex = 6;
 			this.styleListBox.TextColor = System.Drawing.SystemColors.WindowText;
 			this.styleListBox.SelectedIndexChanged += new System.EventHandler(this.styleListBox_SelectedIndexChanged);

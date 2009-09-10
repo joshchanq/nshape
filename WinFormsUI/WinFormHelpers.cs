@@ -3,37 +3,37 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public static class WinFormHelpers {
 
 		#region Convert EventArgs
 
 		/// <summary>
-		/// Extracts and returns DiagrammingMouseEventArgs from Windows.Forms.MouseEventArgs.
+		/// Extracts and returns nShapeMouseEventArgs from Windows.Forms.MouseEventArgs.
 		/// </summary>
-		public static DiagrammingMouseEventArgs GetMouseEventArgs(MouseEventType eventType, MouseEventArgs e) {
+		public static nShapeMouseEventArgs GetMouseEventArgs(MouseEventType eventType, MouseEventArgs e) {
 			return GetMouseEventArgs(eventType, e.Button, e.Clicks, e.X, e.Y, e.Delta);
 		}
 
 
 		/// <summary>
-		/// Returns DiagrammingMouseEventArgs extracted from information provided by the Control class.
+		/// Returns nShapeMouseEventArgs extracted from information provided by the Control class.
 		/// </summary>
-		public static DiagrammingMouseEventArgs GetMouseEventArgs(Control control, MouseEventType eventType, int clicks, int delta) {
+		public static nShapeMouseEventArgs GetMouseEventArgs(Control control, MouseEventType eventType, int clicks, int delta) {
 			Point mousePos = control.PointToClient(Control.MousePosition);
 			return GetMouseEventArgs(eventType, Control.MouseButtons, clicks, mousePos.X, mousePos.Y, delta);
 		}
 
 
 		/// <summary>
-		/// Returns DiagrammingMouseEventArgs buildt with the provided parameters
+		/// Returns nShapeMouseEventArgs buildt with the provided parameters
 		/// </summary>
-		public static DiagrammingMouseEventArgs GetMouseEventArgs(MouseEventType eventType, MouseButtons mouseButtons, int clicks, int x, int y, int delta) {
+		public static nShapeMouseEventArgs GetMouseEventArgs(MouseEventType eventType, MouseButtons mouseButtons, int clicks, int x, int y, int delta) {
 			mouseEventArgs.SetButtons(mouseButtons);
 			mouseEventArgs.SetClicks(clicks);
 			mouseEventArgs.SetEventType(eventType);
@@ -44,48 +44,48 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		private static DiagrammingKeys GetModifiers() {
+		private static nShapeKeys GetModifiers() {
 			// get Modifier Keys
-			DiagrammingKeys result = DiagrammingKeys.None;
+			nShapeKeys result = nShapeKeys.None;
 			if ((Control.ModifierKeys & Keys.Control) != 0)
-				result |= DiagrammingKeys.Control;
+				result |= nShapeKeys.Control;
 			if ((Control.ModifierKeys & Keys.Shift) != 0)
-				result |= DiagrammingKeys.Shift;
+				result |= nShapeKeys.Shift;
 			if ((Control.ModifierKeys & Keys.Alt) != 0)
-				result |= DiagrammingKeys.Alt;
+				result |= nShapeKeys.Alt;
 			return result;
 		}
 
 
 		/// <summary>
-		/// Extracts and returns DiagrammingKeyEventArgs from Windows.Forms.KeyEventArgs
+		/// Extracts and returns nShapeKeyEventArgs from Windows.Forms.KeyEventArgs
 		/// </summary>
-		public static DiagrammingKeyEventArgs GetKeyEventArgs(KeyEventType eventType, KeyEventArgs e) {
+		public static nShapeKeyEventArgs GetKeyEventArgs(KeyEventType eventType, KeyEventArgs e) {
 			return GetKeyEventArgs(eventType, '\0', (int)e.KeyData, e.Handled, e.SuppressKeyPress);
 		}
 
 
 		/// <summary>
-		/// Extracts and returns DiagrammingKeyEventArgs from Windows.Forms.PreviewKeyDownEventArgs
+		/// Extracts and returns nShapeKeyEventArgs from Windows.Forms.PreviewKeyDownEventArgs
 		/// </summary>
-		public static DiagrammingKeyEventArgs GetKeyEventArgs(PreviewKeyDownEventArgs e) {
+		public static nShapeKeyEventArgs GetKeyEventArgs(PreviewKeyDownEventArgs e) {
 			return GetKeyEventArgs(KeyEventType.PreviewKeyDown, '\0', (int)e.KeyData, false, false);
 		}
 
 
 		/// <summary>
-		/// Extracts and returns DiagrammingKeyEventArgs from Windows.Forms.KeyPressEventArgs
+		/// Extracts and returns nShapeKeyEventArgs from Windows.Forms.KeyPressEventArgs
 		/// </summary>
-		public static DiagrammingKeyEventArgs GetKeyEventArgs(KeyPressEventArgs e) {
+		public static nShapeKeyEventArgs GetKeyEventArgs(KeyPressEventArgs e) {
 			int keyData = (int)char.ToUpper(e.KeyChar) | (int)Control.ModifierKeys;
 			return GetKeyEventArgs(KeyEventType.KeyPress, e.KeyChar, keyData, e.Handled, false);
 		}
 
 
 		/// <summary>
-		/// Returns DiagrammingKeyEventArgs built with the provided parameters
+		/// Returns nShapeKeyEventArgs built with the provided parameters
 		/// </summary>
-		public static DiagrammingKeyEventArgs GetKeyEventArgs(KeyEventType eventType, char keyChar, int keyData, bool handled, bool suppressKeyPress) {
+		public static nShapeKeyEventArgs GetKeyEventArgs(KeyEventType eventType, char keyChar, int keyData, bool handled, bool suppressKeyPress) {
 			keyEventArgs.SetEventType(eventType);
 			keyEventArgs.SetKeyChar(keyChar);
 			keyEventArgs.SetKeyData(keyData);
@@ -99,13 +99,13 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		#region Build ContextMenus from actions
 
-		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromAllowedActions(IEnumerable<DiagrammingAction> actions, Project project) {
+		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromAllowedActions(IEnumerable<nShapeAction> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
 			// Attention!!
 			// We have to iterate manually instead of unsing foreach here because otherwise always the least 
 			// processed action's Execute method will be called.
-			IEnumerator<DiagrammingAction> enumerator = actions.GetEnumerator();
+			IEnumerator<nShapeAction> enumerator = actions.GetEnumerator();
 			while (enumerator.MoveNext()) {
 				// Skip actions that are not allowed
 				if (!enumerator.Current.IsGranted(project.SecurityManager)) continue;
@@ -115,13 +115,13 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromActions(IEnumerable<DiagrammingAction> actions, Project project) {
+		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromActions(IEnumerable<nShapeAction> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
 			// Attention!!
 			// We have to iterate manually instead of unsing foreach here because otherwise always the least 
 			// processed action's Execute method will be called.
-			IEnumerator<DiagrammingAction> enumerator = actions.GetEnumerator();
+			IEnumerator<nShapeAction> enumerator = actions.GetEnumerator();
 			while (enumerator.MoveNext()) {
 				// Build and return menu item
 				yield return CreateMenuItemFromAction(enumerator.Current, project);
@@ -129,7 +129,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		public static void BuildContextMenu(ContextMenuStrip contextMenuStrip, IEnumerable<DiagrammingAction> actions, Project project, bool skipIfNotGranted) {
+		public static void BuildContextMenu(ContextMenuStrip contextMenuStrip, IEnumerable<nShapeAction> actions, Project project, bool skipIfNotGranted) {
 			if (contextMenuStrip == null) throw new ArgumentNullException("contextMenuStrip");
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
@@ -161,7 +161,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		private static ToolStripItem CreateMenuItemFromAction(DiagrammingAction action, Project project) {
+		private static ToolStripItem CreateMenuItemFromAction(nShapeAction action, Project project) {
 			if (action is SeparatorAction) return CreateMenuItemSeparator();
 			else {
 				// Build ContextMenu item
@@ -200,20 +200,20 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		#region Types
 
-		private class HelperMouseEventArgs : DiagrammingMouseEventArgs {
+		private class HelperMouseEventArgs : nShapeMouseEventArgs {
 
 			public HelperMouseEventArgs()
-				: base(MouseEventType.MouseMove, DiagrammingMouseButtons.None, 0, 0, Point.Empty, DiagrammingKeys.None) {
+				: base(MouseEventType.MouseMove, nShapeMouseButtons.None, 0, 0, Point.Empty, nShapeKeys.None) {
 			}
 
 
 			public void SetButtons(MouseButtons mouseButtons) {
-				DiagrammingMouseButtons btns = DiagrammingMouseButtons.None;
-				if ((mouseButtons & MouseButtons.Left) > 0) btns |= DiagrammingMouseButtons.Left;
-				if ((mouseButtons & MouseButtons.Middle) > 0) btns |= DiagrammingMouseButtons.Middle;
-				if ((mouseButtons & MouseButtons.Right) > 0) btns |= DiagrammingMouseButtons.Right;
-				if ((mouseButtons & MouseButtons.XButton1) > 0) btns |= DiagrammingMouseButtons.ExtraButton1;
-				if ((mouseButtons & MouseButtons.XButton2) > 0) btns |= DiagrammingMouseButtons.ExtraButton2;
+				nShapeMouseButtons btns = nShapeMouseButtons.None;
+				if ((mouseButtons & MouseButtons.Left) > 0) btns |= nShapeMouseButtons.Left;
+				if ((mouseButtons & MouseButtons.Middle) > 0) btns |= nShapeMouseButtons.Middle;
+				if ((mouseButtons & MouseButtons.Right) > 0) btns |= nShapeMouseButtons.Right;
+				if ((mouseButtons & MouseButtons.XButton1) > 0) btns |= nShapeMouseButtons.ExtraButton1;
+				if ((mouseButtons & MouseButtons.XButton2) > 0) btns |= nShapeMouseButtons.ExtraButton2;
 				this.buttons = btns;
 			}
 
@@ -239,13 +239,13 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			}
 
 
-			public void SetModifiers(DiagrammingKeys modifiers) {
+			public void SetModifiers(nShapeKeys modifiers) {
 				this.modifiers = modifiers;
 			}
 		}
 
 
-		private class HelperKeyEventArgs : DiagrammingKeyEventArgs {
+		private class HelperKeyEventArgs : nShapeKeyEventArgs {
 			
 			public HelperKeyEventArgs()
 				: base(KeyEventType.PreviewKeyDown, 0, '\0', false, false) {

@@ -4,15 +4,15 @@ using System.Text;
 using System.Drawing;
 using System.ComponentModel;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	#region IRepository Interface
 
 	/// <summary>
-	/// Defines the contract for storing diagramming projects.
+	/// Defines the contract for storing nShape projects.
 	/// </summary>
 	public interface IRepository {
 

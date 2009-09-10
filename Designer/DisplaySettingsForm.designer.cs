@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	partial class DisplaySettingsForm {
 		/// <summary>
@@ -111,6 +111,7 @@ namespace Dataweb.Diagramming.Designer {
 			this.cancelButton.TabIndex = 14;
 			this.cancelButton.Text = "Cancel";
 			this.cancelButton.UseVisualStyleBackColor = true;
+			this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
 			// 
 			// okButton
 			// 
@@ -121,6 +122,7 @@ namespace Dataweb.Diagramming.Designer {
 			this.okButton.TabIndex = 15;
 			this.okButton.Text = "OK";
 			this.okButton.UseVisualStyleBackColor = true;
+			this.okButton.Click += new System.EventHandler(this.okButton_Click);
 			// 
 			// label3
 			// 

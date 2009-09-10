@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.GeneralShapes;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.GeneralShapes;
 
 
-namespace Dataweb.Diagramming.ElectricalShapes {
+namespace Dataweb.nShape.ElectricalShapes {
 
 	public abstract class ElectricalRectangleBase : RectangleBase {
 		
@@ -832,40 +832,40 @@ namespace Dataweb.Diagramming.ElectricalShapes {
 	}
 
 
-	public static class DiagrammingLibraryInitializer {
+	public static class nShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(libraryName, preferredRepositoryVersion);
 			registrar.RegisterShapeType(new ShapeType("BusBar", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new BusBarSymbol(shapeType, t); }, 
-				BusBarSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceHorizontalBar));
+				BusBarSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceHorizontalBar));
 			registrar.RegisterShapeType(new ShapeType("Disconnector", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new DisconnectorSymbol(shapeType, t); }, 
-				DisconnectorSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
+				DisconnectorSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
 			registrar.RegisterShapeType(new ShapeType("AutoDisconnector", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new AutoDisconnectorSymbol(shapeType, t); }, 
-				AutoDisconnectorSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
+				AutoDisconnectorSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
 			registrar.RegisterShapeType(new ShapeType("AutoSwitch", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new AutoSwitchSymbol(shapeType, t); }, 
-				AutoSwitchSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				AutoSwitchSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			registrar.RegisterShapeType(new ShapeType("Switch", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new SwitchSymbol(shapeType, t); }, 
-				SwitchSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
+				SwitchSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			registrar.RegisterShapeType(new ShapeType("Transformer", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new TransformerSymbol(shapeType, t); }, 
-				TransformerSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceDoubleCircle));
+				TransformerSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceDoubleCircle));
 			registrar.RegisterShapeType(new ShapeType("Earth", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new EarthSymbol(shapeType, t); }, 
-				EarthSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+				EarthSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
 			registrar.RegisterShapeType(new ShapeType("Feeder", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new FeederSymbol(shapeType, t); }, 
-				FeederSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+				FeederSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
 			registrar.RegisterShapeType(new ShapeType("Rectifier", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new RectifierSymbol(shapeType, t); }, 
-				RectifierSymbol.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+				RectifierSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
 			registrar.RegisterShapeType(new ShapeType("DisconnectingPoint", libraryName, libraryName, 
 				delegate(ShapeType shapeType, Template t) { return new DisconnectingPoint(shapeType, t); }, 
-				DisconnectingPoint.GetPropertyDefinitions, Dataweb.Diagramming.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+				DisconnectingPoint.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
 		}
 
 

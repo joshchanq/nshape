@@ -23,7 +23,7 @@ using System.Threading;
 using Dataweb.Utilities;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	#region Shape collection support
 
@@ -333,17 +333,23 @@ namespace Dataweb.Diagramming.Advanced {
 
 		public bool ContainsAll(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shape");
-			foreach (Shape shape in shapes)
+			bool isEmpty = true;
+			foreach (Shape shape in shapes) {
+				if (isEmpty) isEmpty = false;
 				if (!Contains(shape)) return false;
-			return true;
+			}
+			return !isEmpty;
 		}
 
 
 		public bool ContainsAny(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shape");
-			foreach (Shape shape in shapes)
+			bool isEmpty = true;
+			foreach (Shape shape in shapes) {
+				if (isEmpty) isEmpty = false;
 				if (Contains(shape)) return true;
-			return false;
+			}
+			return !isEmpty;
 		}
 
 
@@ -658,7 +664,7 @@ namespace Dataweb.Diagramming.Advanced {
 			if (newShapes is IList<Shape>) newShapesList = (IList<Shape>)newShapes;
 			else newShapesList = new List<Shape>(newShapes);
 
-			if (oldShapesList.Count != newShapesList.Count) throw new DiagrammingInternalException("Numer of elements in the given collections differ from each other.");
+			if (oldShapesList.Count != newShapesList.Count) throw new nShapeInternalException("Numer of elements in the given collections differ from each other.");
 			for (int i = 0; i < oldShapesList.Count; ++i)
 				ReplaceCore(oldShapesList[i], newShapesList[i]);
 		}
@@ -719,12 +725,10 @@ namespace Dataweb.Diagramming.Advanced {
 		private void Construct(int capacity) {
 			if (capacity > 0) {
 				shapes = new ReadOnlyList<Shape>(capacity);
-				//shapeDictionary = new Dictionary<Shape, object>(capacity);
 				shapeDictionary = new Hashtable(capacity);
 			}
 			else {
 				shapes = new ReadOnlyList<Shape>();
-				//shapeDictionary = new Dictionary<Shape, object>();
 				shapeDictionary = new Hashtable();
 			}
 			if (capacity >= 1000) shapeMap = new MultiHashList<Shape>(capacity);
@@ -732,10 +736,8 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		private uint CalcMapHashCode(Point cellIndex) {
-			// return (uint)((cellIndex.X ^ cellIndex.Y) & 0x7fffffff);
-
-			uint x = (uint)cellIndex.X;
-			uint y = (uint)cellIndex.Y;
+			uint x = (uint)(cellIndex.X);
+			uint y = (uint)(cellIndex.Y);
 			y = (y & 0x000000ffu) << 24 | (y & 0x0000ff00u) << 8 | (y & 0x00ff0000u) >> 8 | (y & 0xff000000u) >> 24;
 			return x ^ y;
 		}
@@ -819,11 +821,11 @@ namespace Dataweb.Diagramming.Advanced {
 		private void AssertIndexIsValid(int index, Shape shape) {
 			if (Count > 0) {
 				if (index > Count)
-					throw new DiagrammingInternalException("Index {0} is out of range: The collection contains only {1} element.", index, Count);
+					throw new nShapeInternalException("Index {0} is out of range: The collection contains only {1} element.", index, Count);
 				if (index > 0 && index <= Count && shapes[index - 1].ZOrder > shape.ZOrder)
-					throw new DiagrammingInternalException("ZOrder value {0} cannot be inserted after ZOrder value {1}.", shape.ZOrder, shapes[index - 1].ZOrder);
+					throw new nShapeInternalException("ZOrder value {0} cannot be inserted after ZOrder value {1}.", shape.ZOrder, shapes[index - 1].ZOrder);
 				if (index < Count && shapes[index].ZOrder < shape.ZOrder)
-					throw new DiagrammingInternalException("ZOrder value {0} cannot be inserted before ZOrder value {1}.", shape.ZOrder, shapes[index].ZOrder);
+					throw new nShapeInternalException("ZOrder value {0} cannot be inserted before ZOrder value {1}.", shape.ZOrder, shapes[index].ZOrder);
 			}
 		}
 
@@ -1009,6 +1011,10 @@ namespace Dataweb.Diagramming.Advanced {
 				right = bottom = int.MinValue;
 				foreach (Shape shape in shapes) {
 					Rectangle r = shape.GetBoundingRectangle(tight);
+					Debug.Assert(r != Geometry.InvalidRectangle);
+					Debug.Assert(r.Location != Geometry.InvalidPoint);
+					Debug.Assert(r.Size != Geometry.InvalidSize);
+
 					if (left > r.Left) left = r.Left;
 					if (top > r.Top) top = r.Top;
 					if (right < r.Right) right = r.Right;
@@ -1840,7 +1846,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <param name="y">The Y coordinate of the point clicked by the user.</param>
 		/// <param name="range">The radius of the grips representing the shape's control points.</param>
 		/// <returns></returns>
-		public abstract IEnumerable<DiagrammingAction> GetActions(int x, int y, int range);
+		public abstract IEnumerable<nShapeAction> GetActions(int x, int y, int range);
 
 		#endregion
 

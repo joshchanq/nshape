@@ -6,7 +6,7 @@ using System.Drawing;
 using System.ComponentModel;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Provides a set of styles.

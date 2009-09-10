@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 
 
-namespace Dataweb.Diagramming.Designer
+namespace Dataweb.nShape.Designer
 {
     static class Program
     {

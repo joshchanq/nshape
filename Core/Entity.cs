@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Defines a type that can be read from and written into a repository.
@@ -136,7 +136,7 @@ namespace Dataweb.Diagramming.Advanced {
 		public EntityInnerObjectsDefinition(string name, string entityTypeName, string[] innerFieldNames, Type[] innerFieldTypes)
 			: base(name) {
 			if (innerFieldNames.Length != innerFieldTypes.Length)
-				throw new DiagrammingException("Numeric of field names does not match number of field types.");
+				throw new nShapeException("Numeric of field names does not match number of field types.");
 			this.entityTypeName = entityTypeName;
 			this.fieldInfos = new EntityFieldDefinition[innerFieldNames.Length];
 			for (int i = 0; i < innerFieldNames.Length; ++i)

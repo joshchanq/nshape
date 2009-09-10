@@ -5,11 +5,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	[ToolboxItem(false)]
 	public partial class InPlaceTextBox : RichTextBox {
@@ -334,7 +334,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				case ContentAlignment.TopRight:
 					result |= TextFormatFlags.Top | TextFormatFlags.Right;
 					break;
-				default: throw new DiagrammingUnsupportedValueException(paragraphStyle.Alignment);
+				default: throw new nShapeUnsupportedValueException(paragraphStyle.Alignment);
 			}
 			// set WordWrap
 			if (paragraphStyle.WordWrap)
@@ -378,7 +378,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				case ContentAlignment.MiddleRight:
 				case ContentAlignment.TopRight:
 					return HorizontalAlignment.Right;
-				default: throw new DiagrammingUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
+				default: throw new nShapeUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
 			}
 		}
 
@@ -393,7 +393,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 							return ContentAlignment.MiddleCenter;
 						case ContentAlignment.TopCenter:
 							return ContentAlignment.TopCenter;
-						default: throw new DiagrammingUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
+						default: throw new nShapeUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
 					}
 				case HorizontalAlignment.Left:
 					switch(contentAlignment) {
@@ -403,7 +403,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 							return ContentAlignment.MiddleLeft;
 						case ContentAlignment.TopLeft:
 							return ContentAlignment.TopLeft;
-						default: throw new DiagrammingUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
+						default: throw new nShapeUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
 					}
 				case HorizontalAlignment.Right:
 					switch(contentAlignment) {
@@ -413,9 +413,9 @@ namespace Dataweb.Diagramming.WinFormsUI {
 							return ContentAlignment.MiddleRight;
 						case ContentAlignment.TopRight:
 							return ContentAlignment.TopRight;
-						default: throw new DiagrammingUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
+						default: throw new nShapeUnsupportedValueException(typeof(ContentAlignment), contentAlignment);
 					}
-				default: throw new DiagrammingUnsupportedValueException(typeof(HorizontalAlignment), horizontalAlignment);
+				default: throw new nShapeUnsupportedValueException(typeof(HorizontalAlignment), horizontalAlignment);
 			}
 		}
 

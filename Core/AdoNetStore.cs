@@ -7,11 +7,11 @@ using System.Drawing;
 using System.IO;
 using System.Text;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Globalization;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
 	/// Defines the operation on an entity.
@@ -66,7 +66,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	public class AdoNetStoreException : DiagrammingException {
+	public class AdoNetStoreException : nShapeException {
 
 		internal protected AdoNetStoreException(string message) : base(message) { }
 
@@ -101,7 +101,7 @@ namespace Dataweb.Diagramming {
 
 
 	/// <summary>
-	/// Stores Diagramming projects in any ADO.NET enabled database management system.
+	/// Stores nShape projects in any ADO.NET enabled database management system.
 	/// </summary>
 	public abstract class AdoNetStore : Store {
 
@@ -753,7 +753,7 @@ namespace Dataweb.Diagramming {
 
 		protected IDbCommand CreateCommand() {
 			if (factory == null)
-				throw new DiagrammingException("No valid ADO.NET provider specified.");
+				throw new nShapeException("No valid ADO.NET provider specified.");
 			return factory.CreateCommand();
 		}
 
@@ -775,7 +775,7 @@ namespace Dataweb.Diagramming {
 
 
 		public IDbCommand GetCreateTablesCommand() {
-			if (createTablesCommand == null) throw new DiagrammingException("Command for creating the schema is not defined.");
+			if (createTablesCommand == null) throw new nShapeException("Command for creating the schema is not defined.");
 			if (createTablesCommand.Connection != Connection) createTablesCommand.Connection = Connection;
 			return createTablesCommand;
 		}
@@ -1567,7 +1567,7 @@ namespace Dataweb.Diagramming {
 			protected override void DoBeginWriteInnerObjects() {
 				++PropertyIndex;
 				ValidateInnerObjectsIndex();
-				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new DiagrammingException("Property is not an inner objects property.");
+				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new nShapeException("Property is not an inner objects property.");
 				//
 				EntityInnerObjectsDefinition innerInfo = (EntityInnerObjectsDefinition)propertyInfos[PropertyIndex];
 				if (AdoNetStore.IsComposition(innerInfo)) {
@@ -1609,7 +1609,7 @@ namespace Dataweb.Diagramming {
 
 			protected override void DoDeleteInnerObjects() {
 				ValidateInnerObjectsIndex();
-				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new DiagrammingException("Property is not an inner objects property.");
+				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new nShapeException("Property is not an inner objects property.");
 				//
 				// Delete all existing inner objects of the ObjectRef persistable object			
 				IDbCommand command = store.GetDeleteInnerObjectsCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName);
@@ -1625,14 +1625,14 @@ namespace Dataweb.Diagramming {
 			// columns, e.g for the parent id and the id.
 			private void ValidateFieldIndex() {
 				if (PropertyIndex >= command.Parameters.Count)
-					throw new DiagrammingException("Field '{0}' of entity cannot be written to the repository because the mapping contains less items. Check whether the SQL commands for this entity are correct.", PropertyIndex);
+					throw new nShapeException("Field '{0}' of entity cannot be written to the repository because the mapping contains less items. Check whether the SQL commands for this entity are correct.", PropertyIndex);
 			}
 
 
 			// Can check against the property count here, becuause there are no hidden inner objects.
 			private void ValidateInnerObjectsIndex() {
 				if (PropertyIndex >= propertyInfos.Count)
-					throw new DiagrammingException("Inner objects '{0}' of entity cannot be written to the data store because the entity defines less properties.", PropertyIndex);
+					throw new nShapeException("Inner objects '{0}' of entity cannot be written to the data store because the entity defines less properties.", PropertyIndex);
 			}
 
 
@@ -1698,7 +1698,7 @@ namespace Dataweb.Diagramming {
 
 
 			protected internal override void DoEndObject() {
-				if (str[p] != ';') throw new DiagrammingException("NotSupported string. ';' expected.");
+				if (str[p] != ';') throw new nShapeException("NotSupported string. ';' expected.");
 				++p;
 			}
 
@@ -1741,7 +1741,7 @@ namespace Dataweb.Diagramming {
 			protected override byte DoReadByte() {
 				long value = DoReadInteger();
 				if (value < byte.MinValue || byte.MaxValue < value)
-					throw new DiagrammingException("Invalid repository format");
+					throw new nShapeException("Invalid repository format");
 				return (byte)value;
 			}
 
@@ -1749,7 +1749,7 @@ namespace Dataweb.Diagramming {
 			protected override short DoReadInt16() {
 				long value = DoReadInteger();
 				if (value < short.MinValue || short.MaxValue < value)
-					throw new DiagrammingException("Invalid repository format");
+					throw new nShapeException("Invalid repository format");
 				return (short)value;
 			}
 
@@ -1757,7 +1757,7 @@ namespace Dataweb.Diagramming {
 			protected override int DoReadInt32() {
 				long value = DoReadInteger();
 				if (value < int.MinValue || int.MaxValue < value)
-					throw new DiagrammingException("Invalid repository format");
+					throw new nShapeException("Invalid repository format");
 				return (int)value;
 			}
 
@@ -1770,7 +1770,7 @@ namespace Dataweb.Diagramming {
 			protected override float DoReadFloat() {
 				double value = DoReadDouble();
 				if (value < float.MinValue || float.MaxValue < value)
-					throw new DiagrammingException("Invalid repository format");
+					throw new nShapeException("Invalid repository format");
 				return (float)value;
 			}
 
@@ -2084,7 +2084,7 @@ namespace Dataweb.Diagramming {
 					case ItemState.Original:
 						continue;	// nothing to do
 					default:
-						throw new DiagrammingUnsupportedValueException(ei.State.GetType(), ei.State);
+						throw new nShapeUnsupportedValueException(ei.State.GetType(), ei.State);
 				}
 			}
 		}
@@ -2124,7 +2124,7 @@ namespace Dataweb.Diagramming {
 						case ItemState.Original:
 							continue;
 						default:
-							throw new DiagrammingUnsupportedValueException(ei.State.GetType(), ei.State);
+							throw new nShapeUnsupportedValueException(ei.State.GetType(), ei.State);
 					}
 				}
 			}
@@ -2283,7 +2283,7 @@ namespace Dataweb.Diagramming {
 					case RepositoryCommandType.Update:
 						return UpdateCommand;
 					default:
-						throw new DiagrammingUnsupportedValueException(typeof(RepositoryCommandType), commandType);
+						throw new nShapeUnsupportedValueException(typeof(RepositoryCommandType), commandType);
 				}
 			}
 
@@ -2379,7 +2379,7 @@ namespace Dataweb.Diagramming {
 					LoadSysCommands();
 				} catch (DbException exc) {
 					Debug.Print(exc.Message);
-					// Assumption: No SysCommand table available, i.e. no diagramming tables present
+					// Assumption: No SysCommand table available, i.e. no nShape tables present
 					return;
 				}
 				IDbCommand dropCommand = GetCommand("All", RepositoryCommandType.Delete);
@@ -2400,9 +2400,9 @@ namespace Dataweb.Diagramming {
 			get {
 				if (connection == null) {
 					if (string.IsNullOrEmpty(ProviderName))
-						throw new DiagrammingException("ProviderName is not set.");
+						throw new nShapeException("ProviderName is not set.");
 					if (string.IsNullOrEmpty(ConnectionString))
-						throw new DiagrammingException("ConnectionString is not set.");
+						throw new nShapeException("ConnectionString is not set.");
 					connection = factory.CreateConnection();
 					connection.ConnectionString = ConnectionString;
 				}

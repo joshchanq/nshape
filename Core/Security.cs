@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	[Flags()]
 	public enum Permission {

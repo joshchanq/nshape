@@ -1,4 +1,4 @@
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	partial class LibraryManagementDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -51,7 +51,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			this.addLibraryButton.TabIndex = 4;
 			this.addLibraryButton.Text = "Add Library...";
 			this.addLibraryButton.UseVisualStyleBackColor = true;
-			this.addLibraryButton.Click += this.addLibraryButton_Click;
+			this.addLibraryButton.Click += new System.EventHandler(this.addLibraryButton_Click);
 			// 
 			// openFileDialog
 			// 
@@ -66,9 +66,9 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			this.closeButton.TabIndex = 5;
 			this.closeButton.Text = "Close";
 			this.closeButton.UseVisualStyleBackColor = true;
-			this.closeButton.Click += this.closeButton_Click;
+			this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
 			// 
-			// LibraryManagementForm
+			// LibraryManagementDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -77,11 +77,10 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			this.Controls.Add(this.addLibraryButton);
 			this.Controls.Add(this.listBox1);
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-			this.Name = "LibraryManagementForm";
+			this.Name = "LibraryManagementDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Loaded Libraries";
-			this.Load += this.LibraryManagementDialog_Load;
-			this.FormClosed += this.LibraryManagementDialog_FormClosed;
+			this.Load += new System.EventHandler(this.LibraryManagementDialog_Load);
 			this.ResumeLayout(false);
 
 		}

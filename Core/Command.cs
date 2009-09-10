@@ -4,10 +4,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
 	/// Encapsulates a command.
@@ -105,8 +105,7 @@ namespace Dataweb.Diagramming {
 
 
 		protected void Disconnect(IList<Shape> shapes) {
-			int cnt = shapes.Count;
-			for (int i = 0; i < cnt; ++i)
+			for (int i = shapes.Count - 1; i >= 0; --i)
 				Disconnect(shapes[i]);
 		}
 
@@ -180,7 +179,7 @@ namespace Dataweb.Diagramming {
 
 
 		protected void RemoveShapes() {
-			if (Shapes.Count == 0) throw new DiagrammingInternalException("No shapes set. Call SetShapes() before.");
+			if (Shapes.Count == 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
 
 			// disconnect all selectedShapes connected to the deleted shape(s)
 			Disconnect(Shapes);
@@ -244,7 +243,7 @@ namespace Dataweb.Diagramming {
 
 		private void DoInsertShapes(bool useOriginalLayers, LayerIds activeLayers) {
 			int startIdx = Shapes.Count - 1;
-			if (startIdx < 0) throw new DiagrammingInternalException("No shapes set. Call SetShapes() before.");
+			if (startIdx < 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
 
 			if (Repository == null) throw new ArgumentNullException("Repository"); 
 			for (int i = startIdx; i >= 0; --i) {
@@ -287,7 +286,7 @@ namespace Dataweb.Diagramming {
 
 		protected void InsertModelObjects(bool insertShapes) {
 			int cnt = ModelObjects.Count;
-			if (cnt == 0) throw new DiagrammingInternalException("No ModelObjects set. Call SetModelObjects() before.");
+			if (cnt == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
 				Repository.InsertModelObjects(ModelObjects.Keys);
 				foreach (KeyValuePair<IModelObject, AttachedObjects> item in ModelObjects)
@@ -297,7 +296,7 @@ namespace Dataweb.Diagramming {
 
 
 		protected void RemoveModelObjects(bool deleteShapes) {
-			if (ModelObjects.Count == 0) throw new DiagrammingInternalException("No ModelObjects set. Call SetModelObjects() before.");
+			if (ModelObjects.Count == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
 				foreach (KeyValuePair<IModelObject, AttachedObjects> item in ModelObjects)
 					DetachAndDeleteObjects(item.Value, Repository, deleteShapes);
@@ -406,7 +405,7 @@ namespace Dataweb.Diagramming {
 
 
 		protected void RemoveShapesAndModels() {
-			if (ModelObjects.Count == 0) throw new DiagrammingInternalException("No ModelObjects set. Call SetModelObjects() before.");
+			//if (ModelObjects.Count == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
 				if (modelsAndObjects == null) {
 					modelsAndObjects = new Dictionary<IModelObject, AttachedObjects>();
@@ -418,40 +417,6 @@ namespace Dataweb.Diagramming {
 				Repository.DeleteModelObjects(modelsAndObjects.Keys);
 			}
 			RemoveShapes();
-
-			//RemoveShapes();
-			//if (ModelObjects.Count == 0) throw new DiagrammingInternalException("No ModelObjects set. Call SetModelObjects() before.");
-			//if (Repository != null) {
-			//   List<Shape> shapes = new List<Shape>();
-			//   if (ModelObjects.Count > 1) {
-			//      foreach (IModelObject modelObject in ModelObjects) {
-			//         // Detach and delete child model objects
-			//         List<IModelObject> childModelObjects = new List<IModelObject>(Repository.GetModelObjects(modelObject));
-			//         for (int mIdx = childModelObjects.Count - 1; mIdx >= 0; --mIdx) {
-			//            shapes.Clear();
-			//            shapes.AddRange(childModelObjects[mIdx].Shapes);
-			//            for (int sIdx = shapes.Count - 1; sIdx >= 0; --sIdx)
-			//               shapes[sIdx].ModelObject = null;
-			//         }
-			//         Repository.DeleteModelObjects(childModelObjects);
-
-			//         // Detach model object
-			//         shapes.Clear();
-			//         shapes.AddRange(modelObject.Shapes);
-			//         for (int sIdx = shapes.Count - 1; sIdx >= 0; --sIdx)
-			//            shapes[sIdx].ModelObject = null;
-			//      }
-			//      // Delete model objects
-			//      Repository.DeleteModelObjects(ModelObjects);
-			//   } else if (ModelObjects[0] != null) {
-			//      // Detach model object
-			//      shapes.Clear();
-			//      shapes.AddRange(ModelObjects[0].Shapes);
-			//      for (int sIdx = shapes.Count - 1; sIdx >= 0; --sIdx)
-			//         shapes[sIdx].ModelObject = null;
-			//      Repository.DeleteModelObject(ModelObjects[0]);
-			//   }
-			//}
 		}
 
 
@@ -480,7 +445,8 @@ namespace Dataweb.Diagramming {
 			Debug.Assert(this.ModelObjects.Count == 0);
 			this.ModelObjects.Clear();
 			foreach (Shape shape in shapes) {
-				if (!this.ModelObjects.Contains(shape.ModelObject))
+				if (shape.ModelObject != null
+					&& !this.ModelObjects.Contains(shape.ModelObject))
 					this.ModelObjects.Add(shape.ModelObject);
 			}
 		}
@@ -491,7 +457,7 @@ namespace Dataweb.Diagramming {
 			public AttachedObjects(IModelObject modelObject, IRepository repository) {
 				shapes = new List<Shape>();
 				children = new Dictionary<IModelObject, AttachedObjects>();
-				Add(modelObject, repository);
+				if (modelObject != null) Add(modelObject, repository);
 			}
 
 
@@ -511,9 +477,11 @@ namespace Dataweb.Diagramming {
 
 
 			private void DoAdd(AttachedObjects attachedObjects, IModelObject modelObject, IRepository repository) {
-				attachedObjects.Shapes.AddRange(modelObject.Shapes);
-				foreach (IModelObject child in repository.GetModelObjects(modelObject))
-					attachedObjects.Children.Add(child, new AttachedObjects(child, repository));
+				if (modelObject != null) {
+					attachedObjects.Shapes.AddRange(modelObject.Shapes);
+					foreach (IModelObject child in repository.GetModelObjects(modelObject))
+						attachedObjects.Children.Add(child, new AttachedObjects(child, repository));
+				}
 			}
 
 
@@ -522,10 +490,9 @@ namespace Dataweb.Diagramming {
 		}
 
 
-		//protected Dictionary<IModelObject, AttachedObjects> ModelObjects = new Dictionary<IModelObject, AttachedObjects>();
-
-
-		protected List<IModelObject> ModelObjects = new List<IModelObject>();
+		protected List<IModelObject> ModelObjects {
+			get { return modelObjects; }
+		}
 
 
 		protected static new string DeleteDescription = "Delete {0} shape{2} with {1}model{2}";
@@ -536,7 +503,7 @@ namespace Dataweb.Diagramming {
 
 		private void DoInsertShapesAndModels(bool useOriginalLayers, LayerIds activeLayers) {
 			int cnt = ModelObjects.Count;
-			if (cnt == 0) throw new DiagrammingInternalException("No ModelObjects set. Call SetModelObjects() before.");
+			if (cnt == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (useOriginalLayers)
 				InsertShapes();
 			else
@@ -585,6 +552,7 @@ namespace Dataweb.Diagramming {
 
 
 		private Dictionary<IModelObject, AttachedObjects> modelsAndObjects = null;
+		private List<IModelObject> modelObjects = new List<IModelObject>();
 	}
 
 
@@ -693,7 +661,7 @@ namespace Dataweb.Diagramming {
 			if (!sci.IsEmpty) {
 				this.targetShape = sci.OtherShape;
 				this.targetPointId = sci.OtherPointId;
-			} throw new DiagrammingException("GluePoint {0} is not connected.", gluePointId);
+			} throw new nShapeException("GluePoint {0} is not connected.", gluePointId);
 		}
 
 
@@ -961,7 +929,7 @@ namespace Dataweb.Diagramming {
 
 			this.connectionInfo = connectorShape.GetConnectionInfo(gluePointId, null);
 			if (this.connectionInfo.IsEmpty)
-				throw new DiagrammingInternalException(string.Format("There is no connection for Point {0} of shape {1}.", gluePointId, connectorShape));
+				throw new nShapeInternalException(string.Format("There is no connection for Point {0} of shape {1}.", gluePointId, connectorShape));
 		}
 
 
@@ -1472,7 +1440,7 @@ namespace Dataweb.Diagramming {
 		public SetCaptionTextCommand(ICaptionedShape shape, int captionIndex, string newValue)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
-			if (!(shape is Shape)) throw new DiagrammingException("{0} is not of type {1}.", shape.GetType().Name, typeof(Shape).Name);
+			if (!(shape is Shape)) throw new nShapeException("{0} is not of type {1}.", shape.GetType().Name, typeof(Shape).Name);
 			this.modifiedLabeledShapes = new List<ICaptionedShape>(1);
 			this.modifiedLabeledShapes.Add(shape);
 			this.labelIndex = captionIndex;
@@ -1671,7 +1639,7 @@ namespace Dataweb.Diagramming {
 					}
 					break;
 				default:
-					throw new DiagrammingUnsupportedValueException(liftMode);
+					throw new nShapeUnsupportedValueException(liftMode);
 			}
 			if (Repository != null) Repository.UpdateShapes(modifiedShapes);
 		}
@@ -1699,7 +1667,7 @@ namespace Dataweb.Diagramming {
 			switch (liftMode) {
 				case ZOrderDestination.ToTop: formatStr = "Bring {0} shape{1} on top"; break;
 				case ZOrderDestination.ToBottom: formatStr = "Send {0} shape{1} to bottom"; break;
-				default: throw new DiagrammingUnsupportedValueException(liftMode);
+				default: throw new nShapeUnsupportedValueException(liftMode);
 			}
 			if (modifiedShapes.Count == 1)
 				this.description = string.Format(formatStr, modifiedShapes.TopMost.Type.Name, string.Empty);
@@ -1729,7 +1697,7 @@ namespace Dataweb.Diagramming {
 					}
 					break;
 				default:
-					throw new DiagrammingUnsupportedValueException(liftMode);
+					throw new nShapeUnsupportedValueException(liftMode);
 			}
 		}
 		
@@ -2945,68 +2913,6 @@ namespace Dataweb.Diagramming {
 		private ControlPointId nextPointId = ControlPointId.None;
 		#endregion
 	}
-	#endregion
-
-
-	#region LockCommand class
-	//public class LockCommand : Command {
-	//   public LockCommand(Shape shape) : base() {
-	//      this.selectedShapes = new List<Shape>(1);
-	//      this.selectedShapes.Add(shape);
-	//      this.lockShapes = !shape.IsLocked;
-	//      if (this.lockShapes)
-	//         this.title = string.Format("Unlock {0}", this.selectedShapes[0].Type.Name);
-	//      else
-	//         this.title = string.Format("Lock {0}", this.selectedShapes[0].Type.Name);
-	//   }
-
-
-	//   public LockCommand(IEnumerable<Shape> selectedShapes, bool lockShapes) : base() {
-	//      this.selectedShapes = new List<Shape>(selectedShapes);
-	//      this.lockShapes = lockShapes;			
-	//      if (this.lockShapes)
-	//         this.title = string.Format("Lock {0} selectedShapes", this.selectedShapes.Count);
-	//      else
-	//         this.title = string.Format("Unlock {0} selectedShapes", this.selectedShapes.Count);
-	//   }
-
-
-	//   public override void ExecuteCommand() {
-	//      if (selectedShapes.Count == 1) {
-	//         selectedShapes[0].IsLocked = lockShapes;
-	//         Cache.UpdateShape(selectedShapes[0]);
-	//      }
-	//      else if (selectedShapes.Count > 0) {
-	//         foreach (Shape shape in selectedShapes)
-	//            shape.IsLocked = lockShapes;
-	//         Cache.UpdateShapes(selectedShapes);
-	//      }
-	//   }
-
-
-	//   public override void Revert() {
-	//      if (selectedShapes.Count == 1) {
-	//         selectedShapes[0].IsLocked = !lockShapes;
-	//         Cache.UpdateShape(selectedShapes[0]);
-	//      }
-	//      else if (selectedShapes.Count > 0) {
-	//         foreach (Shape shape in selectedShapes)
-	//            shape.IsLocked = !lockShapes;
-	//         Cache.UpdateShapes(selectedShapes);
-	//      }
-	//   }
-
-
-	//   public override bool IsAllowed(PermissionSet permissions) {
-	//      return permissions.HasPermission(DiagrammingPermission.EditShapeProperties);
-	//   }
-
-
-	//   #region Fields
-	//   private List<Shape> selectedShapes;
-	//   private bool lockShapes;
-	//   #endregion
-	//}
 	#endregion
 
 

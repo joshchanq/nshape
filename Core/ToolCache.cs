@@ -6,7 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Manages drawing tools for GDI+.
@@ -312,7 +312,7 @@ namespace Dataweb.Diagramming.Advanced {
 							brush = new TextureBrush(fillStyle.Image.Image, rectBuffer, imgAttribs);
 						}
 						break;
-					default: throw new DiagrammingUnsupportedValueException(fillStyle.FillMode);
+					default: throw new nShapeUnsupportedValueException(fillStyle.FillMode);
 				}
 
 				// add created brush to the BrushCache
@@ -324,7 +324,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public static TextureBrush GetBrush(Image image, DiagrammingImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
+		public static TextureBrush GetBrush(Image image, nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			BrushKey brushKey;
 			brushKey.FillStyle = null;
@@ -751,7 +751,7 @@ namespace Dataweb.Diagramming.Advanced {
 					break;
 				case CapShape.None:
 					return;
-				default: throw new DiagrammingUnsupportedValueException(capShape);
+				default: throw new nShapeUnsupportedValueException(capShape);
 			}
 		}
 

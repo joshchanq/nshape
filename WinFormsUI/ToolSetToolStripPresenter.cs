@@ -2,12 +2,12 @@
 using System.ComponentModel;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming;
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	
 	public partial class ToolSetToolStripPresenter : ToolStrip {
 		
@@ -107,7 +107,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void toolSetController_ToolAdded(object sender, ToolEventArgs e) {
 			// SaveChanges the list view: Move this to ToolSetListViewPresenter
 			if (FindItem(e.Tool) != null)
-				throw new DiagrammingException(string.Format("Tool {0} already exists.", e.Tool.Title));
+				throw new nShapeException(string.Format("Tool {0} already exists.", e.Tool.Title));
 			ToolStripItem item = CreateItem(e.Tool);
 			// ToDo: Put the tool into the right group, seperrate groups by seperators
 			//   if (!string.IsNullOrEmpty(e.Tool.Category)) {

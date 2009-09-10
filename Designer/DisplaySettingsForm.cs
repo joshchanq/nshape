@@ -1,10 +1,10 @@
 using System;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	public partial class DisplaySettingsForm : Form {
 		public DisplaySettingsForm() {

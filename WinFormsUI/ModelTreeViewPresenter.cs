@@ -6,11 +6,11 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	[ToolboxItem(true)]
 	public partial class ModelTreeViewPresenter : Component {
@@ -113,8 +113,8 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		}
 
 
-		public IEnumerable<DiagrammingAction> GetActions() {
-			foreach (DiagrammingAction action in modelTreeController.GetActions(selectedModelObjects))
+		public IEnumerable<nShapeAction> GetActions() {
+			foreach (nShapeAction action in modelTreeController.GetActions(selectedModelObjects))
 				yield return action;
 			// ToDo: Add presenter's actions
 		}
@@ -191,8 +191,8 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 
 		private void FillTree() {
-			if (treeView == null) throw new DiagrammingPropertyNotSetException(this, "TreeView");
-			if (modelTreeController == null) throw new DiagrammingPropertyNotSetException(this, "ModelTreeController");
+			if (treeView == null) throw new nShapePropertyNotSetException(this, "TreeView");
+			if (modelTreeController == null) throw new nShapePropertyNotSetException(this, "ModelTreeController");
 
 			Debug.Assert(modelTreeController.Project.Repository.IsOpen);
 			//AddModelObjectNodes(modelTreeController.Project.Repository.GetChildren(null));

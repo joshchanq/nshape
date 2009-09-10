@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Threading;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// A generic readonly collection of items providing an enumerator and the total number of items in the collection

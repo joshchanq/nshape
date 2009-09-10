@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public abstract class RectangleBase : CaptionedShapeBase {
 
@@ -64,6 +64,7 @@ namespace Dataweb.Diagramming.Advanced {
 					int delta = value - size.Width;
 					
 					size.Width = value;
+					ControlPointsHaveMoved();
 					InvalidateDrawCache();
 
 					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, 0);
@@ -86,10 +87,11 @@ namespace Dataweb.Diagramming.Advanced {
 					int delta = value - size.Height;
 
 					size.Height = value;
+					ControlPointsHaveMoved();
+					InvalidateDrawCache();
 
 					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(0, delta);
 					if (Owner != null) Owner.NotifyChildResized(this);
-					InvalidateDrawCache();
 					Invalidate();
 				}
 			}
@@ -848,7 +850,7 @@ namespace Dataweb.Diagramming.Advanced {
 				Matrix.TransformPoints(pointBuffer);
 			}
 			// Calculate intersection points and return the nearest (or the shape's Center if there is no intersection point)
-			result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(pointBuffer, startX, startY, X, Y));
+			result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(pointBuffer, startX, startY, X, Y, true));
 			if (result == Geometry.InvalidPoint) return Center;
 			else return result;
 		}
@@ -1106,14 +1108,8 @@ namespace Dataweb.Diagramming.Advanced {
 			Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center);
 			Matrix.TransformPoints(shapePoints);
 
-			float currDist, dist = float.MaxValue;
-			foreach (Point p in Geometry.IntersectPolygonLine(shapePoints, startX, startY, x, y)) {
-				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
-				if (currDist <= dist) {
-					dist = currDist;
-					result = p;
-				}
-			}
+			result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(shapePoints, startX, startY, x, y, true));
+			if (result == Geometry.InvalidPoint) result = Center;
 			return result;
 		}
 

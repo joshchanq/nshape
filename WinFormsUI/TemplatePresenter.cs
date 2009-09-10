@@ -6,11 +6,11 @@ using System.Drawing.Drawing2D;
 using System.Reflection;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class TemplatePresenter : UserControl, IDisplayService {
 
@@ -192,7 +192,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void Initialize() {
 			if (templateController == null) 
-				throw new DiagrammingException("Unable to initialize {0}: {1} is not set.", this.GetType().Name, typeof(TemplateController).Name);
+				throw new nShapeException("Unable to initialize {0}: {1} is not set.", this.GetType().Name, typeof(TemplateController).Name);
 			
 			// if the user has insufficient privileges, deactivate all controls
 			if (!templateController.Project.SecurityManager.IsGranted(Permission.Templates)) {
@@ -202,7 +202,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			}
 
 			// Set current Design for the Style UITypeEditor
-			DiagrammingStyleEditor.Design = templateController.Project.Repository.GetDesign(null);
+			nShapeStyleEditor.Design = templateController.Project.Repository.GetDesign(null);
 			// Initialize the propertyGridAdapter
 			propertyGridAdapter.Controller = templateController;
 			propertyGridAdapter.PrimaryPropertyGrid = shapePropertyGrid;
@@ -282,7 +282,8 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			foreach (Shape shape in templateController.Shapes) {
 				if (!shape.Type.SupportsAutoTemplates) continue;
 				ShapeItem item = new ShapeItem(shape, shapeComboBox.Items.Count);
-				Debug.Assert(shapeComboBox.Items.Add(item) == item.Index);
+				int idx = shapeComboBox.Items.Add(item);
+				Debug.Assert(idx == item.Index);
 				if (shape.DisplayService != this) shape.DisplayService = this;
 				if (shapeType != null && shape.Type == shapeType)
 					shapeComboBox.SelectedIndex = item.Index;
@@ -541,14 +542,14 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			if (IsModelPropertyMapped(rowIndex)) {
 				string errMsg = string.Format("'{0}' is already mapped to an other property.", propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value);
 				propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value = null;
-				//throw new DiagrammingException(errMsg);
+				//throw new nShapeException(errMsg);
 				MessageBox.Show(this, errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return result;
 			} 
 			if (IsShapePropertyMapped(rowIndex)) {
 				string errMsg = string.Format("'{0}' is already mapped to an other property.", propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value);
 				propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value = null;
-				//throw new DiagrammingException(errMsg);
+				//throw new nShapeException(errMsg);
 				MessageBox.Show(this, errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return result;
 			}
@@ -692,7 +693,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				valueMappingGrid.Columns[mappingPropertyNameCol].ValueType = typeof(int);
 			else if (modelMapping.MappingType == StyleModelMappingType.FloatStyle)
 				valueMappingGrid.Columns[mappingPropertyNameCol].ValueType = typeof(float);
-			else throw new DiagrammingUnsupportedValueException(modelMapping.MappingType);
+			else throw new nShapeUnsupportedValueException(modelMapping.MappingType);
 			valueMappingGrid.Columns[mappingPropertyNameCol].ReadOnly = false;
 			valueMappingGrid.Columns[mappingPropertyNameCol].Width = valueMappingGrid.Width / 2;
 
@@ -730,7 +731,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 					IStyle style = modelMapping[(float)val];
 					valueMappingGrid.Rows.Add(new object[] { (float)val, style.Title });
 				}
-			} else throw new DiagrammingUnsupportedValueException(modelMapping.MappingType);
+			} else throw new nShapeUnsupportedValueException(modelMapping.MappingType);
 			// Add an empty row for creating new range/style mappings
 			valueMappingGrid.Rows.Add();
 		}
@@ -783,7 +784,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 					tstString = string.Format(formatString, 0);
 				else if (formatMapping.MappingType == FormatModelMappingType.StringString)
 					tstString = string.Format(formatString, " ");
-				else throw new DiagrammingUnsupportedValueException(formatMapping.MappingType);
+				else throw new nShapeUnsupportedValueException(formatMapping.MappingType);
 				// Set ModelMapping
 				formatMapping.Format = formatString;
 				templateController.SetModelMapping(formatMapping);
@@ -828,7 +829,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 						styleMapping.AddValueRange((int)rangeValue, style);
 					else if (styleMapping.MappingType == StyleModelMappingType.IntegerStyle)
 						styleMapping.AddValueRange((float)rangeValue, style);
-					else throw new DiagrammingUnsupportedValueException(styleMapping.MappingType);
+					else throw new nShapeUnsupportedValueException(styleMapping.MappingType);
 				}
 			}
 			// Set ModelMapping
@@ -1174,7 +1175,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 				Debug.Assert(idAttribs[0] is PropertyMappingIdAttribute);
 				return ((PropertyMappingIdAttribute)idAttribs[0]).Id;
 			} else if (idAttribs.Length == 0) return null;
-			else throw new DiagrammingException("Property {0} of {1} has more than 1 {2}.", propertyInfo.Name, propertyInfo.DeclaringType.Name, typeof(PropertyMappingIdAttribute).Name);
+			else throw new nShapeException("Property {0} of {1} has more than 1 {2}.", propertyInfo.Name, propertyInfo.DeclaringType.Name, typeof(PropertyMappingIdAttribute).Name);
 		}
 
 

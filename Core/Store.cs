@@ -4,12 +4,12 @@ using System.Text;
 using System.ComponentModel;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	#region IStoreCache Interface
 
 	/// <summary>
-	/// Provides access to diagramming entities of one type for stores.
+	/// Provides access to nShape entities of one type for stores.
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
 	public interface ICacheCollection<TEntity>: IEnumerable<EntityBucket<TEntity>> where TEntity: IEntity {
@@ -26,7 +26,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 	/// <summary>
-	/// Provides access to diagramming entities for stores.
+	/// Provides access to nShape entities for stores.
 	/// </summary>
 	public interface IStoreCache {
 

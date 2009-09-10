@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public static class Geometry {
 
@@ -1658,6 +1658,35 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
+		public static bool ArcContainsPoint(Point arcCenter, Point startPoint, Point endPoint, Point radiusPoint, float delta, Point point) {
+			return ArcContainsPoint(arcCenter.X, arcCenter.Y, startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, delta, point.X, point.Y);
+		}
+
+
+		public static bool ArcContainsPoint(PointF startPoint, PointF radiusPoint, PointF endPoint, float delta, PointF point) {
+			return ArcContainsPoint(startPoint.X, startPoint.Y, radiusPoint.X, radiusPoint.Y, endPoint.X, endPoint.Y, delta, point.X, point.Y);
+		}
+
+
+		/// <summary>
+		/// Determines if an arc, defined by three points, contains a point
+		/// </summary>
+		/// <param name="startPointX">The x-coordinate of the point defining the beginning of the arc</param>
+		/// <param name="startPointY">The y-coordinate of the point defining  the beginning of the arc</param>
+		/// <param name="radiusPointX">The x-coordinate of the point defining the radius of the arc</param>
+		/// <param name="radiusPointY">The y-coordinate of the point defining the radius of the arc</param>
+		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param></param>
+		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param></param>
+		/// <param name="delta">The tolerance of the calculation</param>
+		/// <param name="pointX">The x-coordinate of the point to test</param>
+		/// <param name="pointY">The y-coordinate of the point to test</param>
+		public static bool ArcContainsPoint(float startPointX, float startPointY, float radiusPointX, float radiusPointY, float endPointX, float endPointY, float delta, float pointX, float pointY) {
+			float radius;
+			PointF center = CalcArcCenterAndRadius(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, out radius);
+			return ArcContainsPoint(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, center.X, center.Y, radius, delta, pointX, pointY);
+		}
+
+		
 		/// <summary>
 		/// Determines if an arc contains a point
 		/// </summary>
@@ -1687,25 +1716,6 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		/// <summary>
-		/// Determines if an arc, defined by three points, contains a point
-		/// </summary>
-		/// <param name="startPointX">The x-coordinate of the point defining the beginning of the arc</param>
-		/// <param name="startPointY">The y-coordinate of the point defining  the beginning of the arc</param>
-		/// <param name="radiusPointX">The x-coordinate of the point defining the radius of the arc</param>
-		/// <param name="radiusPointY">The y-coordinate of the point defining the radius of the arc</param>
-		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param></param>
-		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param></param>
-		/// <param name="delta">The tolerance of the calculation</param>
-		/// <param name="pointX">The x-coordinate of the point to test</param>
-		/// <param name="pointY">The y-coordinate of the point to test</param>
-		public static bool ArcContainsPoint(float startPointX, float startPointY, float radiusPointX, float radiusPointY, float endPointX, float endPointY, float delta, float pointX, float pointY) {
-			float radius;
-			PointF center = CalcArcCenterAndRadius(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, out radius);
-			return ArcContainsPoint(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, center.X, center.Y, radius, delta, pointX, pointY);
-		}
-
-		
 		/// <summary>
 		/// Determines if an arc contains a point. This function takes all parameters of the arc so it does not have to perform redundant calculations.
 		/// </summary>
@@ -1847,7 +1857,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die beiden Geraden sich schneiden.
 		/// </summary>
 		public static bool LineIntersectsWithLine(Point line1Start, Point line1End, Point line2Start, Point line2End) {
 			return LineIntersectsWithLine(line1Start.X, line1Start.Y, line1End.X, line1End.Y, line2Start.X, line2Start.Y, line2End.X, line2End.Y);
@@ -1855,7 +1865,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die beiden Geraden sich schneiden.
 		/// </summary>
 		public static bool LineIntersectsWithLine(Point line1Start, Point line1End, int line2StartX, int line2StartY, int line2EndX, int line2EndY) {
 			return LineIntersectsWithLine(line1Start.X, line1Start.Y, line1End.X, line1End.Y, line2StartX, line2StartY, line2EndX, line2EndY);
@@ -1863,7 +1873,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die beiden Geraden sich schneiden.
 		/// </summary>
 		public static bool LineIntersectsWithLine(int line1StartX, int line1StartY, int line1EndX, int line1EndY, int line2StartX, int line2StartY, int line2EndX, int line2EndY) {
 			// Richtungsvectoren der beiden Geraden berechnen			
@@ -1905,7 +1915,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die beiden Geraden sich schneiden.
 		/// </summary>
 		public static bool LineIntersectsWithLine(PointF line1Start, PointF line1End, PointF line2Start, PointF line2End) {
 			return LineIntersectsWithLine(line1Start.X, line1Start.Y, line1End.X, line1End.Y, line2Start.X, line2Start.Y, line2End.X, line2End.Y);
@@ -1913,7 +1923,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die beiden Geraden sich schneiden.
 		/// </summary>
 		public static bool LineIntersectsWithLine(float line1StartX, float line1StartY, float line1EndX, float line1EndY, float line2StartX, float line2StartY, float line2EndX, float line2EndY) {
 			// Richtungsvectoren der beiden Geraden berechnen			
@@ -1955,7 +1965,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die Gerade sich mit der Strecke schneidet.
 		/// </summary>
 		public static bool LineIntersectsWithLineSegment(PointF line1Start, PointF line1End, float line2StartX, float line2StartY, float line2EndX, float line2EndY) {
 			return LineIntersectsWithLineSegment(line1Start.X, line1Start.Y, line1End.X, line1End.Y, line2StartX, line2StartY, line2EndX, line2EndY);
@@ -1963,7 +1973,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die Gerade sich mit der Strecke schneidet.
 		/// </summary>
 		public static bool LineIntersectsWithLineSegment(float line1StartX, float line1StartY, float line1EndX, float line1EndY, float line2StartX, float line2StartY, float line2EndX, float line2EndY) {
 			return InvalidPointF != IntersectLineWithLineSegment(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY);
@@ -1971,7 +1981,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die Gerade sich mit der Strecke schneidet.
 		/// </summary>
 		public static bool LineIntersectsWithLineSegment(Point line1Start, Point line1End, Point line2Start, Point line2End) {
 			return LineIntersectsWithLineSegment(line1Start.X, line1Start.Y, line1End.X, line1End.Y, line2Start.X, line2Start.Y, line2End.X, line2End.Y);
@@ -1979,7 +1989,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die Gerade sich mit der Strecke schneidet.
 		/// </summary>
 		public static bool LineIntersectsWithLineSegment(Point line1Start, Point line1End, int line2StartX, int line2StartY, int line2EndX, int line2EndY) {
 			return LineIntersectsWithLineSegment(line1Start.X, line1Start.Y, line1End.X, line1End.Y, line2StartX, line2StartY, line2EndX, line2EndY);
@@ -1987,7 +1997,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// Bestimmt, ob die Gerade sich mit der Strecke schneidet.
 		/// </summary>
 		public static bool LineIntersectsWithLineSegment(int line1StartX, int line1StartY, int line1EndX, int line1EndY, int line2StartX, int line2StartY, int line2EndX, int line2EndY) {
 			return InvalidPoint != IntersectLineWithLineSegment(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY);
@@ -2218,7 +2228,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		public static bool ArcIntersectsWithLine(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, float x1, float y1, float x2, float y2, bool isSegment) {
-			foreach (PointF p in IntersectArcLine(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, x1, y1, x2, y1, isSegment))
+			foreach (PointF p in IntersectArcLine(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, x1, y1, x2, y2, isSegment))
 				return true;
 			return false;
 		}
@@ -2278,44 +2288,38 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <param name="endPtY">Y Coordinate of the arc's third point</param>
 		/// <param name="rect">Rectangle to be checked for intersection</param>
 		public static bool ArcIntersectsWithRectangle(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, Rectangle rect) {
+			float radius;
+			PointF center = CalcArcCenterAndRadius(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, out radius);
+			return ArcIntersectsWithRectangle(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, rect);
+		}
+
+
+		public static bool ArcIntersectsWithRectangle(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, float centerX, float centerY, float radius, Rectangle rect) {
 			float left = rect.Left;
 			float top = rect.Top;
 			float right = rect.Right;
 			float bottom = rect.Bottom;
+			// Check if the rectangle contains any of the arc's points...
 			if (left <= startPtX && startPtX <= right && top <= startPtY && startPtY <= bottom)
 				return true;
 			if (left <= radiusPtX && radiusPtX <= right && top <= radiusPtY && radiusPtY <= bottom)
 				return true;
 			if (left <= endPtX && endPtX <= right && top <= endPtY && endPtY <= bottom)
 				return true;
-
-			float radius;
-			PointF center = CalcArcCenterAndRadius(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, out radius);
-			float centerX = center.X;
-			float centerY = center.Y;
-
-			if (CircleIntersectsWithRectangle(rect, center, radius)) {
-				// if the rectangle is completely inside, it does NOT intersect (in contrary to circles)
-				if (CircleContainsPoint(centerX, centerY, radius, 0, left, top)
-					&& CircleContainsPoint(centerX, centerY, radius, 0, right, bottom))
-					return false;
-				else {
-					// check the sides of the rectangle if one one of then intersects with the arc
-					PointF? p;
-					p = IntersectCircleWithLine(center.X, center.Y, radius, left, top, right, top, true);
-					if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.01f, p.Value.X, p.Value.Y))
-						return true;
-					p = IntersectCircleWithLine(center.X, center.Y, radius, right, top, right, bottom, true);
-					if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.01f, p.Value.X, p.Value.Y))
-						return true;
-					p = IntersectCircleWithLine(center.X, center.Y, radius, right, bottom, left, bottom, true);
-					if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.01f, p.Value.X, p.Value.Y))
-						return true;
-					p = IntersectCircleWithLine(center.X, center.Y, radius, left, bottom, left, top, true);
-					if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.01f, p.Value.X, p.Value.Y))
-						return true;
-				}
-			}
+			// check the sides of the rectangle if one one of then intersects with the arc
+			PointF? p;
+			p = IntersectCircleWithLine(centerX, centerY, radius, left, top, right, top, true);
+			if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.Value.X, p.Value.Y))
+				return true;
+			p = IntersectCircleWithLine(centerX, centerY, radius, right, top, right, bottom, true);
+			if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.Value.X, p.Value.Y))
+				return true;
+			p = IntersectCircleWithLine(centerX, centerY, radius, right, bottom, left, bottom, true);
+			if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.Value.X, p.Value.Y))
+				return true;
+			p = IntersectCircleWithLine(centerX, centerY, radius, left, bottom, left, top, true);
+			if (p.HasValue && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.Value.X, p.Value.Y))
+				return true;
 			return false;
 		}
 
@@ -2349,7 +2353,7 @@ namespace Dataweb.Diagramming.Advanced {
 				else if (top > 0)
 					return ((right * right + top * top) < radiusSq);
 				// rect due West of circle
-				else
+				else 
 					return (Math.Abs(right) < radius);
 			}
 			// rect to right of circle center
@@ -3039,6 +3043,11 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
+		public static IEnumerable<PointF> GetAllCircleLineIntersections(PointF center, float radius, PointF pt1, PointF pt2, bool isSegment) {
+			return GetAllCircleLineIntersections(center.X, center.Y, radius, pt1.X, pt1.Y, pt2.X, pt2.Y, isSegment);
+		}
+
+
 		public static IEnumerable<PointF> GetAllCircleLineIntersections(float centerX, float centerY, float radius, float x1, float y1, float x2, float y2, bool isSegment) {
 			PointF result = PointF.Empty; 
 			double rr = radius * radius;
@@ -3065,6 +3074,11 @@ namespace Dataweb.Diagramming.Advanced {
 					yield return result;
 				}
 			}
+		}
+
+
+		public static IEnumerable<Point> GetAllCircleLineIntersections(Point center, float radius, Point pt1, Point pt2, bool isSegment) {
+			return GetAllCircleLineIntersections(center.X, center.Y, radius, pt1.X, pt1.Y, pt2.X, pt2.Y, isSegment);
 		}
 
 
@@ -3216,18 +3230,12 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public static IEnumerable<Point> IntersectPolygonLine(Point[] points, int x1, int y1, int x2, int y2) {
-			Point p1 = Point.Empty;
-			Point p2 = Point.Empty;
-			p1.X = x1;
-			p1.Y = y1;
-			p2.X = x2;
-			p2.Y = y2;
-			return IntersectPolygonLine(points, p1, p2);
+		public static IEnumerable<Point> IntersectPolygonLine(Point[] points, Point p1, Point p2, bool isSegment) {
+			return IntersectPolygonLine(points, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
-	
-		public static IEnumerable<Point> IntersectPolygonLine(Point[] points, Point linePt1, Point linePt2) {
+
+		public static IEnumerable<Point> IntersectPolygonLine(Point[] points, int pt1X, int pt1Y, int pt2X, int pt2Y, bool isSegment) {
 			if (points == null) throw new ArgumentNullException("points");
 			Point result = Point.Empty;
 			Point polyPt1 = Point.Empty;
@@ -3235,7 +3243,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 			int a, b, c;
 			int aLine, bLine, cLine;
-			CalcLine(linePt1.X, linePt1.Y, linePt2.X, linePt2.Y, out aLine, out bLine, out cLine);
+			CalcLine(pt1X, pt1Y, pt2X, pt2Y, out aLine, out bLine, out cLine);
 
 			int maxIdx = points.Length - 1;
 			for (int i = 0; i < maxIdx; ++i) {
@@ -3243,10 +3251,13 @@ namespace Dataweb.Diagramming.Advanced {
 				polyPt1.Y = points[i].Y;
 				polyPt2.X = points[i + 1].X;
 				polyPt2.Y = points[i + 1].Y;
-				if (LineIntersectsWithLine(polyPt1, polyPt2, linePt1, linePt2)) {
+				if (isSegment ?
+					LineIntersectsWithLineSegment(pt1X, pt1Y, pt2X, pt2Y, 
+						polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y) 
+					: LineIntersectsWithLine(pt1X, pt1Y, pt2X, pt2Y, 
+						polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y)) {
 					CalcLine(polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y, out a, out b, out c);
 					int x, y;
-					//if (Geometry.SolveLinear22System(a, b, aLine, bLine, c, cLine, out x, out y)) {
 					if (Geometry.IntersectLines(a, b, c, aLine, bLine, cLine, out x, out y)) {
 						result.X = x;
 						result.Y = y;
@@ -3259,11 +3270,13 @@ namespace Dataweb.Diagramming.Advanced {
 				polyPt1.Y = points[0].Y;
 				polyPt2.X = points[maxIdx].X;
 				polyPt2.Y = points[maxIdx].Y;
-				if (LineIntersectsWithLine(polyPt1, polyPt2, linePt1, linePt2)) {
+				if (isSegment ?
+					LineIntersectsWithLineSegment(pt1X, pt1Y, pt2X, pt2Y,
+						polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y)
+					: LineIntersectsWithLine(pt1X, pt1Y, pt2X, pt2Y,
+						polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y)) {
 					CalcLine(polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y, out a, out b, out c);
-
 					int x, y;
-					//if (Geometry.SolveLinear22System(a, b, aLine, bLine, c, cLine, out x, out y)) {
 					if (Geometry.IntersectLines(a, b, c, aLine, bLine, cLine, out x, out y)) {
 						result.X = x;
 						result.Y = y;
@@ -3274,16 +3287,12 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public static IEnumerable<Point> IntersectPolygonLine(PointF[] points, float x1, float y1, float x2, float y2) {
-			PointF p1 = Point.Empty;
-			p1.X = x1; p1.Y = y1;
-			PointF p2 = Point.Empty;
-			p2.X = x2; p2.Y = y2;
-			return IntersectPolygonLine(points, p1, p2);
+		public static IEnumerable<Point> IntersectPolygonLine(PointF[] points, PointF p1, PointF p2, bool isSegment) {
+			return IntersectPolygonLine(points, p1, p2, isSegment);
 		}
 
 
-		public static IEnumerable<Point> IntersectPolygonLine(PointF[] points, PointF linePt1, PointF linePt2) {
+		public static IEnumerable<Point> IntersectPolygonLine(PointF[] points, float pt1X, float pt1Y, float pt2X, float pt2Y, bool isSegment) {
 			if (points == null) throw new ArgumentNullException("points");
 			Point result = Point.Empty;
 			PointF polyPt1 = Point.Empty;
@@ -3291,7 +3300,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 			float a, b, c;
 			float aLine, bLine, cLine;
-			CalcLine(linePt1.X, linePt1.Y, linePt2.X, linePt2.Y, out aLine, out bLine, out cLine);
+			CalcLine(pt1X, pt1Y, pt2X, pt2Y, out aLine, out bLine, out cLine);
 
 			int maxIdx = points.Length - 1;
 			for (int i = 0; i < maxIdx; ++i) {
@@ -3299,10 +3308,13 @@ namespace Dataweb.Diagramming.Advanced {
 				polyPt1.Y = points[i].Y;
 				polyPt2.X = points[i + 1].X;
 				polyPt2.Y = points[i + 1].Y;
-				if (LineIntersectsWithLine(polyPt1, polyPt2, linePt1, linePt2)) {
+				bool intersection;
+				if (isSegment)
+					intersection = LineIntersectsWithLineSegment(pt1X, pt1Y, pt2X, pt2Y, polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y);
+				else intersection = LineIntersectsWithLine(pt1X, pt1Y, pt2X, pt2Y, polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y);
+				if (intersection) {
 					CalcLine(polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y, out a, out b, out c);
 					float x, y;
-					//if (Geometry.SolveLinear22System(a, b, aLine, bLine, c, cLine, out x, out y)) {
 					if (Geometry.IntersectLines(a, b, c, aLine, bLine, cLine, out x, out y)) {
 						result.X = (int)Math.Round(x);
 						result.Y = (int)Math.Round(y);
@@ -3315,10 +3327,13 @@ namespace Dataweb.Diagramming.Advanced {
 				polyPt1.Y = points[0].Y;
 				polyPt2.X = points[maxIdx].X;
 				polyPt2.Y = points[maxIdx].Y;
-				if (LineIntersectsWithLine(polyPt1, polyPt2, linePt1, linePt2)) {
+				bool intersection;
+				if (isSegment)
+					intersection = LineIntersectsWithLineSegment(pt1X, pt1Y, pt2X, pt2Y, polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y);
+				else intersection = LineIntersectsWithLine(pt1X, pt1Y, pt2X, pt2Y, polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y);
+				if (intersection) {
 					CalcLine(polyPt1.X, polyPt1.Y, polyPt2.X, polyPt2.Y, out a, out b, out c);
 					float x, y;
-					//if (Geometry.SolveLinear22System(a, b, aLine, bLine, c, cLine, out x, out y)) {
 					if (Geometry.IntersectLines(a, b, c, aLine, bLine, cLine, out x, out y)) {
 						result.X = (int)Math.Round(x);
 						result.Y = (int)Math.Round(y);
@@ -3764,6 +3779,22 @@ namespace Dataweb.Diagramming.Advanced {
 		/// </summary>
 		public static float Angle(Point p0, Point p1) {
 			return (float) Math.Atan2(p1.Y - p0.Y, p1.X - p0.X);
+		}
+
+
+		/// <summary>
+		/// Berechnet den Winkel zwischen x1,y1 und x2,y2 mit Scheitel x0,y0 in Radians
+		/// </summary>
+		public static float Angle(PointF vertex, PointF p1, PointF p2) {
+			return Angle(vertex.X, vertex.Y, p1.X, p1.Y, p2.X, p2.Y);
+		}
+
+
+		/// <summary>
+		/// Berechnet den Winkel (in Radians) von linePt1 zum Scheitelpunkt center.
+		/// </summary>
+		public static float Angle(PointF p0, PointF p1) {
+			return (float)Math.Atan2(p1.Y - p0.Y, p1.X - p0.X);
 		}
 
 
@@ -4356,7 +4387,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Calculates the coordinates of a point from another point with shapeAngle and distance;
+		/// Calculates the coordinates of a point from another point with angle and distance;
 		/// </summary>
 		public static Point CalcPoint(int x, int y, float angleDeg, float distance) {
 			return Point.Round(CalcPoint((float)x, (float)y, angleDeg, distance));
@@ -4364,7 +4395,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Calculates the coordinates of a point from another point with shapeAngle and distance;
+		/// Calculates the coordinates of a point from another point with angle and distance;
 		/// </summary>
 		public static PointF CalcPoint(float x, float y, float angleDeg, float distance) {
 			float angle = DegreesToRadians(angleDeg);
@@ -4384,7 +4415,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		/// <summary>
-		/// Calculates the position of the point on the line. 
+		/// Calculates the position of the point on the line.
 		/// </summary>
 		public static PointF CalcPointOnLine(float startX, float startY, float endX, float endY, float distance) {
 			float angle = RadiansToDegrees(Angle(startX, startY, endX, endY));
@@ -4578,6 +4609,15 @@ namespace Dataweb.Diagramming.Advanced {
 		/// Translates the given line to point p.
 		/// </summary>
 		public static void TranslateLine(int a, int b, int c, Point p, out int aT, out int bT, out int cT) {
+			aT = a; bT = b;
+			cT = -((a * p.X) + (b * p.Y));
+		}
+
+
+		/// <summary>
+		/// Translates the given line to point p.
+		/// </summary>
+		public static void TranslateLine(float a, float b, float c, Point p, out float aT, out float bT, out float cT) {
 			aT = a; bT = b;
 			cT = -((a * p.X) + (b * p.Y));
 		}

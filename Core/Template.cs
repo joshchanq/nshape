@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Diagnostics;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using System.Reflection;
 using System.Text;
 using System.Runtime.CompilerServices;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	#region Property Mappings
 
@@ -528,7 +528,7 @@ namespace Dataweb.Diagramming.Advanced {
 					return string.Format(Format, intValue);
 				case FormatModelMappingType.StringString:
 					return string.Format(Format, stringValue);
-				default: throw new DiagrammingUnsupportedValueException(mappingType);
+				default: throw new nShapeUnsupportedValueException(mappingType);
 			}
 		}
 
@@ -812,7 +812,7 @@ namespace Dataweb.Diagramming.Advanced {
 						style = ReadStyle(reader);
 						floatRanges.Add(floatValue, style);
 						break;
-					default: throw new DiagrammingUnsupportedValueException(mappingType);
+					default: throw new nShapeUnsupportedValueException(mappingType);
 				}
 				reader.EndReadInnerObject();
 			}
@@ -841,7 +841,7 @@ namespace Dataweb.Diagramming.Advanced {
 						writer.EndWriteInnerObject();
 					}
 					break;
-				default: throw new DiagrammingUnsupportedValueException(mappingType);
+				default: throw new nShapeUnsupportedValueException(mappingType);
 			}
 			writer.EndWriteInnerObjects();
 		}
@@ -956,7 +956,7 @@ namespace Dataweb.Diagramming.Advanced {
 					reader.ReadColorStyle();	// ToDo: Find a better solution for skipping an object id
 					result = null;
 					break;
-				default: throw new DiagrammingUnsupportedValueException(mappedStyleType);
+				default: throw new nShapeUnsupportedValueException(mappedStyleType);
 			}
 			return result;
 		}
@@ -977,7 +977,7 @@ namespace Dataweb.Diagramming.Advanced {
 			else if (style is ILineStyle) return MappedStyleType.LineStyle;
 			else if (style is IParagraphStyle) return MappedStyleType.ParagraphStyle;
 			else if (style is IShapeStyle) return MappedStyleType.ShapeStyle;
-			else throw new DiagrammingUnsupportedValueException(style);
+			else throw new nShapeUnsupportedValueException(style);
 		}
 		
 		
@@ -1126,7 +1126,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public IEnumerable<DiagrammingAction> GetActions() {
+		public IEnumerable<nShapeAction> GetActions() {
 			yield break;
 		}
 
@@ -1205,7 +1205,7 @@ namespace Dataweb.Diagramming.Advanced {
 			if (shape == null)
 				throw new InvalidOperationException("Template has no shape.");
 			if (!shape.HasControlPointCapability(connectionPointId, ControlPointCapabilities.Glue | ControlPointCapabilities.Connect))
-				throw new DiagrammingException("Control point {0} is not a valid connection point.", connectionPointId);
+				throw new nShapeException("Control point {0} is not a valid connection point.", connectionPointId);
 			//
 			if (connectionPointMappings.ContainsKey(connectionPointId))
 				connectionPointMappings[connectionPointId] = terminalId;

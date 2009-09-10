@@ -4,7 +4,7 @@ using System.Drawing;
 using System.Diagnostics;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	#region ShapeAggregation abstract base class
 

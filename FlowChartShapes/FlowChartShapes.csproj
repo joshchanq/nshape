@@ -7,8 +7,8 @@
     <ProjectGuid>{DB90D9B2-D4F8-4D09-92C5-A7C1AC57FA4E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.Diagramming.FlowChartShapes</RootNamespace>
-    <AssemblyName>Dataweb.Diagramming.FlowChartShapes</AssemblyName>
+    <RootNamespace>Dataweb.nShape.FlowChartShapes</RootNamespace>
+    <AssemblyName>Dataweb.nShape.FlowChartShapes</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -24,9 +24,10 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>none</DebugType>
+    <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>..\Binaries\Release\</OutputPath>
     <DefineConstants>
@@ -34,6 +35,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -64,9 +67,9 @@
     <EmbeddedResource Include="Resources\Dataweb.Diagramming.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\Diagramming.csproj">
+    <ProjectReference Include="..\Core\nShape.csproj">
       <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>Diagramming</Name>
+      <Name>nShape</Name>
     </ProjectReference>
     <ProjectReference Include="..\GeneralShapes\GeneralShapes.csproj">
       <Project>{1272F77E-D926-4310-AE8B-858909B10F0C}</Project>

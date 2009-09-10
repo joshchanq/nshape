@@ -124,7 +124,7 @@
   <data name="Actor_new" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Actor_new.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Dataweb_Diagramming" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <data name="Dataweb_nShape" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Dataweb.Diagramming.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="Monitor" type="System.Resources.ResXFileRef, System.Windows.Forms">

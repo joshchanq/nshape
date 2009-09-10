@@ -8,11 +8,11 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Threading;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Layouters;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Layouters;
 
 
-namespace Dataweb.Diagramming.Designer {
+namespace Dataweb.nShape.Designer {
 
 	public partial class LayoutView : Form {
 

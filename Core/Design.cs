@@ -7,13 +7,13 @@ using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 using System.Runtime.InteropServices;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 using Dataweb.Utilities;
 using System.Diagnostics;
 using System.Reflection;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
 	/// Specifies the category of a style.
@@ -28,7 +28,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	public enum DiagrammingImageLayout { Original, Center, Stretch, Fit, Tile, CenterTile, FilpTile }
+	public enum nShapeImageLayout { Original, Center, Stretch, Fit, Tile, CenterTile, FilpTile }
 
 
 	public enum FillMode { Solid, Gradient, Pattern, Image }
@@ -40,7 +40,7 @@ namespace Dataweb.Diagramming {
 	public enum DashType { Solid, Dash, Dot, DashDot, DashDotDot }
 
 
-	[TypeConverter("Dataweb.Diagramming.WinFormsUI.DiagrammingTextPaddingConverter, Dataweb.Diagramming.WinFormsUI")]
+	[TypeConverter("Dataweb.nShape.WinFormsUI.nShapeTextPaddingConverter, Dataweb.nShape.WinFormsUI")]
 	[Serializable, StructLayout(LayoutKind.Sequential)]
 	public struct TextPadding {
 
@@ -103,7 +103,7 @@ namespace Dataweb.Diagramming {
 
 	#region ***   Style Interfaces   ***
 
-	[TypeConverter("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleConverter, Dataweb.Diagramming.WinFormsUI")]
+	[TypeConverter("Dataweb.nShape.WinFormsUI.nShapeStyleConverter, Dataweb.nShape.WinFormsUI")]
 	public interface IStyle : IEntity, IDisposable {
 		[Browsable(false)]
 		string Name { get; }
@@ -112,7 +112,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface ICapStyle : IStyle {
 		CapShape CapShape { get; }
 		short CapSize { get; }
@@ -120,7 +120,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface IColorStyle : IStyle {
 		Color Color { get; }
 		byte Transparency { get; }	// percentage (range 0 to 100)
@@ -128,7 +128,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface IFillStyle : IStyle {
 		IColorStyle BaseColorStyle { get; }
 		IColorStyle AdditionalColorStyle { get; }
@@ -137,14 +137,14 @@ namespace Dataweb.Diagramming {
 		short GradientAngle { get; }
 		bool ConvertToGrayScale { get; }
 		NamedImage Image { get; }
-		DiagrammingImageLayout ImageLayout { get; }
+		nShapeImageLayout ImageLayout { get; }
 		byte ImageTransparency { get; }
 		float ImageGammaCorrection { get; }
 		byte ImageCompressionQuality { get; }
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface ICharacterStyle : IStyle {
 
 		/// <summary>
@@ -179,7 +179,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface ILineStyle : IStyle {
 		int LineWidth { get; }
 		IColorStyle ColorStyle { get; }
@@ -190,7 +190,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface IShapeStyle : IStyle {
 		bool RoundedCorners { get; }
 		bool ShowGradients { get; }
@@ -200,7 +200,7 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingStyleEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+	[Editor("Dataweb.nShape.WinFormsUI.nShapeStyleEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 	public interface IParagraphStyle : IStyle {
 		ContentAlignment Alignment { get; }
 		StringTrimming Trimming { get; }
@@ -257,6 +257,7 @@ namespace Dataweb.Diagramming {
 
 		public bool EqualsAny(string name) {
 			Debug.Assert(names != null);
+			if (name == Style.DefaultStyleName) return true;
 			for (int i = names.Length - 1; i >= 0; --i)
 				if (names[i].Equals(name, StringComparison.InvariantCultureIgnoreCase))
 					return true;
@@ -357,9 +358,9 @@ namespace Dataweb.Diagramming {
 		public string Name {
 			get { return name; }
 			set {
+				if (name == DefaultStyleName) throw new ArgumentException(string.Format("{0} is not a valid Style name.", DefaultStyleName));
 				if (!renameable) throw new InvalidOperationException("Standard styles must not be renamed.");
 				name = value;
-				//renameable = !IsStandardName(name);
 			}
 		}
 
@@ -397,6 +398,9 @@ namespace Dataweb.Diagramming {
 
 
 		protected abstract bool IsStandardName(string name);
+
+
+		protected internal const string DefaultStyleName = "{Empty}";
 
 
 		#region IDisposable Members
@@ -495,8 +499,10 @@ namespace Dataweb.Diagramming {
 		#region IDisposable Members
 
 		public override void Dispose() {
-			colorStyle.Dispose();
-			colorStyle = null;
+			if (colorStyle != null) {
+				colorStyle.Dispose();
+				colorStyle = null;
+			}
 		}
 
 		#endregion
@@ -545,7 +551,7 @@ namespace Dataweb.Diagramming {
 				IColorStyle colorStyle = (IColorStyle)findStyleCallback(((CapStyle)style).ColorStyle);
 				if (colorStyle != null) this.ColorStyle = colorStyle;
 				else this.ColorStyle = ((CapStyle)style).ColorStyle;
-			} else throw new DiagrammingException("Style is not of the required type.");
+			} else throw new nShapeException("Style is not of the required type.");
 		}
 
 
@@ -559,15 +565,19 @@ namespace Dataweb.Diagramming {
 			get { return capSize; }
 			set {
 				if (value < 0)
-					throw new DiagrammingException("Value has to be greater than 0.");
+					throw new nShapeException("Value has to be greater than 0.");
 				capSize = value;
 			}
 		}
 
 
 		public IColorStyle ColorStyle {
-			get { return colorStyle; }
-			set { colorStyle = value; }
+			get { return colorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			set {
+				if (value == Dataweb.nShape.ColorStyle.Default)
+					colorStyle = null;
+				else colorStyle = value;
+			}
 		}
 
 
@@ -579,10 +589,10 @@ namespace Dataweb.Diagramming {
 		static CapStyle() {
 			StandardNames = new StandardCapStyleNames();
 
-			Default = new CapStyle("Default Cap Style");
+			Default = new CapStyle(DefaultStyleName);
 			Default.CapShape = CapShape.None;
 			Default.CapSize = 1;
-			Default.ColorStyle = Dataweb.Diagramming.ColorStyle.Default;
+			Default.ColorStyle = Dataweb.nShape.ColorStyle.Default;
 		}
 
 
@@ -598,7 +608,7 @@ namespace Dataweb.Diagramming {
 				case CapShape.None:
 					return 0;
 				default:
-					throw new DiagrammingUnsupportedValueException(capShape);
+					throw new nShapeUnsupportedValueException(capShape);
 			}
 		}
 
@@ -607,7 +617,7 @@ namespace Dataweb.Diagramming {
 
 		private CapShape capShape = CapShape.None;
 		private short capSize = 10;
-		private IColorStyle colorStyle = Dataweb.Diagramming.ColorStyle.Default;
+		private IColorStyle colorStyle = null;
 
 		#endregion
 	}
@@ -636,8 +646,10 @@ namespace Dataweb.Diagramming {
 		#region IDisposable Members
 
 		public override void Dispose() {
-			colorStyle.Dispose();
-			colorStyle = null;
+			if (colorStyle != null) {
+				colorStyle.Dispose();
+				colorStyle = null;
+			}
 		}
 
 		#endregion
@@ -668,7 +680,7 @@ namespace Dataweb.Diagramming {
 
 
 		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in Dataweb.Diagramming.Style.GetPropertyDefinitions(version))
+			foreach (EntityPropertyDefinition pi in Dataweb.nShape.Style.GetPropertyDefinitions(version))
 				yield return pi;
 			yield return new EntityFieldDefinition("FontName", typeof(string));
 			yield return new EntityFieldDefinition("Size", typeof(int));
@@ -693,11 +705,11 @@ namespace Dataweb.Diagramming {
 				this.FontName = ((CharacterStyle)style).FontName;
 				this.SizeInPoints = ((CharacterStyle)style).SizeInPoints;
 				this.Style = ((CharacterStyle)style).Style;
-			} else throw new DiagrammingException("Style is not of the required type.");
+			} else throw new nShapeException("Style is not of the required type.");
 		}
 
 
-		[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingFontFamilyEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.nShape.WinFormsUI.nShapeFontFamilyEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 		public string FontName {
 			get { return fontFamily.Name; }
 			set { fontFamily = FindFontFamily(value); }
@@ -744,8 +756,12 @@ namespace Dataweb.Diagramming {
 
 
 		public IColorStyle ColorStyle {
-			get { return colorStyle; }
-			set { colorStyle = value; }
+			get { return colorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			set {
+				if (value == Dataweb.nShape.ColorStyle.Default)
+					colorStyle = null;
+				else colorStyle = value;
+			}
 		}
 
 
@@ -759,8 +775,8 @@ namespace Dataweb.Diagramming {
 			using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero))
 				dpi = gfx.DpiY;
 
-			Default = new CharacterStyle("Default Character Style");
-			Default.ColorStyle = Dataweb.Diagramming.ColorStyle.Default;
+			Default = new CharacterStyle(DefaultStyleName);
+			Default.ColorStyle = Dataweb.nShape.ColorStyle.Default;
 			Default.FontName = "Times New Roman";
 			Default.SizeInPoints = 10;
 			Default.Style = FontStyle.Regular;
@@ -779,19 +795,8 @@ namespace Dataweb.Diagramming {
 				if (ff.Name.Equals(fontName, StringComparison.InvariantCultureIgnoreCase))
 					return ff;
 			}
-			throw new DiagrammingException(string.Format("'{0}' is not a valid font name name or font is not installed on this machine.", fontName));
+			throw new nShapeException(string.Format("'{0}' is not a valid font name name or font is not installed on this machine.", fontName));
 		}
-
-
-		/*private FontFamily FindFontFamily(string fontName) {
-			int cnt = FontFamily.Families.Length;
-			for (int i = 0; i < cnt; ++i) {
-				if (FontFamily.Families[i].Name.Equals(fontName, StringComparison.InvariantCultureIgnoreCase)) {
-					return FontFamily.Families[i];
-				}
-			}
-			throw new DiagrammingException(string.Format("'{0}' is not a valid font projectName projectName or font is not installed on this machine.", fontName));
-		}*/
 
 
 		#region Fields
@@ -801,7 +806,7 @@ namespace Dataweb.Diagramming {
 		private int fontSize;
 		private FontStyle fontStyle = 0;
 		private FontFamily fontFamily = null;
-		private IColorStyle colorStyle = Dataweb.Diagramming.ColorStyle.Default;
+		private IColorStyle colorStyle = null;
 		#endregion
 	}
 
@@ -883,7 +888,7 @@ namespace Dataweb.Diagramming {
 				this.Color = ((ColorStyle)style).Color;
 				this.Transparency = ((ColorStyle)style).Transparency;
 				this.ConvertToGray = ((ColorStyle)style).ConvertToGray;
-			} else throw new DiagrammingException("Style is not of the required type.");
+			} else throw new nShapeException("Style is not of the required type.");
 		}
 
 
@@ -902,7 +907,7 @@ namespace Dataweb.Diagramming {
 		public byte Transparency {
 			get { return transparency; }
 			set {
-				if (value < 0 || value > 100) throw new DiagrammingException("Value has to be between 0 and 100.");
+				if (value < 0 || value > 100) throw new nShapeException("Value has to be between 0 and 100.");
 				transparency = value;
 				color = Color.FromArgb(TransparencyToAlpha(transparency), color);
 			}
@@ -924,7 +929,7 @@ namespace Dataweb.Diagramming {
 		static ColorStyle() {
 			StandardNames = new StandardColorStyleNames();
 
-			Default = new ColorStyle("Empty", Color.Empty);
+			Default = new ColorStyle(DefaultStyleName, Color.Empty);
 		}
 
 
@@ -1004,8 +1009,14 @@ namespace Dataweb.Diagramming {
 		#region IDisposable Members
 
 		public override void Dispose() {
-			baseColorStyle.Dispose();
-			additionalColorStyle.Dispose();
+			if (baseColorStyle != null) {
+				baseColorStyle.Dispose();
+				baseColorStyle = null;
+			}
+			if (additionalColorStyle != null) {
+				additionalColorStyle.Dispose();
+				additionalColorStyle = null;
+			}
 			if (namedImage != null) {
 				namedImage.Dispose();
 				namedImage = null;
@@ -1023,7 +1034,7 @@ namespace Dataweb.Diagramming {
 			additionalColorStyle = (IColorStyle)reader.ReadColorStyle();
 			fillMode = (FillMode)reader.ReadByte();
 			fillPattern = (HatchStyle)reader.ReadByte();
-			imageLayout = (DiagrammingImageLayout)reader.ReadByte();
+			imageLayout = (nShapeImageLayout)reader.ReadByte();
 			imageTransparency = reader.ReadByte();
 			imageGamma = reader.ReadFloat();
 			imageCompressionQuality = reader.ReadByte();
@@ -1102,19 +1113,27 @@ namespace Dataweb.Diagramming {
 				this.ImageGammaCorrection = ((FillStyle)style).ImageGammaCorrection;
 				this.ImageLayout = ((FillStyle)style).ImageLayout;
 				this.ImageTransparency = ((FillStyle)style).ImageTransparency;
-			} else throw new DiagrammingException("Style is not of the required Type.");
+			} else throw new nShapeException("Style is not of the required Type.");
 		}
 
 
 		public IColorStyle BaseColorStyle {
-			get { return baseColorStyle; }
-			set { baseColorStyle = value; }
+			get { return baseColorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			set {
+				if (value == Dataweb.nShape.ColorStyle.Default)
+					baseColorStyle = Dataweb.nShape.ColorStyle.Default;
+				else baseColorStyle = value;
+			}
 		}
 
 
 		public IColorStyle AdditionalColorStyle {
-			get { return additionalColorStyle; }
-			set { additionalColorStyle = value; }
+			get { return additionalColorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			set {
+				if (value == Dataweb.nShape.ColorStyle.Default)
+					additionalColorStyle = Dataweb.nShape.ColorStyle.Default;
+				else additionalColorStyle = value;
+			}
 		}
 
 
@@ -1135,14 +1154,14 @@ namespace Dataweb.Diagramming {
 		}
 
 
-		[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingNamedImageEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.nShape.WinFormsUI.nShapeNamedImageEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 		public NamedImage Image {
 			get { return namedImage; }
 			set { namedImage = value; }
 		}
 
 
-		public DiagrammingImageLayout ImageLayout {
+		public nShapeImageLayout ImageLayout {
 			get { return imageLayout; }
 			set { imageLayout = value; }
 		}
@@ -1152,7 +1171,7 @@ namespace Dataweb.Diagramming {
 			get { return imageTransparency; }
 			set {
 				if (value < 0 || value > 100)
-					throw new DiagrammingException("The value has to be between 0 and 100.");
+					throw new nShapeException("The value has to be between 0 and 100.");
 				imageTransparency = value;
 			}
 		}
@@ -1181,7 +1200,7 @@ namespace Dataweb.Diagramming {
 			get { return imageCompressionQuality; }
 			set {
 				if (value < 0 || value > 100)
-					throw new DiagrammingException("Value has to be between 0 and 100.");
+					throw new nShapeException("Value has to be between 0 and 100.");
 				imageCompressionQuality = value;
 			}
 		}
@@ -1209,28 +1228,28 @@ namespace Dataweb.Diagramming {
 		static FillStyle() {
 			StandardNames = new StandardFillStyleNames();
 
-			Default = new FillStyle("Default Fill Style");
-			Default.AdditionalColorStyle = ColorStyle.Default;
-			Default.BaseColorStyle = ColorStyle.Default;
+			Default = new FillStyle(DefaultStyleName);
+			Default.AdditionalColorStyle = Dataweb.nShape.ColorStyle.Default;
+			Default.BaseColorStyle = Dataweb.nShape.ColorStyle.Default;
 			Default.ConvertToGrayScale = false;
 			Default.FillMode = FillMode.Solid;
 			Default.FillPattern = HatchStyle.Cross;
 			Default.Image = null;
-			Default.ImageLayout = DiagrammingImageLayout.Original;
+			Default.ImageLayout = nShapeImageLayout.Original;
 		}
 
 
 		#region Fields
 
 		// Color and Pattern Stuff
-		private IColorStyle baseColorStyle = ColorStyle.Default;
-		private IColorStyle additionalColorStyle = ColorStyle.Default;
+		private IColorStyle baseColorStyle = null;
+		private IColorStyle additionalColorStyle = null;
 		private FillMode fillMode = FillMode.Gradient;
 		private HatchStyle fillPattern = HatchStyle.BackwardDiagonal;
 		private short gradientAngle = 45;
 		// Image Stuff
 		private NamedImage namedImage = null;
-		private DiagrammingImageLayout imageLayout = DiagrammingImageLayout.CenterTile;
+		private nShapeImageLayout imageLayout = nShapeImageLayout.CenterTile;
 		private byte imageTransparency = 0;
 		private float imageGamma = 1f;
 		private byte imageCompressionQuality = 100;
@@ -1261,8 +1280,10 @@ namespace Dataweb.Diagramming {
 		#region IDisposable Members
 
 		public override void Dispose() {
-			colorStyle.Dispose();
-			colorStyle = null;
+			if (colorStyle != null) {
+				colorStyle.Dispose();
+				colorStyle = null;
+			}
 			if (dashPattern != null)
 				dashPattern = null;
 		}
@@ -1322,15 +1343,15 @@ namespace Dataweb.Diagramming {
 				this.DashType = ((LineStyle)style).DashType;
 				this.LineJoin = ((LineStyle)style).LineJoin;
 				this.LineWidth = ((LineStyle)style).LineWidth;
-			} else throw new DiagrammingException("Style is not of the required type.");
+			} else throw new nShapeException("Style is not of the required type.");
 		}
 
 
 		public int LineWidth {
 			get { return lineWidth; }
 			set {
-				if (lineWidth <= 0)
-					throw new DiagrammingException("Value has to be greater than 0.");
+				if (value <= 0)
+					throw new nShapeException("Value has to be greater than 0.");
 				lineWidth = value;
 			}
 		}
@@ -1343,8 +1364,12 @@ namespace Dataweb.Diagramming {
 
 
 		public IColorStyle ColorStyle {
-			get { return colorStyle; }
-			set { colorStyle = value; }
+			get { return colorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			set {
+				if (value == Dataweb.nShape.ColorStyle.Default)
+					colorStyle = Dataweb.nShape.ColorStyle.Default;
+				else colorStyle = value;
+			}
 		}
 
 
@@ -1369,7 +1394,7 @@ namespace Dataweb.Diagramming {
 						dashPattern = new float[2] { lineDotLen, lineDotSpace };
 						break;
 					default:
-						throw new DiagrammingUnsupportedValueException(dashStyle);
+						throw new nShapeUnsupportedValueException(dashStyle);
 				}
 			}
 		}
@@ -1395,8 +1420,8 @@ namespace Dataweb.Diagramming {
 		static LineStyle() {
 			StandardNames = new StandardLineStyleNames();
 
-			Default = new LineStyle("Default Line Style");
-			Default.ColorStyle = Dataweb.Diagramming.ColorStyle.Default;
+			Default = new LineStyle(DefaultStyleName);
+			Default.ColorStyle = Dataweb.nShape.ColorStyle.Default;
 			Default.DashCap = DashCap.Round;
 			Default.DashType = DashType.Solid;
 			Default.LineJoin = LineJoin.Round;
@@ -1407,7 +1432,7 @@ namespace Dataweb.Diagramming {
 		#region Fields
 
 		private int lineWidth = 1;
-		private IColorStyle colorStyle = Dataweb.Diagramming.ColorStyle.Default;
+		private IColorStyle colorStyle = null;
 		private DashType dashStyle = DashType.Solid;
 		private DashCap dashCap = DashCap.Round;
 		private LineJoin lineJoin = LineJoin.Round;
@@ -1446,7 +1471,10 @@ namespace Dataweb.Diagramming {
 		#region IDisposable Members
 
 		public override void Dispose() {
-			// nothing to do
+			if (shadowColorStyle != null) {
+				shadowColorStyle.Dispose();
+				shadowColorStyle = null;
+			}
 		}
 
 		#endregion
@@ -1498,7 +1526,7 @@ namespace Dataweb.Diagramming {
 
 				this.ShowGradients = ((ShapeStyle)style).ShowGradients;
 				this.ShowShadows = ((ShapeStyle)style).ShowShadows;
-			} else throw new DiagrammingException("Style is not of the required type.");
+			} else throw new nShapeException("Style is not of the required type.");
 		}
 
 
@@ -1521,8 +1549,12 @@ namespace Dataweb.Diagramming {
 
 
 		public IColorStyle ShadowColor {
-			get { return shadowColorStyle; }
-			set { shadowColorStyle = value; }
+			get { return shadowColorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			set {
+				if (value == Dataweb.nShape.ColorStyle.Default)
+					shadowColorStyle = Dataweb.nShape.ColorStyle.Default;
+				else shadowColorStyle = value;
+			}
 		}
 
 
@@ -1536,7 +1568,7 @@ namespace Dataweb.Diagramming {
 		private bool roundedCorners = false;
 		private bool showShadows = true;
 		private bool showGradients = true;
-		private IColorStyle shadowColorStyle = Dataweb.Diagramming.ColorStyle.Default;
+		private IColorStyle shadowColorStyle = null;
 
 		#endregion
 	}
@@ -1620,7 +1652,7 @@ namespace Dataweb.Diagramming {
 				this.Padding = ((ParagraphStyle)style).Padding;
 				this.Trimming = ((ParagraphStyle)style).Trimming;
 				this.WordWrap = ((ParagraphStyle)style).WordWrap;
-			} else throw new DiagrammingException("Style is not of the required type.");
+			} else throw new nShapeException("Style is not of the required type.");
 		}
 
 
@@ -1660,7 +1692,7 @@ namespace Dataweb.Diagramming {
 		static ParagraphStyle() {
 			StandardNames = new StandardParagraphStyleNames();
 
-			Default = new ParagraphStyle("Default Paragraph Style");
+			Default = new ParagraphStyle(DefaultStyleName);
 			Default.Alignment = ContentAlignment.MiddleCenter;
 			Default.Padding = TextPadding.Empty;
 			Default.Trimming = StringTrimming.None;
@@ -1852,7 +1884,6 @@ namespace Dataweb.Diagramming {
 		}
 
 
-
 		protected class StylePair<T> where T : class, IStyle {
 
 			public StylePair(T baseStyle, T previewStyle) {
@@ -1865,6 +1896,7 @@ namespace Dataweb.Diagramming {
 			public T PreviewStyle;
 
 		}
+
 
 		protected SortedList<string, StylePair<TStyle>> internalList = null;
 	}
@@ -3180,7 +3212,7 @@ namespace Dataweb.Diagramming {
 			else if (style is ShapeStyle)
 				return shapeStyles.Contains((ShapeStyle)style);
 			else
-				throw new DiagrammingInternalException(string.Format("Unexpected style type '{0}'.", style.GetType().Name));
+				throw new nShapeInternalException(string.Format("Unexpected style type '{0}'.", style.GetType().Name));
 		}
 
 
@@ -3200,7 +3232,7 @@ namespace Dataweb.Diagramming {
 				return shapeStyles.IsStandardStyle((ShapeStyle)style);
 			else if (style is ParagraphStyle)
 				return paragraphStyles.IsStandardStyle((ParagraphStyle)style);
-			else throw new DiagrammingUnsupportedValueException(style);
+			else throw new nShapeUnsupportedValueException(style);
 		}
 
 
@@ -3237,7 +3269,7 @@ namespace Dataweb.Diagramming {
 				if (paragraphStyles.Contains(style.Name))
 					return paragraphStyles[style.Name];
 				else return null;
-			} else throw new DiagrammingUnsupportedValueException(style);
+			} else throw new nShapeUnsupportedValueException(style);
 		}
 
 
@@ -3299,7 +3331,7 @@ namespace Dataweb.Diagramming {
 				paragraphStyles.Add((ParagraphStyle)style, CreatePreviewStyle((IParagraphStyle)style));
 			} else if (style is ShapeStyle) {
 				shapeStyles.Add((ShapeStyle)style, CreatePreviewStyle((IShapeStyle)style));
-			} else throw new DiagrammingUnsupportedValueException(style);
+			} else throw new nShapeUnsupportedValueException(style);
 		}
 
 
@@ -3319,7 +3351,7 @@ namespace Dataweb.Diagramming {
 				paragraphStyles.Remove((ParagraphStyle)style);
 			else if (style is ShapeStyle)
 				shapeStyles.Remove((ShapeStyle)style);
-			else throw new DiagrammingUnsupportedValueException(style);
+			else throw new nShapeUnsupportedValueException(style);
 		}
 
 
@@ -3340,7 +3372,7 @@ namespace Dataweb.Diagramming {
 				paragraphStyles.Remove(name);
 			else if (styleType == typeof(ShapeStyle))
 				shapeStyles.Remove(name);
-			else throw new DiagrammingUnsupportedValueException(styleType);
+			else throw new nShapeUnsupportedValueException(styleType);
 		}
 
 
@@ -3500,7 +3532,7 @@ namespace Dataweb.Diagramming {
 				return paragraphStyles[name];
 			else if (styleType == typeof(ShapeStyle))
 				return shapeStyles[name];
-			else throw new DiagrammingException("Unexpected style type '{0}'.", styleType.Name);
+			else throw new nShapeException("Unexpected style type '{0}'.", styleType.Name);
 		}
 
 
@@ -3534,7 +3566,7 @@ namespace Dataweb.Diagramming {
 				//ShapeStyle style = (ShapeStyle)baseStyle;
 				//ShapeStyle previewStyle = CreatePreviewStyle(style);
 				//shapeStyles.SetPreviewStyle(style, previewStyle);
-			} else throw new DiagrammingException("Unexpected style type '{0}'.", baseStyle.GetType().Name);
+			} else throw new nShapeException("Unexpected style type '{0}'.", baseStyle.GetType().Name);
 		}
 
 

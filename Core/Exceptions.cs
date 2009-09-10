@@ -2,36 +2,36 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	// TODO 3: Redesign exceptions
-	public class DiagrammingException : Exception {
+	public class nShapeException : Exception {
 
-		public DiagrammingException(string message) : base(message) { }
+		public nShapeException(string message) : base(message) { }
 
 
-		public DiagrammingException(string format, params object[] args)
+		public nShapeException(string format, params object[] args)
 			: base(string.Format(format, args), null) {
 		}
 
 
-		public DiagrammingException(string format, Exception innerException, params object[] args)
+		public nShapeException(string format, Exception innerException, params object[] args)
 			: base(string.Format(format, args), innerException) {
 		}
 
 	}
 
 
-	public class DiagrammingSecurityException : DiagrammingException {
+	public class nShapeSecurityException : nShapeException {
 
-		public DiagrammingSecurityException(Permission permission)
+		public nShapeSecurityException(Permission permission)
 			: base("Required permission '{0}' is not granted.", permission) {
 		}
 
-		public DiagrammingSecurityException(ICommand command)
+		public nShapeSecurityException(ICommand command)
 			: base((command is Command) ?
 			string.Format("'{0}' denied: Required permission '{1}' is not granted.", command.Description, ((Command)command).RequiredPermission)
 			: string.Format("'{0}' denied: Required permission is not granted.", (command != null) ? command.Description : string.Empty)) {
@@ -40,47 +40,47 @@ namespace Dataweb.Diagramming {
 	}
 
 
-	public class DiagrammingInternalException : Exception {
+	public class nShapeInternalException : Exception {
 
-		public DiagrammingInternalException(string message) : base(message) { }
+		public nShapeInternalException(string message) : base(message) { }
 
 
-		public DiagrammingInternalException(string format, params object[] args)
+		public nShapeInternalException(string format, params object[] args)
 			: base(string.Format(format, args), null) {
 		}
 
 
-		public DiagrammingInternalException(string format, Exception innerException, params object[] args)
+		public nShapeInternalException(string format, Exception innerException, params object[] args)
 			: base(string.Format(format, args), innerException) {
 		}
 	}
 
 
-	public class DiagrammingUnsupportedValueException : DiagrammingInternalException {
-		public DiagrammingUnsupportedValueException(Type type, object value)
+	public class nShapeUnsupportedValueException : nShapeInternalException {
+		public nShapeUnsupportedValueException(Type type, object value)
 			: base("Unsupported {0} value '{1}'.", type.Name, value) {
 		}
-		public DiagrammingUnsupportedValueException(object value)
+		public nShapeUnsupportedValueException(object value)
 			: base((value != null) ? string.Format("Unsupported {0} value '{1}'.", value.GetType().Name, value) : "Unsupported value.") {
 		}
 	}
 
 
-	public class DiagrammingInterfaceNotSupportedException : DiagrammingInternalException {
-		public DiagrammingInterfaceNotSupportedException(Type instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
-		public DiagrammingInterfaceNotSupportedException(string instanceTypeName, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceTypeName, neededInterface.FullName) { }
-		public DiagrammingInterfaceNotSupportedException(ShapeType instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
-		public DiagrammingInterfaceNotSupportedException(ModelObjectType instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
+	public class nShapeInterfaceNotSupportedException : nShapeInternalException {
+		public nShapeInterfaceNotSupportedException(Type instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
+		public nShapeInterfaceNotSupportedException(string instanceTypeName, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceTypeName, neededInterface.FullName) { }
+		public nShapeInterfaceNotSupportedException(ShapeType instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
+		public nShapeInterfaceNotSupportedException(ModelObjectType instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
 	}
 
 
-	public class DiagrammingMappingNotSupportedException : DiagrammingInternalException {
-		public DiagrammingMappingNotSupportedException(Type shapeType, Type modelType) : base("Mapping between proeprty types '{0}' and '{1}' are not supported.", modelType.Name, shapeType.Name) { }
+	public class nShapeMappingNotSupportedException : nShapeInternalException {
+		public nShapeMappingNotSupportedException(Type shapeType, Type modelType) : base("Mapping between proeprty types '{0}' and '{1}' are not supported.", modelType.Name, shapeType.Name) { }
 	}
 
 
-	public class DiagrammingPropertyNotSetException : DiagrammingInternalException {
-		public DiagrammingPropertyNotSetException(string propertyName) : base("Property '{0}' is not set.") { }
-		public DiagrammingPropertyNotSetException(object propertyOwner, string propertyName) : base("Property '{0}' of {1} is not set.", propertyName, propertyOwner.GetType().Name) { }
+	public class nShapePropertyNotSetException : nShapeInternalException {
+		public nShapePropertyNotSetException(string propertyName) : base("Property '{0}' is not set.") { }
+		public nShapePropertyNotSetException(object propertyOwner, string propertyName) : base("Property '{0}' of {1} is not set.", propertyName, propertyOwner.GetType().Name) { }
 	}
 }

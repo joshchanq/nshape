@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an library is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an library.
-[assembly: AssemblyTitle("Diagramming.WinFormsUI")]
-[assembly: AssemblyDescription("Diagram Editing UI Components for .NET 2.0")]
+[assembly: AssemblyTitle("nShape.WinFormsUI")]
+[assembly: AssemblyDescription("nShape UI Components for .NET 2.0")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb - www.dataweb.de")]
-[assembly: AssemblyProduct("dataweb Diagramming")]
-[assembly: AssemblyCopyright("Copyright © dataweb GmbH 2008")]
+[assembly: AssemblyProduct("nShape UI Components for .NET 2.0")]
+[assembly: AssemblyCopyright("Copyright © dataweb GmbH 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

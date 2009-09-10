@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Threading;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public class Model : IEntity {
 
@@ -132,7 +132,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 	/// <summary>
-	/// Defines the interface between the diagramming framework and the model objects.
+	/// Defines the interface between the nShape framework and the model objects.
 	/// </summary>
 	public interface IModelObject : IEntity {
 
@@ -215,7 +215,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// Gets the possible actions for this model object.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<DiagrammingAction> GetActions();
+		IEnumerable<nShapeAction> GetActions();
 
 	}
 
@@ -561,21 +561,21 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		public virtual int GetInteger(int propertyId) {
-			throw new DiagrammingException("No integer property with PropertyId {0} found.", propertyId);
+			throw new nShapeException("No integer property with PropertyId {0} found.", propertyId);
 		}
 
 
 		public virtual float GetFloat(int propertyId) {
-			throw new DiagrammingException("No float property with PropertyId {0} found.", propertyId);
+			throw new nShapeException("No float property with PropertyId {0} found.", propertyId);
 		}
 
 
 		public virtual string GetString(int propertyId) {
-			throw new DiagrammingException("No string property with PropertyId {0} found.", propertyId);
+			throw new nShapeException("No string property with PropertyId {0} found.", propertyId);
 		}
 
 
-		public abstract IEnumerable<DiagrammingAction> GetActions();
+		public abstract IEnumerable<nShapeAction> GetActions();
 
 
 		public abstract void Connect(TerminalId ownTerminalId, IModelObject targetConnector, TerminalId targetTerminalId);
@@ -593,7 +593,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <override></override>
 		public void AttachShape(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
-			if (shapes.ContainsKey(shape)) throw new DiagrammingException("{0} '{1}' is already attached to this shape.", Type.Name, Name);
+			if (shapes.ContainsKey(shape)) throw new nShapeException("{0} '{1}' is already attached to this shape.", Type.Name, Name);
 			shapes.Add(shape, null);
 		}
 
@@ -601,7 +601,7 @@ namespace Dataweb.Diagramming.Advanced {
 		/// <override></override>
 		public void DetachShape(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
-			if (!shapes.ContainsKey(shape)) throw new DiagrammingException("{0} '{1}' is not attached to this shape.", Type.Name, Name);
+			if (!shapes.ContainsKey(shape)) throw new nShapeException("{0} '{1}' is not attached to this shape.", Type.Name, Name);
 			shapes.Remove(shape);
 		}
 
@@ -766,7 +766,7 @@ namespace Dataweb.Diagramming.Advanced {
 		}
 
 
-		public override IEnumerable<DiagrammingAction> GetActions() {
+		public override IEnumerable<nShapeAction> GetActions() {
 			//yield return new NotImplementedAction("Set State");
 			yield break;
 		}

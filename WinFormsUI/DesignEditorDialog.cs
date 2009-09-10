@@ -7,11 +7,11 @@ using System.Drawing.Text;
 using System.Reflection;
 using System.Windows.Forms;
 
-using Dataweb.Diagramming.Advanced;
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Advanced;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class DesignEditorDialog : Form {
 
@@ -185,7 +185,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 
 		private void designPresenter_DesignSelected(object sender, EventArgs e) {
-			DiagrammingStyleEditor.Design = designPresenter.SelectedDesign;
+			nShapeStyleEditor.Design = designPresenter.SelectedDesign;
 			SetButtonStates();
 		}
 

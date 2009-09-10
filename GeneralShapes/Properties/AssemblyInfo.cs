@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an library is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an library.
-[assembly: AssemblyTitle("DiagramController.Shapes.General")]
-[assembly: AssemblyDescription("DiagramController Editor Basic Shapes for .NET 2.0")]
+[assembly: AssemblyTitle("nShapes General Shapes")]
+[assembly: AssemblyDescription("nShape Basic Shapes for .NET 2.0")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH - www.dataweb.de")]
-[assembly: AssemblyProduct("DiagramController Editor Basic Shapes")]
+[assembly: AssemblyProduct("nShape Basic Shapes")]
 [assembly: AssemblyCopyright("Copyright © dataweb GmbH 2007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

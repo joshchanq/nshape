@@ -5,12 +5,12 @@ using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using Dataweb.Diagramming.Controllers;
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Controllers;
+using Dataweb.nShape.Advanced;
 using System.Drawing.Imaging;
 using System.Drawing.Drawing2D;
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class ExportDiagramDialog : Form {
 		
@@ -62,7 +62,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void emfPlusRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (emfPlusRadioButton.Checked) {
-				imageFormat = DiagrammingImageFormat.EmfPlus;
+				imageFormat = nShapeImageFormat.EmfPlus;
 				descriptionLabel.Text = emfPlusDescription;
 				EnableResolutionAndQualitySelection();
 				RefreshPreview();
@@ -72,7 +72,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void emfRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (emfRadioButton.Checked) {
-				imageFormat = DiagrammingImageFormat.Emf;
+				imageFormat = nShapeImageFormat.Emf;
 				descriptionLabel.Text = emfDescription;
 				EnableResolutionAndQualitySelection();
 				RefreshPreview();
@@ -82,7 +82,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void pngRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (pngRadioButton.Checked) {
-				imageFormat = DiagrammingImageFormat.Png;
+				imageFormat = nShapeImageFormat.Png;
 				descriptionLabel.Text = pngDescription;
 				EnableResolutionAndQualitySelection();
 				RefreshPreview();
@@ -92,7 +92,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void jpgRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (jpgRadioButton.Checked) {
-				imageFormat = DiagrammingImageFormat.Jpeg;
+				imageFormat = nShapeImageFormat.Jpeg;
 				descriptionLabel.Text = jpgDescription;
 				EnableResolutionAndQualitySelection();
 				backColorCheckBox.Checked = true;
@@ -103,7 +103,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 
 		private void bmpRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (bmpRadioButton.Checked) {
-				imageFormat = DiagrammingImageFormat.Bmp;
+				imageFormat = nShapeImageFormat.Bmp;
 				descriptionLabel.Text = bmpDescription;
 				EnableResolutionAndQualitySelection();
 				backColorCheckBox.Checked = true;
@@ -139,14 +139,14 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void browseButton_Click(object sender, EventArgs e) {
 			string fileFilter = null;
 			switch (imageFormat) {
-				case DiagrammingImageFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
-				case DiagrammingImageFormat.EmfPlus: 
-				case DiagrammingImageFormat.Emf: fileFilter = "Enhanced Meta Files|*.emf|All Files|*.*"; break;
-				case DiagrammingImageFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
-				case DiagrammingImageFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
-				case DiagrammingImageFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
-				case DiagrammingImageFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
-				default: throw new DiagrammingUnsupportedValueException(imageFormat);
+				case nShapeImageFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
+				case nShapeImageFormat.EmfPlus: 
+				case nShapeImageFormat.Emf: fileFilter = "Enhanced Meta Files|*.emf|All Files|*.*"; break;
+				case nShapeImageFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
+				case nShapeImageFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
+				case nShapeImageFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
+				case nShapeImageFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
+				default: throw new nShapeUnsupportedValueException(imageFormat);
 			}
 			saveFileDialog.Filter = fileFilter;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -250,7 +250,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void previewPanel_Paint(object sender, PaintEventArgs e) {
 			if (previewCheckBox.Checked) {
 				// Apply graphics settings
-				GdiHelpers.ApplyGraphicsSettings(e.Graphics, DiagrammingRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, nShapeRenderingQuality.MaximumQuality);
 				// Create image
 				if (image == null) CreateImage();
 				if (imgAttribs == null) imgAttribs = GdiHelpers.GetImageAttributes(imageLayout);
@@ -315,24 +315,24 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void ExportImage() {
 			if (image == null) CreateImage();
 			switch (imageFormat) {
-				case DiagrammingImageFormat.Emf:
-				case DiagrammingImageFormat.EmfPlus:
+				case nShapeImageFormat.Emf:
+				case nShapeImageFormat.EmfPlus:
 					if (exportToClipboard)
 						EmfHelper.PutEnhMetafileOnClipboard(this.Handle, (Metafile)image.Clone());
 					else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
 					break;
-				case DiagrammingImageFormat.Bmp:
-				case DiagrammingImageFormat.Gif:
-				case DiagrammingImageFormat.Jpeg:
-				case DiagrammingImageFormat.Png:
-				case DiagrammingImageFormat.Tiff:
+				case nShapeImageFormat.Bmp:
+				case nShapeImageFormat.Gif:
+				case nShapeImageFormat.Jpeg:
+				case nShapeImageFormat.Png:
+				case nShapeImageFormat.Tiff:
 					if (exportToClipboard)
 						Clipboard.SetImage((Image)image.Clone());
 					else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
 					break;
-				case DiagrammingImageFormat.Svg:
+				case nShapeImageFormat.Svg:
 					throw new NotImplementedException();
-				default: throw new DiagrammingUnsupportedValueException(imageFormat);
+				default: throw new nShapeUnsupportedValueException(imageFormat);
 			}
 		}
 		
@@ -376,15 +376,15 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private void EnableResolutionAndQualitySelection() {
 			bool enable;
 			switch (imageFormat) {
-				case DiagrammingImageFormat.EmfPlus:
-				case DiagrammingImageFormat.Emf:
-				case DiagrammingImageFormat.Svg:
+				case nShapeImageFormat.EmfPlus:
+				case nShapeImageFormat.Emf:
+				case nShapeImageFormat.Svg:
 					enable = false; break;
-				case DiagrammingImageFormat.Bmp:
-				case DiagrammingImageFormat.Gif:
-				case DiagrammingImageFormat.Jpeg:
-				case DiagrammingImageFormat.Png:
-				case DiagrammingImageFormat.Tiff:
+				case nShapeImageFormat.Bmp:
+				case nShapeImageFormat.Gif:
+				case nShapeImageFormat.Jpeg:
+				case nShapeImageFormat.Png:
+				case nShapeImageFormat.Tiff:
 					enable = !exportToClipboard; break;
 				default: enable = false; break;
 			}
@@ -404,7 +404,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private const string bmpDescription = "Bitmap (*.png)\nCreates an uncompressed bitmap image file. The Bmp file format does not support transparency.";
 
 		// Rendering stuff
-		private const DiagrammingImageLayout imageLayout = DiagrammingImageLayout.Fit;
+		private const nShapeImageLayout imageLayout = nShapeImageLayout.Fit;
 		private Image image = null;
 		private Rectangle imageBounds = Rectangle.Empty;
 
@@ -415,7 +415,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 		private IEnumerable<Shape> shapes;
 
 		// Export stuff
-		private DiagrammingImageFormat imageFormat;
+		private nShapeImageFormat imageFormat;
 		private bool exportToClipboard;
 		private byte compressionQuality = 75;
 		private string filePath = null;

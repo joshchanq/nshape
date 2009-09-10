@@ -25,20 +25,20 @@ using System.Collections;
 using System.Threading;
 using System.Diagnostics;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming {
+namespace Dataweb.nShape {
 
 	/// <summary>
-	/// Collection of elements making up a diagramming project.
+	/// Collection of elements making up a nShape project.
 	/// </summary>
 	/// <status>reviewed</status>
 	[ToolboxItem(true)]
 	public sealed class Project : Component, IRegistrar, IStyleSetProvider {
 
 		/// <summary>
-		/// Checks whether a name is a valid identifier for diagramming.
+		/// Checks whether a name is a valid identifier for nShape.
 		/// </summary>
 		/// <param name="name"></param>
 		public static bool IsValidName(string name) {
@@ -57,10 +57,10 @@ namespace Dataweb.Diagramming {
 		public static void AssertSupportedVersion(bool save, int version) {
 			if (save) {
 				if (version < FirstSupportedSaveVersion || version > LastSupportedSaveVersion)
-					throw new DiagrammingException("Unsupported save version");
+					throw new nShapeException("Unsupported save version");
 			} else {
 				if (version < FirstSupportedLoadVersion || version > LastSupportedLoadVersion)
-					throw new DiagrammingException("Unsupported load version");
+					throw new nShapeException("Unsupported load version");
 			}
 		}
 
@@ -107,11 +107,11 @@ namespace Dataweb.Diagramming {
 
 
 		/// <summary>
-		/// Specifies the directories, where diagramming libraries are looked for.
+		/// Specifies the directories, where nShape libraries are looked for.
 		/// </summary>
 		[Description("A collection of paths where shape and model library assemblies are expected to be found.")]
-		[TypeConverter("Dataweb.Diagramming.WinFormsUI.DiagrammingTextConverter, Dataweb.Diagramming.WinFormsUI")]
-		[Editor("Dataweb.Diagramming.WinFormsUI.DiagrammingTextEditor, Dataweb.Diagramming.WinFormsUI", typeof(UITypeEditor))]
+		[TypeConverter("Dataweb.nShape.WinFormsUI.nShapeTextConverter, Dataweb.nShape.WinFormsUI")]
+		[Editor("Dataweb.nShape.WinFormsUI.nShapeTextEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
 		public IList<string> LibrarySearchPaths {
 			get { return librarySearchPaths; }
 			set {
@@ -124,7 +124,7 @@ namespace Dataweb.Diagramming {
 		/// <summary>
 		/// Specifies the repository used to store the project.
 		/// </summary>
-		[Category("Diagramming")]
+		[Category("nShape")]
 		[Description("Specifies the IRepository class used for loading/saving project and diagram data.")]
 		public IRepository Repository {
 			get { return repository; }
@@ -237,7 +237,7 @@ namespace Dataweb.Diagramming {
 				}
 			}
 			if (design == null)
-				throw new DiagrammingException("A design named '{0}' does not exist.", designName);
+				throw new nShapeException("A design named '{0}' does not exist.", designName);
 			ApplyDesign(design);
 		}
 
@@ -268,10 +268,10 @@ namespace Dataweb.Diagramming {
 		/// <summary>
 		/// Adds a dynamic library to the project.
 		/// </summary>
-		/// <param name="libraryName">Full assembly projectName of library.</param>
-		public void AddLibraryByName(string name) {
-			if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name");
-			Assembly a = Assembly.Load(name);
+		/// <param name="assemblyName">Full assembly projectName of library.</param>
+		public void AddLibraryByName(string assemblyName) {
+			if (string.IsNullOrEmpty(assemblyName)) throw new ArgumentNullException("assemblyName");
+			Assembly a = Assembly.Load(assemblyName);
 			AddLibrary(a);
 		}
 
@@ -279,7 +279,7 @@ namespace Dataweb.Diagramming {
 		/// <summary>
 		/// Adds a dynamic library to the project.
 		/// </summary>
-		/// <param name="libraryPath">Complete file path to the library assembly.</param>
+		/// <param name="assemblyPath">Complete file path to the library assembly.</param>
 		public void AddLibraryByFilePath(string assemblyPath) {
 			if (assemblyPath == null) throw new ArgumentNullException("libraryFilePath");
 			if (!assemblyPath.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
@@ -301,7 +301,7 @@ namespace Dataweb.Diagramming {
 					}
 				}
 				if (!File.Exists(assemblyPath))
-					throw new DiagrammingException("Assembly '{0}' cannot be found at the specified path.", assemblyPath);
+					throw new nShapeException("Assembly '{0}' cannot be found at the specified path.", assemblyPath);
 			}
 			Assembly a = Assembly.LoadFile(assemblyPath);
 			AddLibrary(a);
@@ -405,7 +405,7 @@ namespace Dataweb.Diagramming {
 		public event EventHandler Closed;
 
 		/// <summary>
-		/// Occurs when a diagramming library was loaded.
+		/// Occurs when a nShape library was loaded.
 		/// </summary>
 		public event EventHandler<LibraryLoadedEventArgs> LibraryLoaded;
 
@@ -434,10 +434,11 @@ namespace Dataweb.Diagramming {
 		void IRegistrar.RegisterShapeType(ShapeType shapeType) {
 			if (initializingLibrary == null) 
 				throw new InvalidOperationException("RegisterShapeType can only be called while a library is initializing.");
-			if (shapeType == null) 
-				throw new ArgumentNullException("shapeType");
+			if (string.IsNullOrEmpty(initializingLibrary.Name))
+				throw new InvalidOperationException("RegisterLibrary has not been called or the library has an empty library name.");
+			if (shapeType == null) throw new ArgumentNullException("shapeType");
 			if (shapeType.LibraryName != initializingLibrary.Name)
-				throw new InvalidOperationException("All shapes of a registering library must have the library's library name.");
+				throw new InvalidOperationException(string.Format("The library name of shape type '{0}' is '{1}' instead of '{2}'.", shapeType.GetType().Name, shapeType.LibraryName, initializingLibrary.Name));
 			//
 			shapeType.StyleSetProvider = this;
 			shapeTypes.Add(shapeType);
@@ -454,12 +455,15 @@ namespace Dataweb.Diagramming {
 		void IRegistrar.RegisterModelObjectType(ModelObjectType modelObjectType) {
 			if (initializingLibrary == null)
 				throw new InvalidOperationException("RegisterModelObjectType can only be called while a library is initializing.");
-			if (modelObjectType == null) 
-				throw new ArgumentNullException("modelObjectType");
+			if (string.IsNullOrEmpty(initializingLibrary.Name))
+				throw new InvalidOperationException("RegisterLibrary has not been called or the library has an empty library name.");
+			if (modelObjectType == null) throw new ArgumentNullException("modelObjectType");
 			if (!Project.IsValidName(modelObjectType.Name)) 
 				throw new ArgumentException("'{0}' is not a valid model object type name.", modelObjectType.Name);
 			if (modelObjectType.LibraryName != initializingLibrary.Name)
 				throw new InvalidOperationException("All model objects of a registering library must have the library's library name.");
+			if (modelObjectType.LibraryName != initializingLibrary.Name)
+				throw new InvalidOperationException(string.Format("The library name of model object type '{0}' is '{1}' instead of '{2}'.", modelObjectType.GetType().Name, modelObjectType.LibraryName, initializingLibrary.Name));
 			//
 			modelObjectTypes.Add(modelObjectType);
 			// Create a delegate that adds required parameters to the CreateModelObjectDelegate 
@@ -740,8 +744,9 @@ namespace Dataweb.Diagramming {
 
 
 		private Library DoLoadLibrary(Assembly a) {
+			if (a == null) throw new ArgumentNullException("a");
 			Library result = FindLibraryByAssemblyName(a.FullName);
-			if (result != null) throw new InvalidOperationException("Library is already loaded.");
+			if (result != null) throw new InvalidOperationException(string.Format("Library '{0}' is already loaded.", a.FullName));
 			result = new Library(a);
 			libraries.Add(result);
 			return result;
@@ -764,20 +769,20 @@ namespace Dataweb.Diagramming {
 			Type initializerType = null;
 			foreach (Type t in library.Assembly.GetTypes()) {
 				if (t is Type) {
-					if (t.Name.Equals("DiagrammingLibraryInitializer", StringComparison.InvariantCultureIgnoreCase)) {
+					if (t.Name.Equals(nShapeLibraryInitializerClassName, StringComparison.InvariantCultureIgnoreCase)) {
 						initializerType = t;
 						break;
 					}
 				}
 			}
 			if (initializerType == null)
-				throw new ArgumentException(string.Format("Assembly '{0}' is not a diagramming library. (It does not implement DiagrammingShapeLibaray).", library.Assembly.Location));
-			MethodInfo methodInfo = initializerType.GetMethod("Initialize");
+				throw new ArgumentException(string.Format("Assembly '{0}' is not a nShape library. (It does not implement static class {1}).", library.Assembly.Location, nShapeLibraryInitializerClassName));
+			MethodInfo methodInfo = initializerType.GetMethod(InitializeMethodName);
 			if (methodInfo == null)
-				throw new DiagrammingException(string.Format("Assembly '{0}' is not a Diagramming shape library. (It does not implement DiagrammingShapeLibaray.Initialize).", library.Assembly.FullName));
+				throw new nShapeException(string.Format("Assembly '{0}' is not a nShape shape library. (It does not implement {1}.{2}).", library.Assembly.FullName, nShapeLibraryInitializerClassName, InitializeMethodName));
 			this.initializingLibrary = library;
 			try {
-				initializerType.InvokeMember("Initialize", BindingFlags.Public | BindingFlags.InvokeMethod | BindingFlags.Static, null, null, registerArgs);
+				initializerType.InvokeMember(InitializeMethodName, BindingFlags.Public | BindingFlags.InvokeMethod | BindingFlags.Static, null, null, registerArgs);
 			} catch (TargetInvocationException ex) {
 				throw ex.InnerException;
 			} finally {
@@ -870,6 +875,8 @@ namespace Dataweb.Diagramming {
 		internal const int FirstSupportedLoadVersion = 2;
 		internal const int LastSupportedLoadVersion = 2;
 
+		public const string nShapeLibraryInitializerClassName = "nShapeLibraryInitializer";
+		public const string InitializeMethodName = "Initialize";
 
 		#region Fields
 

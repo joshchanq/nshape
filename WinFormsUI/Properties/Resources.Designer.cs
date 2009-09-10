@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Dataweb.Diagramming.WinFormsUI.Properties {
+namespace Dataweb.nShape.WinFormsUI.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Dataweb.Diagramming.WinFormsUI.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.Diagramming.WinFormsUI.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.nShape.WinFormsUI.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -88,9 +88,9 @@ namespace Dataweb.Diagramming.WinFormsUI.Properties {
             }
         }
         
-        internal static System.Drawing.Icon Dataweb_Diagramming {
+        internal static System.Drawing.Icon Dataweb_nShape {
             get {
-                object obj = ResourceManager.GetObject("Dataweb_Diagramming", resourceCulture);
+                object obj = ResourceManager.GetObject("Dataweb_nShape", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
             }
         }

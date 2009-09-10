@@ -7,7 +7,7 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	[ToolboxItem(false)]
 	public partial class FontFamilyListBox : ListBox {

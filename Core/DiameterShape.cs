@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public abstract class DiameterShapeBase : CaptionedShapeBase {
 
@@ -234,6 +234,7 @@ namespace Dataweb.Diagramming.Advanced {
 					int delta = value - internalDiameter;
 
 					internalDiameter = value;
+					ControlPointsHaveMoved();
 					InvalidateDrawCache();
 
 					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, delta);

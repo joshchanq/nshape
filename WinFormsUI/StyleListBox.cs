@@ -6,10 +6,10 @@ using System.Drawing.Text;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 	
 	public delegate void StyleSelectedEventHandler(object sender, EventArgs e);
 
@@ -283,7 +283,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 							break;
 
 						default:
-							throw new DiagrammingException(string.Format("Unexpected enum value '{0}'.", styleCategory));
+							throw new nShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
 					}
 				}
 				else
@@ -383,7 +383,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 							e.Graphics.DrawString(paragraphStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
 							break;
 						default:
-							throw new DiagrammingException(string.Format("Unexpected enum value '{0}'.", styleCategory));
+							throw new nShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
 					}
 				}
 			}
@@ -436,7 +436,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 			//else if (styleType == typeof(ShapeStyle))
 			//   StyleCategory = StyleCategory.ShapeStyle;
 			else
-				throw new DiagrammingException("Type StyleListBox does not support Type {0}.", styleType.Name);
+				throw new nShapeException("Type StyleListBox does not support Type {0}.", styleType.Name);
 		}
 
 
@@ -504,7 +504,7 @@ namespace Dataweb.Diagramming.WinFormsUI {
 					//   break;
 
 					default:
-						throw new DiagrammingException(string.Format("Unexpected enum value '{0}'.", StyleCategory));
+						throw new nShapeException(string.Format("Unexpected enum value '{0}'.", StyleCategory));
 				}
 			}
 			ResumeLayout();

@@ -11,7 +11,7 @@ using System.Runtime.InteropServices;
 using Dataweb.Utilities;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	/// <summary>
 	/// Abstract base class for shapes that draw themselves using a bitmap or
@@ -150,7 +150,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 
 		public override Point CalculateNormalVector(int x, int y) {
-			if (!ContainsPoint(x, y)) throw new DiagrammingException("Coordinates {0} are outside {1}.", new Point(x, y), Type.FullName);
+			if (!ContainsPoint(x, y)) throw new nShapeException("Coordinates {0} are outside {1}.", new Point(x, y), Type.FullName);
 			return Geometry.CalcNormalVectorOfRectangle(x - (w / 2), y - (h / 2), x + (w / 2), y + (h / 2), x, y, 100);
 		}
 
@@ -428,8 +428,11 @@ namespace Dataweb.Diagramming.Advanced {
 			foreach (EntityPropertyDefinition epd in ShapeBase.GetPropertyDefinitions(version))
 				yield return epd;
 			yield return new EntityFieldDefinition("FillStyle", typeof(object));
-			yield return new EntityFieldDefinition("ChacterStyle", typeof(object));
+			yield return new EntityFieldDefinition("CharacterStyle", typeof(object));
 			yield return new EntityFieldDefinition("ParagraphStyle", typeof(object));
+			yield return new EntityFieldDefinition("Text", typeof(string));
+			yield return new EntityFieldDefinition("Width", typeof(int));
+			yield return new EntityFieldDefinition("Height", typeof(int));
 		}
 
 
@@ -438,6 +441,12 @@ namespace Dataweb.Diagramming.Advanced {
 			fillStyle = reader.ReadFillStyle();
 			charStyle = reader.ReadCharacterStyle();
 			paragraphStyle = reader.ReadParagraphStyle();
+			
+			string txt = reader.ReadString();
+			if (caption == null) caption = new Caption(txt);
+			else caption.Text = txt;
+			w = reader.ReadInt32();
+			h = reader.ReadInt32();
 		}
 
 
@@ -446,6 +455,10 @@ namespace Dataweb.Diagramming.Advanced {
 			writer.WriteStyle(fillStyle);
 			writer.WriteStyle(charStyle);
 			writer.WriteStyle(ParagraphStyle);
+
+			writer.WriteString(Text);
+			writer.WriteInt32(w);
+			writer.WriteInt32(h);
 		}
 
 
@@ -462,7 +475,7 @@ namespace Dataweb.Diagramming.Advanced {
 				case 1: return 2;
 				case 2: return 3;
 				case 3: return 8;
-				default: throw new DiagrammingException("NotSupported control point index.");
+				default: throw new nShapeException("NotSupported control point index.");
 			}
 		}
 
@@ -634,7 +647,7 @@ namespace Dataweb.Diagramming.Advanced {
 			LineStyle = styleSet.LineStyles.Normal;
 			FillStyle = styleSet.FillStyles.Red;
 
-			imageAttribs = GdiHelpers.GetImageAttributes(DiagrammingImageLayout.Original);
+			imageAttribs = GdiHelpers.GetImageAttributes(nShapeImageLayout.Original);
 		}
 
 
@@ -663,7 +676,7 @@ namespace Dataweb.Diagramming.Advanced {
 
 			//Matrix origTransform = graphics.Transform;
 			//float scaleX, scaleY;
-			//GdiHelpers.CalcImageScaleAndAspect(out scaleX, out scaleY, dstBounds.Width, dstBounds.Height, image, DiagrammingImageLayout.Stretch);
+			//GdiHelpers.CalcImageScaleAndAspect(out scaleX, out scaleY, dstBounds.Width, dstBounds.Height, image, nShapeImageLayout.Stretch);
 			//int offsetX, offsetY;
 			//MetafileHeader header = ((Metafile)image).GetMetafileHeader();
 			//offsetX = dstBounds.X - header.Bounds.X;
@@ -686,7 +699,7 @@ namespace Dataweb.Diagramming.Advanced {
 			if (h >= ch + 2 * minH) caption.Draw(graphics, CharacterStyle, ParagraphStyle);
 
 			//using (Image img = CreateImage())
-			//   GdiHelpers.SaveImageToFile(img, "S:\\CustomizableMetafile " + Type.Name + " Export Test.emf", DiagrammingImageFormat.EmfPlus);
+			//   GdiHelpers.SaveImageToFile(img, "S:\\CustomizableMetafile " + Type.Name + " Export Test.emf", nShapeImageFormat.EmfPlus);
 		}
 
 
@@ -793,7 +806,7 @@ namespace Dataweb.Diagramming.Advanced {
 				}
 			}
 			using (Graphics gfx = Graphics.FromImage(metaFile)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, DiagrammingRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
 				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
 				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds,
 					GraphicsUnit.Pixel, metafileDelegate, IntPtr.Zero, imageAttribs);

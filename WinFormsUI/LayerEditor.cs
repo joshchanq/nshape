@@ -1,9 +1,9 @@
 ﻿using System.Windows.Forms;
 
-using Dataweb.Diagramming.Controllers;
+using Dataweb.nShape.Controllers;
 
 
-namespace Dataweb.Diagramming.WinFormsUI {
+namespace Dataweb.nShape.WinFormsUI {
 
 	public partial class LayerEditor : UserControl {
 

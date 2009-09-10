@@ -3,7 +3,7 @@ using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	// Based on code from http://www.dotnet247.com/247reference/msgs/23/118514.aspx
 	public static class EmfHelper {

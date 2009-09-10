@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 
-using Dataweb.Diagramming.Advanced;
+using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.Diagramming.Controllers {
+namespace Dataweb.nShape.Controllers {
 
 	public enum LayerItem {
 		Name,
@@ -18,18 +18,18 @@ namespace Dataweb.Diagramming.Controllers {
 	}
 	
 	
-	public class LayerMouseEventArgs : DiagrammingMouseEventArgs {
+	public class LayerMouseEventArgs : nShapeMouseEventArgs {
 
 		public LayerMouseEventArgs(Layer layer, LayerItem item, 
-			MouseEventType eventType, DiagrammingMouseButtons buttons, int clickCount, int wheelDelta, 
-			Point position, DiagrammingKeys modifiers)
+			MouseEventType eventType, nShapeMouseButtons buttons, int clickCount, int wheelDelta, 
+			Point position, nShapeKeys modifiers)
 			: base(eventType, buttons, clickCount, wheelDelta, position, modifiers) {
 			this.layer = layer;
 			this.item = item;
 		}
 		
 		
-		public LayerMouseEventArgs(Layer layer, LayerItem item, DiagrammingMouseEventArgs mouseEventArgs)
+		public LayerMouseEventArgs(Layer layer, LayerItem item, nShapeMouseEventArgs mouseEventArgs)
 			: this(layer, item, mouseEventArgs.EventType, mouseEventArgs.Buttons, mouseEventArgs.Clicks, mouseEventArgs.WheelDelta, mouseEventArgs.Position, mouseEventArgs.Modifiers) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			this.layer = layer;
@@ -56,8 +56,8 @@ namespace Dataweb.Diagramming.Controllers {
 		}
 
 		
-		protected internal void SetMouseEvent(MouseEventType eventType, DiagrammingMouseButtons buttons, 
-			int clickCount, int wheelDelta, Point position, DiagrammingKeys modifiers){
+		protected internal void SetMouseEvent(MouseEventType eventType, nShapeMouseButtons buttons, 
+			int clickCount, int wheelDelta, Point position, nShapeKeys modifiers){
 			this.eventType = eventType;
 			this.buttons = buttons;
 			this.clicks = clickCount;
@@ -115,7 +115,7 @@ namespace Dataweb.Diagramming.Controllers {
 
 		void Invalidate();
 
-		void OpenContextMenu(int x, int y, IEnumerable<DiagrammingAction> contextMenuActions, Project project);
+		void OpenContextMenu(int x, int y, IEnumerable<nShapeAction> contextMenuActions, Project project);
 
 		#endregion
 	}
@@ -193,14 +193,14 @@ namespace Dataweb.Diagramming.Controllers {
 
 		#region Methods (protected)
 
-		protected IEnumerable<DiagrammingAction> GetActions() {
+		protected IEnumerable<nShapeAction> GetActions() {
 			if (layerController == null || diagramPresenter == null)
 				yield break;
 
 			string pluralPostFix = (selectedLayers.Count > 1) ? "s" : string.Empty;
 
 			bool separatorNeeded = false;
-			foreach (DiagrammingAction controllerAction in Controller.GetActions(diagramPresenter.Diagram, selectedLayers)) {
+			foreach (nShapeAction controllerAction in Controller.GetActions(diagramPresenter.Diagram, selectedLayers)) {
 				if (!separatorNeeded) separatorNeeded = true;
 				yield return controllerAction;
 			}
@@ -284,7 +284,7 @@ namespace Dataweb.Diagramming.Controllers {
 
 
 		protected void BeginRenameSelectedLayer() {
-			if (selectedLayers.Count == 0) throw new DiagrammingException("No layers selected.");
+			if (selectedLayers.Count == 0) throw new nShapeException("No layers selected.");
 			layerView.BeginEditLayerName(selectedLayers[0]);
 		}
 
@@ -486,7 +486,7 @@ namespace Dataweb.Diagramming.Controllers {
 
 		private void layerView_MouseDown(object sender, LayerMouseEventArgs e) {
 			if (e.Layer != null) {
-				bool multiSelect = e.Modifiers == DiagrammingKeys.Shift || e.Modifiers == DiagrammingKeys.Control;
+				bool multiSelect = e.Modifiers == nShapeKeys.Shift || e.Modifiers == nShapeKeys.Control;
 				if (multiSelect) {
 					if (selectedLayers.Contains(e.Layer))
 						UnselectLayer(e.Layer);
@@ -503,7 +503,7 @@ namespace Dataweb.Diagramming.Controllers {
 
 		private void layerView_MouseUp(object sender, LayerMouseEventArgs e) {
 			switch (e.Buttons) {
-				case DiagrammingMouseButtons.Left:
+				case nShapeMouseButtons.Left:
 					switch (e.Item) {
 						case LayerItem.Name:
 							if (e.Layer != null && selectedLayers.Contains(e.Layer)) layerView.BeginEditLayerName(e.Layer);
@@ -527,7 +527,7 @@ namespace Dataweb.Diagramming.Controllers {
 					}
 					break;
 
-				case DiagrammingMouseButtons.Right:
+				case nShapeMouseButtons.Right:
 					layerView.OpenContextMenu(e.Position.X, e.Position.Y, GetActions(), Controller.DiagramSetController.Project);
 					break;
 			}

@@ -5,7 +5,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 
-namespace Dataweb.Diagramming.Advanced {
+namespace Dataweb.nShape.Advanced {
 
 	public abstract class PathBasedPlanarShape : ShapeBase, IPlanarShape {
 
@@ -174,7 +174,7 @@ namespace Dataweb.Diagramming.Advanced {
 				center.Y = Y;
 				return center;
 			} else if (controlPointId == ControlPointId.None)
-				throw new DiagrammingException("NotSupported PointId.");
+				throw new nShapeException("NotSupported PointId.");
 			UpdateDrawCache();
 			int index = GetControlPointIndex(controlPointId);
 			return controlPoints[index];
