@@ -1,4 +1,4 @@
-﻿namespace Dataweb.nShape.WinFormsUI {
+﻿namespace Dataweb.NShape.WinFormsUI {
 	partial class FontFamilyListBox {
 		/// <summary>
 		/// Required designer variable.

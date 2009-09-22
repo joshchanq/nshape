@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
 	partial class TextEditorDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -26,7 +26,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditorDialog));
 			this.okButton = new System.Windows.Forms.Button();
 			this.cancelButton = new System.Windows.Forms.Button();
-			this.textBox = new Dataweb.nShape.WinFormsUI.nShapeTextBox();
+			this.textBox = new Dataweb.NShape.WinFormsUI.nShapeTextBox();
 			this.SuspendLayout();
 			// 
 			// okButton

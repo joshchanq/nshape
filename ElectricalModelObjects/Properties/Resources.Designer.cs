@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Dataweb.nShape.ElectricalModelObjects.Properties {
+namespace Dataweb.NShape.ElectricalModelObjects.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Dataweb.nShape.ElectricalModelObjects.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.nShape.ElectricalModelObjects.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.NShape.ElectricalModelObjects.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

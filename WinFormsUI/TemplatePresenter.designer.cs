@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
 
 	partial class TemplatePresenter {
 		/// <summary>
@@ -45,7 +45,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			this.label2 = new System.Windows.Forms.Label();
 			this.previewPanel = new System.Windows.Forms.Panel();
 			this.previewSplitter = new System.Windows.Forms.Splitter();
-			this.propertyGridAdapter = new Dataweb.nShape.WinFormsUI.PropertyPresenter();
+			this.propertyGridAdapter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
 			this.modelValueColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.shapeValueColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.headerPanel.SuspendLayout();

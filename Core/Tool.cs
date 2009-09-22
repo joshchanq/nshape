@@ -1,3 +1,17 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,10 +20,10 @@ using System.IO;
 using System.Reflection;
 using System.Timers;
 
-using Dataweb.nShape.Controllers;
+using Dataweb.NShape.Controllers;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	public class CursorProvider {
 
@@ -1198,7 +1212,11 @@ namespace Dataweb.nShape.Advanced {
 					try {
 						int currAngle = CalcAngle(ActionStartPos, CurrentMouseState);
 						// ToDo: Determine standard cursor size
-						diagramPresenter.DrawAnglePreview(rectBuffer.Location, rectBuffer.Width, CurrentMouseState.Position, cursors[ToolCursor.Rotate], 0, currAngle);
+						if (Previews.Count == 1 && SelectedShapeAtCursor.Shape is IPlanarShape) {
+							diagramPresenter.DrawAnglePreview(rectBuffer.Location, rectBuffer.Width, CurrentMouseState.Position, 
+								cursors[ToolCursor.Rotate], ((IPlanarShape)SelectedShapeAtCursor.Shape).Angle, currAngle);
+						}
+						else diagramPresenter.DrawAnglePreview(rectBuffer.Location, rectBuffer.Width, CurrentMouseState.Position, cursors[ToolCursor.Rotate], 0, currAngle);
 					} finally { diagramPresenter.RestoreTransformation(); }
 					break;
 				
@@ -2540,10 +2558,10 @@ namespace Dataweb.nShape.Advanced {
 			Title = "Pointer";
 			ToolTipText = "Select one or more objects by clicking or drawing a frame.\n\rSelected objects can be moved by dragging them to the target position or resized by dragging a control point to the target position.";
 
-			SmallIcon = global::Dataweb.nShape.Properties.Resources.PointerIconSmall;
+			SmallIcon = global::Dataweb.NShape.Properties.Resources.PointerIconSmall;
 			SmallIcon.MakeTransparent(Color.Fuchsia);
 
-			LargeIcon = global::Dataweb.nShape.Properties.Resources.PointerIconLarge;
+			LargeIcon = global::Dataweb.NShape.Properties.Resources.PointerIconLarge;
 			LargeIcon.MakeTransparent(Color.Fuchsia);
 
 			frameRect = Rectangle.Empty;
@@ -3172,10 +3190,7 @@ namespace Dataweb.nShape.Advanced {
 			// Create an aggregated command which performs creation of the new shape and 
 			// connecting the new shapes to other shapes in one step
 			AggregatedCommand aggregatedCommand = new AggregatedCommand();
-			if (Template.Shape.ModelObject != null)
-				aggregatedCommand.Add(new InsertShapeAndModelCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, false));
-			else
-				aggregatedCommand.Add(new InsertShapeCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, false));
+			aggregatedCommand.Add(new InsertShapeCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, true, false));
 
 			foreach (ControlPointId ptId in newShape.GetControlPointIds(ControlPointCapabilities.Glue)) {
 				Point p = newShape.GetControlPointPosition(ptId);
@@ -3333,10 +3348,7 @@ namespace Dataweb.nShape.Advanced {
 							ICommand cmd;
 							Shape newShape = Template.CreateShape();
 							newShape.ZOrder = ActionDiagramPresenter.Project.Repository.ObtainNewTopZOrder(ActionDiagramPresenter.Diagram);
-							if (Template.Shape.ModelObject != null)
-								cmd = new InsertShapeAndModelCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, true, x, y);
-							else
-								cmd = new InsertShapeCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, true, x, y);
+							cmd = new InsertShapeCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, true, true, x, y);
 							ActionDiagramPresenter.Project.ExecuteCommand(cmd);
 
 							newShape = ActionDiagramPresenter.Diagram.Shapes.FindShape(x, y, ControlPointCapabilities.None, 0, null);
@@ -3463,6 +3475,7 @@ namespace Dataweb.nShape.Advanced {
 	}
 	
 	
+#if DEBUG
 	/// <summary>
 	/// Lets the user sketch a shape using a pen.
 	/// </summary>
@@ -3642,9 +3655,9 @@ namespace Dataweb.nShape.Advanced {
 			Title = "Freehand Pen";
 			ToolTipText = "Draw the symbol of the object which should be created.";
 
-			SmallIcon = global::Dataweb.nShape.Properties.Resources.FreehandIconSmall;
+			SmallIcon = global::Dataweb.NShape.Properties.Resources.FreehandIconSmall;
 			SmallIcon.MakeTransparent(Color.Fuchsia);
-			LargeIcon = global::Dataweb.nShape.Properties.Resources.FreehandIconLarge;
+			LargeIcon = global::Dataweb.NShape.Properties.Resources.FreehandIconLarge;
 			LargeIcon.MakeTransparent(Color.Fuchsia);
 
 			polygone = new PathFigureShape();
@@ -3764,11 +3777,7 @@ namespace Dataweb.nShape.Advanced {
 			GetStrokeSetBounds(out x, out y, out width, out height);
 			shape.Fit(x, y, width, height);
 			
-			ICommand cmd;
-			if (shape.ModelObject != null)
-				cmd = new InsertShapeAndModelCommand(diagramPresenter.Diagram, diagramPresenter.ActiveLayers, shape, false);
-			else
-				cmd = new InsertShapeCommand(diagramPresenter.Diagram, diagramPresenter.ActiveLayers, shape, false);
+			ICommand cmd = new InsertShapeCommand(diagramPresenter.Diagram, diagramPresenter.ActiveLayers, shape, true, false);
 			project.ExecuteCommand(cmd);
 		}
 
@@ -3822,4 +3831,5 @@ namespace Dataweb.nShape.Advanced {
 
 		#endregion
 	}
+#endif
 }

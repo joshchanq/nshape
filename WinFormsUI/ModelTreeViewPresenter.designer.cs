@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
     using System;
     
     

@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
 
 	partial class Display {
 		/// <summary>

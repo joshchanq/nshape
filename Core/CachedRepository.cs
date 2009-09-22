@@ -1,16 +1,29 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Text;
-
 using Dataweb.Utilities;
-using System.Collections;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	#region Class EntityBucket<TObject>
 
@@ -90,7 +103,6 @@ namespace Dataweb.nShape.Advanced {
 			Empty.TargetShape = null;
 			Empty.TargetPointId = ControlPointId.None;
 		}
-
 	}
 
 	#endregion
@@ -1011,6 +1023,13 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		//public void UndeleteProject() {
+		//   AssertOpen();
+		//   UndeleteEntity<ProjectSettings>(this.projects, this.settings);
+		//   if (ProjectUpdated != null) ProjectUpdated(this, GetProjectEventArgs(settings));
+		//}
+
+
 		public event EventHandler<RepositoryProjectEventArgs> ProjectUpdated;
 
 		public event EventHandler<RepositoryProjectEventArgs> ProjectDeleted;
@@ -1023,7 +1042,7 @@ namespace Dataweb.nShape.Advanced {
 		/// <override></override>
 		public Model GetModel() {
 			AssertOpen();
-			if (models.Count <= 0 && ((IEntity)settings).Id != null)
+			if (store != null && models.Count <= 0 && ((IEntity)settings).Id != null)
 				store.LoadModel(this, ((IEntity)settings).Id);
 			foreach (Model m in GetCachedEntities(models, newModels))
 				return m;
@@ -1056,6 +1075,13 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		public void UndeleteModel(Model model) {
+			AssertOpen();
+			UndeleteEntity<Model>(models, model);
+			if (ModelInserted != null) ModelInserted(this, GetModelEventArgs(model));
+		}
+
+
 		public event EventHandler<RepositoryModelEventArgs> ModelInserted;
 
 		public event EventHandler<RepositoryModelEventArgs> ModelUpdated;
@@ -1071,7 +1097,7 @@ namespace Dataweb.nShape.Advanced {
 		// We assume that this is only called once to load all existing templates.
 		public IEnumerable<Template> GetTemplates() {
 			AssertOpen();
-			if (((IEntity)settings).Id != null && templates.Count <= 0)
+			if (store != null && ((IEntity)settings).Id != null && templates.Count <= 0)
 				store.LoadTemplates(this, ((IEntity)settings).Id);
 			foreach (EntityBucket<Template> tb in templates)
 				yield return tb.ObjectRef;
@@ -1098,6 +1124,7 @@ namespace Dataweb.nShape.Advanced {
 			EntityBucket<Template> result = null;
 			AssertOpen();
 			if (!templates.TryGetValue(id, out result)) {
+				AssertStoreExists();
 				store.LoadTemplates(this, ((IEntity)settings).Id);
 				if (!templates.TryGetValue(id, out result))
 					throw new nShapeException("Template with id '{0}' not found in store.", id);
@@ -1110,7 +1137,7 @@ namespace Dataweb.nShape.Advanced {
 		public Template GetTemplate(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertOpen();
-			if (templates.Count <= 0)
+			if (store != null && templates.Count <= 0)
 				store.LoadTemplates(this, ((IEntity)settings).Id);
 			foreach (Template t in GetCachedEntities<Template>(templates, newTemplates))
 				if (t.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
@@ -1149,6 +1176,16 @@ namespace Dataweb.nShape.Advanced {
 			DeleteEntity<Shape>(shapes, newShapes, template.Shape);
 			DeleteEntity<Template>(templates, newTemplates, template);
 			if (TemplateDeleted != null) TemplateDeleted(this, GetTemplateEventArgs(template));
+		}
+
+
+		public void UndeleteTemplate(Template template) {
+			if (template == null) throw new ArgumentNullException("template");
+			AssertOpen();
+			// Delete the template's shape
+			UndeleteEntity<Template>(templates, template);
+			DoUndeleteShape(template.Shape, template);
+			if (TemplateInserted != null) TemplateInserted(this, GetTemplateEventArgs(template));
 		}
 
 
@@ -1222,6 +1259,22 @@ namespace Dataweb.nShape.Advanced {
 			if (ModelMappingsDeleted != null) ModelMappingsDeleted(this, GetTemplateEventArgs(owner));
 		}
 
+
+		public void UndeleteModelMappings(IModelMapping modelMapping, Template template) {
+			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
+			DoUndeleteModelMapping(modelMapping, template);
+			if (ModelMappingsInserted != null) ModelMappingsInserted(this, GetTemplateEventArgs(template));
+		}
+		
+		
+		public void UndeleteModelMappings(IEnumerable<IModelMapping> modelMappings, Template template) {
+			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
+			foreach (IModelMapping modelMapping in modelMappings)
+				DoUndeleteModelMapping(modelMapping, template);
+			if (ModelMappingsInserted != null) ModelMappingsInserted(this, GetTemplateEventArgs(template));
+		}
+
+
 		public event EventHandler<RepositoryTemplateEventArgs> ModelMappingsInserted;
 
 		public event EventHandler<RepositoryTemplateEventArgs> ModelMappingsUpdated;
@@ -1236,7 +1289,7 @@ namespace Dataweb.nShape.Advanced {
 		/// <override></override>
 		public IEnumerable<Diagram> GetDiagrams() {
 			AssertOpen();
-			if (diagrams.Count <= 0 && ((IEntity)settings).Id != null)
+			if (store != null && diagrams.Count <= 0 && ((IEntity)settings).Id != null)
 				store.LoadDiagrams(this, ((IEntity)settings).Id);
 			foreach (EntityBucket<Diagram> db in diagrams)
 				yield return db.ObjectRef;
@@ -1251,6 +1304,7 @@ namespace Dataweb.nShape.Advanced {
 			EntityBucket<Diagram> result = null;
 			AssertOpen();
 			if (!diagrams.TryGetValue(id, out result)) {
+				AssertStoreExists();
 				store.LoadDiagrams(this, ((IEntity)settings).Id);
 				if (!diagrams.TryGetValue(id, out result))
 					throw new nShapeException("Diagram with id '{0}' not found in repository.", id);
@@ -1264,7 +1318,7 @@ namespace Dataweb.nShape.Advanced {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertOpen();
 			// If there is a diagram, we assume we have already loaded them all.
-			if (diagrams.Count <= 0 && ((IEntity)settings).Id != null)
+			if (store != null && diagrams.Count <= 0 && ((IEntity)settings).Id != null)
 				store.LoadDiagrams(this, ((IEntity)settings).Id);
 			foreach (Diagram d in GetCachedEntities(diagrams, newDiagrams))
 				if (d.Name.Equals(name, StringComparison.InvariantCultureIgnoreCase))
@@ -1311,6 +1365,19 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		public void UndeleteDiagram(Diagram diagram) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			AssertOpen();
+			UndeleteEntity<Diagram>(diagrams, diagram);
+			// First, delete all shapes with their connections
+			foreach (Shape s in diagram.Shapes) {
+				DoUndeleteShape(s, diagram);
+				// What to do with shape connections?
+			}
+			if (DiagramInserted != null) DiagramInserted(this, GetDiagramEventArgs(diagram));
+		}
+
+
 		/// <override></override>
 		public event EventHandler<RepositoryDiagramEventArgs> DiagramInserted;
 
@@ -1332,7 +1399,7 @@ namespace Dataweb.nShape.Advanced {
 			// For the time being a diagram is either loaded or not. No partial loading yet.
 			if (diagram.Shapes.Count > 0) return;
 			// Load missing shapes
-			store.LoadDiagramShapes(this, diagram);
+			if (store != null) store.LoadDiagramShapes(this, diagram);
 		}
 
 
@@ -1453,7 +1520,7 @@ namespace Dataweb.nShape.Advanced {
 			AssertOpen();
 			RepositoryShapesEventArgs e = GetShapesEventArgs(shape);
 			// --------------------------------------
-			// @@Kurt: Löschen der Kindern
+			// @@Kurt: Löschen der Kinder
 			if (shape.Children.Count > 0) {
 				foreach (Shape childShape in shape.Children)
 					DoDeleteShape(childShape);
@@ -1471,6 +1538,56 @@ namespace Dataweb.nShape.Advanced {
 			// ToDo: find a smarter way of inserting multiple objects
 			foreach (Shape shape in shapes) DoDeleteShape(shape);
 			if (ShapesDeleted != null) ShapesDeleted(this, GetShapesEventArgs(shapes));
+		}
+
+
+		/// <override></override>
+		public void UndeleteShape(Shape shape, Diagram diagram) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			AssertOpen();
+			DoUndeleteShape(shape, diagram);
+			if (shape.Children.Count > 0) {
+				foreach (Shape childShape in shape.Children)
+					DoUndeleteShape(childShape, shape);
+			}
+			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shape));
+		}
+
+
+		/// <override></override>
+		public void UndeleteShape(Shape shape, Shape parent) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			if (parent == null) throw new ArgumentNullException("parentShape");
+			AssertOpen();
+			if (((IEntity)parent).Id != null && !shapes.ContainsKey(((IEntity)parent).Id)
+				|| ((IEntity)parent).Id == null && !newShapes.ContainsKey(parent))
+				throw new InvalidOperationException("Parent shape not found in repository.");
+			DoUndeleteShape(shape, parent);
+			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shape, null));
+		}
+		
+
+		/// <override></override>
+		public void UndeleteShapes(IEnumerable<Shape> shapes, Diagram diagram){
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			AssertOpen();
+			// ToDo: find a smarter way of inserting multiple objects
+			foreach (Shape shape in shapes) 
+				DoUndeleteShape(shape, diagram);
+			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shapes, diagram));
+		}
+
+
+		/// <override></override>
+		public void UndeleteShapes(IEnumerable<Shape> shapes, Shape parent){
+			if (parent == null) throw new ArgumentNullException("parent");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			AssertOpen();
+			// ToDo: find a smarter way of inserting multiple objects
+			foreach (Shape shape in shapes)
+				DoUndeleteShape(shape, parent);
+			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shapes));
 		}
 
 
@@ -1493,7 +1610,7 @@ namespace Dataweb.nShape.Advanced {
 		#endregion
 
 
-		// === ShapeConnections ===
+		#region ShapeConnections
 
 		/// <override></override>
 		public void InsertShapeConnection(Shape activeShape, ControlPointId gluePointId, Shape passiveShape, ControlPointId connectionPointId) {
@@ -1525,6 +1642,8 @@ namespace Dataweb.nShape.Advanced {
 			isModified = true;
 		}
 
+		#endregion
+
 
 		#region ModelObjects
 
@@ -1549,7 +1668,7 @@ namespace Dataweb.nShape.Advanced {
 			else {
 				// Load ModelObjects and try again
 				Model model = GetModel();
-				if (model != null) store.LoadModelModelObjects(this, model.Id);
+				if (store != null && model != null) store.LoadModelModelObjects(this, model.Id);
 				if (modelObjects.TryGetValue(id, out moeb))
 					result = moeb.ObjectRef;
 			}
@@ -1563,8 +1682,8 @@ namespace Dataweb.nShape.Advanced {
 			if (((IEntity)settings).Id != null && modelObjects.Count == 0) {
 				if (parent == null) {
 					Model model = GetModel();
-					if (model != null) store.LoadModelModelObjects(this, model.Id);
-				} else store.LoadChildModelObjects(this, ((IEntity)parent).Id);
+					if (store != null && model != null) store.LoadModelModelObjects(this, model.Id);
+				} else if (store != null) store.LoadChildModelObjects(this, ((IEntity)parent).Id);
 			}
 			foreach (EntityBucket<IModelObject> mob in modelObjects) {
 				if (mob.ObjectRef.Parent == parent) yield return mob.ObjectRef;
@@ -1645,6 +1764,25 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		public void UndeleteModelObject(IModelObject modelObject) {
+			if (modelObject == null) throw new ArgumentNullException("modelObject");
+			AssertOpen();
+			RepositoryModelObjectsEventArgs e = GetModelObjectsEventArgs(modelObject);
+			DoUndeleteModelObject(modelObject);
+			if (ModelObjectsInserted != null) ModelObjectsInserted(this, e);
+		}
+
+
+		public void UndeleteModelObjects(IEnumerable<IModelObject> modelObjects) {
+			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
+			AssertOpen();
+			RepositoryModelObjectsEventArgs e = GetModelObjectsEventArgs(modelObjects);
+			foreach (IModelObject modelObject in modelObjects)
+				DoUndeleteModelObject(modelObject);
+			if (ModelObjectsInserted != null) ModelObjectsInserted(this, e);
+		}
+
+
 		public void UnloadModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			AssertOpen();
@@ -1670,7 +1808,7 @@ namespace Dataweb.nShape.Advanced {
 		/// <override></override>
 		public IEnumerable<Design> GetDesigns() {
 			AssertOpen();
-			if (designs.Count <= 0)
+			if (store != null && designs.Count <= 0)
 				store.LoadDesigns(this, null);
 			return GetCachedEntities<Design>(designs, newDesigns);
 		}
@@ -1685,7 +1823,7 @@ namespace Dataweb.nShape.Advanced {
 				result = projectDesign;
 			} else {
 				EntityBucket<Design> designBucket;
-				if (designs.Count <= 0 && store != null)
+				if (store != null && designs.Count <= 0)
 					store.LoadDesigns(this, null);
 				if (!designs.TryGetValue(id, out designBucket))
 					throw new nShapeException("Design with id '{0}' not found in repository.", id);
@@ -1728,6 +1866,18 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		/// <override></override>
+		public void UndeleteDesign(Design design) {
+			if (design == null) throw new ArgumentNullException("design");
+			AssertOpen();
+			// First, delete all styles
+			UndeleteEntity<Design>(designs, design);
+			foreach (IStyle s in design.Styles)
+				UndeleteEntity<IStyle>(styles, s);
+			if (DesignInserted != null) DesignInserted(this, GetDesignEventArgs(design));
+		}
+
+
 		public event EventHandler<RepositoryDesignEventArgs> DesignInserted;
 
 		public event EventHandler<RepositoryDesignEventArgs> DesignUpdated;
@@ -1750,6 +1900,15 @@ namespace Dataweb.nShape.Advanced {
 
 
 		/// <override></override>
+		public void UpdateStyle(IStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+			AssertOpen();
+			UpdateEntity<IStyle>(styles, newStyles, style);
+			if (StyleUpdated != null) StyleUpdated(this, GetStyleEventArgs(style));
+		}
+
+
+		/// <override></override>
 		public void DeleteStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			AssertOpen();
@@ -1759,11 +1918,11 @@ namespace Dataweb.nShape.Advanced {
 
 
 		/// <override></override>
-		public void UpdateStyle(IStyle style) {
+		public void UndeleteStyle(Design design, IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			AssertOpen();
-			UpdateEntity<IStyle>(styles, newStyles, style);
-			if (StyleUpdated != null) StyleUpdated(this, GetStyleEventArgs(style));
+			UndeleteEntity<IStyle>(styles, style, design);
+			if (StyleInserted != null) StyleInserted(this, GetStyleEventArgs(style));
 		}
 
 
@@ -2079,6 +2238,35 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		protected void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
+			TEntity entity) where TEntity : IEntity {
+			if (entity.Id == null) throw new nShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
+			else {
+				EntityBucket<TEntity> item;
+				if (!loadedEntities.TryGetValue(entity.Id, out item))
+					throw new nShapeException("Entity not found in repository.");
+				item.State = ItemState.Modified;
+			}
+			isModified = true;
+		}
+
+
+		protected void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
+			TEntity entity, IEntity owner) where TEntity : IEntity {
+			if (entity.Id == null) throw new nShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
+			else {
+				EntityBucket<TEntity> item;
+				if (!loadedEntities.TryGetValue(entity.Id, out item))
+					loadedEntities.Add(entity.Id, new EntityBucket<TEntity>(entity, owner, ItemState.New));
+				else {
+					item.State = ItemState.Modified;
+					Debug.Assert(item.Owner == owner);
+				}
+			}
+			isModified = true;
+		}
+
+
 		protected void AcceptEntities<EntityType>(Dictionary<object, EntityBucket<EntityType>> loadedEntities,
 			Dictionary<EntityType, IEntity> newEntities) where EntityType : IEntity {
 			// Remove deleted entities from loaded Entities
@@ -2222,6 +2410,7 @@ namespace Dataweb.nShape.Advanced {
 			}
 
 			#endregion
+
 		}
 
 		#endregion
@@ -2283,6 +2472,11 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		protected void AssertStoreExists() {
+			if (store == null) throw new nShapeException("There is no store component connected to the repository.");
+		}
+
+
 		/// <summary>
 		/// Tests the invariants of the offline cache object.
 		/// </summary>
@@ -2304,6 +2498,11 @@ namespace Dataweb.nShape.Advanced {
 
 		private void DoDeleteModelMapping(IModelMapping modelMapping) {
 			DeleteEntity<IModelMapping>(modelMappings, newModelMappings, modelMapping);
+		}
+
+
+		private void DoUndeleteModelMapping(IModelMapping modelMapping, Template owner) {
+			UndeleteEntity<IModelMapping>(modelMappings, modelMapping, owner);
 		}
 
 
@@ -2351,6 +2550,11 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		private void DoUndeleteShape(Shape shape, IEntity parentEntity) {
+			UndeleteEntity<Shape>(shapes, shape);
+		}
+
+
 		private void DoInsertModelObject(IModelObject modelObject) {
 			IEntity owner;
 			if (modelObject.Parent != null) owner = modelObject.Parent;
@@ -2383,6 +2587,12 @@ namespace Dataweb.nShape.Advanced {
 		private void DoDeleteModelObject(IModelObject modelObject) {
 			// ToDo: We must delete the newModelObject's connections first
 			DeleteEntity<IModelObject>(modelObjects, newModelObjects, modelObject);
+		}
+
+
+		private void DoUndeleteModelObject(IModelObject modelObject) {
+			// ToDo: We must delete the newModelObject's connections first
+			UndeleteEntity<IModelObject>(modelObjects, modelObject);
 		}
 
 

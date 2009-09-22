@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.Designer {
+namespace Dataweb.NShape.Designer {
 
 	partial class LayoutView {
 		/// <summary>
@@ -71,7 +71,7 @@ namespace Dataweb.nShape.Designer {
 			this.bottomUpRadioButton = new System.Windows.Forms.RadioButton();
 			this.flowDescriptionLabel = new System.Windows.Forms.Label();
 			this.previewButton = new System.Windows.Forms.Button();
-			this.algorithmListBox = new Dataweb.nShape.WinFormsUI.VerticalTabControl();
+			this.algorithmListBox = new Dataweb.NShape.WinFormsUI.VerticalTabControl();
 			expansionPanel = new System.Windows.Forms.Panel();
 			expansionPanel.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.verticalCompressionTrackBar)).BeginInit();
@@ -632,7 +632,7 @@ namespace Dataweb.nShape.Designer {
 
 		#endregion
 
-		private Dataweb.nShape.WinFormsUI.VerticalTabControl algorithmListBox;
+		private Dataweb.NShape.WinFormsUI.VerticalTabControl algorithmListBox;
 		private System.Windows.Forms.RadioButton fastRadioButton;
 		private System.Windows.Forms.RadioButton animatedRadioButton;
 		private System.Windows.Forms.GroupBox previewGroupBox;

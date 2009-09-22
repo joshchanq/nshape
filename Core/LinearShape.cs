@@ -1,4 +1,18 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,7 +20,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	/// <summary>
 	/// One-dimensional shape defined by a sequence of vertices.
@@ -144,19 +158,6 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
-		///// <override></override>
-		//public override ControlPointId IsConnected(ControlPointId ownPointId, Shape otherShape) {
-		//   if (connectionInfos != null) {
-		//      for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-		//         if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-		//            && (ownPointId == ControlPointId.None || GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId)))
-		//            return connectionInfos[i].OtherPointId;
-		//      }
-		//   }
-		//   return ControlPointId.None;
-		//}
-
-
 		/// <override></override>
 		public override bool NotifyStyleChanged(IStyle style) {
 			bool result = base.NotifyStyleChanged(style);
@@ -200,6 +201,9 @@ namespace Dataweb.nShape.Advanced {
 
 		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
+			if ((controlPointCapability & ControlPointCapabilities.Connect) == ControlPointCapabilities.Connect
+				&& !IsConnectionPointEnabled(controlPointId))
+				return false;
 			if (controlPointId == ControlPointId.Reference || controlPointId == ControlPointId.None || controlPointId == ControlPointId.Any)
 				return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			else if (IsFirstVertex(controlPointId)) {
@@ -213,7 +217,8 @@ namespace Dataweb.nShape.Advanced {
 				int pointIdx = GetControlPointIndex(controlPointId);
 				if (pointIdx > 0 && pointIdx < VertexCount - 1)
 					return ((controlPointCapability & ControlPointCapabilities.Connect) != 0 || (controlPointCapability & ControlPointCapabilities.Resize) != 0);
-				else throw new IndexOutOfRangeException();
+				else return false;
+					//throw new IndexOutOfRangeException();
 			}
 		}
 
@@ -578,7 +583,7 @@ namespace Dataweb.nShape.Advanced {
 
 		/// <override></override>
 		protected override bool IsConnectionPointEnabled(ControlPointId pointId) {
-			return true;
+			return base.IsConnectionPointEnabled(pointId);
 		}
 
 
@@ -1320,6 +1325,9 @@ namespace Dataweb.nShape.Advanced {
 
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
+			if (controlPointCapability == ControlPointCapabilities.Connect
+				&& !IsConnectionPointEnabled(controlPointId))
+				return false;
 			if (base.HasControlPointCapability(controlPointId, controlPointCapability))
 				return true;
 			//// Check special values (done by base class)
@@ -1346,8 +1354,8 @@ namespace Dataweb.nShape.Advanced {
 
 
 		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
-			int j;
-			for (int i = VertexCount - 1; i > 0; --i) {
+			int j, maxIdx;
+			for (int i = maxIdx = VertexCount - 1; i > 0; --i) {
 				j = i - 1;
 				if (Geometry.DistancePointPoint(x, y, vertices[i].X, vertices[i].Y) <= range) {
 					ControlPointId ptId = GetControlPointId(i);
@@ -1355,13 +1363,13 @@ namespace Dataweb.nShape.Advanced {
 				} 
 				if (Geometry.DistancePointPoint(x, y, vertices[j].X, vertices[j].Y) <= range) {
 					ControlPointId ptId = GetControlPointId(j);
-					if (HasControlPointCapability(ptId, controlPointCapability)) {
-						if (HasControlPointCapability(ptId, controlPointCapability)) return ptId;
-					}
+					if (HasControlPointCapability(ptId, controlPointCapability)) return ptId;
 				} 
 				float d = Geometry.DistancePointLine(x, y, vertices[i].X, vertices[i].Y, vertices[j].X, vertices[j].Y, true);
 				if (d <= (LineStyle.LineWidth / 2f) + range) {
-					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability))
+					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability)
+						&& !(Geometry.DistancePointPoint(x, y, vertices[0].X, vertices[0].Y) <= range)
+						&& !(Geometry.DistancePointPoint(x, y, vertices[maxIdx].X, vertices[maxIdx].Y) <= range))
 					return ControlPointId.Reference;
 				}
 			}
@@ -1591,9 +1599,11 @@ namespace Dataweb.nShape.Advanced {
 
 			ControlPointId id;
 			id = GetPreviousVertexId(pointId);
-			if (HasControlPointCapability(id, ControlPointCapabilities.Glue)) GluePointNeighbourMoved(pointId, id);
+			if (id != ControlPointId.None && HasControlPointCapability(id, ControlPointCapabilities.Glue)) 
+				GluePointNeighbourMoved(pointId, id);
 			id = GetNextVertexId(pointId);
-			if (HasControlPointCapability(id, ControlPointCapabilities.Glue)) GluePointNeighbourMoved(pointId, id);
+			if (id != ControlPointId.None && HasControlPointCapability(id, ControlPointCapabilities.Glue)) 
+				GluePointNeighbourMoved(pointId, id);
 			return true;
 
 			////Rectangle boundsBefore = GetBoundingRectangle(true);
@@ -1991,13 +2001,17 @@ namespace Dataweb.nShape.Advanced {
 		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
 			if (IsLine) {
 				if (Geometry.DistancePointLine(x, y, StartPoint.X, StartPoint.Y, EndPoint.X, EndPoint.Y, true) <= range) {
-					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability))
+					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability)
+						&& !(Geometry.DistancePointPoint(x, y, vertices[0].X, vertices[0].Y) <= range)
+						&& !(Geometry.DistancePointPoint(x, y, vertices[1].X, vertices[1].Y) <= range))
 						return ControlPointId.Reference;
 				}
 			} else {
 				float lineContainsDelta = (LineStyle.LineWidth / 2f) + 2;
 				if (Geometry.ArcContainsPoint(StartPoint.X, StartPoint.Y, RadiusPoint.X, RadiusPoint.Y, EndPoint.X, EndPoint.Y, Center.X, Center.Y, Radius, lineContainsDelta, x, y)) {
-					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability))
+					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability)
+						&& !(Geometry.DistancePointPoint(x, y, vertices[0].X, vertices[0].Y) <= range)
+						&& !(Geometry.DistancePointPoint(x, y, vertices[2].X, vertices[2].Y) <= range))
 						return ControlPointId.Reference;
 				}
 			}

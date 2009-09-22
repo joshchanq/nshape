@@ -1,12 +1,24 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Collections;
-using System.Diagnostics;
-using System.Threading;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	public class Model : IEntity {
 
@@ -322,6 +334,7 @@ namespace Dataweb.nShape.Advanced {
 		/// Indicates largest available terminal id for this type.
 		/// </summary>
 		public abstract TerminalId MaxTerminalId { get; }
+
 
 		/// <summary>
 		/// Retreives the name of a terminal.
@@ -674,6 +687,11 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
+		protected void OnPropertyChanged(int propertyId) {
+			foreach (Shape shape in Shapes) shape.NotifyModelChanged(propertyId);
+		}
+
+
 		#region Fields
 		private const string persistentTypeName = "ModelObject";
 
@@ -824,11 +842,6 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 		#endregion
-
-
-		private void OnPropertyChanged(int propertyId) {
-			foreach (Shape shape in Shapes) shape.NotifyModelChanged(propertyId);
-		}
 
 
 		#region Fields

@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
 
 	partial class DesignEditorDialog {
 		/// <summary>
@@ -15,8 +15,8 @@ namespace Dataweb.nShape.WinFormsUI {
 		private void InitializeComponent() {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DesignEditorDialog));
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
-			this.designPresenter = new Dataweb.nShape.WinFormsUI.DesignPresenter();
-			this.designController = new Dataweb.nShape.Controllers.DesignController();
+			this.designPresenter = new Dataweb.NShape.WinFormsUI.DesignPresenter();
+			this.designController = new Dataweb.NShape.Controllers.DesignController();
 			this.toolStrip2 = new System.Windows.Forms.ToolStrip();
 			this.designsComboBox = new System.Windows.Forms.ToolStripComboBox();
 			this.activateButton = new System.Windows.Forms.ToolStripButton();
@@ -104,7 +104,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			// activateButton
 			// 
 			this.activateButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.activateButton.Image = global::Dataweb.nShape.WinFormsUI.Properties.Resources.ActivateDesign;
+			this.activateButton.Image = global::Dataweb.NShape.WinFormsUI.Properties.Resources.ActivateDesign;
 			this.activateButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.activateButton.Name = "activateButton";
 			this.activateButton.Size = new System.Drawing.Size(23, 22);
@@ -118,7 +118,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			// 
 			// newDesignButton
 			// 
-			this.newDesignButton.Image = global::Dataweb.nShape.WinFormsUI.Properties.Resources.NewItemsBtn;
+			this.newDesignButton.Image = global::Dataweb.NShape.WinFormsUI.Properties.Resources.NewItemsBtn;
 			this.newDesignButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.newDesignButton.Name = "newDesignButton";
 			this.newDesignButton.Size = new System.Drawing.Size(95, 22);
@@ -127,7 +127,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			// 
 			// deleteDesignButton
 			// 
-			this.deleteDesignButton.Image = global::Dataweb.nShape.WinFormsUI.Properties.Resources.DeleteBtn;
+			this.deleteDesignButton.Image = global::Dataweb.NShape.WinFormsUI.Properties.Resources.DeleteBtn;
 			this.deleteDesignButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.deleteDesignButton.Name = "deleteDesignButton";
 			this.deleteDesignButton.Size = new System.Drawing.Size(93, 22);
@@ -141,7 +141,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			// 
 			// createStyleButton
 			// 
-			this.createStyleButton.Image = global::Dataweb.nShape.WinFormsUI.Properties.Resources.NewBtn;
+			this.createStyleButton.Image = global::Dataweb.NShape.WinFormsUI.Properties.Resources.NewBtn;
 			this.createStyleButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.createStyleButton.Name = "createStyleButton";
 			this.createStyleButton.Size = new System.Drawing.Size(87, 22);
@@ -150,7 +150,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			// 
 			// deleteStyleButton
 			// 
-			this.deleteStyleButton.Image = global::Dataweb.nShape.WinFormsUI.Properties.Resources.DeleteBtn;
+			this.deleteStyleButton.Image = global::Dataweb.NShape.WinFormsUI.Properties.Resources.DeleteBtn;
 			this.deleteStyleButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.deleteStyleButton.Name = "deleteStyleButton";
 			this.deleteStyleButton.Size = new System.Drawing.Size(85, 22);
@@ -220,7 +220,7 @@ namespace Dataweb.nShape.WinFormsUI {
 		private System.Windows.Forms.ToolStripSeparator designsSeparator;
 		private System.Windows.Forms.ToolStripComboBox designsComboBox;
 		private System.Windows.Forms.ToolStripButton activateButton;
-		private Dataweb.nShape.WinFormsUI.DesignPresenter designPresenter;
-		private Dataweb.nShape.Controllers.DesignController designController;
+		private Dataweb.NShape.WinFormsUI.DesignPresenter designPresenter;
+		private Dataweb.NShape.Controllers.DesignController designController;
 	}
 }

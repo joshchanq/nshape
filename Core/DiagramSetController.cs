@@ -1,14 +1,27 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-
-using Dataweb.nShape.Advanced;
-using System.Collections;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape.Controllers {
+namespace Dataweb.NShape.Controllers {
 
 	#region Enums
 
@@ -624,9 +637,7 @@ namespace Dataweb.nShape.Controllers {
 		public void InsertShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers, bool withModelObjects) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			ICommand cmd = null;
-			if (withModelObjects) cmd = new InsertShapeAndModelCommand(diagram, activeLayers, shapes, true);
-			else cmd = new InsertShapeCommand(diagram, activeLayers, shapes, true);
+			ICommand cmd = new InsertShapeCommand(diagram, activeLayers, shapes, withModelObjects, true);
 			Project.ExecuteCommand(cmd);
 			// ToDo: Raise event
 			//if (ShapesInserted != null) ShapesInserted(this, eventArgs);
@@ -636,11 +647,7 @@ namespace Dataweb.nShape.Controllers {
 		public void DeleteShapes(Diagram diagram, IEnumerable<Shape> shapes, bool withModelObjects) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			ICommand cmd = null;
-			if (withModelObjects)
-				cmd = new DeleteShapeAndModelCommand(diagram, shapes);
-			else
-				cmd = new DeleteShapeOnlyCommand(diagram, shapes);
+			ICommand cmd = new DeleteShapeCommand(diagram, shapes, withModelObjects);
 			Project.ExecuteCommand(cmd);
 			// ToDo: Raise event
 			//if (ShapesRemoved != null) ShapesRemoved(this, eventArgs);
@@ -683,10 +690,7 @@ namespace Dataweb.nShape.Controllers {
 			editBuffer.initialMousePos = startPos;
 			editBuffer.shapes.AddRange(shapes);
 
-			ICommand cmd;
-			if (withModelObjects) 
-				cmd = new DeleteShapeAndModelCommand(source, editBuffer.shapes);
-			else cmd = new DeleteShapeOnlyCommand(source, editBuffer.shapes);
+			ICommand cmd = new DeleteShapeCommand(source, editBuffer.shapes, withModelObjects);
 			project.ExecuteCommand(cmd);
 		}
 
@@ -717,22 +721,16 @@ namespace Dataweb.nShape.Controllers {
 				++editBuffer.pasteCount;
 
 				// create command
-				ICommand cmd;
-				switch (editBuffer.action) {
-					case EditAction.Copy:
-						if (editBuffer.withModelObjects)
-							cmd = new InsertShapeAndModelCommand(destination, activeLayers, editBuffer.shapes.BottomUp, false, offsetX, offsetY);
-						else cmd = new InsertShapeCommand(destination, activeLayers, editBuffer.shapes.BottomUp, false, offsetX, offsetY);
-						break;
-					case EditAction.Cut:
-						if (editBuffer.withModelObjects)
-							cmd = new InsertShapeAndModelCommand(destination, activeLayers, editBuffer.shapes.BottomUp, true, offsetX, offsetY);
-						else cmd = new InsertShapeCommand(destination, activeLayers, editBuffer.shapes.BottomUp, true, offsetX, offsetY);
-						break;
-					default: throw new nShapeUnsupportedValueException(editBuffer.action);
-				}
+				ICommand cmd = new InsertShapeCommand(
+					destination,
+					activeLayers,
+					editBuffer.shapes.BottomUp,
+					editBuffer.withModelObjects,
+					(editBuffer.action == EditAction.Cut),
+					offsetX,
+					offsetY);
 				// Execute InsertCommand and select inserted shapes
-				if (cmd != null) Project.ExecuteCommand(cmd);
+				Project.ExecuteCommand(cmd);
 
 				// Clone shapes for another paste operation
 				editBuffer.shapes = editBuffer.shapes.Clone(editBuffer.withModelObjects);
@@ -915,9 +913,12 @@ namespace Dataweb.nShape.Controllers {
 		public bool CanSplitShapeAggregation(Diagram diagram, IReadOnlyShapeCollection shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			return shapes.Count == 1 
-				&& !(shapes.TopMost is IShapeGroup) 
-				&& CanInsertShapes(diagram, shapes.TopMost.Children);
+			if (shapes.Count == 1 && !(shapes.TopMost is IShapeGroup)) {
+				Shape s = shapes.TopMost;
+				if (s.Children.Count > 0 && CanInsertShapes(diagram, shapes.TopMost.Children))
+					return true;
+			} 
+			return false;
 		}
 
 

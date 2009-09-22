@@ -1,17 +1,29 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Xml;
-using System.Text;
-
-using Dataweb.nShape.Advanced;
-using System.ComponentModel;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape {
+namespace Dataweb.NShape {
 
 	/// <summary>
 	/// Uses an XML file as the data store.
@@ -42,7 +54,7 @@ namespace Dataweb.nShape {
 			get { return directory; }
 			set {
 				if (value == null) throw new ArgumentNullException("DirectoryName");
-				directory = value; 
+				directory = value;
 			}
 		}
 
@@ -54,7 +66,7 @@ namespace Dataweb.nShape {
 			get { return fileExtension; }
 			set {
 				if (value == null) throw new ArgumentNullException("FileExtension");
-				fileExtension = value; 
+				fileExtension = value;
 			}
 		}
 
@@ -74,9 +86,9 @@ namespace Dataweb.nShape {
 		[Browsable(false)]
 		public string ProjectFilePath {
 			get {
-				if (string.IsNullOrEmpty(directory)) 
+				if (string.IsNullOrEmpty(directory))
 					throw new InvalidOperationException("Directory for XML repository not set.");
-				if (string.IsNullOrEmpty(projectName)) 
+				if (string.IsNullOrEmpty(projectName))
 					throw new InvalidOperationException("Project name for XML repository not set.");
 				string result = Path.Combine(directory, projectName);
 				if (!string.IsNullOrEmpty(fileExtension)) result += fileExtension;
@@ -118,6 +130,8 @@ namespace Dataweb.nShape {
 				// if (value == null) throw new ArgumentNullException("ProjectName");
 				if (value == null) projectName = string.Empty;
 				else projectName = value;
+				// Clear image directory
+				imageDirectory = null;
 			}
 		}
 
@@ -152,7 +166,7 @@ namespace Dataweb.nShape {
 				try {
 					Directory.Delete(ImageDirectory, true);
 				} catch (DirectoryNotFoundException) {
-					// It's ok if the directory does not exi
+					// It's ok if the directory does not exist
 				}
 			}
 		}
@@ -337,7 +351,7 @@ namespace Dataweb.nShape {
 						((IEntity)design).LoadFields(repositoryReader, designEntityType.RepositoryVersion);
 						xmlReader.Read(); // read out of attributes
 						foreach (EntityPropertyDefinition pi in designEntityType.PropertyDefinitions)
-							if (pi is EntityInnerObjectsDefinition) 
+							if (pi is EntityInnerObjectsDefinition)
 								((IEntity)design).LoadInnerObjects(pi.Name, repositoryReader, designEntityType.RepositoryVersion);
 						// Global designs are stored with parent id DBNull
 						cache.LoadedDesigns.Add(new EntityBucket<Design>(design, null, ItemState.Original));
@@ -462,7 +476,7 @@ namespace Dataweb.nShape {
 				XmlSkipAttributes();
 				XmlStoreReader reader = new XmlStoreReader(xmlReader, this, cache);
 				ReadModelMappings(cache, reader, template);
-				
+
 				// Read the template end tag
 				XmlReadEndElement(GetElementTag(templateEntityType));
 			}
@@ -837,7 +851,7 @@ namespace Dataweb.nShape {
 
 		private void WriteTemplate(IStoreCache cache, IEntityType entityType, Template template) {
 			XmlOpenElement(templateTag);
-			
+
 			// Save template definition
 			repositoryWriter.Reset(entityType.PropertyDefinitions);
 			repositoryWriter.Prepare(template);
@@ -886,7 +900,7 @@ namespace Dataweb.nShape {
 			else if (modelMapping is FormatModelMapping) entityTypeName = FormatModelMapping.EntityTypeName;
 			else if (modelMapping is StyleModelMapping) entityTypeName = StyleModelMapping.EntityTypeName;
 			else throw new nShapeUnsupportedValueException(modelMapping);
-			
+
 			IEntityType entityType = cache.FindEntityTypeByName(entityTypeName);
 			// write Shape-Tag with EntityType
 			XmlOpenElement(entityType.ElementName);
@@ -906,7 +920,7 @@ namespace Dataweb.nShape {
 			IEntityType modelEntityType = cache.FindEntityTypeByName(Model.EntityTypeName);
 			string modelTag = GetElementTag(modelEntityType);
 			XmlOpenElement(modelTag);
-			
+
 			// Write model
 			Model model = cache.GetModel();
 			Debug.Assert(model != null);
@@ -917,13 +931,13 @@ namespace Dataweb.nShape {
 			foreach (EntityPropertyDefinition pi in modelEntityType.PropertyDefinitions)
 				if (pi is EntityInnerObjectsDefinition)
 					((IEntity)model).SaveInnerObjects(pi.Name, repositoryWriter, modelEntityType.RepositoryVersion);
-			
+
 			// Write all model objects
 			WriteModelObjects(cache, model);
 			XmlCloseElement();
 		}
-			
-			
+
+
 		private void WriteModelObjects(IStoreCache cache, Model model) {
 			XmlOpenElement(modelObjectsTag);
 			// We do not want to write template model objects here.
@@ -1216,11 +1230,11 @@ namespace Dataweb.nShape {
 
 			protected override void DoBeginWriteInnerObjects() {
 				// Sanity checks
-				if (propertyInfos == null) 
+				if (propertyInfos == null)
 					throw new InvalidOperationException("EntityType is not set.");
-				if (Entity == null) 
+				if (Entity == null)
 					throw new InvalidOperationException("InnerObject's parent object is not set to an instance of an object.");
-				if (!(propertyInfos[PropertyIndex + 1] is EntityInnerObjectsDefinition)) 
+				if (!(propertyInfos[PropertyIndex + 1] is EntityInnerObjectsDefinition))
 					throw new InvalidOperationException(string.Format("The current property info for '{0}' does not refer to inner objects. Check whether the writing methods fit the PropertyInfos property.", propertyInfos[PropertyIndex + 1]));
 				// Advance to next inner objects property
 				++PropertyIndex;
@@ -1278,7 +1292,7 @@ namespace Dataweb.nShape {
 			#endregion
 		}
 
-		
+
 		/// <summary>
 		/// Implements a cache repositoryReader for XML.
 		/// </summary>
@@ -1294,7 +1308,7 @@ namespace Dataweb.nShape {
 
 
 			#region Implementation
-			
+
 			internal protected override object ReadId() {
 				++PropertyIndex;
 				ValidatePropertyIndex();
@@ -1438,10 +1452,6 @@ namespace Dataweb.nShape {
 				if (!DateTime.TryParseExact(attrValue, datetimeFormat, null, System.Globalization.DateTimeStyles.AssumeUniversal, out dateTime))
 					dateTime = Convert.ToDateTime(attrValue);	// ToDo: This is for compatibility with older file versions - Remove later
 				return dateTime.ToLocalTime();
-				
-				//DateTime result = Convert.ToDateTime(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset)).ToLocalTime();
-				//xmlReader.MoveToNextAttribute();
-				//return result;
 			}
 
 

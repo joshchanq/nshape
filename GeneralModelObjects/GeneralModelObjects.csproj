@@ -7,8 +7,8 @@
     <ProjectGuid>{5FDD54E9-BE12-4C3D-8051-0F90A4EA27D4}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.GeneralModelObjects</RootNamespace>
-    <AssemblyName>Dataweb.nShape.GeneralModelObjects</AssemblyName>
+    <RootNamespace>Dataweb.NShape.GeneralModelObjects</RootNamespace>
+    <AssemblyName>Dataweb.NShape.GeneralModelObjects</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

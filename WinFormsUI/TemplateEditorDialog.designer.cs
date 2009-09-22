@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
 
 	partial class TemplateEditorDialog {
 		/// <summary>
@@ -18,8 +18,8 @@ namespace Dataweb.nShape.WinFormsUI {
 			this.cancelButton = new System.Windows.Forms.Button();
 			this.buttonPanel = new System.Windows.Forms.Panel();
 			this.okButton = new System.Windows.Forms.Button();
-			this.templateController = new Dataweb.nShape.Controllers.TemplateController();
-			this.templatePresenter = new Dataweb.nShape.WinFormsUI.TemplatePresenter();
+			this.templateController = new Dataweb.NShape.Controllers.TemplateController();
+			this.templatePresenter = new Dataweb.NShape.WinFormsUI.TemplatePresenter();
 			this.buttonPanel.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -73,15 +73,15 @@ namespace Dataweb.nShape.WinFormsUI {
 			// templateController
 			// 
 			this.templateController.Project = null;
-			this.templateController.TemplateShapeReplaced += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerTemplateShapeReplacedEventArgs>(this.templateController_TemplateShapeReplaced);
-			this.templateController.TemplateTitleChanged += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerStringChangedEventArgs>(this.templateController_TemplateTitleChanged);
-			this.templateController.TemplateShapeControlPointMappingChanged += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerPointMappingChangedEventArgs>(this.templateController_TemplateShapeControlPointMappingChanged);
-			this.templateController.TemplateDescriptionChanged += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerStringChangedEventArgs>(this.templateController_TemplateDescriptionChanged);
+			this.templateController.TemplateShapeReplaced += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerTemplateShapeReplacedEventArgs>(this.templateController_TemplateShapeReplaced);
+			this.templateController.TemplateTitleChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerStringChangedEventArgs>(this.templateController_TemplateTitleChanged);
+			this.templateController.TemplateShapeControlPointMappingChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPointMappingChangedEventArgs>(this.templateController_TemplateShapeControlPointMappingChanged);
+			this.templateController.TemplateDescriptionChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerStringChangedEventArgs>(this.templateController_TemplateDescriptionChanged);
 			this.templateController.TemplatePropertyChanged += new System.EventHandler(this.templateController_TemplatePropertyChanged);
-			this.templateController.TemplateNameChanged += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerStringChangedEventArgs>(this.templateController_TemplateNameChanged);
-			this.templateController.TemplateShapePropertyMappingDeleted += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingDeleted);
-			this.templateController.TemplateShapePropertyMappingSet += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingSet);
-			this.templateController.TemplateModelObjectReplaced += new System.EventHandler<Dataweb.nShape.Controllers.TemplateControllerModelObjectReplacedEventArgs>(this.templateController_TemplateModelObjectReplaced);
+			this.templateController.TemplateNameChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerStringChangedEventArgs>(this.templateController_TemplateNameChanged);
+			this.templateController.TemplateShapePropertyMappingDeleted += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingDeleted);
+			this.templateController.TemplateShapePropertyMappingSet += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingSet);
+			this.templateController.TemplateModelObjectReplaced += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerModelObjectReplacedEventArgs>(this.templateController_TemplateModelObjectReplaced);
 			// 
 			// templatePresenter
 			// 
@@ -117,7 +117,7 @@ namespace Dataweb.nShape.WinFormsUI {
 		private System.Windows.Forms.Button cancelButton;
 		private System.Windows.Forms.Panel buttonPanel;
 		private System.Windows.Forms.Button okButton;
-		private Dataweb.nShape.Controllers.TemplateController templateController;
+		private Dataweb.NShape.Controllers.TemplateController templateController;
 		private TemplatePresenter templatePresenter;
 	}
 }

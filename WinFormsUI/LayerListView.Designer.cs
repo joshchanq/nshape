@@ -1,4 +1,4 @@
-﻿namespace Dataweb.nShape.WinFormsUI {
+﻿namespace Dataweb.NShape.WinFormsUI {
 	partial class LayerListView {
 		/// <summary>
 		/// Required designer variable.

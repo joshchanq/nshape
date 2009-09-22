@@ -1,12 +1,22 @@
-using System;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Text;
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.GeneralModelObjects;
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.GeneralModelObjects;
 
 
-namespace Dataweb.nShape.ElectricalModelObjects {
+namespace Dataweb.NShape.ElectricalModelObjects {
 
 	public enum StateEnum { On, Off, Blocked, Defect, Unknown };
 
@@ -30,7 +40,7 @@ namespace Dataweb.nShape.ElectricalModelObjects {
 			return result;
 		}
 	}
-	
+
 
 	public class Feeder : ValueDevice {
 
@@ -286,38 +296,38 @@ namespace Dataweb.nShape.ElectricalModelObjects {
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
 
-			registrar.RegisterModelObjectType(new GenericModelObjectType("AutoDisconnector", namespaceName, categoryTitle, 
-				modelObjectType => new AutoDisconnector(modelObjectType), 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("AutoDisconnector", namespaceName, categoryTitle,
+				modelObjectType => new AutoDisconnector(modelObjectType),
 				AutoDisconnector.GetPropertyDefinitions, 2));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("BusBar", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new BusBar(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("BusBar", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new BusBar(modelObjectType); },
 				BusBar.GetPropertyDefinitions, 1));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Disconnector", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Disconnector(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Disconnector", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Disconnector(modelObjectType); },
 				Disconnector.GetPropertyDefinitions, 2));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Earth", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Earth(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Earth", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Earth(modelObjectType); },
 				Earth.GetPropertyDefinitions, 1));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Feeder", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Feeder(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Feeder", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Feeder(modelObjectType); },
 				Feeder.GetPropertyDefinitions, 1));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Title", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Label(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Title", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Label(modelObjectType); },
 				Label.GetPropertyDefinitions, 0));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Line", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Line(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Line", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Line(modelObjectType); },
 				Line.GetPropertyDefinitions, 1));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Measurement", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Measurement(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Measurement", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Measurement(modelObjectType); },
 				Measurement.GetPropertyDefinitions, 0));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Picture", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Picture(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Picture", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Picture(modelObjectType); },
 				Picture.GetPropertyDefinitions, 0));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Switch", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Switch(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Switch", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Switch(modelObjectType); },
 				Switch.GetPropertyDefinitions, 2));
-			registrar.RegisterModelObjectType(new GenericModelObjectType("Transformer", namespaceName, categoryTitle, 
-				delegate(ModelObjectType modelObjectType) { return new Transformer(modelObjectType); }, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("Transformer", namespaceName, categoryTitle,
+				delegate(ModelObjectType modelObjectType) { return new Transformer(modelObjectType); },
 				Transformer.GetPropertyDefinitions, 3));
 		}
 

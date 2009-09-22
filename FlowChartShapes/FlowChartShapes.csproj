@@ -7,8 +7,8 @@
     <ProjectGuid>{DB90D9B2-D4F8-4D09-92C5-A7C1AC57FA4E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.FlowChartShapes</RootNamespace>
-    <AssemblyName>Dataweb.nShape.FlowChartShapes</AssemblyName>
+    <RootNamespace>Dataweb.NShape.FlowChartShapes</RootNamespace>
+    <AssemblyName>Dataweb.NShape.FlowChartShapes</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

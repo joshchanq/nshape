@@ -6,8 +6,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{D8A7182E-BE69-4B4D-B20D-851FE1800C3C}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Dataweb.nShape.ElectricalShapes</RootNamespace>
-    <AssemblyName>Dataweb.nShape.ElectricalShapes</AssemblyName>
+    <RootNamespace>Dataweb.NShape.ElectricalShapes</RootNamespace>
+    <AssemblyName>Dataweb.NShape.ElectricalShapes</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>

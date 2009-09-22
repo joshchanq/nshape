@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Dataweb.nShape.GeneralModelObjects.Properties {
+namespace Dataweb.NShape.GeneralModelObjects.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Dataweb.nShape.GeneralModelObjects.Properties {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.nShape.GeneralModelObjects.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.NShape.GeneralModelObjects.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

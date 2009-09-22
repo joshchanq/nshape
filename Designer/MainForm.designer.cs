@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.Designer {
+namespace Dataweb.NShape.Designer {
 
 	partial class DiagramDesignerMainForm {
 		/// <summary>
@@ -26,7 +26,7 @@ namespace Dataweb.nShape.Designer {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DiagramDesignerMainForm));
-			Dataweb.nShape.DefaultSecurity defaultSecurity1 = new Dataweb.nShape.DefaultSecurity();
+			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
 			this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
 			this.statusStrip = new System.Windows.Forms.StatusStrip();
 			this.statusLabelPosition = new System.Windows.Forms.ToolStripStatusLabel();
@@ -99,11 +99,11 @@ namespace Dataweb.nShape.Designer {
 			this.propertyWindowModelTab = new System.Windows.Forms.TabPage();
 			this.modelObjectPropertyGrid = new System.Windows.Forms.PropertyGrid();
 			this.layersTab = new System.Windows.Forms.TabPage();
-			this.layerEditorListView1 = new Dataweb.nShape.WinFormsUI.LayerListView();
-			this.diagramSetController = new Dataweb.nShape.Controllers.DiagramSetController();
-			this.project = new Dataweb.nShape.Project(this.components);
-			this.cachedRepository = new Dataweb.nShape.Advanced.CachedRepository();
-			this.layerController = new Dataweb.nShape.Controllers.LayerController();
+			this.layerEditorListView1 = new Dataweb.NShape.WinFormsUI.LayerListView();
+			this.diagramSetController = new Dataweb.NShape.Controllers.DiagramSetController();
+			this.project = new Dataweb.NShape.Project(this.components);
+			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
+			this.layerController = new Dataweb.NShape.Controllers.LayerController();
 			this.splitter2 = new System.Windows.Forms.Splitter();
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
 			this.displayTabControl = new System.Windows.Forms.TabControl();
@@ -130,12 +130,12 @@ namespace Dataweb.nShape.Designer {
 			this.runtimeModeComboBox = new System.Windows.Forms.ToolStripComboBox();
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
 			this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-			this.toolBoxController = new Dataweb.nShape.Controllers.ToolSetController();
-			this.modelTreeController = new Dataweb.nShape.Controllers.ModelController();
-			this.modelTreeAdapter = new Dataweb.nShape.WinFormsUI.ModelTreeViewPresenter();
-			this.propertyGridAdapter = new Dataweb.nShape.WinFormsUI.PropertyPresenter();
-			this.toolBoxListViewAdapter = new Dataweb.nShape.WinFormsUI.ToolSetListViewPresenter(this.components);
-			this.layerPresenter = new Dataweb.nShape.Controllers.LayerPresenter();
+			this.toolBoxController = new Dataweb.NShape.Controllers.ToolSetController();
+			this.modelTreeController = new Dataweb.NShape.Controllers.ModelController();
+			this.modelTreeAdapter = new Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter();
+			this.propertyGridAdapter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
+			this.toolBoxListViewAdapter = new Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter(this.components);
+			this.layerPresenter = new Dataweb.NShape.Controllers.LayerPresenter();
 			this.statusStrip.SuspendLayout();
 			this.mainMenuStrip.SuspendLayout();
 			this.toolboxPropsPanel.SuspendLayout();
@@ -244,7 +244,7 @@ namespace Dataweb.nShape.Designer {
 			this.newProjectToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.projectInXMLFileToolStripMenuItem,
             this.projectInSQLServerDatabaseToolStripMenuItem});
-			this.newProjectToolStripMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.NewDiagramBtn2;
+			this.newProjectToolStripMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.NewDiagramBtn2;
 			this.newProjectToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.newProjectToolStripMenuItem.Name = "newProjectToolStripMenuItem";
 			this.newProjectToolStripMenuItem.Size = new System.Drawing.Size(263, 22);
@@ -269,7 +269,7 @@ namespace Dataweb.nShape.Designer {
 			this.openProjectMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openXMLRepositoryToolStripMenuItem,
             this.openSQLServerRepositoryToolStripMenuItem});
-			this.openProjectMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.OpenBtn;
+			this.openProjectMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.OpenBtn;
 			this.openProjectMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.openProjectMenuItem.Name = "openProjectMenuItem";
 			this.openProjectMenuItem.Size = new System.Drawing.Size(263, 22);
@@ -431,7 +431,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// insertDiagramMenuItem
 			// 
-			this.insertDiagramMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.NewDiagramBtn2;
+			this.insertDiagramMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.NewDiagramBtn2;
 			this.insertDiagramMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.insertDiagramMenuItem.Name = "insertDiagramMenuItem";
 			this.insertDiagramMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -440,7 +440,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// deleteDiagramToolStripMenuItem
 			// 
-			this.deleteDiagramToolStripMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.DeleteDiagramBtn2;
+			this.deleteDiagramToolStripMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.DeleteDiagramBtn2;
 			this.deleteDiagramToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.deleteDiagramToolStripMenuItem.Name = "deleteDiagramToolStripMenuItem";
 			this.deleteDiagramToolStripMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -449,7 +449,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// showDiagramSettingsToolStripMenuItem
 			// 
-			this.showDiagramSettingsToolStripMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.DiagramPropertiesBtn3;
+			this.showDiagramSettingsToolStripMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.DiagramPropertiesBtn3;
 			this.showDiagramSettingsToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.showDiagramSettingsToolStripMenuItem.Name = "showDiagramSettingsToolStripMenuItem";
 			this.showDiagramSettingsToolStripMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -463,7 +463,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// cutShapeOnlyMenuItem
 			// 
-			this.cutShapeOnlyMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.CutBtn;
+			this.cutShapeOnlyMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.CutBtn;
 			this.cutShapeOnlyMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.cutShapeOnlyMenuItem.Name = "cutShapeOnlyMenuItem";
 			this.cutShapeOnlyMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -472,7 +472,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// cutShapeAndModelMenuItem
 			// 
-			this.cutShapeAndModelMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.CutBtn;
+			this.cutShapeAndModelMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.CutBtn;
 			this.cutShapeAndModelMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.cutShapeAndModelMenuItem.Name = "cutShapeAndModelMenuItem";
 			this.cutShapeAndModelMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -481,7 +481,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// copyShapeOnlyMenuItem
 			// 
-			this.copyShapeOnlyMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.CopyBtn;
+			this.copyShapeOnlyMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.CopyBtn;
 			this.copyShapeOnlyMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.copyShapeOnlyMenuItem.Name = "copyShapeOnlyMenuItem";
 			this.copyShapeOnlyMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -490,7 +490,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// copyShapeAndModelMenuItem
 			// 
-			this.copyShapeAndModelMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.CopyBtn;
+			this.copyShapeAndModelMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.CopyBtn;
 			this.copyShapeAndModelMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.copyShapeAndModelMenuItem.Name = "copyShapeAndModelMenuItem";
 			this.copyShapeAndModelMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -500,7 +500,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// pasteMenuItem
 			// 
-			this.pasteMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.PasteBtn;
+			this.pasteMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.PasteBtn;
 			this.pasteMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.pasteMenuItem.Name = "pasteMenuItem";
 			this.pasteMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -509,7 +509,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// deleteShapeOnlyMenuItem
 			// 
-			this.deleteShapeOnlyMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.DeleteBtn;
+			this.deleteShapeOnlyMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.DeleteBtn;
 			this.deleteShapeOnlyMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.deleteShapeOnlyMenuItem.Name = "deleteShapeOnlyMenuItem";
 			this.deleteShapeOnlyMenuItem.ShortcutKeyDisplayString = "(Del)";
@@ -519,7 +519,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// deleteShapeAndModelMenuItem
 			// 
-			this.deleteShapeAndModelMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.DeleteBtn;
+			this.deleteShapeAndModelMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.DeleteBtn;
 			this.deleteShapeAndModelMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.deleteShapeAndModelMenuItem.Name = "deleteShapeAndModelMenuItem";
 			this.deleteShapeAndModelMenuItem.ShortcutKeyDisplayString = "(Ctrl+Del)";
@@ -535,7 +535,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// undoMenuItem
 			// 
-			this.undoMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.UndoBtn;
+			this.undoMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.UndoBtn;
 			this.undoMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.undoMenuItem.Name = "undoMenuItem";
 			this.undoMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -544,7 +544,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// redoMenuItem
 			// 
-			this.redoMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.RedoBtn;
+			this.redoMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.RedoBtn;
 			this.redoMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.redoMenuItem.Name = "redoMenuItem";
 			this.redoMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -558,7 +558,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// toForegroundMenuItem
 			// 
-			this.toForegroundMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.ToForeground;
+			this.toForegroundMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.ToForeground;
 			this.toForegroundMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.toForegroundMenuItem.Name = "toForegroundMenuItem";
 			this.toForegroundMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -566,7 +566,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// toBackgroundMenuItem
 			// 
-			this.toBackgroundMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.ToBackground;
+			this.toBackgroundMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.ToBackground;
 			this.toBackgroundMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.toBackgroundMenuItem.Name = "toBackgroundMenuItem";
 			this.toBackgroundMenuItem.Size = new System.Drawing.Size(256, 22);
@@ -592,7 +592,7 @@ namespace Dataweb.nShape.Designer {
 			this.showGridMenuItem.Checked = true;
 			this.showGridMenuItem.CheckOnClick = true;
 			this.showGridMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
-			this.showGridMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.ToggleGridBtn2;
+			this.showGridMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.ToggleGridBtn2;
 			this.showGridMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.showGridMenuItem.Name = "showGridMenuItem";
 			this.showGridMenuItem.Size = new System.Drawing.Size(235, 22);
@@ -601,7 +601,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// refreshToolStripMenuItem
 			// 
-			this.refreshToolStripMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.RefreshBtn;
+			this.refreshToolStripMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.RefreshBtn;
 			this.refreshToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.refreshToolStripMenuItem.Name = "refreshToolStripMenuItem";
 			this.refreshToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
@@ -610,7 +610,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// showDisplaySettingsToolStripMenuItem
 			// 
-			this.showDisplaySettingsToolStripMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.PropertiesBtn;
+			this.showDisplaySettingsToolStripMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.PropertiesBtn;
 			this.showDisplaySettingsToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.showDisplaySettingsToolStripMenuItem.Name = "showDisplaySettingsToolStripMenuItem";
 			this.showDisplaySettingsToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
@@ -624,7 +624,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			// editDesignsAndStylesToolStripMenuItem
 			// 
-			this.editDesignsAndStylesToolStripMenuItem.Image = global::Dataweb.nShape.Designer.Properties.Resources.DesignEditorBtn;
+			this.editDesignsAndStylesToolStripMenuItem.Image = global::Dataweb.NShape.Designer.Properties.Resources.DesignEditorBtn;
 			this.editDesignsAndStylesToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.editDesignsAndStylesToolStripMenuItem.Name = "editDesignsAndStylesToolStripMenuItem";
 			this.editDesignsAndStylesToolStripMenuItem.Size = new System.Drawing.Size(235, 22);
@@ -833,10 +833,10 @@ namespace Dataweb.nShape.Designer {
 			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = "";
 			this.project.Repository = this.cachedRepository;
-			defaultSecurity1.CurrentRole = Dataweb.nShape.StandardRole.Administrator;
+			defaultSecurity1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
 			defaultSecurity1.CurrentRoleName = "Administrator";
 			this.project.SecurityManager = defaultSecurity1;
-			this.project.LibraryLoaded += new System.EventHandler<Dataweb.nShape.LibraryLoadedEventArgs>(this.project_LibraryLoaded);
+			this.project.LibraryLoaded += new System.EventHandler<Dataweb.NShape.LibraryLoadedEventArgs>(this.project_LibraryLoaded);
 			this.project.Opened += new System.EventHandler(this.project_Opened);
 			this.project.Closed += new System.EventHandler(this.project_Closed);
 			// 
@@ -939,7 +939,7 @@ namespace Dataweb.nShape.Designer {
 			// prevDiagramButton
 			// 
 			this.prevDiagramButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.prevDiagramButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.BackBtn;
+			this.prevDiagramButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.BackBtn;
 			this.prevDiagramButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.prevDiagramButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.prevDiagramButton.Name = "prevDiagramButton";
@@ -951,7 +951,7 @@ namespace Dataweb.nShape.Designer {
 			// nextDiagramButton
 			// 
 			this.nextDiagramButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.nextDiagramButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.ForwardBtn;
+			this.nextDiagramButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.ForwardBtn;
 			this.nextDiagramButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.nextDiagramButton.Name = "nextDiagramButton";
 			this.nextDiagramButton.Size = new System.Drawing.Size(23, 22);
@@ -979,7 +979,7 @@ namespace Dataweb.nShape.Designer {
 			// cutShapeButton
 			// 
 			this.cutShapeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.cutShapeButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.CutBtn;
+			this.cutShapeButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.CutBtn;
 			this.cutShapeButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.cutShapeButton.Name = "cutShapeButton";
 			this.cutShapeButton.Size = new System.Drawing.Size(23, 22);
@@ -989,7 +989,7 @@ namespace Dataweb.nShape.Designer {
 			// copyShapeButton
 			// 
 			this.copyShapeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.copyShapeButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.CopyBtn;
+			this.copyShapeButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.CopyBtn;
 			this.copyShapeButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.copyShapeButton.Name = "copyShapeButton";
 			this.copyShapeButton.Size = new System.Drawing.Size(23, 22);
@@ -1000,7 +1000,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			this.pasteButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.pasteButton.Enabled = false;
-			this.pasteButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.PasteBtn;
+			this.pasteButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.PasteBtn;
 			this.pasteButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.pasteButton.Name = "pasteButton";
 			this.pasteButton.Size = new System.Drawing.Size(23, 22);
@@ -1011,7 +1011,7 @@ namespace Dataweb.nShape.Designer {
 			// deleteShapeButton
 			// 
 			this.deleteShapeButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.deleteShapeButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.DeleteBtn;
+			this.deleteShapeButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.DeleteBtn;
 			this.deleteShapeButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.deleteShapeButton.Name = "deleteShapeButton";
 			this.deleteShapeButton.Size = new System.Drawing.Size(23, 22);
@@ -1027,7 +1027,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			this.undoToolStripSplitButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.undoToolStripSplitButton.Enabled = false;
-			this.undoToolStripSplitButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.UndoBtn;
+			this.undoToolStripSplitButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.UndoBtn;
 			this.undoToolStripSplitButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.undoToolStripSplitButton.Name = "undoToolStripSplitButton";
 			this.undoToolStripSplitButton.Size = new System.Drawing.Size(32, 22);
@@ -1039,7 +1039,7 @@ namespace Dataweb.nShape.Designer {
 			// 
 			this.redoToolStripSplitButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
 			this.redoToolStripSplitButton.Enabled = false;
-			this.redoToolStripSplitButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.RedoBtn;
+			this.redoToolStripSplitButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.RedoBtn;
 			this.redoToolStripSplitButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.redoToolStripSplitButton.Name = "redoToolStripSplitButton";
 			this.redoToolStripSplitButton.Size = new System.Drawing.Size(32, 22);
@@ -1050,7 +1050,7 @@ namespace Dataweb.nShape.Designer {
 			// toolStripButton2
 			// 
 			this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.toolStripButton2.Image = global::Dataweb.nShape.Designer.Properties.Resources.DiagramPropertiesBtn3;
+			this.toolStripButton2.Image = global::Dataweb.NShape.Designer.Properties.Resources.DiagramPropertiesBtn3;
 			this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.toolStripButton2.Name = "toolStripButton2";
 			this.toolStripButton2.Size = new System.Drawing.Size(23, 22);
@@ -1102,7 +1102,7 @@ namespace Dataweb.nShape.Designer {
 			// refreshToolbarButton
 			// 
 			this.refreshToolbarButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.refreshToolbarButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.RefreshBtn;
+			this.refreshToolbarButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.RefreshBtn;
 			this.refreshToolbarButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.refreshToolbarButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.refreshToolbarButton.Name = "refreshToolbarButton";
@@ -1116,7 +1116,7 @@ namespace Dataweb.nShape.Designer {
 			this.showGridToolbarButton.CheckOnClick = true;
 			this.showGridToolbarButton.CheckState = System.Windows.Forms.CheckState.Checked;
 			this.showGridToolbarButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.showGridToolbarButton.Image = global::Dataweb.nShape.Designer.Properties.Resources.ToggleGridBtn2;
+			this.showGridToolbarButton.Image = global::Dataweb.NShape.Designer.Properties.Resources.ToggleGridBtn2;
 			this.showGridToolbarButton.ImageScaling = System.Windows.Forms.ToolStripItemImageScaling.None;
 			this.showGridToolbarButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.showGridToolbarButton.Name = "showGridToolbarButton";
@@ -1139,7 +1139,7 @@ namespace Dataweb.nShape.Designer {
 			// toolStripButton1
 			// 
 			this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.toolStripButton1.Image = global::Dataweb.nShape.Designer.Properties.Resources.PropertiesBtn;
+			this.toolStripButton1.Image = global::Dataweb.NShape.Designer.Properties.Resources.PropertiesBtn;
 			this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.toolStripButton1.Name = "toolStripButton1";
 			this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
@@ -1172,7 +1172,7 @@ namespace Dataweb.nShape.Designer {
 			this.toolBoxController.DiagramSetController = this.diagramSetController;
 			this.toolBoxController.LibraryManagerSelected += new System.EventHandler(this.toolBoxAdapter_ShowLibraryManagerDialog);
 			this.toolBoxController.DesignEditorSelected += new System.EventHandler(this.toolBoxAdapter_ShowDesignEditor);
-			this.toolBoxController.TemplateEditorSelected += new Dataweb.nShape.Controllers.TemplateEditorSelectedEventHandler(this.toolBoxAdapter_ShowTemplateEditorDialog);
+			this.toolBoxController.TemplateEditorSelected += new Dataweb.NShape.Controllers.TemplateEditorSelectedEventHandler(this.toolBoxAdapter_ShowTemplateEditorDialog);
 			// 
 			// modelTreeController
 			// 
@@ -1282,14 +1282,14 @@ namespace Dataweb.nShape.Designer {
 		private System.Windows.Forms.TrackBar historyTrackBar;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
 		private System.Windows.Forms.ToolStripMenuItem defaultToolStripMenuItem;
-		private Dataweb.nShape.WinFormsUI.ModelTreeViewPresenter modelTreeAdapter;
+		private Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter modelTreeAdapter;
 		private System.Windows.Forms.TabControl propertyWindowTabControl;
 		private System.Windows.Forms.TabPage propertyWindowShapeTab;
 		private System.Windows.Forms.PropertyGrid viewObjectPropertyGrid;
 		private System.Windows.Forms.TabPage propertyWindowModelTab;
 		private System.Windows.Forms.PropertyGrid modelObjectPropertyGrid;
-		private Dataweb.nShape.WinFormsUI.PropertyPresenter propertyGridAdapter;
-		private Dataweb.nShape.Controllers.ToolSetController toolBoxController;
+		private Dataweb.NShape.WinFormsUI.PropertyPresenter propertyGridAdapter;
+		private Dataweb.NShape.Controllers.ToolSetController toolBoxController;
 		private System.Windows.Forms.ListView listView;
 		private System.Windows.Forms.ToolStrip displayToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem openProjectMenuItem;
@@ -1298,7 +1298,7 @@ namespace Dataweb.nShape.Designer {
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem5;
 		private System.Windows.Forms.OpenFileDialog openFileDialog;
 		private System.Windows.Forms.SaveFileDialog saveFileDialog;
-		private Dataweb.nShape.Project project;
+		private Dataweb.NShape.Project project;
 		private System.Windows.Forms.ToolStrip settingsToolStrip;
 		private System.Windows.Forms.ToolStripComboBox zoomToolStripComboBox;
 		private System.Windows.Forms.TabControl displayTabControl;
@@ -1337,14 +1337,14 @@ namespace Dataweb.nShape.Designer {
 		private System.Windows.Forms.ToolStripButton cutShapeButton;
 		private System.Windows.Forms.ToolStripButton copyShapeButton;
 		private System.Windows.Forms.ToolStripButton deleteShapeButton;
-		private Dataweb.nShape.WinFormsUI.ToolSetListViewPresenter toolBoxListViewAdapter;
+		private Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter toolBoxListViewAdapter;
 		private System.Windows.Forms.ToolStripMenuItem projectInXMLFileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem projectInSQLServerDatabaseToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openXMLRepositoryToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openSQLServerRepositoryToolStripMenuItem;
 		private System.Windows.Forms.TabPage layersTab;
-		private Dataweb.nShape.WinFormsUI.LayerListView layerEditorListView1;
-		private Dataweb.nShape.Controllers.LayerController layerController;
+		private Dataweb.NShape.WinFormsUI.LayerListView layerEditorListView1;
+		private Dataweb.NShape.Controllers.LayerController layerController;
 		private System.Windows.Forms.ToolStripMenuItem toolsToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem adoNetDatabaseGeneratorToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem closeProjectToolStripMenuItem;
@@ -1354,10 +1354,10 @@ namespace Dataweb.nShape.Designer {
 		private System.Windows.Forms.ToolStripButton toolStripButton2;
 		private System.Windows.Forms.ToolStripButton refreshToolbarButton;
 		private System.Windows.Forms.ToolStripButton showGridToolbarButton;
-		private Dataweb.nShape.Controllers.ModelController modelTreeController;
-		private Dataweb.nShape.Controllers.DiagramSetController diagramSetController;
-		private Dataweb.nShape.Advanced.CachedRepository cachedRepository;
-		private Dataweb.nShape.Controllers.LayerPresenter layerPresenter;
+		private Dataweb.NShape.Controllers.ModelController modelTreeController;
+		private Dataweb.NShape.Controllers.DiagramSetController diagramSetController;
+		private Dataweb.NShape.Advanced.CachedRepository cachedRepository;
+		private Dataweb.NShape.Controllers.LayerPresenter layerPresenter;
 		private System.Windows.Forms.ToolStripMenuItem graphicsFileToolStripMenuItem;
 	}
 }

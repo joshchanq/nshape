@@ -1,19 +1,32 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
 
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.Controllers;
-using Dataweb.nShape.WinFormsUI;
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.Controllers;
+using Dataweb.NShape.WinFormsUI;
 
 
-namespace Dataweb.nShape.Designer {
+namespace Dataweb.NShape.Designer {
 
 	public partial class DiagramDesignerMainForm : Form {
 
@@ -43,20 +56,59 @@ namespace Dataweb.nShape.Designer {
 				XmlStore store = new XmlStore(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\nShape Designer\\", ".xml");
 				if (!Directory.Exists(store.DirectoryName))
 					Directory.CreateDirectory(store.DirectoryName);
-				CreateProject(newProjectName, store);
 
+				// Get command line parameters and check if a repository should be loaded on startup
+				RepositoryInfo repository = RepositoryInfo.Empty;
+				string[] commandLineArgs = Environment.GetCommandLineArgs();
+				if (commandLineArgs != null) {
+					int cnt = commandLineArgs.Length;
+					for (int i = 0; i < cnt; ++i) {
+						string path = Path.GetFullPath(commandLineArgs[i]);
+						if (string.IsNullOrEmpty(path)) continue;
+						else {
+							if (path == Path.GetFullPath(Application.ExecutablePath))
+								continue;
+							// Check if the file is an xml document
+							if (File.Exists(path)) {
+								TextReader reader = null;
+								try {
+									reader = File.OpenText(path);
+									if (reader.ReadLine().Contains("xml")) {
+										repository.computerName = Environment.MachineName;
+										repository.location = path;
+										repository.projectName = Path.GetFileNameWithoutExtension(path);
+										repository.typeName = xmlStoreTypeName;
+									}
+								} finally {
+									if (reader != null) {
+										reader.Close();
+										reader.Dispose();
+										reader = null;
+									}
+								}
+							}
+						}
+					}
+				}
+
+				if (repository != RepositoryInfo.Empty) {
+					XmlStore s = new XmlStore(Path.GetDirectoryName(repository.location), Path.GetExtension(repository.location));
+					OpenProject(repository.projectName, s);
+				} else {
+					CreateProject(newProjectName, store);
 #if DEBUG
-				project.LibrarySearchPaths.Clear();
-				project.LibrarySearchPaths.Add(Application.StartupPath);
+					project.LibrarySearchPaths.Clear();
+					project.LibrarySearchPaths.Add(Application.StartupPath);
 
-				// Shape libraries
-				project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
-				//project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
-				//project.AddLibraryByName("Dataweb.nShape.FlowChartShapes");
-				//project.AddLibraryByName("Dataweb.nShape.ElectricalShapes");
-				// ModelObjectTypes libraries
-				//project.AddLibraryByFilePath("Dataweb.nShape.GeneralModelObjects.dll");
+					// Shape libraries
+					project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
+					//project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
+					//project.AddLibraryByName("Dataweb.nShape.FlowChartShapes");
+					//project.AddLibraryByName("Dataweb.nShape.ElectricalShapes");
+					// ModelObjectTypes libraries
+					//project.AddLibraryByFilePath("Dataweb.nShape.GeneralModelObjects.dll");
 #endif
+				}
 			} catch (Exception ex) {
 				MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
@@ -79,7 +131,7 @@ namespace Dataweb.nShape.Designer {
 
 		public bool SnapToGrid {
 			get { return snapToGrid; }
-			set { 
+			set {
 				snapToGrid = value;
 				foreach (TabPage t in displayTabControl.TabPages) {
 					Display d = (Display)t.Controls[0];
@@ -184,16 +236,16 @@ namespace Dataweb.nShape.Designer {
 			settings.CloseInput = true;
 			return XmlReader.Create(filePath, settings);
 		}
-		
-		
+
+
 		private XmlWriter OpenCfgWriter(string filePath) {
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.CloseOutput = true;
 			settings.Indent = true;
 			return XmlWriter.Create(filePath, settings);
 		}
-		
-		
+
+
 		private void CreateConfigFile(string filePath) {
 			cfgWriter = OpenCfgWriter(filePath);
 			cfgWriter.WriteStartDocument();
@@ -227,7 +279,7 @@ namespace Dataweb.nShape.Designer {
 							repositoryInfo.location = attr.Value;
 						}
 					}
-					if (repositoryInfo != RepositoryInfo.Empty 
+					if (repositoryInfo != RepositoryInfo.Empty
 						&& (repositoryInfo.typeName == xmlStoreTypeName || repositoryInfo.typeName == sqlServerStoreTypeName))
 						recentProjects.Add(repositoryInfo);
 				}
@@ -362,7 +414,7 @@ namespace Dataweb.nShape.Designer {
 
 
 		private bool RemoveFromRecentProjects(RepositoryInfo projectInfo) {
-			return recentProjects.Remove(projectInfo); 
+			return recentProjects.Remove(projectInfo);
 		}
 
 
@@ -640,13 +692,13 @@ namespace Dataweb.nShape.Designer {
 		private bool SaveProjectAs() {
 			bool result;
 			if (project.Repository.Exists()) {
-				if (MessageBox.Show(this, 
+				if (MessageBox.Show(this,
 					string.Format("The repository already contains a project named '{0}'. Overwrite?", project.Name),
 					"Saving Project", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
 					project.Repository.Erase();
 					result = SaveProject();
 				} else result = false;
-			} else 
+			} else
 				result = SaveProject();
 			return result;
 		}
@@ -770,14 +822,14 @@ namespace Dataweb.nShape.Designer {
 			UpdateToolBarAndMenuItems();
 		}
 
-		
+
 		private void Repository_ModelObjectsInsertedOrDeleted(object sender, RepositoryModelObjectsEventArgs e) {
 			bool modelExists = false;
 			foreach (IModelObject modelObject in project.Repository.GetModelObjects(null)) {
 				modelExists = true;
 				break;
 			}
-			if (modelTreeView.Visible != modelExists) 
+			if (modelTreeView.Visible != modelExists)
 				modelTreeView.Visible = modelExists;
 		}
 
@@ -980,13 +1032,12 @@ namespace Dataweb.nShape.Designer {
 		}
 
 
-		private void toolStripComboBox1_TextChanged(object sender, EventArgs e) {			
+		private void toolStripComboBox1_TextChanged(object sender, EventArgs e) {
 			int zoom;
 			if (!zoomToolStripComboBox.Text.Contains("%")) {
 				int.TryParse(zoomToolStripComboBox.Text.Trim(), out zoom);
 				zoomToolStripComboBox.Text = string.Format("{0} %", zoom);
-			}
-			else {
+			} else {
 				if (int.TryParse(zoomToolStripComboBox.Text.Replace('%', ' ').Trim(), out zoom)) {
 					if (zoom > 0 && Zoom != zoom) Zoom = zoom;
 				}
@@ -1026,7 +1077,7 @@ namespace Dataweb.nShape.Designer {
 		private void openXMLRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = fileFilterXmlRepository;
 			if (openFileDialog.ShowDialog() == DialogResult.OK && CloseProject()) {
-				XmlStore repository = new XmlStore(Path.GetDirectoryName(openFileDialog.FileName), ".xml");
+				XmlStore repository = new XmlStore(Path.GetDirectoryName(openFileDialog.FileName), Path.GetExtension(openFileDialog.FileName));
 				OpenProject(Path.GetFileNameWithoutExtension(openFileDialog.FileName), repository);
 			}
 		}
@@ -1063,7 +1114,7 @@ namespace Dataweb.nShape.Designer {
 					((TurboDBRepository)repository).ServerName = projectInfo.serverName;
 				} 
 #endif
-				else MessageBox.Show(this, "Unknown repository type in recent list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+ else MessageBox.Show(this, "Unknown repository type in recent list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				if (store != null) OpenProject(repositoryInfo.projectName, store);
 			}
 		}
@@ -1164,8 +1215,8 @@ namespace Dataweb.nShape.Designer {
 				result = CurrentDisplay.Diagram.CreateImage(imageFormat, null, 0, true, backColor);
 			return result;
 		}
-		
-		
+
+
 		private void ExportMetaFile(nShapeImageFormat imageFormat) {
 			saveFileDialog.Filter = "Enhanced Meta Files|*.emf|All Files|*.*";
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
@@ -1263,30 +1314,30 @@ namespace Dataweb.nShape.Designer {
 
 		private void historyTrackBar_ValueChanged(object sender, EventArgs e) {
 			//if (CurrentDisplay != null) {
-				int d = currHistoryPos - historyTrackBar.Value;
-				bool commandExecuted = false;
-				try {
-					project.History.CommandExecuted -= history_CommandExecuted;
-					project.History.CommandsExecuted -= history_CommandsExecuted;
+			int d = currHistoryPos - historyTrackBar.Value;
+			bool commandExecuted = false;
+			try {
+				project.History.CommandExecuted -= history_CommandExecuted;
+				project.History.CommandsExecuted -= history_CommandsExecuted;
 
-					if (d != 0) {
-						if (d < 0) project.History.Undo(d * (-1));
-						else if (d > 0) project.History.Redo(d);
-						commandExecuted = true;
-					}
-				} catch (nShapeSecurityException exc) {
-					MessageBox.Show(this, exc.Message, "Command execution failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					commandExecuted = false;
-				} finally {
-					project.History.CommandExecuted += history_CommandExecuted;
-					project.History.CommandsExecuted += history_CommandsExecuted;
+				if (d != 0) {
+					if (d < 0) project.History.Undo(d * (-1));
+					else if (d > 0) project.History.Redo(d);
+					commandExecuted = true;
 				}
+			} catch (nShapeSecurityException exc) {
+				MessageBox.Show(this, exc.Message, "Command execution failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				commandExecuted = false;
+			} finally {
+				project.History.CommandExecuted += history_CommandExecuted;
+				project.History.CommandsExecuted += history_CommandsExecuted;
+			}
 
-				if (commandExecuted)
-					currHistoryPos = historyTrackBar.Value;
-				else if (historyTrackBar.Value != currHistoryPos)
-					historyTrackBar.Value = currHistoryPos;
-				UpdateToolBarAndMenuItems();
+			if (commandExecuted)
+				currHistoryPos = historyTrackBar.Value;
+			else if (historyTrackBar.Value != currHistoryPos)
+				historyTrackBar.Value = currHistoryPos;
+			UpdateToolBarAndMenuItems();
 			//}
 		}
 
@@ -1311,8 +1362,7 @@ namespace Dataweb.nShape.Designer {
 			if (button != null) {
 				int idx = button.DropDownItems.IndexOf((System.Windows.Forms.ToolStripMenuItem)sender);
 				historyTrackBar.Value += idx + 1;
-			}
-			else
+			} else
 				// Undo was executed from context menu
 				historyTrackBar.Value += 1;
 		}
@@ -1324,8 +1374,7 @@ namespace Dataweb.nShape.Designer {
 			if (button != null) {
 				int idx = button.DropDownItems.IndexOf((System.Windows.Forms.ToolStripMenuItem)sender);
 				historyTrackBar.Value -= idx + 1;
-			}
-			else
+			} else
 				// Redo was executed from context menu
 				historyTrackBar.Value -= 1;
 		}

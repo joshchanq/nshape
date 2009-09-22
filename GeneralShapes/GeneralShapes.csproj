@@ -7,8 +7,8 @@
     <ProjectGuid>{1272F77E-D926-4310-AE8B-858909B10F0C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.GeneralShapes</RootNamespace>
-    <AssemblyName>Dataweb.nShape.GeneralShapes</AssemblyName>
+    <RootNamespace>Dataweb.NShape.GeneralShapes</RootNamespace>
+    <AssemblyName>Dataweb.NShape.GeneralShapes</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -16,7 +16,8 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Dataweb.Diagramming.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -75,9 +76,6 @@
     <EmbeddedResource Include="Resources\ShaperReferenceDiamond.bmp" />
     <EmbeddedResource Include="Resources\ShaperReferenceQuadrangle.bmp" />
     <EmbeddedResource Include="Resources\ShaperReferenceTriangle.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Dataweb.Diagramming.snk" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\nShape.csproj">

@@ -1,16 +1,28 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
 
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.GeneralShapes;
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.GeneralShapes;
 
 
-namespace Dataweb.nShape.ElectricalShapes {
+namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalRectangleBase : RectangleBase {
-		
+
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -58,7 +70,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 
 
 	public abstract class ElectricalSquareBase : SquareBase {
-		
+
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -94,7 +106,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 
 
 	public abstract class ElectricalEllipseBase : EllipseBase {
-		
+
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -180,11 +192,11 @@ namespace Dataweb.nShape.ElectricalShapes {
 					return ((controlPointCapability & ControlPointCapabilities.Resize) != 0 || (controlPointCapability & ControlPointCapabilities.Connect) != 0);
 				default:
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
-					//return (controlPointCapability & ControlPointCapabilities.Resize) != 0;
+				//return (controlPointCapability & ControlPointCapabilities.Resize) != 0;
 			}
 		}
 
-		
+
 		protected internal ElectricalTriangleBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -214,7 +226,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 
 
 		protected override bool CalculatePath() {
-			if (base.CalculatePath()){
+			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Diameter / 2f);
 				int top = (int)Math.Round(-Diameter / 2f);
 
@@ -307,8 +319,8 @@ namespace Dataweb.nShape.ElectricalShapes {
 
 
 		protected override bool CalculatePath() {
-			if (base.CalculatePath()){
-			Path.Reset();
+			if (base.CalculatePath()) {
+				Path.Reset();
 				int left = (int)Math.Round(-Size / 2f);
 				int top = (int)Math.Round(-Size / 2f);
 				int bottom = top + Size;
@@ -430,7 +442,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 		}
 	}
 
-	
+
 	public class TransformerSymbol : ElectricalRectangleBase {
 
 		protected override void InitializeToDefault(IStyleSet styleSet) {
@@ -457,7 +469,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 				// always false
 			}
 			if ((controlPointCapability & ControlPointCapabilities.Reference) != 0) {
-				if (controlPointId == ControlPointId.Reference || controlPointId == MiddleCenterControlPoint) 
+				if (controlPointId == ControlPointId.Reference || controlPointId == MiddleCenterControlPoint)
 					return true;
 			}
 			if ((controlPointCapability & ControlPointCapabilities.Rotate) != 0) {
@@ -534,7 +546,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 		private const int BottomCenterControlPoint = 7;
 		private const int BottomRightControlPoint = 8;
 		private const int MiddleCenterControlPoint = 9;
-		
+
 		int d;
 		int ringWidth;
 		int ringHeight;
@@ -564,7 +576,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
 					return ((controlPointCapability & ControlPointCapabilities.Resize) != 0
-							|| ((controlPointCapability & ControlPointCapabilities.Connect) != 0 
+							|| ((controlPointCapability & ControlPointCapabilities.Connect) != 0
 								&& IsConnectionPointEnabled(controlPointId)));
 				case TopLeftControlPoint:
 				case TopRightControlPoint:
@@ -579,11 +591,11 @@ namespace Dataweb.nShape.ElectricalShapes {
 							|| (controlPointCapability & ControlPointCapabilities.Rotate) != 0);
 				default:
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
-					//return false;
+				//return false;
 			}
 		}
 
-		
+
 		protected internal EarthSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -659,8 +671,8 @@ namespace Dataweb.nShape.ElectricalShapes {
 			}
 			return false;
 		}
-		
-	
+
+
 		#region Fields
 
 		// ControlPoint Id Constants
@@ -746,11 +758,11 @@ namespace Dataweb.nShape.ElectricalShapes {
 
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			switch (controlPointId) {				
+			switch (controlPointId) {
 				case MiddleLeftControlPoint:
 				case MiddleRightControlPoint:
 					return ((controlPointCapability & ControlPointCapabilities.Resize) != 0
-							|| ((controlPointCapability & ControlPointCapabilities.Connect) != 0 
+							|| ((controlPointCapability & ControlPointCapabilities.Connect) != 0
 								&& IsConnectionPointEnabled(controlPointId)));
 				case TopLeftControlPoint:
 				case TopCenterControlPoint:
@@ -764,7 +776,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 							|| (controlPointCapability & ControlPointCapabilities.Rotate) != 0);
 				default:
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
-					//return false;
+				//return false;
 			}
 		}
 
@@ -827,7 +839,7 @@ namespace Dataweb.nShape.ElectricalShapes {
 		private const int BottomRightControlPoint = 8;
 		private const int MiddleCenterControlPoint = 9;
 
-		private Rectangle shapeBuffer= Rectangle.Empty;
+		private Rectangle shapeBuffer = Rectangle.Empty;
 		#endregion
 	}
 
@@ -836,36 +848,36 @@ namespace Dataweb.nShape.ElectricalShapes {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(libraryName, preferredRepositoryVersion);
-			registrar.RegisterShapeType(new ShapeType("BusBar", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new BusBarSymbol(shapeType, t); }, 
-				BusBarSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceHorizontalBar));
-			registrar.RegisterShapeType(new ShapeType("Disconnector", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new DisconnectorSymbol(shapeType, t); }, 
-				DisconnectorSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
-			registrar.RegisterShapeType(new ShapeType("AutoDisconnector", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new AutoDisconnectorSymbol(shapeType, t); }, 
-				AutoDisconnectorSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
-			registrar.RegisterShapeType(new ShapeType("AutoSwitch", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new AutoSwitchSymbol(shapeType, t); }, 
-				AutoSwitchSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
-			registrar.RegisterShapeType(new ShapeType("Switch", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new SwitchSymbol(shapeType, t); }, 
-				SwitchSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
-			registrar.RegisterShapeType(new ShapeType("Transformer", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new TransformerSymbol(shapeType, t); }, 
-				TransformerSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceDoubleCircle));
-			registrar.RegisterShapeType(new ShapeType("Earth", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new EarthSymbol(shapeType, t); }, 
-				EarthSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
-			registrar.RegisterShapeType(new ShapeType("Feeder", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new FeederSymbol(shapeType, t); }, 
-				FeederSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
-			registrar.RegisterShapeType(new ShapeType("Rectifier", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new RectifierSymbol(shapeType, t); }, 
-				RectifierSymbol.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
-			registrar.RegisterShapeType(new ShapeType("DisconnectingPoint", libraryName, libraryName, 
-				delegate(ShapeType shapeType, Template t) { return new DisconnectingPoint(shapeType, t); }, 
-				DisconnectingPoint.GetPropertyDefinitions, Dataweb.nShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+			registrar.RegisterShapeType(new ShapeType("BusBar", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new BusBarSymbol(shapeType, t); },
+				BusBarSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceHorizontalBar));
+			registrar.RegisterShapeType(new ShapeType("Disconnector", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new DisconnectorSymbol(shapeType, t); },
+				DisconnectorSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
+			registrar.RegisterShapeType(new ShapeType("AutoDisconnector", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new AutoDisconnectorSymbol(shapeType, t); },
+				AutoDisconnectorSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceCircleWithBar));
+			registrar.RegisterShapeType(new ShapeType("AutoSwitch", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new AutoSwitchSymbol(shapeType, t); },
+				AutoSwitchSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Switch", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new SwitchSymbol(shapeType, t); },
+				SwitchSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Transformer", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new TransformerSymbol(shapeType, t); },
+				TransformerSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceDoubleCircle));
+			registrar.RegisterShapeType(new ShapeType("Earth", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new EarthSymbol(shapeType, t); },
+				EarthSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+			registrar.RegisterShapeType(new ShapeType("Feeder", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new FeederSymbol(shapeType, t); },
+				FeederSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+			registrar.RegisterShapeType(new ShapeType("Rectifier", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new RectifierSymbol(shapeType, t); },
+				RectifierSymbol.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
+			registrar.RegisterShapeType(new ShapeType("DisconnectingPoint", libraryName, libraryName,
+				delegate(ShapeType shapeType, Template t) { return new DisconnectingPoint(shapeType, t); },
+				DisconnectingPoint.GetPropertyDefinitions, Dataweb.NShape.ElectricalShapes.Properties.Resources.ShaperReferenceEarthSymbol));
 		}
 
 

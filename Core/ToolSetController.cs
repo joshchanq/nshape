@@ -1,15 +1,28 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-
-using Dataweb.nShape.Advanced;
-using System.Collections;
-using System.Reflection;
 using System.Diagnostics;
+using System.Drawing;
+using System.Reflection;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape.Controllers {
+namespace Dataweb.NShape.Controllers {
 
 	/// <summary>
 	/// Controller class providing access to the templates of a project.
@@ -96,7 +109,7 @@ namespace Dataweb.nShape.Controllers {
 
 		public event EventHandler ProjectClosing;
 
-		
+
 		public bool ReadOnly {
 			get { return (diagramSetController != null) ? diagramSetController.ReadOnly : true; }
 		}
@@ -120,7 +133,7 @@ namespace Dataweb.nShape.Controllers {
 
 
 		#region [Public] Events
-		
+
 		/// <summary>
 		/// Occurs when the content of the toolbox has been cleared.
 		/// </summary>
@@ -217,6 +230,9 @@ namespace Dataweb.nShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <summary>
+		/// Removes all tools.
+		/// </summary>
 		public void Clear() {
 			tools.Clear();
 			toolBoxInitialized = false;
@@ -224,6 +240,11 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Creates a new tool for creating a templated shape.
+		/// </summary>
+		/// <param name="template">The template of the creation tool.</param>
+		/// <param name="categoryTitle">Title of the toolbox category where the tool is inserted</param>
 		public void CreateTemplateTool(Template template, string categoryTitle) {
 			if (template == null) throw new ArgumentNullException("template");
 			if (FindTool(template) != null)
@@ -242,6 +263,9 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Creates the library indepandent standard tools of teh framework.
+		/// </summary>
 		public void CreateStandardTools() {
 			// First check whether we have a already a pointer tool or a free hand tool.
 			bool pointerToolFound = false;
@@ -249,17 +273,19 @@ namespace Dataweb.nShape.Controllers {
 			foreach (Tool t in Tools) {
 				if (t is PointerTool)
 					pointerToolFound = true;
+#if DEBUG
 				else if (t is FreeHandTool)
 					freeHandToolFound = true;
+#endif
 				if (pointerToolFound && freeHandToolFound)
 					break;
 			}
 			// If we do not have a pointer tool yet, create one.
-			if (!pointerToolFound)
-				AddTool(new PointerTool(), true);
+			if (!pointerToolFound) AddTool(new PointerTool(), true);
+#if DEBUG
 			// If we do not have a free hand tool yet, create one.
-			if (!freeHandToolFound)
-				AddTool(new FreeHandTool(Project));
+			if (!freeHandToolFound) AddTool(new FreeHandTool(Project));
+#endif
 		}
 
 
@@ -294,10 +320,13 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Deletes the given tool.
+		/// </summary>
 		public void DeleteTool(Tool tool) {
 			if (tool == null) throw new ArgumentNullException("tool");
 			if (tool == selectedTool) SelectDefaultTool(true);
-			if (tool == defaultTool) 
+			if (tool == defaultTool)
 				if (tools.Count <= 0) defaultTool = null;
 				else defaultTool = tools[0];
 			if (ToolRemoved != null) {
@@ -308,12 +337,20 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		///  Sets the given tool as the selected tool.
+		/// </summary>
 		public void SelectTool(Tool tool) {
 			if (tool == null) throw new ArgumentNullException("tool");
 			SelectTool(tool, false);
 		}
 
 
+		/// <summary>
+		/// Selects the given tool.
+		/// </summary>
+		/// <param name="tool">Tool to select.</param>
+		/// <param name="multiUse">If false, the default tool will be selected after executing the tool.</param>
 		public void SelectTool(Tool tool, bool multiUse) {
 			if (tool == null) throw new ArgumentNullException("tool");
 			if (tool != selectedTool) {
@@ -333,6 +370,9 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Find the tool that contains the given template
+		/// </summary>
 		public Tool FindTool(Template template) {
 			if (template == null) throw new ArgumentNullException("template");
 			foreach (Tool t in tools) {
@@ -343,6 +383,10 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Fires the DesignEditorSelected event. 
+		/// If it is not handled, or the current role has not the necessary permissions, nothing will happen. 
+		/// </summary>
 		public void ShowDesignEditor() {
 			// Select Default CurrentTool before calling the Editor
 			DoSelectTool(defaultTool, false, true);
@@ -350,6 +394,10 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Fires the DesignEditorSelected event. 
+		/// If it is not handled, or the current role has not the necessary permissions, nothing will happen. 
+		/// </summary>
 		public void ShowLibraryManager() {
 			// Select Default CurrentTool before calling the Editor
 			DoSelectTool(defaultTool, false, true);
@@ -357,7 +405,9 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
-		// Show registered TemplateEditor for creating or editing a Template
+		/// <summary>
+		/// Show registered LibraryManagerSelected event for loading library assemblies
+		/// </summary>
 		public void ShowTemplateEditor(bool editSelectedTemplate) {
 			if (editSelectedTemplate) {
 				if (selectedTool != null && selectedTool is TemplateTool) {
@@ -365,8 +415,7 @@ namespace Dataweb.nShape.Controllers {
 					DoSelectTool(defaultTool, true, false);
 					OnShowTemplateEditorDialog(e);
 				}
-			}
-			else {
+			} else {
 				ShowTemplateEditorEventArgs e = new ShowTemplateEditorEventArgs(Project);
 				DoSelectTool(defaultTool, true, false);
 				OnShowTemplateEditorDialog(e);
@@ -374,6 +423,9 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Deletes the selected tool.
+		/// </summary>
 		public void DeleteSelectedTemplate() {
 			if (selectedTool != null && selectedTool is TemplateTool) {
 				Tool t = selectedTool;
@@ -388,6 +440,9 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Get actions provided by the toolset controller.
+		/// </summary>
 		public IEnumerable<nShapeAction> GetActions(Tool clickedTool) {
 			// menu structure:
 			//
@@ -412,7 +467,7 @@ namespace Dataweb.nShape.Controllers {
 			description = isFeasible ? string.Format("Edit Template '{0}'", clickedTemplate.Name) :
 				"No template tool selected";
 			yield return new DelegateAction("Edit Template...", null, description, isFeasible, Permission.Templates,
-				(action, project)=>OnShowTemplateEditorDialog(new ShowTemplateEditorEventArgs(project, clickedTemplate)));
+				(action, project) => OnShowTemplateEditorDialog(new ShowTemplateEditorEventArgs(project, clickedTemplate)));
 
 			isFeasible = (clickedTool is TemplateTool);
 			description = isFeasible ? string.Format("Delete Template '{0}'", clickedTemplate.Name) :
@@ -421,12 +476,12 @@ namespace Dataweb.nShape.Controllers {
 				isFeasible ? new DeleteTemplateCommand(clickedTemplate) : null);
 
 			yield return new SeparatorAction();
-			
+
 			isFeasible = true;
 			description = "Edit the current design or create new designs";
 			yield return new DelegateAction("Show Design Editor...", Properties.Resources.DesignEditorBtn,
-				description, isFeasible, Permission.Present, 
-				(action, project)=>OnShowDesignEditorDialog(new EventArgs()));
+				description, isFeasible, Permission.Present,
+				(action, project) => OnShowDesignEditorDialog(new EventArgs()));
 
 			isFeasible = true;
 			description = "Load and unload shape and/or model libraries";
@@ -447,11 +502,11 @@ namespace Dataweb.nShape.Controllers {
 
 
 		protected virtual void OnShowLibraryManagerDialog(EventArgs e) {
-			if (Project.SecurityManager.IsGranted(Permission.Templates)) 
+			if (LibraryManagerSelected != null && Project.SecurityManager.IsGranted(Permission.Templates))
 				LibraryManagerSelected(this, e);
 		}
-		
-		
+
+
 		// Show registered TemplateEditor for creating or editing a Template
 		protected virtual void OnShowTemplateEditorDialog(ShowTemplateEditorEventArgs e) {
 			if (Project.SecurityManager.IsGranted(Permission.Templates))
@@ -536,7 +591,7 @@ namespace Dataweb.nShape.Controllers {
 
 			if (diagramSetController != null)
 				this.diagramSetController.ActiveTool = this.selectedTool;
-			
+
 			if (ToolSelected != null) {
 				toolEventArgs.Tool = tool;
 				ToolSelected(this, toolEventArgs);
@@ -552,7 +607,7 @@ namespace Dataweb.nShape.Controllers {
 		//            templates.Add(((TemplateTool)SelectedTool).Template);
 		//         }
 		//      }
-				
+
 		//      // SaveChanges tools
 		//      AggregatedCommand aggCmd = new AggregatedCommand();
 		//      int cnt = templates.Count;
@@ -638,7 +693,7 @@ namespace Dataweb.nShape.Controllers {
 		}
 
 
-		private void UnregisterPropertyControllerEvents(){
+		private void UnregisterPropertyControllerEvents() {
 			diagramSetController.ObjectsSet -= diagramSetController_ObjectsSet;
 			diagramSetController.PropertyChanged -= diagramSetController_PropertyChanged;
 			diagramSetController.RefreshObjects -= diagramSetController_RefreshObjects;
@@ -654,8 +709,8 @@ namespace Dataweb.nShape.Controllers {
 		private void diagramSetController_ProjectChanged(object sender, EventArgs e) {
 			if (diagramSetController.Project != null) RegisterProjectEvents();
 		}
-		
-		
+
+
 		private void diagramSetController_ProjectChanging(object sender, EventArgs e) {
 			if (diagramSetController.Project != null) UnregisterProjectEvents();
 		}
@@ -678,8 +733,8 @@ namespace Dataweb.nShape.Controllers {
 			// uninitialize if all other components are cleared
 			Uninitialize();
 		}
-		
-		
+
+
 		private void Project_ProjectClosed(object sender, EventArgs e) {
 			// nothing to do
 		}
@@ -714,7 +769,7 @@ namespace Dataweb.nShape.Controllers {
 			if (RefreshObjects != null) RefreshObjects(this, e);
 		}
 
-	
+
 		private void diagramSetController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
 			if (PropertyChanged != null) PropertyChanged(this, e);
 		}
@@ -757,7 +812,7 @@ namespace Dataweb.nShape.Controllers {
 		private Graphics infoGraphics;
 		// Project and PropertyController
 		private DiagramSetController diagramSetController;
-		
+
 		// Tools in the tool box
 		private List<Tool> tools = new List<Tool>();
 		// Default tool

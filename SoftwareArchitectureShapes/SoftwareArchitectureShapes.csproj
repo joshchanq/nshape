@@ -7,8 +7,8 @@
     <ProjectGuid>{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.SoftwareArchitectureShapes</RootNamespace>
-    <AssemblyName>Dataweb.nShape.SoftwareArchitectureShapes</AssemblyName>
+    <RootNamespace>Dataweb.NShape.SoftwareArchitectureShapes</RootNamespace>
+    <AssemblyName>Dataweb.NShape.SoftwareArchitectureShapes</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>

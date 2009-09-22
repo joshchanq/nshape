@@ -19,21 +19,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralModelObjects", "Gene
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareArchitectureShapes", "SoftwareArchitectureShapes\SoftwareArchitectureShapes.csproj", "{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nShapeTest", "DiagrammingTest\nShapeTest.csproj", "{32FE8B99-4091-4B3B-95EF-53976217B8EB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{422FE583-59FE-4033-9E69-23763332CCAC}"
-	ProjectSection(SolutionItems) = preProject
-		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
-		nShape.vsmdi = nShape.vsmdi
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
 		Manager = AnkhSVN - Subversion Support for Visual Studio
-	EndGlobalSection
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = nShape.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,10 +67,6 @@ Global
 		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Release|Any CPU.Build.0 = Release|Any CPU
-		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

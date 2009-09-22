@@ -1,10 +1,24 @@
-using System;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Text;
-using Dataweb.nShape.Advanced;
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
 
-namespace Dataweb.nShape.GeneralModelObjects {
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Dataweb.NShape.Advanced;
+
+
+namespace Dataweb.NShape.GeneralModelObjects {
 
 	public enum StateEnum { On, Off, Blocked, Defect, Unknown };
 
@@ -14,8 +28,8 @@ namespace Dataweb.nShape.GeneralModelObjects {
 		public static ValueDevice CreateInstance(ModelObjectType modelObjectType) {
 			return new ValueDevice(modelObjectType);
 		}
-		
-		
+
+
 		protected internal ValueDevice(ModelObjectType modelObjectType)
 			: base(modelObjectType) {
 		}
@@ -47,14 +61,14 @@ namespace Dataweb.nShape.GeneralModelObjects {
 			throw new NotImplementedException();
 		}
 
-	
+
 		[Description("The state of the device. This value is represented by the assigned Shape.")]
 		public StateEnum State {
 			get { return state; }
 			set { state = value; }
 		}
 
-	
+
 		//[Description("The current value of the Device.")]
 		//public double Value {
 		//   get { return this.value; }
@@ -75,6 +89,7 @@ namespace Dataweb.nShape.GeneralModelObjects {
 			set { maxValue = value; }
 		}
 
+
 		//public override IEnumerable<nShapeAction> GetActions() {
 		//   // "Set State", "Set Min Value", "Set Max Value", "SetFloat";
 		//}
@@ -91,7 +106,7 @@ namespace Dataweb.nShape.GeneralModelObjects {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
-			registrar.RegisterModelObjectType(new GenericModelObjectType("ValueDevice", namespaceName, categoryTitle, 
+			registrar.RegisterModelObjectType(new GenericModelObjectType("ValueDevice", namespaceName, categoryTitle,
 				ValueDevice.CreateInstance, ValueDevice.GetPropertyDefinitions, 2));
 		}
 
@@ -104,5 +119,4 @@ namespace Dataweb.nShape.GeneralModelObjects {
 
 		#endregion
 	}
-
 }

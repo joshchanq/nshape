@@ -1,13 +1,25 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Drawing;
-using System.ComponentModel;
 
-using Dataweb.nShape.Advanced;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape {
+namespace Dataweb.NShape {
 
 	#region IRepository Interface
 
@@ -136,13 +148,11 @@ namespace Dataweb.nShape {
 		/// <returns></returns>
 		Model GetModel();
 
-
 		/// <summary>
 		/// Inserts a new model.
 		/// </summary>
 		void InsertModel(Model model);
-		
-		
+
 		/// <summary>
 		/// Updates the current model.
 		/// </summary>
@@ -153,6 +163,10 @@ namespace Dataweb.nShape {
 		/// </summary>
 		void DeleteModel(Model model);
 
+		/// <summary>
+		/// Undeletes the current model.
+		/// </summary>
+		void UndeleteModel(Model model);
 
 		event EventHandler<RepositoryModelEventArgs> ModelInserted;
 
@@ -188,6 +202,8 @@ namespace Dataweb.nShape {
 
 		void DeleteDesign(Design design);
 
+		void UndeleteDesign(Design design);
+
 		event EventHandler<RepositoryDesignEventArgs> DesignInserted;
 
 		event EventHandler<RepositoryDesignEventArgs> DesignUpdated;
@@ -204,6 +220,8 @@ namespace Dataweb.nShape {
 		void UpdateStyle(IStyle style);
 
 		void DeleteStyle(IStyle style);
+
+		void UndeleteStyle(Design design, IStyle style);
 
 		event EventHandler<RepositoryStyleEventArgs> StyleInserted;
 
@@ -245,6 +263,8 @@ namespace Dataweb.nShape {
 		void UpdateDiagram(Diagram diagram);
 
 		void DeleteDiagram(Diagram diagram);
+
+		void UndeleteDiagram(Diagram diagram);
 
 		event EventHandler<RepositoryDiagramEventArgs> DiagramInserted;
 
@@ -291,6 +311,8 @@ namespace Dataweb.nShape {
 
 		void DeleteTemplate(Template template);
 
+		void UndeleteTemplate(Template template);
+
 		event EventHandler<RepositoryTemplateEventArgs> TemplateInserted;
 
 		event EventHandler<RepositoryTemplateEventArgs> TemplateUpdated;
@@ -315,6 +337,10 @@ namespace Dataweb.nShape {
 		void DeleteModelMapping(IModelMapping modelMapping);
 
 		void DeleteModelMappings(IEnumerable<IModelMapping> modelMappings);
+
+		void UndeleteModelMappings(IModelMapping modelMapping, Template template);
+
+		void UndeleteModelMappings(IEnumerable<IModelMapping> modelMappings, Template template);
 
 		event EventHandler<RepositoryTemplateEventArgs> ModelMappingsInserted;
 
@@ -365,6 +391,14 @@ namespace Dataweb.nShape {
 
 		void DeleteShapes(IEnumerable<Shape> shapes);
 
+		void UndeleteShape(Shape shape, Diagram diagram);
+
+		void UndeleteShape(Shape shape, Shape parent);
+
+		void UndeleteShapes(IEnumerable<Shape> shapes, Diagram diagram);
+
+		void UndeleteShapes(IEnumerable<Shape> shapes, Shape parent);
+
 		/// <summary>
 		/// Removes all shapes of the diagram from the cache cache.
 		/// </summary>
@@ -414,6 +448,10 @@ namespace Dataweb.nShape {
 		void DeleteModelObject(IModelObject modelObject);
 
 		void DeleteModelObjects(IEnumerable<IModelObject> modelObjects);
+
+		void UndeleteModelObject(IModelObject modelObject);
+
+		void UndeleteModelObjects(IEnumerable<IModelObject> modelObjects);
 
 		/// <summary>
 		/// Removes the given model objects from the repository cache.

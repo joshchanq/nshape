@@ -7,8 +7,8 @@
     <ProjectGuid>{D310A704-CE98-4632-A3B1-1D2305792BB7}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.Designer</RootNamespace>
-    <AssemblyName>nShape Designer</AssemblyName>
+    <RootNamespace>Dataweb.NShape.Designer</RootNamespace>
+    <AssemblyName>NShapeDesigner</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -25,7 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
-    <DocumentationFile>..\Binaries\Debug\nShape Designer.xml</DocumentationFile>
+    <DocumentationFile>..\Binaries\Debug\NShapeDesigner.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

@@ -1,34 +1,28 @@
-// Copyright 2009 dataweb GmbH, Germany, www.dataweb.de
-// This file is part of the dataweb diagram editing framework.
-//
-// The dataweb diagram editing framework is free software: you can redistribute it 
-// and/or modify it under the terms of the GNU General Public License as published 
-// by the Free Software Foundation, either version 3 of the License, or (at your 
-// option) any later version.
-// The dataweb diagram editing framework is distributed in the hope that it will be 
-// useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
-// License for more details. You should have received a copy of the GNU General 
-// Public License along with the dataweb diagram editing framework. If not, see 
-// http://www.gnu.org/licenses/.
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
 
 using System;
-using System.Text;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
-using System.Drawing;
+using System.Diagnostics;
+using System.Drawing.Design;
 using System.IO;
 using System.Reflection;
-using System.Drawing.Design;
-using System.Collections;
-using System.Threading;
-using System.Diagnostics;
-
-using Dataweb.nShape.Advanced;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape {
+namespace Dataweb.NShape {
 
 	/// <summary>
 	/// Collection of elements making up a nShape project.

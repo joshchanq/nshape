@@ -7,8 +7,8 @@
     <ProjectGuid>{98D7199F-0A57-429A-94B0-C7585A924302}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.ElectricalModelObjects</RootNamespace>
-    <AssemblyName>Dataweb.nShape.ElectricalModelObjects</AssemblyName>
+    <RootNamespace>Dataweb.NShape.ElectricalModelObjects</RootNamespace>
+    <AssemblyName>Dataweb.NShape.ElectricalModelObjects</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>

@@ -1,3 +1,17 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,10 +19,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Text;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	/// <summary>
 	/// Base class for all graphical objects
@@ -132,7 +145,7 @@ namespace Dataweb.nShape.Advanced {
 					owner = null;
 				}
 				if (value != null) {
-						if (value.Shapes is ShapeCollection)
+					if (value.Shapes is ShapeCollection)
 						owner = (ShapeCollection)value.Shapes;
 					else throw new ArgumentException(string.Format("{0}'s Shapes property must be a {1}", value.GetType().Name, typeof(ShapeCollection).Name));
 				} else owner = null;
@@ -435,10 +448,14 @@ namespace Dataweb.nShape.Advanced {
 			foreach (ControlPointId pointId in GetControlPointIds(controlPointCapability))
 				if (Geometry.RectangleContainsPoint(r, GetControlPointPosition(pointId)))
 					return pointId;
-			if (range > 0 && IntersectsWith(r.X, r.Y, r.Width, r.Height)) 
-				return ControlPointId.Reference;
-			else if (ContainsPoint(x, y))
-				return ControlPointId.Reference;
+			if ((range > 0 && IntersectsWith(r.X, r.Y, r.Width, r.Height))
+					|| ContainsPoint(x, y)) {
+				if (controlPointCapability == ControlPointCapabilities.All) return ControlPointId.Reference;
+				else if (((controlPointCapability & ControlPointCapabilities.Connect) == ControlPointCapabilities.Connect)
+					|| ((controlPointCapability & ControlPointCapabilities.Glue) == ControlPointCapabilities.Glue)) {
+					if (IsConnectionPointEnabled(ControlPointId.Reference)) return ControlPointId.Reference;
+				}
+			}
 			return ControlPointId.None;
 		}
 

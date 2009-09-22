@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>Dataweb.nShape</RootNamespace>
+    <RootNamespace>Dataweb.NShape</RootNamespace>
     <AssemblyName>Dataweb.nShape</AssemblyName>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
     <FileUpgradeFlags>
@@ -257,6 +257,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>REM "%25PROGRAMFILES%25\Microsoft SDKs\Windows\v6.0A\bin\gacutil" /if "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

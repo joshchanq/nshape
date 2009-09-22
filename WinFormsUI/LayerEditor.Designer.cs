@@ -1,4 +1,4 @@
-﻿namespace Dataweb.nShape.WinFormsUI {
+﻿namespace Dataweb.NShape.WinFormsUI {
 	partial class LayerEditor {
 		/// <summary> 
 		/// Required designer variable.
@@ -24,9 +24,9 @@
 		/// </summary>
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
-			this.controller = new Dataweb.nShape.Controllers.LayerController();
-			this.presenter = new Dataweb.nShape.Controllers.LayerPresenter();
-			this.layerListView = new Dataweb.nShape.WinFormsUI.LayerListView();
+			this.controller = new Dataweb.NShape.Controllers.LayerController();
+			this.presenter = new Dataweb.NShape.Controllers.LayerPresenter();
+			this.layerListView = new Dataweb.NShape.WinFormsUI.LayerListView();
 			this.SuspendLayout();
 			// 
 			// controller
@@ -70,8 +70,8 @@
 
 		#endregion
 
-		private Dataweb.nShape.Controllers.LayerController controller;
-		private Dataweb.nShape.Controllers.LayerPresenter presenter;
+		private Dataweb.NShape.Controllers.LayerController controller;
+		private Dataweb.NShape.Controllers.LayerPresenter presenter;
 		private LayerListView layerListView;
 	}
 }

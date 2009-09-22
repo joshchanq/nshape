@@ -1,3 +1,17 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -5,13 +19,12 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Design;
 using System.Drawing.Drawing2D;
-
-using Dataweb.nShape.Advanced;
-using Dataweb.Utilities;
 using System.Drawing.Imaging;
+using Dataweb.NShape.Advanced;
+using Dataweb.Utilities;
 
 
-namespace Dataweb.nShape.GeneralShapes {
+namespace Dataweb.NShape.GeneralShapes {
 
 	public class Ellipse : EllipseBase {
 
@@ -300,8 +313,8 @@ namespace Dataweb.nShape.GeneralShapes {
 				}
 			} else return base.CalculateBoundingRectangle(tight);
 		}
-		
-		
+
+
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int r = CalcCornerRadius();
@@ -461,7 +474,7 @@ namespace Dataweb.nShape.GeneralShapes {
 				case BodyEndControlPoint:
 					// ToDo: Implement GluePoint behavior for ThickArrows
 					return ((controlPointCapability & ControlPointCapabilities.Resize) != 0
-					         /*|| (controlPointCapabilities & ControlPointCapabilities.Glue) != 0*/);
+						/*|| (controlPointCapabilities & ControlPointCapabilities.Glue) != 0*/);
 				case ArrowTopControlPoint:
 				case BodyTopControlPoint:
 				case BodyBottomControlPoint:
@@ -665,8 +678,7 @@ namespace Dataweb.nShape.GeneralShapes {
 					if (pointId == ArrowTopControlPoint) {
 						if (!Geometry.MoveRectangleTop(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
 							result = false;
-					}
-					else {
+					} else {
 						if (!Geometry.MoveRectangleBottom(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
 							result = false;
 					}
@@ -674,8 +686,7 @@ namespace Dataweb.nShape.GeneralShapes {
 					if (newHeadWidth < 0) {
 						newHeadWidth = 0;
 						result = false;
-					}
-					else if (newHeadWidth > Width) {
+					} else if (newHeadWidth > Width) {
 						newHeadWidth = Width;
 						result = false;
 					}
@@ -691,8 +702,7 @@ namespace Dataweb.nShape.GeneralShapes {
 					if (newBodyHeight > Height) {
 						newBodyHeight = Height;
 						result = false;
-					}
-					else if (newBodyHeight < 0) {
+					} else if (newBodyHeight < 0) {
 						newBodyHeight = 0;
 						result = false;
 					}
@@ -768,7 +778,7 @@ namespace Dataweb.nShape.GeneralShapes {
 		#endregion
 	}
 
-	
+
 	/// <summary>
 	/// Displays a bitmap in the diagram.
 	/// </summary>
@@ -802,7 +812,7 @@ namespace Dataweb.nShape.GeneralShapes {
 				transparency = src.Transparency;
 				transparentColor = src.TransparentColor;
 				compressionQuality = src.compressionQuality;
-			} 
+			}
 		}
 
 
@@ -944,7 +954,7 @@ namespace Dataweb.nShape.GeneralShapes {
 				}
 				if ((controlPointCapability & ControlPointCapabilities.Connect) != 0) {
 					//if (IsConnectionPointEnabled(connectionPointId))
-						return true;
+					return true;
 				}
 				if ((controlPointCapability & ControlPointCapabilities.Reference) != 0) {
 					if (controlPointId == ControlPointCount || controlPointId == ControlPointId.Reference)
@@ -1007,7 +1017,7 @@ namespace Dataweb.nShape.GeneralShapes {
 			writer.WriteByte(compressionQuality);
 			writer.WriteBool(grayScale);
 			writer.WriteString(image.Name);
-			if (image.Image != global::Dataweb.nShape.GeneralShapes.Properties.Resources.BitmapShapeIconLarge)
+			if (image.Image != global::Dataweb.NShape.GeneralShapes.Properties.Resources.BitmapShapeIconLarge)
 				writer.WriteImage(image.Image);
 			else writer.WriteImage(null);
 			writer.WriteInt32(transparentColor.ToArgb());
@@ -1042,7 +1052,7 @@ namespace Dataweb.nShape.GeneralShapes {
 		}
 
 
-		protected virtual void ClearImageDrawCache(){
+		protected virtual void ClearImageDrawCache() {
 			if (imageAttribs != null) {
 				imageAttribs.Dispose();
 				imageAttribs = null;
@@ -1099,7 +1109,7 @@ namespace Dataweb.nShape.GeneralShapes {
 		#endregion
 	}
 
-	
+
 	// FreeTriangle as base for the FreePolygon
 	public class FreeTriangle : CaptionedShapeBase {
 
@@ -1343,51 +1353,51 @@ namespace Dataweb.nShape.GeneralShapes {
 
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
 			// Linear GeneralShapes
-			registrar.RegisterShapeType(new ShapeType("Polyline", namespaceName, namespaceName, 
+			registrar.RegisterShapeType(new ShapeType("Polyline", namespaceName, namespaceName,
 				Polyline.CreateInstance, Polyline.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("CircularArc", namespaceName, namespaceName, 
+			registrar.RegisterShapeType(new ShapeType("CircularArc", namespaceName, namespaceName,
 				CircularArc.CreateInstance, CircularArc.GetPropertyDefinitions));
 			// new Type(typeof(RectangularLine).Name, RectangularLine.CreateInstance, 
 			// RectangularLine.GetPropertyDefinitions(null)).Register(registrar);
 			// new Type(typeof(BezierLine).Name, BezierLine.CreateInstance, 
 			// BezierLine.GetPropertyDefinitions(null)).Register(registrar);
 			// Planar GeneralShapes
-			registrar.RegisterShapeType(new ShapeType("Text", namespaceName, namespaceName, 
-				Text.CreateInstance, Text.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
-			registrar.RegisterShapeType(new ShapeType("Label", namespaceName, namespaceName, 
-				Label.CreateInstance, Label.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Text", namespaceName, namespaceName,
+				Text.CreateInstance, Text.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Label", namespaceName, namespaceName,
+				Label.CreateInstance, Label.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			// new Type("Triangle", lib, namespaceName, Triangle.CreateInstance, 
 			// Triangle.GetPropertyDefinitions(null), 
 			// Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle).Register(registrar);
-			registrar.RegisterShapeType(new ShapeType("IsoscelesTriangle", namespaceName, namespaceName, 
-				IsoscelesTriangle.CreateInstance, IsoscelesTriangle.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle));
-			registrar.RegisterShapeType(new ShapeType("Ellipse", namespaceName, namespaceName, 
-				Ellipse.CreateInstance, Ellipse.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
-			registrar.RegisterShapeType(new ShapeType("Circle", namespaceName, namespaceName, 
-				Circle.CreateInstance, Circle.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
-			registrar.RegisterShapeType(new ShapeType("Box", namespaceName, namespaceName, 
-				Box.CreateInstance, Box.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
-			registrar.RegisterShapeType(new ShapeType("Square", namespaceName, namespaceName, 
-				Square.CreateInstance, Square.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
-			registrar.RegisterShapeType(new ShapeType("Diamond", namespaceName, namespaceName, 
-				Diamond.CreateInstance, Diamond.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceDiamond));
-			registrar.RegisterShapeType(new ShapeType("RoundedBox", namespaceName, namespaceName, 
-				RoundedBox.CreateInstance, RoundedBox.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
-			registrar.RegisterShapeType(new ShapeType("ThickArrow", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return (Shape)new ThickArrow(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("IsoscelesTriangle", namespaceName, namespaceName,
+				IsoscelesTriangle.CreateInstance, IsoscelesTriangle.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle));
+			registrar.RegisterShapeType(new ShapeType("Ellipse", namespaceName, namespaceName,
+				Ellipse.CreateInstance, Ellipse.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
+			registrar.RegisterShapeType(new ShapeType("Circle", namespaceName, namespaceName,
+				Circle.CreateInstance, Circle.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceCircle));
+			registrar.RegisterShapeType(new ShapeType("Box", namespaceName, namespaceName,
+				Box.CreateInstance, Box.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Square", namespaceName, namespaceName,
+				Square.CreateInstance, Square.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Diamond", namespaceName, namespaceName,
+				Diamond.CreateInstance, Diamond.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceDiamond));
+			registrar.RegisterShapeType(new ShapeType("RoundedBox", namespaceName, namespaceName,
+				RoundedBox.CreateInstance, RoundedBox.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("ThickArrow", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return (Shape)new ThickArrow(shapeType, t); },
 				ThickArrow.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Picture", namespaceName, namespaceName, 
-				Picture.CreateInstance, Picture.GetPropertyDefinitions, 
-				Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
+			registrar.RegisterShapeType(new ShapeType("Picture", namespaceName, namespaceName,
+				Picture.CreateInstance, Picture.GetPropertyDefinitions,
+				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			// new Type("Free Triangle", lib.Name, namespaceName, 
 			// delegate(Type shapeType, Template db) { return (Shape)new FreeTriangle(shapeType, db); }, 
 			// FreeTriangle.GetPropertyDefinitions(null)).Register(registrar);

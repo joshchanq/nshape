@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Dataweb.nShape.SoftwareArchitectureShapes.Properties {
+namespace Dataweb.NShape.SoftwareArchitectureShapes.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace Dataweb.nShape.SoftwareArchitectureShapes.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.nShape.SoftwareArchitectureShapes.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.NShape.SoftwareArchitectureShapes.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

@@ -1,16 +1,16 @@
-// Copyright 2009 dataweb GmbH, Germany, www.dataweb.de
-// This file is part of the dataweb diagram editing framework.
-//
-// The dataweb diagram editing framework is free software: you can redistribute it 
-// and/or modify it under the terms of the GNU General Public License as published 
-// by the Free Software Foundation, either version 3 of the License, or (at your 
-// option) any later version.
-// The dataweb diagram editing framework is distributed in the hope that it will be 
-// useful, but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public 
-// License for more details. You should have received a copy of the GNU General 
-// Public License along with the dataweb diagram editing framework. If not, see 
-// http://www.gnu.org/licenses/.
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
 
 using System;
 using System.Collections;
@@ -23,7 +23,7 @@ using System.Threading;
 using Dataweb.Utilities;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	#region Shape collection support
 
@@ -344,12 +344,14 @@ namespace Dataweb.nShape.Advanced {
 
 		public bool ContainsAny(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shape");
-			bool isEmpty = true;
+			bool result = false;
 			foreach (Shape shape in shapes) {
-				if (isEmpty) isEmpty = false;
-				if (Contains(shape)) return true;
+				if (Contains(shape)) {
+					result = true;
+					break;
+				}
 			}
-			return !isEmpty;
+			return result;
 		}
 
 

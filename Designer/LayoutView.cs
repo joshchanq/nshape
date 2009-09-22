@@ -1,18 +1,28 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Diagnostics;
-using System.Threading;
+using System.Windows.Forms;
 
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.Layouters;
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.Layouters;
 
 
-namespace Dataweb.nShape.Designer {
+namespace Dataweb.NShape.Designer {
 
 	public partial class LayoutView : Form {
 
@@ -37,7 +47,7 @@ namespace Dataweb.nShape.Designer {
 			get { return selectedShapes; }
 			set {
 				selectedShapes.Clear();
-				selectedShapes.AddRange(value); 
+				selectedShapes.AddRange(value);
 			}
 		}
 
@@ -185,9 +195,9 @@ namespace Dataweb.nShape.Designer {
 
 
 		private void previewButton_Click(object sender, EventArgs e) {
-			if (isPreview) 
+			if (isPreview)
 				Restore();
-			else if (layoutTimer.Enabled) 
+			else if (layoutTimer.Enabled)
 				FinishAnimatedPreview();
 			else {
 				PrepareLayouter();
@@ -202,7 +212,7 @@ namespace Dataweb.nShape.Designer {
 			}
 		}
 
-#endregion
+		#endregion
 
 
 		private void SetShapes() {
@@ -254,8 +264,8 @@ namespace Dataweb.nShape.Designer {
 				currentPanel = newPanel;
 			}
 		}
-		
-		
+
+
 		private void OnLayoutChanged() {
 			if (LayoutChanged != null) LayoutChanged(this, eventArgs);
 		}
@@ -283,7 +293,7 @@ namespace Dataweb.nShape.Designer {
 			Close();
 		}
 
-		
+
 		private Panel currentPanel;
 		private bool isPreview;
 

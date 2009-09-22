@@ -1,9 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Drawing;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
 	public abstract class nShapeAction {
 
@@ -17,8 +30,8 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
-		protected nShapeAction(string title, Bitmap image, Color imageTransparentColor) 
-			:this(title) {
+		protected nShapeAction(string title, Bitmap image, Color imageTransparentColor)
+			: this(title) {
 			this.image = image;
 			this.transparentColor = imageTransparentColor;
 			if (this.image != null) this.image.MakeTransparent(this.transparentColor);
@@ -47,12 +60,12 @@ namespace Dataweb.nShape.Advanced {
 			get { return tag; }
 			set { tag = value; }
 		}
-		
-		
+
+
 		/// <summary>
 		/// Culture invariant name that can be used as key for the presenting widget.
 		/// </summary>
-		public virtual string Title { 
+		public virtual string Title {
 			get { return title; }
 			set { title = value; }
 		}
@@ -183,12 +196,12 @@ namespace Dataweb.nShape.Advanced {
 			set { /* nothing to do */ }
 		}
 
-		
+
 		public override string Description {
 			get { return string.Empty; }
 			set { /* nothing to do */ }
 		}
-		
+
 
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
@@ -333,12 +346,12 @@ namespace Dataweb.nShape.Advanced {
 		public nShapeAction DefaultAction {
 			get { return (subItems == null || defaultActionIdx < 0 || defaultActionIdx >= subItems.Length) ? null : subItems[defaultActionIdx]; }
 		}
-		
-		
+
+
 		private int defaultActionIdx = -1;
 	}
-	
-	
+
+
 	/// <summary>
 	/// Executed a given delegate.
 	/// </summary>
@@ -346,12 +359,12 @@ namespace Dataweb.nShape.Advanced {
 
 		public delegate void ActionExecuteDelegate(nShapeAction action, Project project);
 
-		
+
 		public DelegateAction(string text)
 			: base(text, null, Color.Empty) {
 		}
-		
-		
+
+
 		public DelegateAction(string text, Bitmap image, Color imageTransparentColor)
 			: base(text, image, imageTransparentColor) {
 		}
@@ -388,8 +401,8 @@ namespace Dataweb.nShape.Advanced {
 			get { return requiredPermission; }
 			set { requiredPermission = value; }
 		}
-		
-		
+
+
 		public ActionExecuteDelegate Delegate {
 			get { return executeDelegate; }
 			set { executeDelegate = value; }
@@ -400,8 +413,8 @@ namespace Dataweb.nShape.Advanced {
 		private Permission requiredPermission = Permission.None;
 		private ActionExecuteDelegate executeDelegate;
 	}
-	
-	
+
+
 	/// <summary>
 	/// Adds a Command to the History and executes it.
 	/// </summary>
@@ -434,18 +447,18 @@ namespace Dataweb.nShape.Advanced {
 		public override string Description {
 			get {
 				if (IsFeasible) return command.Description;
-				else return base.Description; 
+				else return base.Description;
 			}
 			set { base.Description = value; }
 		}
-		
-		
+
+
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
 			return (command != null) ? command.IsAllowed(securityManager) : true;
 		}
-		
-		
+
+
 		public override void Execute(nShapeAction action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
@@ -453,8 +466,8 @@ namespace Dataweb.nShape.Advanced {
 		}
 
 
-		public ICommand Command { 
-			get { return command; } 
+		public ICommand Command {
+			get { return command; }
 		}
 
 

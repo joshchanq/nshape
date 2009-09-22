@@ -1,10 +1,24 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Drawing;
 
-using Dataweb.nShape.Advanced;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape.FlowChartShapes {
+namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartRectangleBase : RectangleBase {
 
@@ -106,7 +120,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 			}
 		}
 
-	
+
 		protected internal FlowChartEllipseBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -126,7 +140,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 
 	public abstract class FlowChartCircleBase : CircleBase {
-		
+
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -163,8 +177,8 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 	public abstract class FlowChartDiamondBase : DiamondBase {
 
-		protected override int ControlPointCount { 
-			get { return 9; } 
+		protected override int ControlPointCount {
+			get { return 9; }
 		}
 
 
@@ -203,7 +217,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 
 	public abstract class FlowChartTriangleBase : IsoscelesTriangleBase {
-		
+
 		protected override int ControlPointCount { get { return 5; } }
 
 
@@ -216,8 +230,8 @@ namespace Dataweb.nShape.FlowChartShapes {
 				case TopCenterControlPoint:
 					return ((controlPointCapability & ControlPointCapabilities.Resize) != 0 || (controlPointCapability & ControlPointCapabilities.Connect) != 0);
 				default:
-					return base.HasControlPointCapability(controlPointId, controlPointCapability);	
-					//return (controlPointCapability & ControlPointCapabilities.Resize) != 0;
+					return base.HasControlPointCapability(controlPointId, controlPointCapability);
+				//return (controlPointCapability & ControlPointCapabilities.Resize) != 0;
 			}
 		}
 
@@ -350,9 +364,9 @@ namespace Dataweb.nShape.FlowChartShapes {
 			ControlPoints[12].Y = bottom;
 		}
 
-		
+
 		protected override bool CalculatePath() {
-			if (base.CalculatePath()){
+			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
 				int top = (int)Math.Round(-Height / 2f);
 
@@ -696,7 +710,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 		}
 	}
 
-	
+
 	public class OffpageConnectorSymbol : FlowChartRectangleBase {
 
 		public override Shape Clone() {
@@ -877,10 +891,10 @@ namespace Dataweb.nShape.FlowChartShapes {
 		private const int MiddleCenterControlPoint = 5;
 		private const int LeftConnectionPoint = 6;
 		private const int RightConnectionPoint = 7;
-		#endregion	
+		#endregion
 	}
-	
-	
+
+
 	public class MergeSymbol : FlowChartTriangleBase {
 
 		public override Shape Clone() {
@@ -985,8 +999,8 @@ namespace Dataweb.nShape.FlowChartShapes {
 				return bounds;
 			}
 		}
-		
-		
+
+
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height * CenterPosFactorY);
@@ -1009,7 +1023,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 			ControlPoints[6].Y = top;
 		}
 
-	
+
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1043,7 +1057,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 		#region Fields
 		private const float centerPosFactorY = 0.3333333333f;
-		
+
 		Point[] shapeBuffer = new Point[3];
 		private const int TopLeftControlPoint = 1;
 		private const int TopCenterControlPoint = 2;
@@ -1101,7 +1115,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 				Path.AddLine(right, bottom, left + ArcRadius, bottom);
 				Path.CloseFigure();
 				return true;
-			} 
+			}
 			return false;
 		}
 
@@ -1396,14 +1410,14 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 		private int CalcEdgeInset() { return Height / 6; }
 
-		
+
 		protected override void CalcControlPoints() {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-				int edgeInset = CalcEdgeInset();
-			
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+			int edgeInset = CalcEdgeInset();
+
 			// top row
 			ControlPoints[0].X = left + edgeInset;
 			ControlPoints[0].Y = top;
@@ -1564,7 +1578,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 			return false;
 		}
 
-	
+
 		private int CalcSideBarSize() { return (int)Math.Round(Math.Min(Width / 8f, Height / 8f)); }
 	}
 
@@ -1693,7 +1707,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 		}
 
 
-		private int CalcTearOffSize() { 
+		private int CalcTearOffSize() {
 			return (int)Math.Round(Height / 4f);
 		}
 	}
@@ -1747,7 +1761,7 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 		private int CalcEdgeInset() { return (int)Math.Round(Width / 4f); }
 
-	
+
 		#region Fields
 		private Point[] shapePoints = new Point[4];
 		#endregion
@@ -1986,12 +2000,12 @@ namespace Dataweb.nShape.FlowChartShapes {
 
 
 		protected override void CalcControlPoints() {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
 
-				ControlPoints[0].X = 0;
+			ControlPoints[0].X = 0;
 			ControlPoints[0].Y = top;
 			ControlPoints[1].X = left;
 			ControlPoints[1].Y = 0;
@@ -2051,79 +2065,79 @@ namespace Dataweb.nShape.FlowChartShapes {
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
 			registrar.RegisterShapeType(new ShapeType("Terminator", namespaceName, namespaceName,
-				delegate(ShapeType shapeType, Template t) { return new TerminatorSymbol(shapeType, t); }, 
+				delegate(ShapeType shapeType, Template t) { return new TerminatorSymbol(shapeType, t); },
 				TerminatorSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Process", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new ProcessSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Process", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new ProcessSymbol(shapeType, t); },
 				ProcessSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Decision", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new DecisionSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Decision", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new DecisionSymbol(shapeType, t); },
 				DecisionSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("InputOutput", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new InputOutputSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("InputOutput", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new InputOutputSymbol(shapeType, t); },
 				InputOutputSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Document", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new DocumentSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Document", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new DocumentSymbol(shapeType, t); },
 				DocumentSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("OffpageConnector", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new OffpageConnectorSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("OffpageConnector", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new OffpageConnectorSymbol(shapeType, t); },
 				OffpageConnectorSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Connector", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new ConnectorSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Connector", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new ConnectorSymbol(shapeType, t); },
 				ConnectorSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("PredefinedProcess", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new PredefinedProcessSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("PredefinedProcess", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new PredefinedProcessSymbol(shapeType, t); },
 				PredefinedProcessSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Extract", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new ExtractSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Extract", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new ExtractSymbol(shapeType, t); },
 				ExtractSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Merge", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new MergeSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Merge", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new MergeSymbol(shapeType, t); },
 				MergeSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("OnlineStorage", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new OnlineStorageSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("OnlineStorage", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new OnlineStorageSymbol(shapeType, t); },
 				OnlineStorageSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("OfflineStorage", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new OfflineStorageSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("OfflineStorage", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new OfflineStorageSymbol(shapeType, t); },
 				OfflineStorageSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("DrumStorage", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new DrumStorageSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("DrumStorage", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new DrumStorageSymbol(shapeType, t); },
 				DrumStorageSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("DiskStorage", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new DiskStorageSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("DiskStorage", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new DiskStorageSymbol(shapeType, t); },
 				DiskStorageSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("TapeStorage", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new TapeStorageSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("TapeStorage", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new TapeStorageSymbol(shapeType, t); },
 				TapeStorageSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Preparation", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new PreparationSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Preparation", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new PreparationSymbol(shapeType, t); },
 				PreparationSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("ManualInput", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new ManualInputSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("ManualInput", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new ManualInputSymbol(shapeType, t); },
 				ManualInputSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Core", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new CoreSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Core", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new CoreSymbol(shapeType, t); },
 				CoreSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Display", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new DisplaySymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Display", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new DisplaySymbol(shapeType, t); },
 				DisplaySymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Tape", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new TapeSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Tape", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new TapeSymbol(shapeType, t); },
 				TapeSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("ManualOperation", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new ManualOperationSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("ManualOperation", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new ManualOperationSymbol(shapeType, t); },
 				ManualOperationSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Sort", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new SortSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Sort", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new SortSymbol(shapeType, t); },
 				SortSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Collate", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new CollateSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Collate", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new CollateSymbol(shapeType, t); },
 				CollateSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("Card", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new CardSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("Card", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new CardSymbol(shapeType, t); },
 				CardSymbol.GetPropertyDefinitions));
-			registrar.RegisterShapeType(new ShapeType("CommLink", namespaceName, namespaceName, 
-				delegate(ShapeType shapeType, Template t) { return new CommLinkSymbol(shapeType, t); }, 
+			registrar.RegisterShapeType(new ShapeType("CommLink", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) { return new CommLinkSymbol(shapeType, t); },
 				CommLinkSymbol.GetPropertyDefinitions));
 		}
 

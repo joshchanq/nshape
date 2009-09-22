@@ -1,10 +1,26 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Drawing;
-using Dataweb.nShape.Advanced;
 
 
-namespace Dataweb.nShape.Advanced {
+namespace Dataweb.NShape.Advanced {
 
+	/// <summary>
+	/// Measures the extent of strings.
+	/// </summary>
 	public class TextMeasurer {
 
 		/// <summary>
@@ -79,36 +95,5 @@ namespace Dataweb.nShape.Advanced {
 
 			return result;
 		}
-
-
-		//public static Size MeasureText(Graphics graphics, string text, Font font, Size proposedSize, IParagraphStyle paragraphStyle) {
-		//   Size result = Size.Empty;
-
-		//   CharacterRange[] characterRanges = { new CharacterRange(0, text.Length) };
-		//   RectangleF layoutRect = new RectangleF(0, 0, proposedSize.Width, proposedSize.Height);
-		//   if (layoutRect == RectangleF.Empty) {
-		//      layoutRect.Width = int.MaxValue;
-		//      layoutRect.Height = int.MaxValue;
-		//   }
-
-		//   // Set string format.
-		//   StringFormat stringFormat = ParagraphStyleToStringFormat(paragraphStyle);
-		//   stringFormat.FormatFlags |= StringFormatFlags.MeasureTrailingSpaces;
-		//   stringFormat.SetMeasurableCharacterRanges(characterRanges);
-
-		//   Region[] stringRegions = graphics.MeasureCharacterRanges(text, font, layoutRect, stringFormat);
-		//   float resultWidth = 0;
-		//   float resultHeight = 0;
-		//   for (int i = 0; i < stringRegions.Length; ++i) {
-		//      RectangleF bounds = stringRegions[i].GetBounds(graphics);
-		//      resultWidth += bounds.Width;
-		//      resultHeight += bounds.Height;
-		//   }
-		//   result.Width = (int)Math.Ceiling(resultWidth);
-		//   result.Height = (int)Math.Ceiling(resultHeight);
-
-		//   return result;
-		//}
 	}
-
 }

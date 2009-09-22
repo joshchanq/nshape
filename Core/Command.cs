@@ -1,13 +1,27 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
 
-using Dataweb.nShape.Advanced;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape {
+namespace Dataweb.NShape {
 
 	/// <summary>
 	/// Encapsulates a command.
@@ -55,15 +69,19 @@ namespace Dataweb.nShape {
 			// nothing to do here
 		}
 
+		
 		/// <override></override>
 		public abstract void Execute();
 
+		
 		/// <override></override>
 		public abstract void Revert();
 
+		
 		/// <override></override>
 		public abstract Permission RequiredPermission { get; }
 
+		
 		/// <override></override>
 		public virtual bool IsAllowed(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
@@ -81,6 +99,25 @@ namespace Dataweb.nShape {
 		/// <override></override>
 		public virtual string Description {
 			get { return description; }
+		}
+
+
+		/// <summary>
+		/// Checks if the given entity has to be undeleted instead of being inserted
+		/// </summary>
+		protected bool UndeleteEntity(IEntity entity) {
+			if (entity == null) throw new ArgumentNullException();
+			return entity.Id != null;
+		}
+
+
+		/// <summary>
+		/// Checks if the given entity has to be undeleted instead of being inserted
+		/// </summary>
+		protected bool UndeleteEntities<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity {
+			if (entities == null) throw new ArgumentNullException();
+			foreach (IEntity e in entities) return UndeleteEntity(e);
+			return false;
 		}
 		
 
@@ -156,115 +193,115 @@ namespace Dataweb.nShape {
 	}
 
 
-	/// <summary>
-	/// Base class for inserting and removing shapes to a diagram and a cache
-	/// </summary>
-	public abstract class InsertOrRemoveShapeCommand : AutoDisconnectShapesCommand {
+	///// <summary>
+	///// Base class for inserting and removing shapes to a diagram and a cache
+	///// </summary>
+	//public abstract class InsertOrRemoveShapeCommand : AutoDisconnectShapesCommand {
 
-		protected InsertOrRemoveShapeCommand(Diagram diagram)
-			: base() {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			this.diagram = diagram;
-		}
-
-
-		protected void InsertShapes(LayerIds activeLayers) {
-			DoInsertShapes(false, activeLayers);
-		}
+	//   protected InsertOrRemoveShapeCommand(Diagram diagram)
+	//      : base() {
+	//      if (diagram == null) throw new ArgumentNullException("diagram");
+	//      this.diagram = diagram;
+	//   }
 
 
-		protected void InsertShapes() {
-			DoInsertShapes(true, LayerIds.None);
-		}
+	//   protected void InsertShapes(LayerIds activeLayers) {
+	//      DoInsertShapes(false, activeLayers);
+	//   }
 
 
-		protected void RemoveShapes() {
-			if (Shapes.Count == 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
-
-			// disconnect all selectedShapes connected to the deleted shape(s)
-			Disconnect(Shapes);
-
-			if (Shapes.Count > 1) {
-				diagram.Shapes.RemoveRange(Shapes);
-				if (Repository != null) Repository.DeleteShapes(Shapes);
-			} else {
-				diagram.Shapes.Remove(Shapes[0]);
-				if (Repository != null) Repository.DeleteShape(Shapes[0]);
-			}
-		}
+	//   protected void InsertShapes() {
+	//      DoInsertShapes(true, LayerIds.None);
+	//   }
 
 
-		protected void SetShapes(Shape shape) {
-			if (shape == null) throw new ArgumentNullException("shape");
-			if (shapeLayers == null) shapeLayers = new List<LayerIds>(1);
-			else this.shapeLayers.Clear();
-			this.Shapes.Clear();
+	//   protected void RemoveShapes() {
+	//      if (Shapes.Count == 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
 
-			if (!this.Shapes.Contains(shape)) {
-				this.Shapes.Add(shape);
-				this.shapeLayers.Add(shape.Layers);
-			}
-		}
+	//      // disconnect all selectedShapes connected to the deleted shape(s)
+	//      Disconnect(Shapes);
 
-
-		protected void SetShapes(IEnumerable<Shape> shapes) {
-			SetShapes(shapes, true);
-		}
+	//      if (Shapes.Count > 1) {
+	//         diagram.Shapes.RemoveRange(Shapes);
+	//         if (Repository != null) Repository.DeleteShapes(Shapes);
+	//      } else {
+	//         diagram.Shapes.Remove(Shapes[0]);
+	//         if (Repository != null) Repository.DeleteShape(Shapes[0]);
+	//      }
+	//   }
 
 
-		protected void SetShapes(IEnumerable<Shape> shapes, bool invertSortOrder) {
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			this.Shapes.Clear();
-			if (shapeLayers == null) shapeLayers = new List<LayerIds>();
-			else this.shapeLayers.Clear();
+	//   protected void SetShapes(Shape shape) {
+	//      if (shape == null) throw new ArgumentNullException("shape");
+	//      if (shapeLayers == null) shapeLayers = new List<LayerIds>(1);
+	//      else this.shapeLayers.Clear();
+	//      this.Shapes.Clear();
 
-			foreach (Shape shape in shapes) {
-				if (!this.Shapes.Contains(shape)) {
-					if (invertSortOrder) {
-						this.Shapes.Insert(0, shape);
-						this.shapeLayers.Insert(0, shape.Layers);
-					} else {
-						this.Shapes.Add(shape);
-						this.shapeLayers.Add(shape.Layers);
-					}
-				}
-			}
-		}
+	//      if (!this.Shapes.Contains(shape)) {
+	//         this.Shapes.Add(shape);
+	//         this.shapeLayers.Add(shape.Layers);
+	//      }
+	//   }
 
 
-		protected List<Shape> Shapes = new List<Shape>();
+	//   protected void SetShapes(IEnumerable<Shape> shapes) {
+	//      SetShapes(shapes, true);
+	//   }
 
 
-		protected static string DeleteDescription = "Delete {0} shape{1}";
+	//   protected void SetShapes(IEnumerable<Shape> shapes, bool invertSortOrder) {
+	//      if (shapes == null) throw new ArgumentNullException("shapes");
+	//      this.Shapes.Clear();
+	//      if (shapeLayers == null) shapeLayers = new List<LayerIds>();
+	//      else this.shapeLayers.Clear();
+
+	//      foreach (Shape shape in shapes) {
+	//         if (!this.Shapes.Contains(shape)) {
+	//            if (invertSortOrder) {
+	//               this.Shapes.Insert(0, shape);
+	//               this.shapeLayers.Insert(0, shape.Layers);
+	//            } else {
+	//               this.Shapes.Add(shape);
+	//               this.shapeLayers.Add(shape.Layers);
+	//            }
+	//         }
+	//      }
+	//   }
 
 
-		protected static string CreateDescription = "Create {0} shape{1}";
+	//   protected List<Shape> Shapes = new List<Shape>();
 
 
-		private void DoInsertShapes(bool useOriginalLayers, LayerIds activeLayers) {
-			int startIdx = Shapes.Count - 1;
-			if (startIdx < 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
-
-			if (Repository == null) throw new ArgumentNullException("Repository"); 
-			for (int i = startIdx; i >= 0; --i) {
-				//if (Shapes[i].ZOrder == 0) 
-					Shapes[i].ZOrder = Repository.ObtainNewTopZOrder(diagram);
-				diagram.Shapes.Add(Shapes[i]);
-				diagram.AddShapeToLayers(Shapes[i], useOriginalLayers ? shapeLayers[i] : activeLayers);
-			}
-			if (startIdx == 0)
-				Repository.InsertShape(Shapes[0], diagram);
-			else
-				Repository.InsertShapes(Shapes, diagram);
-
-			// connect all selectedShapes that were previously connected to the shape(s)
-			Reconnect(Shapes);
-		}
+	//   protected static string DeleteDescription = "Delete {0} shape{1}";
 
 
-		private Diagram diagram = null;
-		private List<LayerIds> shapeLayers;
-	}
+	//   protected static string CreateDescription = "Create {0} shape{1}";
+
+
+	//   private void DoInsertShapes(bool useOriginalLayers, LayerIds activeLayers) {
+	//      int startIdx = Shapes.Count - 1;
+	//      if (startIdx < 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+
+	//      if (Repository == null) throw new ArgumentNullException("Repository"); 
+	//      for (int i = startIdx; i >= 0; --i) {
+	//         //if (Shapes[i].ZOrder == 0) 
+	//            Shapes[i].ZOrder = Repository.ObtainNewTopZOrder(diagram);
+	//         diagram.Shapes.Add(Shapes[i]);
+	//         diagram.AddShapeToLayers(Shapes[i], useOriginalLayers ? shapeLayers[i] : activeLayers);
+	//      }
+	//      if (startIdx == 0)
+	//         Repository.InsertShape(Shapes[0], diagram);
+	//      else
+	//         Repository.InsertShapes(Shapes, diagram);
+
+	//      // connect all selectedShapes that were previously connected to the shape(s)
+	//      Reconnect(Shapes);
+	//   }
+
+
+	//   private Diagram diagram = null;
+	//   private List<LayerIds> shapeLayers;
+	//}
 
 
 	public abstract class InsertOrRemoveModelObjectsCommand : Command {
@@ -288,7 +325,9 @@ namespace Dataweb.nShape {
 			int cnt = ModelObjects.Count;
 			if (cnt == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
-				Repository.InsertModelObjects(ModelObjects.Keys);
+				if (UndeleteEntities(ModelObjects.Keys))
+					Repository.UndeleteModelObjects(ModelObjects.Keys);
+				else Repository.InsertModelObjects(ModelObjects.Keys);
 				foreach (KeyValuePair<IModelObject, AttachedObjects> item in ModelObjects)
 					InsertAndAttachObjects(item.Key, item.Value, Repository, insertShapes);
 			}
@@ -365,7 +404,9 @@ namespace Dataweb.nShape {
 
 		private void InsertAndAttachObjects(IModelObject modelObject, AttachedObjects attachedObjects, IRepository repository, bool insertShapes) {
 			// Insert model objects
-			repository.InsertModelObjects(attachedObjects.Children.Keys);
+			if (UndeleteEntities(attachedObjects.Children.Keys))
+				repository.UndeleteModelObjects(attachedObjects.Children.Keys);
+			else repository.InsertModelObjects(attachedObjects.Children.Keys);
 			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children) {
 				InsertAndAttachObjects(child.Key, child.Value, repository, insertShapes);
 				child.Key.Parent = modelObject;
@@ -387,10 +428,12 @@ namespace Dataweb.nShape {
 	/// <summary>
 	/// Base class for inserting and removing shapes along with their model objects to a diagram and a cache
 	/// </summary>
-	public abstract class InsertOrRemoveShapeAndModelCommand : InsertOrRemoveShapeCommand {
+	public abstract class InsertOrRemoveShapeCommand : AutoDisconnectShapesCommand {
 		
-		protected InsertOrRemoveShapeAndModelCommand(Diagram diagram)
-			: base(diagram) {
+		protected InsertOrRemoveShapeCommand(Diagram diagram)
+			: base() {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			this.diagram = diagram;
 		}
 
 
@@ -404,9 +447,8 @@ namespace Dataweb.nShape {
 		}
 
 
-		protected void RemoveShapesAndModels() {
-			//if (ModelObjects.Count == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
-			if (Repository != null) {
+		protected void DeleteShapesAndModels() {
+			if (Repository != null && ModelObjects != null && ModelObjects.Count > 0) {
 				if (modelsAndObjects == null) {
 					modelsAndObjects = new Dictionary<IModelObject, AttachedObjects>();
 					foreach (IModelObject modelObject in ModelObjects)
@@ -420,35 +462,207 @@ namespace Dataweb.nShape {
 		}
 
 
-		protected void SetModelObjects(IModelObject modelObject) {
+		protected void InsertShapes(LayerIds activeLayers) {
+			DoInsertShapes(false, activeLayers);
+		}
+
+
+		protected void InsertShapes() {
+			DoInsertShapes(true, LayerIds.None);
+		}
+
+
+		protected void RemoveShapes() {
+			if (Shapes.Count == 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+
+			// disconnect all selectedShapes connected to the deleted shape(s)
+			Disconnect(Shapes);
+
+			if (Shapes.Count > 1) {
+				diagram.Shapes.RemoveRange(Shapes);
+				if (Repository != null) Repository.DeleteShapes(Shapes);
+			} else {
+				diagram.Shapes.Remove(Shapes[0]);
+				if (Repository != null) Repository.DeleteShape(Shapes[0]);
+			}
+		}
+
+
+		protected void SetShape(Shape shape, bool withModelObject) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			if (shapeLayers == null) shapeLayers = new List<LayerIds>(1);
+			else this.shapeLayers.Clear();
+			this.Shapes.Clear();
+
+			if (!this.Shapes.Contains(shape)) {
+				this.Shapes.Add(shape);
+				this.shapeLayers.Add(shape.Layers);
+				
+				if (shape.ModelObject != null && withModelObject) 
+					SetModelObject(shape.ModelObject);
+			}
+		}
+
+
+		protected void SetShapes(IEnumerable<Shape> shapes, bool withModelObjects) {
+			SetShapes(shapes, withModelObjects, true);
+		}
+
+
+		protected void SetShapes(IEnumerable<Shape> shapes, bool withModelObjects, bool invertSortOrder) {
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			this.Shapes.Clear();
+			if (shapeLayers == null) shapeLayers = new List<LayerIds>();
+			else this.shapeLayers.Clear();
+
+			foreach (Shape shape in shapes) {
+				if (!this.Shapes.Contains(shape)) {
+					if (invertSortOrder) {
+						this.Shapes.Insert(0, shape);
+						this.shapeLayers.Insert(0, shape.Layers);
+					} else {
+						this.Shapes.Add(shape);
+						this.shapeLayers.Add(shape.Layers);
+					}
+					if (shape.ModelObject != null && withModelObjects) 
+						SetModelObject(shape.ModelObject);
+				}
+			}
+		}
+
+
+		protected void SetModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
-			Debug.Assert(this.ModelObjects.Count == 0);
-			this.ModelObjects.Clear();
-			if (!this.ModelObjects.Contains(modelObject))
-				this.ModelObjects.Add(modelObject);
+			if (this.modelObjects == null) this.modelObjects = new List<IModelObject>();
+			if (!this.modelObjects.Contains(modelObject)) this.modelObjects.Add(modelObject);
 		}
 
 
 		protected void SetModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
-			Debug.Assert(this.ModelObjects.Count == 0);
-			this.ModelObjects.Clear();
+			if (this.modelObjects == null) this.modelObjects = new List<IModelObject>();
 			foreach (IModelObject modelObject in modelObjects) {
-				if (!this.ModelObjects.Contains(modelObject))
-					this.ModelObjects.Add(modelObject);
+				if (!this.modelObjects.Contains(modelObject))
+					this.modelObjects.Add(modelObject);
 			}
 		}
 
 
 		protected void SetModelObjects(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			Debug.Assert(this.ModelObjects.Count == 0);
-			this.ModelObjects.Clear();
-			foreach (Shape shape in shapes) {
-				if (shape.ModelObject != null
-					&& !this.ModelObjects.Contains(shape.ModelObject))
-					this.ModelObjects.Add(shape.ModelObject);
+			foreach (Shape shape in shapes)
+				if (shape.ModelObject != null) SetModelObject(shape.ModelObject);
+		}
+
+
+		protected List<Shape> Shapes {
+			get { return shapes; }
+		}
+		
+		
+		protected List<IModelObject> ModelObjects {
+			get { return modelObjects; }
+		}
+
+
+		protected string GetDescription(DescriptionType descType, Shape shape, bool withModelObject) {
+			string modelString = string.Empty;
+			if (withModelObject && shape.ModelObject != null)
+				modelString = string.Format(WithModelsFormatStr, string.Empty, " " + shape.ModelObject.Type.Name);
+			return string.Format(DescriptionFormatStr,
+				(descType == DescriptionType.Insert) ? "Create" : "Delete",
+				shape.Type.Name, 
+				string.Empty,
+				modelString);
+		}
+
+
+		protected string GetDescription(DescriptionType descType, IEnumerable<Shape> shapes, bool withModelObjects) {
+			int shapeCnt = 0, modelCnt = 0;
+			foreach (Shape s in shapes) {
+				++shapeCnt;
+				if (s.ModelObject != null) ++modelCnt;
 			}
+			if (shapeCnt == 1)
+				foreach (Shape s in shapes)
+					return GetDescription(descType, s, withModelObjects);
+
+			string modelString = string.Empty;
+			if (withModelObjects && modelCnt > 0)
+				modelString = string.Format(WithModelsFormatStr, modelCnt.ToString() + " ", modelCnt > 1 ? "s" : string.Empty);
+			return string.Format(DescriptionFormatStr,
+				(descType == DescriptionType.Insert) ? "Create" : "Delete",
+				shapeCnt,
+				"s",
+				modelString);
+		}
+
+
+		private void DoInsertShapes(bool useOriginalLayers, LayerIds activeLayers) {
+			int startIdx = Shapes.Count - 1;
+			if (startIdx < 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+
+			for (int i = startIdx; i >= 0; --i) {
+				//Shapes[i].ZOrder = Repository.ObtainNewTopZOrder(diagram);
+				diagram.Shapes.Add(Shapes[i]);
+				diagram.AddShapeToLayers(Shapes[i], useOriginalLayers ? shapeLayers[i] : activeLayers);
+			}
+			if (Repository != null) {
+				if (startIdx == 0) {
+					if (UndeleteEntity(Shapes[0])) Repository.UndeleteShape(Shapes[0], diagram);
+					else Repository.InsertShape(Shapes[0], diagram);
+				} else {
+					if (UndeleteEntities(Shapes)) Repository.UndeleteShapes(Shapes, diagram);
+					else Repository.InsertShapes(Shapes, diagram);
+				}
+			}
+
+			// connect all selectedShapes that were previously connected to the shape(s)
+			Reconnect(Shapes);
+		}
+
+
+		private void DoInsertShapesAndModels(bool useOriginalLayers, LayerIds activeLayers) {
+			if (useOriginalLayers) InsertShapes();
+			else InsertShapes(activeLayers);
+
+			if (Repository != null && ModelObjects != null && ModelObjects.Count > 0) {
+				if (modelsAndObjects == null) {
+					modelsAndObjects = new Dictionary<IModelObject, AttachedObjects>();
+					foreach (IModelObject modelObject in ModelObjects)
+						modelsAndObjects.Add(modelObject, new AttachedObjects(modelObject, Repository));
+				}
+				if (UndeleteEntities(modelsAndObjects.Keys))
+					Repository.UndeleteModelObjects(modelsAndObjects.Keys);
+				else Repository.InsertModelObjects(modelsAndObjects.Keys);
+				foreach (KeyValuePair<IModelObject, AttachedObjects> item in modelsAndObjects)
+					InsertAndAttachObjects(item.Key, item.Value, Repository);
+			}
+		}
+
+
+		private void DetachAndDeleteObjects(AttachedObjects attachedObjects, IRepository repository) {
+			for (int sIdx = attachedObjects.Shapes.Count - 1; sIdx >= 0; --sIdx)
+				attachedObjects.Shapes[sIdx].ModelObject = null;
+			repository.UpdateShapes(attachedObjects.Shapes);
+			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children)
+				DetachAndDeleteObjects(child.Value, repository);
+			repository.DeleteModelObjects(attachedObjects.Children.Keys);
+		}
+
+
+		private void InsertAndAttachObjects(IModelObject modelObject, AttachedObjects attachedObjects, IRepository repository) {
+			if (UndeleteEntities(attachedObjects.Children.Keys))
+				repository.UndeleteModelObjects(attachedObjects.Children.Keys);
+			else repository.InsertModelObjects(attachedObjects.Children.Keys);
+			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children) {
+				InsertAndAttachObjects(child.Key, child.Value, repository);
+				child.Key.Parent = modelObject;
+			}
+			repository.UpdateModelObjects(attachedObjects.Children.Keys);
+			for (int sIdx = attachedObjects.Shapes.Count - 1; sIdx >= 0; --sIdx)
+				attachedObjects.Shapes[sIdx].ModelObject = modelObject;
+			repository.UpdateShapes(attachedObjects.Shapes);
 		}
 
 
@@ -490,69 +704,16 @@ namespace Dataweb.nShape {
 		}
 
 
-		protected List<IModelObject> ModelObjects {
-			get { return modelObjects; }
-		}
+		protected enum DescriptionType { Insert, Delete };
 
+		private const string DescriptionFormatStr = "{0} {1} shape{2}{3}";
+		private const string WithModelsFormatStr = " with {0}model{1}"; 
 
-		protected static new string DeleteDescription = "Delete {0} shape{2} with {1}model{2}";
-
-
-		protected static new string CreateDescription = "Create {0} shape{2} with {1}model{2}";
-
-
-		private void DoInsertShapesAndModels(bool useOriginalLayers, LayerIds activeLayers) {
-			int cnt = ModelObjects.Count;
-			if (cnt == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
-			if (useOriginalLayers)
-				InsertShapes();
-			else
-				InsertShapes(activeLayers);
-			
-			if (Repository != null) {
-				//if (cnt > 1)
-				//   Repository.InsertModelObjects(ModelObjects);
-				//else if (ModelObjects[0] != null)
-				//   Repository.InsertModelObject(ModelObjects[0]);
-
-				if (modelsAndObjects == null) {
-					modelsAndObjects = new Dictionary<IModelObject, AttachedObjects>();
-					foreach (IModelObject modelObject in ModelObjects)
-						modelsAndObjects.Add(modelObject, new AttachedObjects(modelObject, Repository));
-				}
-				Repository.InsertModelObjects(modelsAndObjects.Keys);
-				foreach (KeyValuePair<IModelObject, AttachedObjects> item in modelsAndObjects)
-					InsertAndAttachObjects(item.Key, item.Value, Repository);
-			}
-		}
-
-
-		private void DetachAndDeleteObjects(AttachedObjects attachedObjects, IRepository repository) {
-			for (int sIdx = attachedObjects.Shapes.Count - 1; sIdx >= 0; --sIdx) {
-				attachedObjects.Shapes[sIdx].ModelObject = null;
-			}
-			repository.UpdateShapes(attachedObjects.Shapes);
-			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children)
-				DetachAndDeleteObjects(child.Value, repository);
-			repository.DeleteModelObjects(attachedObjects.Children.Keys);
-		}
-
-
-		private void InsertAndAttachObjects(IModelObject modelObject, AttachedObjects attachedObjects, IRepository repository) {
-			repository.InsertModelObjects(attachedObjects.Children.Keys);
-			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children) {
-				InsertAndAttachObjects(child.Key, child.Value, repository);
-				child.Key.Parent = modelObject;
-			}
-			repository.UpdateModelObjects(attachedObjects.Children.Keys);
-			for (int sIdx = attachedObjects.Shapes.Count - 1; sIdx >= 0; --sIdx)
-				attachedObjects.Shapes[sIdx].ModelObject = modelObject;
-			repository.UpdateShapes(attachedObjects.Shapes);
-		}
-
-
+		private Diagram diagram = null;
+		private List<Shape> shapes = new List<Shape>();
+		private List<LayerIds> shapeLayers;
+		private List<IModelObject> modelObjects = null;
 		private Dictionary<IModelObject, AttachedObjects> modelsAndObjects = null;
-		private List<IModelObject> modelObjects = new List<IModelObject>();
 	}
 
 
@@ -568,6 +729,7 @@ namespace Dataweb.nShape {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			this.diagram = diagram;
 			this.aggregationShape = aggregationShape;
+			this.diagramContainsAggregationShape = diagram.Shapes.Contains(aggregationShape);
 			this.shapes = new List<Shape>(shapes);
 			aggregationLayerIds = LayerIds.None;
 			for (int i = 0; i < this.shapes.Count; ++i)
@@ -580,49 +742,56 @@ namespace Dataweb.nShape {
 			if (Repository != null) Repository.DeleteShapes(shapes);
 			diagram.Shapes.RemoveRange(shapes);
 
-			// Add aggregation shape to diagram and repository
-			diagram.Shapes.Add(aggregationShape);
-			diagram.AddShapeToLayers(aggregationShape, aggregationLayerIds);
-
 			// Add Shapes to aggregation shape
 			if (maintainZOrders) {
 				int cnt = shapes.Count;
 				for (int i = 0; i < cnt; ++i)
 					aggregationShape.Children.Add(shapes[i], shapes[i].ZOrder);
 			} else aggregationShape.Children.AddRange(shapes);
+			
 			// As the shapes are already aggregated, they will be inserted along with the parent shape
-			if (Repository != null) Repository.InsertShape(aggregationShape, diagram);
-
-			// ToDo: Better use UpdateShapeOwner rather than DeleteShapes/InsertShapes
-			//int cnt = shapes.Count;
-			//if (Repository != null) {
-			//   for (int i = 0; i < cnt; ++i)
-			//      Repository.UpdateShapeOwner(shapes[i], this.aggregationShape);
-			//}
-			//if (maintainZOrders) {
-			//   for (int i = 0; i < cnt; ++i)
-			//      aggregationShape.Children.Add(shapes[i], shapes[i].ZOrder);
-			//} else aggregationShape.Children.AddRange(shapes);
+			// Add aggregation shape to diagram and repository
+			if (!diagramContainsAggregationShape) {
+				diagram.Shapes.Add(aggregationShape);
+				diagram.AddShapeToLayers(aggregationShape, aggregationLayerIds);
+			}
+			
+			if (Repository != null) {
+				if (!diagramContainsAggregationShape)
+					// Shape aggregations are added along with all their children
+					if (UndeleteEntity(aggregationShape))
+						Repository.UndeleteShape(aggregationShape, diagram);
+					else Repository.InsertShape(aggregationShape, diagram);
+				else {
+					Repository.UpdateShape(aggregationShape);
+					if (UndeleteEntities(aggregationShape.Children))
+						Repository.UndeleteShapes(aggregationShape.Children, aggregationShape);
+					else Repository.InsertShapes(aggregationShape.Children, aggregationShape);
+				}
+			}
 		}
 
 
 		protected void DeleteShapeAggregation() {
-			aggregationShape.Children.RemoveRange(shapes);
-			diagram.Shapes.Remove(aggregationShape);
+			// Delete shapes from repository
 			if (Repository != null) {
-				Repository.DeleteShapes(shapes);
-				Repository.DeleteShape(aggregationShape);
+				if (!diagramContainsAggregationShape)
+					// Shape aggregations are deleted with all their children
+					Repository.DeleteShape(aggregationShape);
+				else Repository.DeleteShapes(shapes);
 			}
-			diagram.Shapes.AddRange(shapes);
-			if (Repository != null) Repository.InsertShapes(shapes, diagram);
 
-			//int cnt = shapes.Count;
-			//aggregationShape.Children.RemoveRange(shapes);
-			//if (Repository != null) {
-			//   for (int i = cnt - 1; i >= 0; --i)
-			//      Repository.UpdateShapeOwner(shapes[i], diagram);
-			//}
-			//diagram.Shapes.AddRange(shapes);
+			aggregationShape.Children.RemoveRange(shapes);
+			if (!diagramContainsAggregationShape)
+				diagram.Shapes.Remove(aggregationShape);
+			diagram.Shapes.AddRange(shapes);
+
+			// Insert shapes into repository
+			if (Repository != null) {
+				Repository.InsertShapes(shapes, diagram);
+				if (diagramContainsAggregationShape)
+					Repository.UpdateShape(aggregationShape);
+			}
 		}
 
 
@@ -630,6 +799,7 @@ namespace Dataweb.nShape {
 		protected List<Shape> shapes;
 		protected LayerIds aggregationLayerIds;
 		protected Shape aggregationShape;
+		protected bool diagramContainsAggregationShape;
 	}
 
 
@@ -2099,7 +2269,9 @@ namespace Dataweb.nShape {
 			oldShape.CopyFrom(newShape);
 			diagram.Shapes.Replace(oldShape, newShape);
 			if (Repository != null) {
-				Repository.InsertShape(newShape, diagram);
+				if (UndeleteEntity(newShape))
+					Repository.UndeleteShape(newShape, diagram);
+				else Repository.InsertShape(newShape, diagram);
 				Repository.DeleteShape(oldShape);
 			}
 			//
@@ -2174,8 +2346,12 @@ namespace Dataweb.nShape {
 				template = new Template(templateName, templateShape);
 			}
 			if (Repository != null) {
-				Repository.InsertTemplate(template);
-				Repository.InsertModelMappings(template.GetPropertyMappings(), template);
+				if (UndeleteEntity(template))
+					Repository.UndeleteTemplate(template);
+				else Repository.InsertTemplate(template);
+				if (UndeleteEntities(template.GetPropertyMappings()))
+					Repository.UndeleteModelMappings(template.GetPropertyMappings(), template);
+				else Repository.InsertModelMappings(template.GetPropertyMappings(), template);
 			}
 		}
 
@@ -2224,8 +2400,12 @@ namespace Dataweb.nShape {
 
 		public override void Revert() {
 			if (Repository != null) {
-				Repository.InsertTemplate(template);
-				Repository.InsertModelMappings(template.GetPropertyMappings(), template);
+				if (UndeleteEntity(template))
+					Repository.UndeleteTemplate(template);
+				else Repository.InsertTemplate(template);
+				if (UndeleteEntities(template.GetPropertyMappings()))
+					Repository.UndeleteModelMappings(template.GetPropertyMappings(), template);
+				else Repository.InsertModelMappings(template.GetPropertyMappings(), template);
 			}
 		}
 
@@ -2509,39 +2689,36 @@ namespace Dataweb.nShape {
 	/// </summary>
 	public class InsertShapeCommand : InsertOrRemoveShapeCommand {
 
-		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder)
+		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool withModelObjects, bool keepZOrder)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shape == null) throw new ArgumentNullException("shape");
-			this.description = string.Format(InsertOrRemoveShapeCommand.CreateDescription, shape.Type.Name, string.Empty);
-			Construct(layerIds, shape, 0, 0, keepZOrder);
+			Construct(layerIds, shape, 0, 0, keepZOrder, withModelObjects);
 		}
 
 
-		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder, int toX, int toY)
+		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool withModelObjects, bool keepZOrder, int toX, int toY)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shape == null) throw new ArgumentNullException("shape");
-			Construct(layerIds, shape, toX - shape.X, toY - shape.Y, keepZOrder);
-			this.description = string.Format(InsertOrRemoveShapeCommand.CreateDescription + " at {2}", shape.Type.Name, string.Empty, new Point(toX, toY));
+			Construct(layerIds, shape, toX - shape.X, toY - shape.Y, keepZOrder, withModelObjects);
+			this.description += string.Format(" at {0}", new Point(toX, toY));
 		}
 
 
-		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder, int deltaX, int deltaY)
+		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool withModelObjects, bool keepZOrder, int deltaX, int deltaY)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			Construct(layerIds, shapes, deltaX, deltaY, keepZOrder);
-			this.description = string.Format(InsertOrRemoveShapeCommand.CreateDescription, Shapes.Count, 's');
+			Construct(layerIds, shapes, deltaX, deltaY, keepZOrder, withModelObjects);
 		}
 
 
-		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder)
+		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool withModelObjects, bool keepZOrder)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			Construct(layerIds, shapes, 0, 0, keepZOrder);
-			this.description = string.Format(InsertOrRemoveShapeCommand.CreateDescription, Shapes.Count, 's');
+			Construct(layerIds, shapes, 0, 0, keepZOrder, withModelObjects);
 		}
 
 
@@ -2560,18 +2737,20 @@ namespace Dataweb.nShape {
 		}
 
 
-		private void Construct(LayerIds layerIds, Shape shape, int offsetX, int offsetY, bool keepZOrder) {
+		private void Construct(LayerIds layerIds, Shape shape, int offsetX, int offsetY, bool keepZOrder, bool withModelObjects) {
 			this.layerIds = layerIds;
 			PrepareShape(shape, offsetX, offsetY, keepZOrder);
-			SetShapes(shape);
+			SetShape(shape, withModelObjects);
+			GetDescription(DescriptionType.Insert, shape, withModelObjects);
 		}
 
 
-		private void Construct(LayerIds layerIds, IEnumerable<Shape> shapes, int offsetX, int offsetY, bool keepZOrder) {
+		private void Construct(LayerIds layerIds, IEnumerable<Shape> shapes, int offsetX, int offsetY, bool keepZOrder, bool withModelObjects) {
 			this.layerIds = layerIds;
 			foreach (Shape shape in shapes)
 				PrepareShape(shape, offsetX, offsetY, keepZOrder);
-			SetShapes(shapes);
+			SetShapes(shapes, withModelObjects);
+			GetDescription(DescriptionType.Insert, shapes, withModelObjects);
 		}
 
 
@@ -2592,147 +2771,145 @@ namespace Dataweb.nShape {
 	#endregion
 
 
-	#region InsertShapeAndModelCommand class
-	/// <summary>
-	/// Inserts the given shapes and their model objects into diagram and cache.
-	/// </summary>
-	public class InsertShapeAndModelCommand : InsertOrRemoveShapeAndModelCommand {
-		public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder)
-			: base(diagram) {
-			Construct(layerIds, shape, 0, 0, keepZOrder);
-			this.description = string.Format(CreateDescription, shape.Type.Name, shape.ModelObject.Type.Name + " ", string.Empty);
-		}
+	//#region InsertShapeAndModelCommand class
+	///// <summary>
+	///// Inserts the given shapes and their model objects into diagram and cache.
+	///// </summary>
+	//public class InsertShapeAndModelCommand : InsertOrRemoveShapeCommand {
+		
+	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder)
+	//      : base(diagram) {
+	//      Construct(layerIds, shape, 0, 0, keepZOrder);
+	//      this.description = string.Format(CreateDescription, shape.Type.Name, shape.ModelObject.Type.Name + " ", string.Empty);
+	//   }
 
 
-		public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder, int toX, int toY)
-			: base(diagram) {			
-			Construct(layerIds, shape, toX - shape.X, toY - shape.Y, keepZOrder);
-			this.description = string.Format(CreateDescription + " at {3}", shape.Type.Name, shape.ModelObject.Type.Name + " ", string.Empty, new Point(toX, toY));
-		}
+	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder, int toX, int toY)
+	//      : base(diagram) {			
+	//      Construct(layerIds, shape, toX - shape.X, toY - shape.Y, keepZOrder);
+	//      this.description = string.Format(CreateDescription + " at {3}", shape.Type.Name, shape.ModelObject.Type.Name + " ", string.Empty, new Point(toX, toY));
+	//   }
 
 
-		public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder, int deltaX, int deltaY)
-			: base(diagram) {
-			Construct(layerIds, shapes, deltaX, deltaY, keepZOrder);
-			this.description = string.Format(CreateDescription, Shapes.Count, string.Empty, 's');
-		}
+	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder, int deltaX, int deltaY)
+	//      : base(diagram) {
+	//      Construct(layerIds, shapes, deltaX, deltaY, keepZOrder);
+	//      this.description = string.Format(CreateDescription, Shapes.Count, string.Empty, 's');
+	//   }
 
 
-		public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder)
-			: base(diagram) {
-			Construct(layerIds, shapes, 0, 0, keepZOrder);
-			this.description = string.Format(CreateDescription, Shapes.Count, string.Empty, 's');
-		}
+	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder)
+	//      : base(diagram) {
+	//      Construct(layerIds, shapes, 0, 0, keepZOrder);
+	//      this.description = string.Format(CreateDescription, Shapes.Count, string.Empty, 's');
+	//   }
 
 
-		public override void Execute() {
-			InsertShapesAndModels(layerIds);
-		}
+	//   public override void Execute() {
+	//      InsertShapesAndModels(layerIds);
+	//   }
 
 
-		public override void Revert() {
-			RemoveShapesAndModels();
-		}
+	//   public override void Revert() {
+	//      DeleteShapesAndModels();
+	//   }
 
 
-		public override Permission RequiredPermission {
-			get { return Permission.Insert; }
-		}
+	//   public override Permission RequiredPermission {
+	//      get { return Permission.Insert; }
+	//   }
 
 
-		private void Construct(LayerIds layerIds, Shape shape, int offsetX, int offsetY, bool keepZOrder) {
-			if (shape == null) throw new ArgumentNullException("shape");
-			this.layerIds = layerIds;
-			PrepareShape(shape, offsetX, offsetY, keepZOrder);
-			SetShapes(shape);
-			SetModelObjects(shape.ModelObject);
-		}
+	//   private void Construct(LayerIds layerIds, Shape shape, int offsetX, int offsetY, bool keepZOrder) {
+	//      if (shape == null) throw new ArgumentNullException("shape");
+	//      this.layerIds = layerIds;
+	//      PrepareShape(shape, offsetX, offsetY, keepZOrder);
+	//      SetShape(shape);
+	//   }
 
 
-		private void Construct(LayerIds layerIds, IEnumerable<Shape> shapes, int offsetX, int offsetY, bool keepZOrder) {
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			this.layerIds = layerIds;
-			foreach (Shape shape in shapes)
-				PrepareShape(shape, offsetX, offsetY, keepZOrder);
-			SetShapes(shapes);
-			SetModelObjects(shapes);
-		}
+	//   private void Construct(LayerIds layerIds, IEnumerable<Shape> shapes, int offsetX, int offsetY, bool keepZOrder) {
+	//      if (shapes == null) throw new ArgumentNullException("shapes");
+	//      this.layerIds = layerIds;
+	//      foreach (Shape shape in shapes)
+	//         PrepareShape(shape, offsetX, offsetY, keepZOrder);
+	//      SetShapes(shapes);
+	//   }
 
 
-		/// <summary>
-		/// Reset shape's ZOrder to 'Unassigned' and offset shape's position if neccessary
-		/// </summary>
-		private void PrepareShape(Shape shape, int offsetX, int offsetY, bool keepZOrder) {
-			if (!keepZOrder) shape.ZOrder = 0;
-			if (offsetX != 0 || offsetY != 0)
-				shape.MoveBy(offsetX, offsetY);
-		}
+	//   /// <summary>
+	//   /// Reset shape's ZOrder to 'Unassigned' and offset shape's position if neccessary
+	//   /// </summary>
+	//   private void PrepareShape(Shape shape, int offsetX, int offsetY, bool keepZOrder) {
+	//      if (!keepZOrder) shape.ZOrder = 0;
+	//      if (offsetX != 0 || offsetY != 0)
+	//         shape.MoveBy(offsetX, offsetY);
+	//   }
 
 
-		private LayerIds layerIds;
-	}
-	#endregion
+	//   private LayerIds layerIds;
+	//}
+	//#endregion
 
 
-	#region DeleteShapeOnlyCommand class
-	/// <summary>
-	/// Removes the given shape(s) from diagram and cache.
-	/// </summary>
-	public class DeleteShapeOnlyCommand : InsertOrRemoveShapeCommand {
-		public DeleteShapeOnlyCommand(Diagram diagram, IEnumerable<Shape> deletedShapes)
-			: base(diagram) {
-			SetShapes(deletedShapes);
-			this.description = string.Format(InsertOrRemoveShapeCommand.DeleteDescription, Shapes.Count, 's');
-		}
+	//#region DeleteShapeOnlyCommand class
+	///// <summary>
+	///// Removes the given shape(s) from diagram and cache.
+	///// </summary>
+	//public class DeleteShapeOnlyCommand : InsertOrRemoveShapeCommand {
+	//   public DeleteShapeOnlyCommand(Diagram diagram, IEnumerable<Shape> deletedShapes)
+	//      : base(diagram) {
+	//      SetShapes(deletedShapes);
+	//      this.description = string.Format(InsertOrRemoveShapeCommand.DeleteDescription, Shapes.Count, 's');
+	//   }
 
 
-		public DeleteShapeOnlyCommand(Diagram diagram, Shape shape)
-			: base(diagram) {
-			SetShapes(shape);
-			this.description = string.Format(InsertOrRemoveShapeCommand.DeleteDescription, shape.Type.Name, string.Empty);
-		}
+	//   public DeleteShapeOnlyCommand(Diagram diagram, Shape shape)
+	//      : base(diagram) {
+	//      SetShape(shape);
+	//      this.description = string.Format(InsertOrRemoveShapeCommand.DeleteDescription, shape.Type.Name, string.Empty);
+	//   }
 
 
-		public override void Execute() {
-			RemoveShapes();
-		}
+	//   public override void Execute() {
+	//      RemoveShapes();
+	//   }
 
 
-		public override void Revert() {
-			InsertShapes();
-		}
+	//   public override void Revert() {
+	//      InsertShapes();
+	//   }
 
 
-		public override Permission RequiredPermission {
-			get { return Permission.Delete; }
-		}
-	}
-	#endregion
+	//   public override Permission RequiredPermission {
+	//      get { return Permission.Delete; }
+	//   }
+	//}
+	//#endregion
 
 
-	#region DeleteShapeAndModelCommand class
+	#region DeleteShapeCommand class
 	/// <summary>
 	/// RemoveRange the given shapes and their model objects from diagram and cache.
 	/// </summary>
-	public class DeleteShapeAndModelCommand : InsertOrRemoveShapeAndModelCommand {
-		public DeleteShapeAndModelCommand(Diagram diagram, IEnumerable<Shape> shapes)
+	public class DeleteShapeCommand : InsertOrRemoveShapeCommand {
+		
+		public DeleteShapeCommand(Diagram diagram, IEnumerable<Shape> shapes, bool withModelObjects)
 			: base(diagram) {
-			SetShapes(shapes);
-			SetModelObjects(shapes);
-			this.description = string.Format(DeleteDescription, Shapes.Count, string.Empty, 's');
+			SetShapes(shapes, withModelObjects);
+			this.description = GetDescription(DescriptionType.Delete, shapes, withModelObjects);
 		}
 
 
-		public DeleteShapeAndModelCommand(Diagram diagram, Shape shape)
+		public DeleteShapeCommand(Diagram diagram, Shape shape, bool withModelObjects)
 			: base(diagram) {
-			SetShapes(shape);
-			SetModelObjects(shape.ModelObject);
-			this.description = string.Format(DeleteDescription, shape.Type.Name, shape.ModelObject.Type.Name + ' ', string.Empty);
+			SetShape(shape, withModelObjects);
+			this.description = GetDescription(DescriptionType.Delete, shape, withModelObjects);
 		}
 
 
 		public override void Execute() {
-			RemoveShapesAndModels();
+			DeleteShapesAndModels();
 		}
 
 
@@ -2919,6 +3096,7 @@ namespace Dataweb.nShape {
 	#region CreateDesignCommand
 
 	public class CreateDesignCommand : Command {
+
 		public CreateDesignCommand(Design design)
 			: base() {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2928,7 +3106,11 @@ namespace Dataweb.nShape {
 
 
 		public override void Execute() {
-			if (Repository != null) Repository.InsertDesign(design);
+			if (Repository != null) {
+				if (UndeleteEntity(design))
+					Repository.UndeleteDesign(design);
+				else Repository.InsertDesign(design);
+			}
 		}
 
 
@@ -2965,7 +3147,11 @@ namespace Dataweb.nShape {
 
 
 		public override void Revert() {
-			if (Repository != null) Repository.InsertDesign(design);
+			if (Repository != null) {
+				if (UndeleteEntity(design))
+					Repository.UndeleteDesign(design);
+				else Repository.InsertDesign(design);
+			}
 		}
 
 
@@ -2983,6 +3169,7 @@ namespace Dataweb.nShape {
 	#region CreateStyleCommand
 
 	public class CreateStyleCommand : Command {
+
 		public CreateStyleCommand(Design design, Style style)
 			: base() {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2997,6 +3184,8 @@ namespace Dataweb.nShape {
 			Design d = design ?? Repository.GetDesign(null);
 			d.AddStyle(style);
 			if (Repository != null) {
+				if (UndeleteEntity(style))
+					Repository.UndeleteStyle(d, style);
 				Repository.InsertStyle(d, style);
 				Repository.UpdateDesign(d);
 			}
@@ -3052,7 +3241,9 @@ namespace Dataweb.nShape {
 			Design d = design ?? Repository.GetDesign(null);
 			d.AddStyle(style);
 			if (Repository != null) {
-				Repository.InsertStyle(d, style);
+				if (UndeleteEntity(style))
+					Repository.UndeleteStyle(d, style);
+				else Repository.InsertStyle(d, style);
 				Repository.UpdateDesign(d);
 			}
 		}
@@ -3302,7 +3493,11 @@ namespace Dataweb.nShape {
 
 
 		public override void Execute() {
-			if (Repository != null) Repository.InsertDiagram(diagram);
+			if (Repository != null) {
+				if (UndeleteEntity(diagram))
+					Repository.UndeleteDiagram(diagram);
+				else Repository.InsertDiagram(diagram);
+			}
 		}
 
 
@@ -3341,7 +3536,9 @@ namespace Dataweb.nShape {
 			if (Repository != null) {
 				if (diagram.Shapes.Count == 0)
 					diagram.Shapes.AddRange(shapes);
-				Repository.InsertDiagram(diagram);
+				if (UndeleteEntity(diagram))
+					Repository.UndeleteDiagram(diagram);
+				else Repository.InsertDiagram(diagram);
 			}
 		}
 

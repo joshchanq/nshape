@@ -1,3 +1,17 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,12 +20,13 @@ using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
 
-namespace Dataweb.nShape.Designer {
+
+namespace Dataweb.NShape.Designer {
 
 	public partial class OpenProjectForm : Form {
 		private const string fileFilterAllRepositories = "XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
 
-		
+
 		public OpenProjectForm(IEnumerable<string> lastUsedRepositories) {
 			InitializeComponent();
 
@@ -29,7 +44,7 @@ namespace Dataweb.nShape.Designer {
 			get {
 				if (newProjectRadioBtn.Checked)
 					return projectNameTextBox.Text;
-				else 
+				else
 					return "";
 			}
 		}
@@ -72,14 +87,14 @@ namespace Dataweb.nShape.Designer {
 			newProjectRadioBtn.Checked = true;
 		}
 
-		
+
 		private void browseButton_Click(object sender, EventArgs e) {
 			newProjectRadioBtn.Checked = true;
 
 			saveFileDialog.Filter = fileFilterAllRepositories;
 			saveFileDialog.FileName = "";
 			saveFileDialog.CreatePrompt = false;
-			if (saveFileDialog.ShowDialog() == DialogResult.OK) 
+			if (saveFileDialog.ShowDialog() == DialogResult.OK)
 				fileNameTextBox.Text = saveFileDialog.FileName;
 		}
 
@@ -88,7 +103,7 @@ namespace Dataweb.nShape.Designer {
 			openProjectRadioBtn.Checked = true;
 		}
 
-		
+
 		private void browseLoadButton_Click(object sender, EventArgs e) {
 			openProjectRadioBtn.Checked = true;
 
@@ -117,15 +132,13 @@ namespace Dataweb.nShape.Designer {
 					fileNameTextBox.Focus();
 					error = true;
 				}
-			}
-			else if (openProjectRadioBtn.Checked) {
+			} else if (openProjectRadioBtn.Checked) {
 				if (string.IsNullOrEmpty(existingFileNameTextBox.Text)) {
 					MessageBox.Show("Please choose a file for the project's repository.");
 					existingFileNameTextBox.Focus();
 					error = true;
 				}
-			}
-			else {
+			} else {
 				if (listBox1.SelectedIndex < 0) {
 					MessageBox.Show("Please select a repository from the list.");
 					listBox1.Focus();

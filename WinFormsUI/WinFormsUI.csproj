@@ -8,8 +8,8 @@
     <ProjectGuid>{5EAB131C-1C93-4C3F-A1D8-D711053DE33C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Dataweb.nShape.WinFormsUI</RootNamespace>
-    <AssemblyName>Dataweb.nShape.WinFormsUI</AssemblyName>
+    <RootNamespace>Dataweb.NShape.WinFormsUI</RootNamespace>
+    <AssemblyName>Dataweb.NShape.WinFormsUI</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
@@ -24,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Binaries\Debug\Dataweb.nShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>..\Binaries\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -35,7 +35,7 @@
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Binaries\Release\Dataweb.nShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>..\Binaries\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
@@ -301,6 +301,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>REM "%25PROGRAMFILES%25\Microsoft SDKs\Windows\v6.0A\bin\gacutil" /if "$(TargetDir)$(TargetFileName)"</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
 </Project>

@@ -1,4 +1,4 @@
-namespace Dataweb.nShape.Designer {
+namespace Dataweb.NShape.Designer {
 
 	partial class DisplaySettingsForm {
 		/// <summary>

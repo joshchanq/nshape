@@ -1,12 +1,26 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
-using Dataweb.nShape.Advanced;
 using System.Diagnostics;
+using System.Reflection;
+using Dataweb.NShape.Advanced;
 
 
-namespace Dataweb.nShape.Controllers {
+namespace Dataweb.NShape.Controllers {
 
 	public class DesignEventArgs : EventArgs {
 
@@ -178,13 +192,25 @@ namespace Dataweb.nShape.Controllers {
 			if (design == null) throw new ArgumentNullException("design");
 			Style style;
 			switch (category) {
-				case StyleCategory.CapStyle: style = new CapStyle(); break;
-				case StyleCategory.CharacterStyle: style = new CharacterStyle(); break;
-				case StyleCategory.ColorStyle: style = new ColorStyle(); break;
-				case StyleCategory.FillStyle: style = new FillStyle(); break;
-				case StyleCategory.LineStyle: style = new LineStyle(); break;
-				case StyleCategory.ParagraphStyle: style = new ParagraphStyle(); break;
-				//case StyleCategory.ShapeStyle: style = new ShapeStyle(); break;
+				case StyleCategory.CapStyle:
+					style  = new CapStyle(GetNewStyleName(design.CapStyles));
+					break;
+				case StyleCategory.CharacterStyle: 
+					style = new CharacterStyle(GetNewStyleName(design.CharacterStyles));
+					break;
+				case StyleCategory.ColorStyle: 
+					style = new ColorStyle(GetNewStyleName(design.ColorStyles));
+					break;
+				case StyleCategory.FillStyle: 
+					style = new FillStyle(GetNewStyleName(design.FillStyles));
+					break;
+				case StyleCategory.LineStyle: 
+					style = new LineStyle(GetNewStyleName(design.LineStyles));
+					break;
+				case StyleCategory.ParagraphStyle: 
+					style = new ParagraphStyle(GetNewStyleName(design.ParagraphStyles));
+					break;
+				//case StyleCategory.ShapeStyle: style = new ShapeStyle(GetNewStyleName(design.ShapeStyles)); break;
 				default: throw new nShapeUnsupportedValueException(typeof(StyleCategory), category);
 			}
 			ICommand cmd = new CreateStyleCommand(design, style);
@@ -198,10 +224,28 @@ namespace Dataweb.nShape.Controllers {
 			PropertyInfo propertyInfo = style.GetType().GetProperty(propertyName);
 			if (propertyInfo == null) throw new nShapeException("Property {0} not found in Type {1}.", propertyName, style.GetType().Name);
 
-			ICommand cmd = new StylePropertySetCommand(design, style, propertyInfo, oldValue, newValue);
-			project.ExecuteCommand(cmd);
-
-			if (StyleChanged != null) StyleChanged(this, GetStyleEventArgs(design, style));
+			bool performPropertyChange = true;
+			if (string.Compare(propertyName, "Name", true) == 0) {
+				if (style is CapStyle && StyleNameExists(design.CapStyles, (string)newValue))
+					performPropertyChange = false;
+				else if (style is CharacterStyle && StyleNameExists(design.CharacterStyles, (string)newValue))
+					performPropertyChange = false;
+				else if (style is ColorStyle && StyleNameExists(design.ColorStyles, (string)newValue))
+					performPropertyChange = false;
+				else if (style is FillStyle && StyleNameExists(design.FillStyles, (string)newValue))
+					performPropertyChange = false;
+				else if (style is LineStyle && StyleNameExists(design.LineStyles, (string)newValue))
+					performPropertyChange = false;
+				else if (style is ParagraphStyle && StyleNameExists(design.ParagraphStyles, (string)newValue))
+					performPropertyChange = false;
+				//else if (style is ShapeStyle && StyleNameExists(design.ShapeStyles, (string)newValue))
+				//   performPropertyChange = false;
+			}
+			if (performPropertyChange) {
+				ICommand cmd = new StylePropertySetCommand(design, style, propertyInfo, oldValue, newValue);
+				project.ExecuteCommand(cmd);
+				if (StyleChanged != null) StyleChanged(this, GetStyleEventArgs(design, style));
+			} else propertyInfo.SetValue(style, oldValue, null);
 		}
 
 
@@ -257,6 +301,25 @@ namespace Dataweb.nShape.Controllers {
 					return design;
 			}
 			return null;
+		}
+
+
+		private string GetNewStyleName<T>(StyleCollection<T> styleCollection) 
+			where T : class, IStyle {
+			string newName;
+			string typeName = typeof(T).Name;
+			int cnt = styleCollection.Count;
+			do
+				newName = string.Format("{0} {1}", typeName, ++cnt);
+			while (styleCollection.Contains(newName));
+			return newName;
+		}
+
+
+		private bool StyleNameExists<T>(StyleCollection<T> styleCollection, string styleName)
+			where T : class, IStyle {
+			if (styleCollection == null) throw new ArgumentNullException("styleCollection");
+			return styleCollection.Contains(styleName);
 		}
 
 		#endregion

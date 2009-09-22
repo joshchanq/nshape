@@ -1,19 +1,32 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Design;
 using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
-
-using Dataweb.nShape.Advanced;
-using Dataweb.Utilities;
-using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using Dataweb.NShape.Advanced;
+using Dataweb.Utilities;
 
 
-namespace Dataweb.nShape {
+namespace Dataweb.NShape {
 
 	/// <summary>
 	/// Specifies the category of a style.
@@ -572,9 +585,9 @@ namespace Dataweb.nShape {
 
 
 		public IColorStyle ColorStyle {
-			get { return colorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			get { return colorStyle ?? Dataweb.NShape.ColorStyle.Default; }
 			set {
-				if (value == Dataweb.nShape.ColorStyle.Default)
+				if (value == Dataweb.NShape.ColorStyle.Default)
 					colorStyle = null;
 				else colorStyle = value;
 			}
@@ -592,7 +605,7 @@ namespace Dataweb.nShape {
 			Default = new CapStyle(DefaultStyleName);
 			Default.CapShape = CapShape.None;
 			Default.CapSize = 1;
-			Default.ColorStyle = Dataweb.nShape.ColorStyle.Default;
+			Default.ColorStyle = Dataweb.NShape.ColorStyle.Default;
 		}
 
 
@@ -680,7 +693,7 @@ namespace Dataweb.nShape {
 
 
 		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in Dataweb.nShape.Style.GetPropertyDefinitions(version))
+			foreach (EntityPropertyDefinition pi in Dataweb.NShape.Style.GetPropertyDefinitions(version))
 				yield return pi;
 			yield return new EntityFieldDefinition("FontName", typeof(string));
 			yield return new EntityFieldDefinition("Size", typeof(int));
@@ -756,9 +769,9 @@ namespace Dataweb.nShape {
 
 
 		public IColorStyle ColorStyle {
-			get { return colorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			get { return colorStyle ?? Dataweb.NShape.ColorStyle.Default; }
 			set {
-				if (value == Dataweb.nShape.ColorStyle.Default)
+				if (value == Dataweb.NShape.ColorStyle.Default)
 					colorStyle = null;
 				else colorStyle = value;
 			}
@@ -776,7 +789,7 @@ namespace Dataweb.nShape {
 				dpi = gfx.DpiY;
 
 			Default = new CharacterStyle(DefaultStyleName);
-			Default.ColorStyle = Dataweb.nShape.ColorStyle.Default;
+			Default.ColorStyle = Dataweb.NShape.ColorStyle.Default;
 			Default.FontName = "Times New Roman";
 			Default.SizeInPoints = 10;
 			Default.Style = FontStyle.Regular;
@@ -1118,20 +1131,20 @@ namespace Dataweb.nShape {
 
 
 		public IColorStyle BaseColorStyle {
-			get { return baseColorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			get { return baseColorStyle ?? Dataweb.NShape.ColorStyle.Default; }
 			set {
-				if (value == Dataweb.nShape.ColorStyle.Default)
-					baseColorStyle = Dataweb.nShape.ColorStyle.Default;
+				if (value == Dataweb.NShape.ColorStyle.Default)
+					baseColorStyle = Dataweb.NShape.ColorStyle.Default;
 				else baseColorStyle = value;
 			}
 		}
 
 
 		public IColorStyle AdditionalColorStyle {
-			get { return additionalColorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			get { return additionalColorStyle ?? Dataweb.NShape.ColorStyle.Default; }
 			set {
-				if (value == Dataweb.nShape.ColorStyle.Default)
-					additionalColorStyle = Dataweb.nShape.ColorStyle.Default;
+				if (value == Dataweb.NShape.ColorStyle.Default)
+					additionalColorStyle = Dataweb.NShape.ColorStyle.Default;
 				else additionalColorStyle = value;
 			}
 		}
@@ -1229,8 +1242,8 @@ namespace Dataweb.nShape {
 			StandardNames = new StandardFillStyleNames();
 
 			Default = new FillStyle(DefaultStyleName);
-			Default.AdditionalColorStyle = Dataweb.nShape.ColorStyle.Default;
-			Default.BaseColorStyle = Dataweb.nShape.ColorStyle.Default;
+			Default.AdditionalColorStyle = Dataweb.NShape.ColorStyle.Default;
+			Default.BaseColorStyle = Dataweb.NShape.ColorStyle.Default;
 			Default.ConvertToGrayScale = false;
 			Default.FillMode = FillMode.Solid;
 			Default.FillPattern = HatchStyle.Cross;
@@ -1364,10 +1377,10 @@ namespace Dataweb.nShape {
 
 
 		public IColorStyle ColorStyle {
-			get { return colorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			get { return colorStyle ?? Dataweb.NShape.ColorStyle.Default; }
 			set {
-				if (value == Dataweb.nShape.ColorStyle.Default)
-					colorStyle = Dataweb.nShape.ColorStyle.Default;
+				if (value == Dataweb.NShape.ColorStyle.Default)
+					colorStyle = Dataweb.NShape.ColorStyle.Default;
 				else colorStyle = value;
 			}
 		}
@@ -1421,7 +1434,7 @@ namespace Dataweb.nShape {
 			StandardNames = new StandardLineStyleNames();
 
 			Default = new LineStyle(DefaultStyleName);
-			Default.ColorStyle = Dataweb.nShape.ColorStyle.Default;
+			Default.ColorStyle = Dataweb.NShape.ColorStyle.Default;
 			Default.DashCap = DashCap.Round;
 			Default.DashType = DashType.Solid;
 			Default.LineJoin = LineJoin.Round;
@@ -1549,10 +1562,10 @@ namespace Dataweb.nShape {
 
 
 		public IColorStyle ShadowColor {
-			get { return shadowColorStyle ?? Dataweb.nShape.ColorStyle.Default; }
+			get { return shadowColorStyle ?? Dataweb.NShape.ColorStyle.Default; }
 			set {
-				if (value == Dataweb.nShape.ColorStyle.Default)
-					shadowColorStyle = Dataweb.nShape.ColorStyle.Default;
+				if (value == Dataweb.NShape.ColorStyle.Default)
+					shadowColorStyle = Dataweb.NShape.ColorStyle.Default;
 				else shadowColorStyle = value;
 			}
 		}

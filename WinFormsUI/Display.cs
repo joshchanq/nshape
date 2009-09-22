@@ -1,18 +1,31 @@
+/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the nShape framework.
+  nShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  nShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.Controllers;
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.Controllers;
 
 
-namespace Dataweb.nShape.WinFormsUI {
+namespace Dataweb.NShape.WinFormsUI {
 
 	public partial class Display : UserControl, IDiagramPresenter, IDisplayService {
 		
@@ -436,10 +449,7 @@ namespace Dataweb.nShape.WinFormsUI {
 				controlBrushGradientSin = Math.Sin(Geometry.DegreesToRadians(controlBrushGradientAngle));
 				controlBrushGradientCos = Math.Cos(Geometry.DegreesToRadians(controlBrushGradientAngle));
 
-				if (controlBrush != null) {
-					controlBrush.Dispose();
-					controlBrush = null;
-				}
+				DisposeObject(controlBrush);
 				Invalidate();
 			}
 		}
@@ -451,10 +461,8 @@ namespace Dataweb.nShape.WinFormsUI {
 			set {
 				backColor = value;
 				hScrollBarPanel.BackColor = value;
-				if (controlBrush != null) {
-					controlBrush.Dispose();
-					controlBrush = null;
-				}
+				
+				DisposeObject(controlBrush);
 				Invalidate();
 			}
 		}
@@ -466,10 +474,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			set {
 				gradientBackColor = value;
 
-				if (controlBrush != null) {
-					controlBrush.Dispose();
-					controlBrush = null;
-				}
+				DisposeObject(controlBrush); 
 				Invalidate();
 			}
 		}
@@ -480,7 +485,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			get { return gridAlpha; }
 			set {
 				gridAlpha = value;
-				CreatePen(gridColor, gridAlpha, ref gridPen);
+				DisposeObject(gridPen);
 				Invalidate();
 			}
 		}
@@ -492,10 +497,10 @@ namespace Dataweb.nShape.WinFormsUI {
 			set {
 				selectionAlpha = value;
 
-				CreateBrush(selectionInteriorColor, selectionAlpha, ref handleInteriorBrush);
-				CreatePen(selectionInteriorColor, selectionAlpha, handleRadius, ref outlineNormalPen);
-				CreatePen(selectionInteriorColor, selectionAlpha, handleRadius, ref outlineHilightPen);
-				CreatePen(selectionInteriorColor, selectionAlpha, handleRadius, ref outlineInactivePen);
+				DisposeObject(handleInteriorBrush);
+				DisposeObject(outlineNormalPen);
+				DisposeObject(outlineHilightPen);
+				DisposeObject(outlineInactivePen);
 				Invalidate();
 			}
 		}
@@ -506,8 +511,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			get { return gridColor; }
 			set {
 				gridColor = value;
-
-				CreatePen(gridColor, gridAlpha, ref gridPen);
+				DisposeObject(gridPen);
 				Invalidate();
 			}
 		}
@@ -523,8 +527,8 @@ namespace Dataweb.nShape.WinFormsUI {
 				}
 				selectionInteriorColor = value;
 
-				CreatePen(selectionInteriorColor, ref outlineInteriorPen);
-				CreateBrush(selectionInteriorColor, selectionAlpha, ref handleInteriorBrush);
+				DisposeObject(outlineInteriorPen);
+				DisposeObject(handleInteriorBrush);
 				Invalidate();
 			}
 		}
@@ -535,9 +539,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			get { return selectionNormalColor; }
 			set {
 				selectionNormalColor = value;
-
-				CreatePen(selectionNormalColor, selectionAlpha, handleRadius, ref outlineNormalPen);
-				CreatePen(selectionNormalColor, selectionAlpha, ref outlineNormalPen);
+				DisposeObject(outlineNormalPen);
 				Invalidate();
 			}
 		}
@@ -548,9 +550,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			get { return selectionHilightColor; }
 			set {
 				selectionHilightColor = value;
-
-				CreatePen(selectionHilightColor, selectionAlpha, handleRadius, ref outlineNormalPen);
-				CreatePen(selectionHilightColor, selectionAlpha, ref outlineNormalPen);
+				DisposeObject(outlineNormalPen);
 				Invalidate();
 			}
 		}
@@ -561,9 +561,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			get { return selectionInactiveColor; }
 			set {
 				selectionInactiveColor = value;
-
-				CreatePen(selectionInactiveColor, selectionAlpha, handleRadius, ref outlineNormalPen);
-				CreatePen(selectionInactiveColor, selectionAlpha, ref outlineNormalPen);
+				DisposeObject(outlineNormalPen);
 				Invalidate();
 			}
 		}
@@ -578,8 +576,7 @@ namespace Dataweb.nShape.WinFormsUI {
 					hintForegroundStyle = null;
 				}
 				toolPreviewColor = value;
-
-				CreatePen(toolPreviewColor, toolPreviewColorAlpha, ref toolPreviewPen);
+				DisposeObject(toolPreviewPen);
 				Invalidate();
 			}
 		}
@@ -590,8 +587,7 @@ namespace Dataweb.nShape.WinFormsUI {
 			get { return toolPreviewBackColor; }
 			set {
 				toolPreviewBackColor = value;
-
-				CreateBrush(toolPreviewBackColor, toolPreviewBackColorAlpha, ref toolPreviewBackBrush);
+				DisposeObject(toolPreviewBackBrush);
 				Invalidate();
 			}
 		}
@@ -1117,15 +1113,14 @@ namespace Dataweb.nShape.WinFormsUI {
 			// Check if the cursor has the minimum distance from the rotation point
 			if (radius > minRotateDistance) {
 				// Calculate angle and angle info text
-				float angleDeg = Geometry.TenthsOfDegreeToDegrees(newAngle <= 1800 ? newAngle : (newAngle - 3600));
+				float origAngleDeg = Geometry.TenthsOfDegreeToDegrees(originalAngle);
+				float newAngleDeg = Geometry.TenthsOfDegreeToDegrees(newAngle <= 1800 ? newAngle : (newAngle - 3600));
 				string angleInfoText = null;
-				if (SelectedShapes.Count > 1)
-					angleInfoText = string.Format("{0}°", angleDeg);
-				else {
-					float origShapeAngle = Geometry.TenthsOfDegreeToDegrees(originalAngle - newAngle);
-					float newShapeAngle = Geometry.TenthsOfDegreeToDegrees(originalAngle % 3600);
-					angleInfoText = string.Format("{0}° ({1}° {2} {3}°)", newShapeAngle, origShapeAngle, angleDeg < 0 ? '-' : '+', Math.Abs(angleDeg));
-				}
+				if (SelectedShapes.Count > 1 || originalAngle == 0)
+					angleInfoText = string.Format("{0}°", newAngleDeg);
+				else
+					angleInfoText = string.Format("{0}° ({1}° {2} {3}°)", origAngleDeg + newAngleDeg, origAngleDeg, newAngleDeg < 0 ? '-' : '+', Math.Abs(newAngleDeg));
+				
 				// Calculate LayoutRectangle's size for the angle info text
 				Rectangle layoutRect = Rectangle.Empty;
 				layoutRect.Size = TextMeasurer.MeasureText(currentGraphics, angleInfoText, Font, Size.Empty, previewTextFormatter);
@@ -1143,11 +1138,11 @@ namespace Dataweb.nShape.WinFormsUI {
 				int pieSize = radius + radius;
 				if (HighQualityRendering) {
 					currentGraphics.DrawEllipse(ToolPreviewPen, center.X - radius, center.Y - radius, pieSize, pieSize);
-					currentGraphics.FillPie(ToolPreviewBackBrush, center.X - radius, center.Y - radius, pieSize, pieSize, 0, angleDeg);
-					currentGraphics.DrawPie(ToolPreviewPen, center.X - radius, center.Y - radius, pieSize, pieSize, 0, angleDeg);
+					currentGraphics.FillPie(ToolPreviewBackBrush, center.X - radius, center.Y - radius, pieSize, pieSize, 0, newAngleDeg);
+					currentGraphics.DrawPie(ToolPreviewPen, center.X - radius, center.Y - radius, pieSize, pieSize, 0, newAngleDeg);
 				} else {
-					currentGraphics.DrawPie(Pens.Black, center.X - radius, center.Y - radius, pieSize, pieSize, 0, angleDeg);
-					currentGraphics.DrawPie(Pens.Black, center.X - radius, center.Y - radius, pieSize, pieSize, 0, angleDeg);
+					currentGraphics.DrawPie(Pens.Black, center.X - radius, center.Y - radius, pieSize, pieSize, 0, newAngleDeg);
+					currentGraphics.DrawPie(Pens.Black, center.X - radius, center.Y - radius, pieSize, pieSize, 0, newAngleDeg);
 				}
 				currentGraphics.DrawString(angleInfoText, Font, Brushes.Black, layoutRect, previewTextFormatter);
 			} else {
@@ -3041,6 +3036,10 @@ namespace Dataweb.nShape.WinFormsUI {
 		}
 		
 		
+		/// <summary>
+		/// Starts collecting shapes that were changed by executing a DiagramController action.
+		/// These shapes will be selected after the action was executed.
+		/// </summary>
 		private void StartSelectingChangedShapes() {
 			Debug.Assert(collectingChangesCounter >= 0);
 			if (collectingChangesCounter == 0) {
@@ -3051,6 +3050,10 @@ namespace Dataweb.nShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Ends collecting shapes that were changed by executing a DiagramController action.
+		/// These shapes will be selected after the action was executed.
+		/// </summary>
 		private void EndSelectingChangedShapes() {
 			Debug.Assert(collectingChangesCounter > 0);
 			--collectingChangesCounter;
@@ -3549,8 +3552,12 @@ namespace Dataweb.nShape.WinFormsUI {
 		private void PerformGroupShapes(Diagram diagram, IShapeCollection shapes, LayerIds activeLayers) {
 			// Set DiagramPresenter in "Listen for repository changes" mode
 			try {
+				// Buffer the currently selected shapes because the collection will be emptied by calling StartSelectingChangedShapes
+				shapeBuffer.Clear();
+				shapeBuffer.AddRange(shapes);
+
 				StartSelectingChangedShapes();
-				diagramSetController.GroupShapes(diagram, shapes, activeLayers);
+				diagramSetController.GroupShapes(diagram, shapeBuffer, activeLayers);
 			} finally { EndSelectingChangedShapes(); }
 		}
 
@@ -3567,8 +3574,13 @@ namespace Dataweb.nShape.WinFormsUI {
 		private void PerformAggregateCompositeShape(Diagram diagram, Shape shape, IShapeCollection shapes, LayerIds activeLayers) {
 			// Set DiagramPresenter in "Listen for repository changes" mode
 			try {
+				// Buffer the currently selected shapes because the collection will be emptied by calling StartSelectingChangedShapes
+				shapeBuffer.Clear();
+				shapeBuffer.AddRange(shapes);
+				Shape compositeShape = shapes.Bottom;
+
 				StartSelectingChangedShapes();
-				diagramSetController.AggregateCompositeShape(diagram, shapes.Bottom, shapes, activeLayers);
+				diagramSetController.AggregateCompositeShape(diagram, compositeShape, shapeBuffer, activeLayers);
 			} finally { EndSelectingChangedShapes(); }
 		}
 
