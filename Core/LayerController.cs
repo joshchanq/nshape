@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -172,6 +172,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
 			get { return diagramSetController; }
 			set {
@@ -185,6 +186,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Returns the Owner's Project
 		/// </summary>
+		[Category("NShape")]
 		public Project Project {
 			get {
 				if (diagramSetController == null) return null;
@@ -210,7 +212,7 @@ namespace Dataweb.NShape.Controllers {
 			if (layerName == null) throw new ArgumentNullException("layerName");
 			AssertDiagramSetControllerIsSet();
 			if (diagram.Layers.FindLayer(layerName) != null) 
-				throw new nShapeException("Layer name '{0}' already exists.", layerName);
+				throw new NShapeException("Layer name '{0}' already exists.", layerName);
 			Command cmd = new AddLayerCommand(diagram, layerName);
 			Project.ExecuteCommand(cmd);
 			if (LayersAdded != null) LayersAdded(this, LayerHelper.GetLayersEventArgs(LayerHelper.GetLayers(layerName, diagram)));
@@ -232,7 +234,7 @@ namespace Dataweb.NShape.Controllers {
 			if (layerName == null) throw new ArgumentNullException("layerName");
 			AssertDiagramSetControllerIsSet();
 			Layer layer = diagram.Layers.FindLayer(layerName);
-			if (layer == null) throw new nShapeException("Layer '{0}' does not exist.", layerName);
+			if (layer == null) throw new NShapeException("Layer '{0}' does not exist.", layerName);
 			Command cmd = new RemoveLayerCommand(diagram, layer);
 			Project.ExecuteCommand(cmd);
 			if (LayersRemoved != null) LayersRemoved(this, LayerHelper.GetLayersEventArgs(LayerHelper.GetLayers(layerName, diagram)));
@@ -285,7 +287,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		public IEnumerable<nShapeAction> GetActions(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
+		public IEnumerable<MenuItemDef> GetActions(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (selectedLayers == null) throw new ArgumentNullException("selectedLayers");
 			bool isFeasible;
@@ -293,13 +295,13 @@ namespace Dataweb.NShape.Controllers {
 			
 			isFeasible = diagram.Layers.Count < Enum.GetValues(typeof(LayerIds)).Length;
 			description = isFeasible ? "Add a new layer to the diagram" : "Maximum number of layers reached";
-			yield return new DelegateAction("Add Layer", 
+			yield return new DelegateMenuItemDef("Add Layer", 
 				Properties.Resources.NewLayer, description, isFeasible, Permission.ModifyData,
 				(a, p) => AddLayer(diagram));
 
 			isFeasible = selectedLayers.Count > 0;
 			description = isFeasible ? string.Format("Delete {0} Layers", selectedLayers.Count) : "No layers selected";
-			yield return new DelegateAction(string.Format("Delete Layer{0}", selectedLayers.Count > 1 ? "s" : string.Empty),
+			yield return new DelegateMenuItemDef(string.Format("Delete Layer{0}", selectedLayers.Count > 1 ? "s" : string.Empty),
 				Properties.Resources.DeleteBtn, description, isFeasible, Permission.ModifyData, 
 				(a, p) => this.RemoveLayers(diagram, selectedLayers));
 		}
@@ -359,18 +361,18 @@ namespace Dataweb.NShape.Controllers {
 		
 
 		private void AssertProjectIsSet() {
-			if (Project == null) throw new nShapeException("{0}'s property 'Project' is not set.", typeof(DiagramSetController).FullName);
+			if (Project == null) throw new NShapeException("{0}'s property 'Project' is not set.", typeof(DiagramSetController).FullName);
 		}
 
 
 		private void AssertRepositoryIsSet() {
 			AssertProjectIsSet();
-			if (Project.Repository == null) throw new nShapeException("Project's 'Repository' property is not set.");
+			if (Project.Repository == null) throw new NShapeException("Project's 'Repository' property is not set.");
 		}
 
 		
 		private void AssertDiagramSetControllerIsSet() {
-			if (diagramSetController == null) throw new nShapeException("Property 'DiagramController' is not set.");
+			if (diagramSetController == null) throw new NShapeException("Property 'DiagramController' is not set.");
 		}
 
 

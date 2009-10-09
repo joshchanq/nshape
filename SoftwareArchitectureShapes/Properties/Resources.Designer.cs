@@ -67,20 +67,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes.Properties {
             }
         }
         
-        public static byte[] Actor_new {
-            get {
-                object obj = ResourceManager.GetObject("Actor_new", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        public static System.Drawing.Icon Dataweb_nShape {
-            get {
-                object obj = ResourceManager.GetObject("Dataweb_nShape", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
         public static byte[] Monitor {
             get {
                 object obj = ResourceManager.GetObject("Monitor", resourceCulture);
@@ -88,44 +74,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes.Properties {
             }
         }
         
-        public static byte[] Monitor_new1 {
-            get {
-                object obj = ResourceManager.GetObject("Monitor_new1", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        public static byte[] Monitor_old {
-            get {
-                object obj = ResourceManager.GetObject("Monitor_old", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
         public static byte[] PC {
             get {
                 object obj = ResourceManager.GetObject("PC", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        public static byte[] PC2 {
-            get {
-                object obj = ResourceManager.GetObject("PC2", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        public static byte[] PC21 {
-            get {
-                object obj = ResourceManager.GetObject("PC21", resourceCulture);
-                return ((byte[])(obj));
-            }
-        }
-        
-        public static byte[] PC3 {
-            get {
-                object obj = ResourceManager.GetObject("PC3", resourceCulture);
                 return ((byte[])(obj));
             }
         }

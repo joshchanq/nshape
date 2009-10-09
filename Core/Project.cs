@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -25,14 +25,14 @@ using Dataweb.NShape.Advanced;
 namespace Dataweb.NShape {
 
 	/// <summary>
-	/// Collection of elements making up a nShape project.
+	/// Collection of elements making up a NShape project.
 	/// </summary>
 	/// <status>reviewed</status>
 	[ToolboxItem(true)]
 	public sealed class Project : Component, IRegistrar, IStyleSetProvider {
 
 		/// <summary>
-		/// Checks whether a name is a valid identifier for nShape.
+		/// Checks whether a name is a valid identifier for NShape.
 		/// </summary>
 		/// <param name="name"></param>
 		public static bool IsValidName(string name) {
@@ -51,10 +51,10 @@ namespace Dataweb.NShape {
 		public static void AssertSupportedVersion(bool save, int version) {
 			if (save) {
 				if (version < FirstSupportedSaveVersion || version > LastSupportedSaveVersion)
-					throw new nShapeException("Unsupported save version");
+					throw new NShapeException("Unsupported save version");
 			} else {
 				if (version < FirstSupportedLoadVersion || version > LastSupportedLoadVersion)
-					throw new nShapeException("Unsupported load version");
+					throw new NShapeException("Unsupported load version");
 			}
 		}
 
@@ -101,11 +101,11 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Specifies the directories, where nShape libraries are looked for.
+		/// Specifies the directories, where NShape libraries are looked for.
 		/// </summary>
 		[Description("A collection of paths where shape and model library assemblies are expected to be found.")]
-		[TypeConverter("Dataweb.nShape.WinFormsUI.nShapeTextConverter, Dataweb.nShape.WinFormsUI")]
-		[Editor("Dataweb.nShape.WinFormsUI.nShapeTextEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
+		[TypeConverter("Dataweb.NShape.WinFormsUI.NShapeTextConverter, Dataweb.NShape.WinFormsUI")]
+		[Editor("Dataweb.NShape.WinFormsUI.TextEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public IList<string> LibrarySearchPaths {
 			get { return librarySearchPaths; }
 			set {
@@ -118,7 +118,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Specifies the repository used to store the project.
 		/// </summary>
-		[Category("nShape")]
+		[Category("NShape")]
 		[Description("Specifies the IRepository class used for loading/saving project and diagram data.")]
 		public IRepository Repository {
 			get { return repository; }
@@ -231,7 +231,7 @@ namespace Dataweb.NShape {
 				}
 			}
 			if (design == null)
-				throw new nShapeException("A design named '{0}' does not exist.", designName);
+				throw new NShapeException("A design named '{0}' does not exist.", designName);
 			ApplyDesign(design);
 		}
 
@@ -244,6 +244,26 @@ namespace Dataweb.NShape {
 		}
 
 
+		public bool IsValidLibrary(string assemblyPath) {
+			try {
+				string fullAssemblyPath = GetFullAssemblyPath(assemblyPath);
+				Assembly assembly = Assembly.LoadFrom(fullAssemblyPath);
+				return (GetInitializerType(assembly) != null);
+			} catch (Exception) {
+				return false;
+			}
+		}
+
+
+		public bool IsValidLibrary(Assembly assembly) {
+			try {
+				return (GetInitializerType(assembly) != null);
+			} catch (Exception) {
+				return false;
+			}
+		}
+		
+		
 		/// <summary>
 		/// Adds a static library to the project.
 		/// </summary>
@@ -275,29 +295,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		/// <param name="assemblyPath">Complete file path to the library assembly.</param>
 		public void AddLibraryByFilePath(string assemblyPath) {
-			if (assemblyPath == null) throw new ArgumentNullException("libraryFilePath");
-			if (!assemblyPath.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase))
-				assemblyPath += ".dll";
-			if (!Path.IsPathRooted(assemblyPath)) {
-				string libDir = this.GetType().Assembly.Location;
-				assemblyPath = Path.GetDirectoryName(Path.GetFullPath(libDir)) + Path.DirectorySeparatorChar + Path.GetFileName(assemblyPath);
-			}
-			if (!File.Exists(assemblyPath)) {
-				string assemblyFileName = Path.GetFileName(assemblyPath);
-				string libPath = "";
-				foreach (string dir in LibrarySearchPaths) {
-					libPath = dir;
-					if (!libPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
-						libPath += Path.DirectorySeparatorChar;
-					if (File.Exists(libPath + assemblyFileName)) {
-						assemblyPath = libPath + assemblyFileName;
-						break;
-					}
-				}
-				if (!File.Exists(assemblyPath))
-					throw new nShapeException("Assembly '{0}' cannot be found at the specified path.", assemblyPath);
-			}
-			Assembly a = Assembly.LoadFile(assemblyPath);
+			Assembly a = Assembly.LoadFile(GetFullAssemblyPath(assemblyPath));
 			AddLibrary(a);
 		}
 
@@ -307,12 +305,19 @@ namespace Dataweb.NShape {
 		/// </summary>
 		public void RemoveAllLibraries() {
 			AssertClosed();
-			foreach (Library l in libraries) {
-				// What? l.Assembly
+			for (int i = libraries.Count - 1; i >= 0; --i) {
+				// ToDo: Implement unloading libraries
 			}
 			shapeTypes.Clear();
 			modelObjectTypes.Clear();
 			libraries.Clear();
+		}
+
+
+		// ToDo: Implement RemoveLibrary, RemoveLibraryByPath and RemoveLibraryByName
+		private void DoRemoveLibrary(Library l) {
+			if (l == null) throw new ArgumentNullException("l");
+			libraries.Remove(l);
 		}
 
 
@@ -349,19 +354,20 @@ namespace Dataweb.NShape {
 		/// Closes the project.
 		/// </summary>
 		public void Close() {
-			if (!IsOpen) return;
 			if (Closing != null) Closing(this, eventArgs);
-			IStyleSet styleSet = ((IStyleSetProvider)this).StyleSet;
-			repository.Close();
+			if (repository.IsOpen) repository.Close();
+			if (IsOpen) {
+				IStyleSet styleSet = ((IStyleSetProvider)this).StyleSet;
 
-			// Delete GDI+ objects created from styles
-			ToolCache.RemoveStyleSetTools(styleSet);
-			settings.Clear();
-			model = null;
-			history.Clear();
-			settings = new ProjectSettings();
+				// Delete GDI+ objects created from styles
+				ToolCache.RemoveStyleSetTools(styleSet);
+				settings.Clear();
+				model = null;
+				history.Clear();
+				settings = new ProjectSettings();
 
-			// TODO 2: Unload dynamic libraries and remove the corresponding shape and model types.
+				// TODO 2: Unload dynamic libraries and remove the corresponding shape and model types.
+			}
 			if (Closed != null) Closed(this, eventArgs);
 		}
 
@@ -399,7 +405,7 @@ namespace Dataweb.NShape {
 		public event EventHandler Closed;
 
 		/// <summary>
-		/// Occurs when a nShape library was loaded.
+		/// Occurs when a NShape library was loaded.
 		/// </summary>
 		public event EventHandler<LibraryLoadedEventArgs> LibraryLoaded;
 
@@ -577,10 +583,6 @@ namespace Dataweb.NShape {
 			for (int pathIdx = LibrarySearchPaths.Count - 1; pathIdx >= 0; --pathIdx) {
 				string[] files = Directory.GetFiles(LibrarySearchPaths[pathIdx]);
 				for (int fileIdx = files.Length - 1; fileIdx >= 0; --fileIdx) {
-					//string fileExt = Path.GetExtension(files[fileIdx]);
-					//if (!string.Equals(fileExt, ".dll", StringComparison.InvariantCultureIgnoreCase)
-					//   && !string.Equals(fileExt, ".exe", StringComparison.InvariantCultureIgnoreCase))
-					//   continue;
 					try {
 						AssemblyName foundAssemblyName = AssemblyName.GetAssemblyName(files[fileIdx]);
 						if (AssemblyName.ReferenceMatchesDefinition(soughtAssemblyName, foundAssemblyName))
@@ -604,7 +606,6 @@ namespace Dataweb.NShape {
 			if (repository == null) {
 				repository = new CachedRepository();
 				repository.ProjectName = Name;
-				((CachedRepository)repository).Store = new XmlStore(Path.GetTempPath(), ".xml");
 			} else {
 				Debug.Assert(!repository.IsOpen);
 				repository.RemoveAllEntityTypes();
@@ -752,6 +753,9 @@ namespace Dataweb.NShape {
 			initializingLibrary = library;
 			try {
 				InitializeLibrary(library);
+			} catch(Exception exc) {
+				DoRemoveLibrary(library);
+				throw exc;
 			} finally {
 				addingLibrary = false;
 				initializingLibrary = null;
@@ -759,21 +763,54 @@ namespace Dataweb.NShape {
 		}
 
 
-		private void InitializeLibrary(Library library) {
+		private string GetFullAssemblyPath(string assemblyPath) {
+			if (assemblyPath == null) throw new ArgumentNullException("libraryFilePath");
+			if (!Path.HasExtension(assemblyPath)) assemblyPath += ".dll";
+			if (!Path.IsPathRooted(assemblyPath)) {
+				string libDir = this.GetType().Assembly.Location;
+				assemblyPath = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(libDir)), Path.GetFileName(assemblyPath));
+			}
+			if (!File.Exists(assemblyPath)) {
+				string assemblyFileName = Path.GetFileName(assemblyPath);
+				string libPath = "";
+				foreach (string dir in LibrarySearchPaths) {
+					libPath = dir;
+					if (!libPath.EndsWith(Path.DirectorySeparatorChar.ToString()))
+						libPath += Path.DirectorySeparatorChar;
+					if (File.Exists(libPath + assemblyFileName)) {
+						assemblyPath = libPath + assemblyFileName;
+						break;
+					}
+				}
+				if (!File.Exists(assemblyPath))
+					throw new NShapeException("Assembly '{0}' cannot be found at the specified path.", assemblyPath);
+			}
+			return assemblyPath;
+		}
+		
+		
+		private Type GetInitializerType(Assembly assembly) {
+			if (assembly == null) throw new ArgumentNullException("assembly");
 			Type initializerType = null;
-			foreach (Type t in library.Assembly.GetTypes()) {
+			foreach (Type t in assembly.GetTypes()) {
 				if (t is Type) {
-					if (t.Name.Equals(nShapeLibraryInitializerClassName, StringComparison.InvariantCultureIgnoreCase)) {
+					if (t.Name.Equals(NShapeLibraryInitializerClassName, StringComparison.InvariantCultureIgnoreCase)) {
 						initializerType = t;
 						break;
 					}
 				}
 			}
 			if (initializerType == null)
-				throw new ArgumentException(string.Format("Assembly '{0}' is not a nShape library. (It does not implement static class {1}).", library.Assembly.Location, nShapeLibraryInitializerClassName));
+				throw new ArgumentException(string.Format("Assembly '{0}' is not a NShape library. (It does not implement static class {1}).", assembly.Location, NShapeLibraryInitializerClassName));
 			MethodInfo methodInfo = initializerType.GetMethod(InitializeMethodName);
 			if (methodInfo == null)
-				throw new nShapeException(string.Format("Assembly '{0}' is not a nShape shape library. (It does not implement {1}.{2}).", library.Assembly.FullName, nShapeLibraryInitializerClassName, InitializeMethodName));
+				throw new ArgumentException(string.Format("Assembly '{0}' is not a NShape library. (It does not implement {1}.{2}).", assembly.FullName, NShapeLibraryInitializerClassName, InitializeMethodName));
+			return initializerType;
+		}
+		
+		
+		private void InitializeLibrary(Library library) {
+			Type initializerType = GetInitializerType(library.Assembly);
 			this.initializingLibrary = library;
 			try {
 				initializerType.InvokeMember(InitializeMethodName, BindingFlags.Public | BindingFlags.InvokeMethod | BindingFlags.Static, null, null, registerArgs);
@@ -869,7 +906,7 @@ namespace Dataweb.NShape {
 		internal const int FirstSupportedLoadVersion = 2;
 		internal const int LastSupportedLoadVersion = 2;
 
-		public const string nShapeLibraryInitializerClassName = "nShapeLibraryInitializer";
+		public const string NShapeLibraryInitializerClassName = "NShapeLibraryInitializer";
 		public const string InitializeMethodName = "Initialize";
 
 		#region Fields

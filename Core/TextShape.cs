@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -24,6 +24,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Title shape.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class TextBase : RectangleBase {
 
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
@@ -111,6 +112,7 @@ namespace Dataweb.NShape.Advanced {
 
 		[Category("Appearance")]
 		[Description("Enables automatic resizing based on the text's size. If enabled, the WordWrap property of ParagraphStyles has no effect.")]
+		[RequiredPermission(Permission.Layout)]
 		public bool AutoSize {
 			get { return autoSize; }
 			set {
@@ -368,6 +370,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		[Category("Layout")]
+		[Description("If false, the label maintains its angle if it is attached to an other shape (in case the attached shape is beeing rotated).")]
+		[RequiredPermission(Permission.Layout)]
 		public bool MaintainOrientation {
 			get { return maintainOrientation; }
 			set {

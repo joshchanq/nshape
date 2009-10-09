@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -35,6 +35,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Groups a set of shapes together.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	public class ShapeGroup : Shape, IShapeGroup {
 
 		internal static ShapeGroup CreateInstance(ShapeType shapeType, Template template) {
@@ -84,14 +85,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Browsable(false)]
 		public override Diagram Diagram {
 			get {
 				if (owner is DiagramShapeCollection)
 					return ((DiagramShapeCollection)owner).Owner;
 				else return null;
 			}
-			set {
+			internal set {
 				if (owner != null && owner.Contains(this)) {
 					owner.Remove(this);
 					owner = null;
@@ -105,7 +105,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Browsable(false)]
 		public override Shape Parent {
 			get {
 				if (owner is ShapeAggregation) return ((ShapeAggregation)owner).Owner;
@@ -144,14 +143,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			// no actions for the moment...
 			if (template != null) {
-				foreach (nShapeAction action in template.GetActions())
+				foreach (MenuItemDef action in template.GetMenuItemDefs())
 					yield return action;
 			}
 			if (modelObject != null) {
-				foreach (nShapeAction action in modelObject.GetActions())
+				foreach (MenuItemDef action in modelObject.GetMenuItemDefs())
 					yield return action;
 			}
 		}
@@ -319,7 +318,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override IEnumerable<Point> CalculateCells(int cellSize) {
+		protected internal override IEnumerable<Point> CalculateCells(int cellSize) {
 			foreach (Shape s in children)
 				foreach (Point p in s.CalculateCells(cellSize))
 					yield return p;
@@ -521,7 +520,7 @@ namespace Dataweb.NShape.Advanced {
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			if (image == null) throw new ArgumentNullException("image");
 			using (Graphics gfx = Graphics.FromImage(image)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
 				gfx.Clear(transparentColor);
 
 				using (Font font = new Font(FontFamily.GenericSansSerif, 9)) {
@@ -543,6 +542,10 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		[Category("Layout")]
+		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
+		[PropertyMappingId(PropertyIdAngle)]
+		[RequiredPermission(Permission.Layout)]
 		public int Angle {
 			get { return angle; }
 			set {
@@ -680,9 +683,9 @@ namespace Dataweb.NShape.Advanced {
 
 		protected internal override void AttachGluePointToConnectionPoint(ControlPointId ownPointId, Shape otherShape, ControlPointId gluePointId) {
 			if (ownPointId != ControlPointId.Reference && !HasControlPointCapability(ownPointId, ControlPointCapabilities.Connect))
-				throw new nShapeException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
+				throw new NShapeException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
 			if (!otherShape.HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
-				throw new nShapeException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
+				throw new NShapeException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
 			throw new NotSupportedException();
 		}
 
@@ -709,6 +712,8 @@ namespace Dataweb.NShape.Advanced {
 
 
 		#region Fields
+
+		protected const int PropertyIdAngle = 2;
 
 		// Shape fields
 		private Template template = null;

@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -160,7 +160,7 @@ namespace Dataweb.NShape.Advanced {
 				textPath.AddString(text, font.FontFamily, (int)font.Style, characterStyle.Size, textBounds, formatter);
 				textPath.CloseFigure();
 #if DEBUG
-				if (textPath.PointCount == 0) {
+				if (textPath.PointCount == 0 && text.Trim() != string.Empty) {
 					Size textSize = TextMeasurer.MeasureText(text, font, textBounds.Size, paragraphStyle);
 					Debug.Fail("Failed to create TextPath - please check if the caption bounds are too small for the text.");
 				}
@@ -297,18 +297,19 @@ namespace Dataweb.NShape.Advanced {
 
 
 	#region CaptionedShapeBase Class
-	
+
 	/// <summary>
 	/// Shape having one caption.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	/// <status>reviewed</status>
 	public abstract class CaptionedShapeBase : PathBasedPlanarShape, ICaptionedShape {
 
-		[PropertyMappingId(PropertyIdText)]
-		[Category("Text Layout")]
-		[RefreshProperties(RefreshProperties.All)]
+		[Category("Text")]
 		[Description("Text displayed inside the shape")]
-		[Editor("Dataweb.nShape.WinFormsUI.nShapeTextEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
+		[PropertyMappingId(PropertyIdText)]
+		[RequiredPermission(Permission.Present)]
+		[Editor("Dataweb.NShape.WinFormsUI.TextEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public virtual string Text {
 			get {
 				if (caption == null) return string.Empty;
@@ -325,10 +326,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[PropertyMappingId(PropertyIdCharacterStyle)]
-		[Category("Text Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
+		[Category("Text")]
 		[Description("Determines the style of the shape's text.")]
+		[PropertyMappingId(PropertyIdCharacterStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICharacterStyle CharacterStyle {
 			get { return privateCharacterStyle ?? ((CaptionedShapeBase)Template.Shape).CharacterStyle; }
 			set {
@@ -340,10 +341,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[PropertyMappingId(PropertyIdParagraphStyle)]
-		[Category("Text Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
+		[Category("Text")]
 		[Description("Determines the layout of the shape's text.")]
+		[RequiredPermission(Permission.Present)]
+		[PropertyMappingId(PropertyIdParagraphStyle)]
 		public IParagraphStyle ParagraphStyle {
 			get { return privateParagraphStyle ?? ((CaptionedShapeBase)Template.Shape).ParagraphStyle; }
 			set {
@@ -439,37 +440,37 @@ namespace Dataweb.NShape.Advanced {
 
 
 		public virtual string GetCaptionText(int index) {
-			if (index != 0) throw new nShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException("NotSupported label index.");
 			else return Text;
 		}
 
 
 		public virtual ICharacterStyle GetCaptionCharacterStyle(int index) {
-			if (index != 0) throw new nShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException("NotSupported label index.");
 			return CharacterStyle;
 		}
 
 
 		public virtual IParagraphStyle GetCaptionParagraphStyle(int index) {
-			if (index != 0) throw new nShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException("NotSupported label index.");
 			return ParagraphStyle;
 		}
 
 
 		public virtual void SetCaptionText(int index, string text) {
-			if (index != 0) throw new nShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException("NotSupported label index.");
 			else Text = text;
 		}
 
 
 		public virtual void SetCaptionCharacterStyle(int index, ICharacterStyle characterStyle) {
-			if (index != 0) throw new nShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException("NotSupported label index.");
 			CharacterStyle = characterStyle;
 		}
 
 
 		public virtual void SetCaptionParagraphStyle(int index, IParagraphStyle paragraphStyle) {
-			if (index != 0) throw new nShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException("NotSupported label index.");
 			ParagraphStyle = paragraphStyle;
 		}
 

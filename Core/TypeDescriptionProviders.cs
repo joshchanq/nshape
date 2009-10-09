@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -17,290 +17,275 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Design;
 
+using Dataweb.NShape.Controllers;
+
 
 namespace Dataweb.NShape.Advanced {
 
-	public class TypeDescriptorRegistrar {
+	internal static class TypeDescriptorRegistrar {
 
-		public static void RegisterUITypeEditor(Type type, UITypeEditor editor) {
+		public static void RegisterUITypeEditor(Type type, Type uiTypeEditorType) {
+			if (type == null) throw new ArgumentNullException("type");
+			if (uiTypeEditorType == null) throw new ArgumentNullException("typeConverterType");
+			if (!IsType(uiTypeEditorType, typeof(UITypeEditor)))
+				throw new ArgumentException(string.Format("{0} is not a {1}.", type.Name, typeof(UITypeEditor).Name));
+
 			if (registeredEditors.ContainsKey(type))
-				registeredEditors[type] = editor;
-			else registeredEditors.Add(type, editor);
+				registeredEditors[type] = uiTypeEditorType;
+			else registeredEditors.Add(type, uiTypeEditorType);
 		}
 
 
-		public static void RegisterTypeConverter(Type type, TypeConverter converter) {
+		public static void UnregisterUITypeEditor(Type type, Type uiTypeEditorType) {
+			registeredEditors.Remove(type);
+		}
+
+
+		public static void RegisterTypeConverter(Type type, Type typeConverterType) {
+			if (type == null) throw new ArgumentNullException("type");
+			if (typeConverterType == null) throw new ArgumentNullException("typeConverterType");
+			if (!IsType(typeConverterType, typeof(TypeConverter)))
+				throw new ArgumentException(string.Format("{0} is not a {1}.", type.Name, typeof(TypeConverter).Name));
+
 			if (registeredConverters.ContainsKey(type))
-				registeredConverters[type] = converter;
-			else registeredConverters.Add(type, converter);
+				registeredConverters[type] = typeConverterType;
+			else registeredConverters.Add(type, typeConverterType);
 		}
 
 
-		public static bool TypeHasRegisteredUITypeEditor(Type type) {
-			return registeredEditors.ContainsKey(type);
-		}
-
-
-		public static bool TypeHasRegisteredTypeConverter(Type type) {
-			return registeredConverters.ContainsKey(type);
+		public static void UnregisterTypeConverter(Type type, Type typeConverterType) {
+			registeredConverters.Remove(type);
 		}
 
 
 		public static UITypeEditor GetRegisteredUITypeEditor(Type type) {
-			UITypeEditor result;
-			registeredEditors.TryGetValue(type, out result);
+			UITypeEditor result = null;
+			Type editorType = null;
+			if (registeredEditors.TryGetValue(type, out editorType))
+				result = Activator.CreateInstance(editorType) as UITypeEditor;
 			return result;
 		}
 
 
 		public static TypeConverter GetRegisteredTypeConverter(Type type) {
-			TypeConverter result;
-			registeredConverters.TryGetValue(type, out result);
+			TypeConverter result = null;
+			Type converterType = null;
+			if (registeredConverters.TryGetValue(type, out converterType))
+				result = Activator.CreateInstance(converterType) as TypeConverter;
 			return result;
+		}
+
+
+		private static bool IsType(Type sourceType, Type targetType) {
+			return (sourceType == targetType
+				|| sourceType.IsSubclassOf(targetType)
+				|| sourceType.GetInterface(targetType.Name, true) != null);
 		}
 
 
 		#region Fields
-		private static Dictionary<Type, UITypeEditor> registeredEditors = new Dictionary<Type, UITypeEditor>();
-		private static Dictionary<Type, TypeConverter> registeredConverters = new Dictionary<Type, TypeConverter>();
+		private static Dictionary<Type, Type> registeredEditors = new Dictionary<Type, Type>();
+		private static Dictionary<Type, Type> registeredConverters = new Dictionary<Type, Type>();
 		#endregion
 	}
 
 
-	public class nShapeStyleTypeDescriptionProvider : TypeDescriptionProvider {
-		public nShapeStyleTypeDescriptionProvider()
-			: base(TypeDescriptor.GetProvider(typeof(Style))) {
+	public class TypeDescriptionProviderDg : TypeDescriptionProvider {
+
+		public TypeDescriptionProviderDg()
+			: base(TypeDescriptor.GetProvider(typeof(object))) {
+		}
+
+
+		public TypeDescriptionProviderDg(Type type)
+			: base(TypeDescriptor.GetProvider(type)) {
+		}
+
+
+		public TypeDescriptionProviderDg(TypeDescriptionProvider parent)
+			: base(parent) {
+		}
+
+
+		public static IPropertyController PropertyController {
+			set { propertyController = value; }
 		}
 
 
 		public override ICustomTypeDescriptor GetTypeDescriptor(Type objectType, object instance) {
-			return new nShapeStyleTypeDescriptor(base.GetTypeDescriptor(objectType, instance));
+			ICustomTypeDescriptor baseTypeDescriptor = base.GetTypeDescriptor(objectType, instance);
+			if (propertyController != null)
+				return new TypeDescriptorDg(baseTypeDescriptor, propertyController);
+			else return baseTypeDescriptor;
 		}
+
+
+		private static IPropertyController propertyController;
 	}
 
 
-	public class nShapeStyleTypeDescriptor : CustomTypeDescriptor {
-		public nShapeStyleTypeDescriptor(ICustomTypeDescriptor parent)
+	public class TypeDescriptorDg : CustomTypeDescriptor {
+
+		public TypeDescriptorDg(ICustomTypeDescriptor parent, IPropertyController propertyController)
 			: base(parent) {
+			if (propertyController == null) throw new ArgumentNullException("propertyController");
+			this.propertyController = propertyController;
 		}
 
-		public override object GetEditor(Type editorBaseType) {
-			UITypeEditor editor = TypeDescriptorRegistrar.GetRegisteredUITypeEditor(editorBaseType);
-			if (editor != null) return editor;
-			else return base.GetEditor(editorBaseType);
+
+		public override AttributeCollection GetAttributes() {
+			return base.GetAttributes();
+		}
+
+
+		public override string GetClassName() {
+			return base.GetClassName();
+		}
+
+
+		public override string GetComponentName() {
+			return base.GetComponentName();
 		}
 
 
 		public override TypeConverter GetConverter() {
-			return TypeDescriptorRegistrar.GetRegisteredTypeConverter(typeof(Style)) ?? base.GetConverter();
-		}
-	}
-
-
-	#region TypeDescriptionProvider Sample 2
-
-	[TypeDescriptionProvider(typeof(MyTypeDescriptionProvider))]
-	public class MyClass {
-	}
-
-
-	public sealed class MyTypeDescriptionProvider : TypeDescriptionProvider {
-		public MyTypeDescriptionProvider()
-			: base(TypeDescriptor.GetProvider(typeof(MyClass))) { }
-
-		public override ICustomTypeDescriptor GetTypeDescriptor(Type objectType, object instance) {
-			return new MyTypeDescriptor(base.GetTypeDescriptor(objectType, instance));
-		}
-	}
-
-	public sealed class MyTypeDescriptor : CustomTypeDescriptor {
-		public MyTypeDescriptor(ICustomTypeDescriptor parent)
-			: base(parent) {
+			return base.GetConverter();
 		}
 
+
+		public override EventDescriptor GetDefaultEvent() {
+			return base.GetDefaultEvent();
+		}
+
+
+		public override PropertyDescriptor GetDefaultProperty() {
+			PropertyDescriptor propertyDescriptor = base.GetDefaultProperty();
+			if (propertyDescriptor != null && propertyController != null)
+				return new PropertyDescriptorDg(propertyDescriptor, propertyController);
+			else return propertyDescriptor;
+		}
+
+
+		public override object GetEditor(Type editorBaseType) {
+			return base.GetEditor(editorBaseType);
+		}
+
+
+		public override EventDescriptorCollection GetEvents() {
+			return base.GetEvents();
+		}
+
+
+		public override EventDescriptorCollection GetEvents(Attribute[] attributes) {
+			return base.GetEvents(attributes);
+		}
+
+
+		public override object GetPropertyOwner(PropertyDescriptor pd) {
+			return base.GetPropertyOwner(pd);
+		}
+
+
+		public override PropertyDescriptorCollection GetProperties() {
+			if (propertyController != null)
+				return DoGetProperties(base.GetProperties());
+			else return base.GetProperties();
+		}
+		
+		
 		public override PropertyDescriptorCollection GetProperties(Attribute[] attributes) {
-			PropertyDescriptorCollection result = base.GetProperties(attributes);
-			// hier wäre eine gute stelle, an den props rumzufummeln
-			return result;
+			if (propertyController != null) 
+				return DoGetProperties(base.GetProperties(attributes));
+			else return base.GetProperties(attributes);
 		}
+
+
+		private PropertyDescriptorCollection DoGetProperties(PropertyDescriptorCollection baseProperties) {
+			PropertyDescriptor[] resultProperties = new PropertyDescriptor[baseProperties.Count];
+			int baseCnt = baseProperties.Count;
+			for (int i = 0; i < baseCnt; ++i)
+				resultProperties[i] = new PropertyDescriptorDg(baseProperties[i], propertyController);
+			return new PropertyDescriptorCollection(resultProperties);
+		}
+
+
+		private IPropertyController propertyController;
 	}
 
-	#endregion
+
+	public class PropertyDescriptorDg : PropertyDescriptor {
+
+		public PropertyDescriptorDg(PropertyDescriptor descriptor, IPropertyController controller)
+			: base(descriptor) {
+			Construct(controller, descriptor);
+		}
 
 
-	#region TypeDescriptonProvider Sample
-	//[TypeDescriptionProvider(typeof(MyObjTypeDescriptionProvider))]
-	//public class MyObj : INotifyPropertyChanged {
-	//   #region Private variables
-	//   private int m_i4Sum1;
-	//   private int m_i4Sum2;
-	//   #endregion
-
-	//   #region Constructor
-
-	//   public MyObj() {
-	//   }
-
-	//   public MyObj(int i4Sum1, int i4Sum2) {
-	//      m_i4Sum1 = i4Sum1;
-	//      m_i4Sum2 = i4Sum2;
-	//   }
-
-	//   #endregion
-
-	//   #region Protected virtual methods
-
-	//   protected virtual void OnPropertyChanged(string xsPropertyName) {
-	//      PropertyChangedEventArgs e = new PropertyChangedEventArgs(xsPropertyName);
-	//      if (PropertyChanged != null)
-	//         PropertyChanged(this, e);
-	//   }
-
-	//   #endregion
-
-	//   #region Public properties
-
-	//   public int pi4Sum1 {
-	//      get { return m_i4Sum1; }
-	//      set {
-	//         m_i4Sum1 = value;
-	//         OnPropertyChanged("pi4Sum1");
-	//      }
-	//   }
-
-	//   public int pi4Sum2 {
-	//      get { return m_i4Sum2; }
-	//      set {
-	//         m_i4Sum2 = value;
-	//         OnPropertyChanged("pi4Sum2");
-	//      }
-	//   }
-
-	//   // pi4Result is provided by the MyObjTypeDescriptionProvider
-
-	//   #endregion
-
-	//   #region INotifyPropertyChanged Members
-
-	//   public event PropertyChangedEventHandler PropertyChanged;
-
-	//   #endregion
-	//}
+		public override bool CanResetValue(object component) {
+			return descriptor.CanResetValue(component);
+		}
 
 
-	//public class MyObjTypeDescriptionProvider : TypeDescriptionProvider {
-	//   private TypeDescriptionProvider m_BaseProvider;
-	//   internal PropertyDescriptorCollection m_PropertyCache;
-
-	//   public MyObjTypeDescriptionProvider() {
-	//   }
-
-	//   public MyObjTypeDescriptionProvider(Type db) {
-	//      m_BaseProvider = TypeDescriptor.GetProvider(db);
-	//   }
+		public override Type ComponentType {
+			get { return descriptor.ComponentType; }
+		}
 
 
-	//   public override ICustomTypeDescriptor GetTypeDescriptor(Type objectType, object instance) {
-	//      //return base.GetTypeDescriptor(objectType, instance);
-	//      return new MyObjCustomTypeDescriptor(objectType, this, null, (MyObj)instance);
-	//   }
-	//}
-
-	//public class MyObjCustomTypeDescriptor : CustomTypeDescriptor {
-	//   Type m_ObjType;
-	//   MyObjTypeDescriptionProvider m_Provider;
-	//   MyObj m_MyObj;
-
-	//   public MyObjCustomTypeDescriptor() {
-	//   }
-
-	//   public MyObjCustomTypeDescriptor(Type objType, MyObjTypeDescriptionProvider provider, ICustomTypeDescriptor parentDescriptor, MyObj myObj)
-	//      : base(parentDescriptor) {
-	//      m_ObjType = objType;
-	//      m_Provider = provider;
-	//      m_MyObj = myObj;
-	//   }
-
-	//   public override EventDescriptorCollection GetEvents() {
-	//      return base.GetEvents();
-	//   }
-
-	//   public override EventDescriptorCollection GetEvents(Attribute[] attributes) {
-	//      return base.GetEvents(attributes);
-	//   }
-
-	//   public override PropertyDescriptorCollection GetProperties() {
-	//      return GetProperties(null);
-	//   }
-
-	//   public override PropertyDescriptorCollection GetProperties(Attribute[] attributes) {
-	//      if (m_Provider.m_PropertyCache != null) {
-	//         // Return the cached property descriptors
-	//         return m_Provider.m_PropertyCache;
-	//      }
-	//      else {
-	//         // Create the property descriptors
-	//         m_Provider.m_PropertyCache = new PropertyDescriptorCollection(null);
-
-	//         foreach (PropertyInfo info in typeof(MyObj).GetProperties()) {
-	//            // Hier wirst du dir die bereits bestehenden PropertyDescriptoren holen oder bauen müssen.
-	//         }
-
-	//         // Add my custom pi4Result property
-	//         ResultPropertyDescriptor propDesc = new ResultPropertyDescriptor("pi4Result", null, m_MyObj);
-	//         m_Provider.m_PropertyCache.Add(propDesc);
-	//      }
-
-	//      return m_Provider.m_PropertyCache;
-	//   }
-
-	//   public override object GetPropertyOwner(PropertyDescriptor pd) {
-	//      return base.GetPropertyOwner(pd);
-	//   }
-	//}
-
-	//// This PropertyDescriptor provides the pi4Result property which is added to MyObj
-	//public class ResultPropertyDescriptor : PropertyDescriptor {
-	//   private MyObj m_MyObj;
+		public override object GetValue(object component) {
+			return descriptor.GetValue(component);
+		}
 
 
-	//   public ResultPropertyDescriptor(string projectName, Attribute[] attributes, MyObj myObj)
-	//      : base(projectName, attributes) {
-	//      m_MyObj = myObj;
-	//   }
+		public override void SetValue(object component, object value) {
+			if (permissionAttr != null) {
+				if (controller.Project == null) throw new InvalidOperationException("PropertyController.Project is not set.");
+				if (controller.Project.SecurityManager == null) throw new InvalidOperationException("PropertyController.Project.SecurityManager is not set.");
+				if (!controller.Project.SecurityManager.IsGranted(permissionAttr.Permission)) {
+					controller.CancelSetProperty();
+					throw new NShapeSecurityException(permissionAttr.Permission);
+				}
+			}
+			controller.SetPropertyValue(component, descriptor.Name, descriptor.GetValue(component), value);
+		}
 
-	//   public override bool CanResetValue(object component) {
-	//      return false;
-	//   }
 
-	//   public override Type ComponentType {
-	//      get { return typeof(MyObj); }
-	//   }
+		public override bool IsReadOnly {
+			get { return descriptor.IsReadOnly; }
+		}
 
-	//   public override object GetValue(object component) {
-	//      MyObj comp = (MyObj)component;
-	//      return comp.pi4Sum1 + comp.pi4Sum2;
-	//   }
 
-	//   public override bool IsReadOnly {
-	//      get { return true; }
-	//   }
+		public override Type PropertyType {
+			get { return descriptor.PropertyType; }
+		}
 
-	//   public override Type MappingPropertyType {
-	//      get { return typeof(int); }
-	//   }
 
-	//   public override void ResetValue(object component) {
+		public override void ResetValue(object component) {
+			descriptor.ResetValue(component);
+		}
 
-	//   }
 
-	//   public override void SetFloat(object component, object value) {
+		public override bool ShouldSerializeValue(object component) {
+			return descriptor.ShouldSerializeValue(component);
+		}
 
-	//   }
 
-	//   public override bool ShouldSerializeValue(object component) {
-	//      return false;
-	//   }
-	//}
-	#endregion
+		private void Construct(IPropertyController controller, PropertyDescriptor descriptor) {
+			if (controller == null) throw new ArgumentNullException("controller");
+			if (descriptor == null) throw new ArgumentNullException("descriptor");
+			this.controller = controller;
+			this.descriptor = descriptor;
+			foreach (Attribute attr in descriptor.Attributes) {
+				if (attr is RequiredPermissionAttribute) {
+					permissionAttr = (RequiredPermissionAttribute)attr;
+					break;
+				}
+			}
+		}
+
+
+		IPropertyController controller = null;
+		PropertyDescriptor descriptor = null;
+		RequiredPermissionAttribute permissionAttr = null;
+	}
+
 }

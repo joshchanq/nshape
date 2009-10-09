@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -30,7 +30,7 @@ namespace Dataweb.NShape {
 	/// <summary>
 	/// Describes export image formats.
 	/// </summary>
-	public enum nShapeImageFormat {
+	public enum ImageFileFormat {
 		Bmp,
 		Emf,
 		Gif,
@@ -50,34 +50,34 @@ namespace Dataweb.NShape {
 	[Flags]
 	public enum LayerIds {
 		None = 0x0,
-		Layer01 = 0x1,
-		Layer02 = 0x2,
-		Layer03 = 0x4,
-		Layer04 = 0x8,
-		Layer05 = 0x10,
-		Layer06 = 0x20,
-		Layer07 = 0x40,
-		Layer08 = 0x80,
-		Layer09 = 0x100,
-		Layer10 = 0x200,
-		Layer11 = 0x400,
-		Layer12 = 0x800,
-		Layer13 = 0x1000,
-		Layer14 = 0x2000,
-		Layer15 = 0x4000,
-		Layer16 = 0x8000,
-		Layer17 = 0x10000,
-		Layer18 = 0x20000,
-		Layer19 = 0x40000,
-		Layer20 = 0x80000,
-		Layer21 = 0x100000,
-		Layer22 = 0x200000,
-		Layer23 = 0x400000,
-		Layer24 = 0x800000,
-		Layer25 = 0x1000000,
-		Layer26 = 0x2000000,
-		Layer27 = 0x4000000,
-		Layer28 = 0x8000000,
+		Layer01 = 0x00000001,
+		Layer02 = 0x00000002,
+		Layer03 = 0x00000004,
+		Layer04 = 0x00000008,
+		Layer05 = 0x00000010,
+		Layer06 = 0x00000020,
+		Layer07 = 0x00000040,
+		Layer08 = 0x00000080,
+		Layer09 = 0x00000100,
+		Layer10 = 0x00000200,
+		Layer11 = 0x00000400,
+		Layer12 = 0x00000800,
+		Layer13 = 0x00001000,
+		Layer14 = 0x00002000,
+		Layer15 = 0x00004000,
+		Layer16 = 0x00008000,
+		Layer17 = 0x00010000,
+		Layer18 = 0x00020000,
+		Layer19 = 0x00040000,
+		Layer20 = 0x00080000,
+		Layer21 = 0x00100000,
+		Layer22 = 0x00200000,
+		Layer23 = 0x00400000,
+		Layer24 = 0x00800000,
+		Layer25 = 0x01000000,
+		Layer26 = 0x02000000,
+		Layer27 = 0x04000000,
+		Layer28 = 0x08000000,
 		Layer29 = 0x10000000,
 		Layer30 = 0x20000000,
 		Layer31 = 0x40000000,
@@ -89,6 +89,7 @@ namespace Dataweb.NShape {
 	/// Groups shapes.
 	/// </summary>
 	/// <status>reviewed</status>
+	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public class Layer {
 
 		public Layer(string name) {
@@ -102,12 +103,14 @@ namespace Dataweb.NShape {
 		}
 
 
+		[RequiredPermission(Permission.ModifyData)]
 		public string Name {
 			get { return name; }
 			internal set { name = value; }
 		}
 
 
+		[RequiredPermission(Permission.Present)]
 		public string Title {
 			get {
 				if (title == string.Empty) return name;
@@ -121,6 +124,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		[RequiredPermission(Permission.Present)]
 		public int LowerZoomThreshold {
 			get { return lowerZoomThreshold; }
 			set {
@@ -130,6 +134,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		[RequiredPermission(Permission.Present)]
 		public int UpperZoomThreshold {
 			get { return upperZoomThreshold; }
 			set {
@@ -198,7 +203,7 @@ namespace Dataweb.NShape {
 		public Layer GetLayer(LayerIds layerId) {
 			int layerBit = GetLowestLayerBit(layerId);
 			if (layerBit == -1)
-				throw new nShapeException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
+				throw new NShapeException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
 			return layers[layerBit];
 		}
 
@@ -591,6 +596,7 @@ namespace Dataweb.NShape {
 	/// <summary>
 	/// Displays shapes in layers.
 	/// </summary>
+	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public sealed class Diagram : IEntity {
 
 		public Diagram(string name) {
@@ -609,8 +615,9 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Culture invariant name.
 		/// </summary>
-		[Category("Identification"),
-		Description("The name of the diagram.")]
+		[Category("Identification")]
+		[Description("The name of the diagram.")]
+		[RequiredPermission(Permission.ModifyData)]
 		public string Name {
 			get { return name; }
 			set { name = value ?? string.Empty; }
@@ -620,8 +627,9 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Culture depending title.
 		/// </summary>
-		[Category("Identification"),
-		Description("The displayed text of the diagram.")]
+		[Category("Identification")]
+		[Description("The displayed text of the diagram.")]
+		[RequiredPermission(Permission.Present)]
 		public string Title {
 			get { return title; }
 			set { title = value; }
@@ -631,8 +639,9 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Width of diagram in pixels.
 		/// </summary>
-		[Category("Layout"),
-		Description("The width of the diagram.")]
+		[Category("Layout")]
+		[Description("The width of the diagram.")]
+		[RequiredPermission(Permission.Layout)]
 		public int Width {
 			get { return size.Width; }
 			set {
@@ -649,8 +658,9 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Height of diagram in pixels.
 		/// </summary>
-		[Category("Layout"),
-		Description("The height of the diagram.")]
+		[Category("Layout")]
+		[Description("The height of the diagram.")]
+		[RequiredPermission(Permission.Layout)]
 		public int Height {
 			get { return size.Height; }
 			set {
@@ -683,8 +693,9 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Background color of the diagram.
 		/// </summary>
-		[Category("Appearance"),
-		Description("The background color of the diagram.")]
+		[Category("Appearance")]
+		[Description("The background color of the diagram.")]
+		[RequiredPermission(Permission.Present)]
 		public Color BackgroundColor {
 			get { return backColor; }
 			set { 
@@ -704,6 +715,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("The second color of the diagram's color gradient.")]
+		[RequiredPermission(Permission.Present)]
 		public Color BackgroundGradientColor {
 			get { return targetColor; }
 			set { 
@@ -723,7 +735,8 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("The background image of the diagram.")]
-		[Editor("Dataweb.nShape.WinFormsUI.nShapeNamedImageEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+		[RequiredPermission(Permission.Present)]
 		public NamedImage BackgroundImage {
 			get { return backImage; }
 			set {
@@ -737,9 +750,10 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Image layout of background image.
 		/// </summary>
-		[Category("Appearance"),
-		Description("The display mode of the diagram's background image.")]
-		public nShapeImageLayout BackgroundImageLayout {
+		[Category("Appearance")]
+		[Description("The display mode of the diagram's background image.")]
+		[RequiredPermission(Permission.Present)]
+		public ImageLayoutMode BackgroundImageLayout {
 			get { return imageLayout; }
 			set { 
 				imageLayout = value;
@@ -749,8 +763,9 @@ namespace Dataweb.NShape {
 		}
 
 
-		[Category("Appearance"),
-		Description("Gamma correction for the diagram's background image.")]
+		[Category("Appearance")]
+		[Description("Gamma correction for the diagram's background image.")]
+		[RequiredPermission(Permission.Present)]
 		public float BackgroundImageGamma {
 			get { return imageGamma; }
 			set {
@@ -762,8 +777,9 @@ namespace Dataweb.NShape {
 		}
 
 
-		[Category("Appearance"),
-		Description("Specifies if the diagram's background image is drawn as gray scale image instead.")]
+		[Category("Appearance")]
+		[Description("Specifies if the diagram's background image is drawn as gray scale image instead.")]
+		[RequiredPermission(Permission.Present)]
 		public bool BackgroundImageGrayScale {
 			get { return imageGrayScale; }
 			set {
@@ -774,8 +790,9 @@ namespace Dataweb.NShape {
 		}
 
 
-		[Category("Appearance"),
-		Description("Specifies the transparency in percentage for the diagram's background image.")]
+		[Category("Appearance")]
+		[Description("Specifies the transparency in percentage for the diagram's background image.")]
+		[RequiredPermission(Permission.Present)]
 		public byte BackgroundImageTransparency {
 			get { return imageTransparency; }
 			set {
@@ -787,8 +804,9 @@ namespace Dataweb.NShape {
 		}
 
 
-		[Category("Appearance"),
-		Description("Specifies the transparent color for the diagram's background image.")]
+		[Category("Appearance")]
+		[Description("Specifies the transparent color for the diagram's background image.")]
+		[RequiredPermission(Permission.Present)]
 		public Color BackgroundImageTransparentColor {
 			get { return imageTransparentColor; }
 			set {
@@ -816,23 +834,9 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Specifies whether the diagram is to render in high quality.
-		/// </summary>
-		public bool HighQualityRendering {
-			get { return highQualityRendering; }
-			set {
-				highQualityRendering = value;
-				if (colorBrush != null) {
-					colorBrush.Dispose();
-					colorBrush = null;
-				}
-			}
-		}
-		
-		
-		/// <summary>
 		/// Provides access to the diagram layers.
 		/// </summary>
+		[Browsable(false)]
 		public ILayerCollection Layers {
 		   get { return layers; }
 		}
@@ -841,6 +845,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Provides access to the diagram shapes.
 		/// </summary>
+		[Browsable(false)]
 		public IShapeCollection Shapes {
 			get { return diagramShapes; }
 		}
@@ -898,7 +903,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Exports the contents of the diagram to an image of the given format.
 		/// </summary>
-		public Image CreateImage(nShapeImageFormat imageFormat) {
+		public Image CreateImage(ImageFileFormat imageFormat) {
 			return CreateImage(imageFormat, null, 0, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -907,7 +912,7 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to export the whole diagram area.
 		/// </summary>
-		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes) {
+		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes) {
 			return CreateImage(imageFormat, shapes, 0, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -916,7 +921,7 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, bool withBackground) {
+		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, bool withBackground) {
 			return CreateImage(imageFormat, shapes, 0, withBackground, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -925,7 +930,7 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, int margin) {
+		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, int margin) {
 			return CreateImage(imageFormat, shapes, margin, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
 		}
 
@@ -934,7 +939,7 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes (plus margin on each side) to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor) {
+		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor) {
 			return CreateImage(imageFormat, shapes, margin, withBackground, backgroundColor, (int)DisplayService.InfoGraphics.DpiY);
 		}
 		
@@ -943,7 +948,7 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes (plus margin on each side) to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
-		public Image CreateImage(nShapeImageFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor, int dpi) {
+		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor, int dpi) {
 			Image result = null;
 			
 			// get bounding rectangle around the given shapes
@@ -953,7 +958,6 @@ namespace Dataweb.NShape {
 				imageBounds.Width = Width;
 				imageBounds.Height = Height;
 			} else {
-				if (margin == 0) margin = 1;
 				int left, top, right, bottom;
 				left = top = int.MaxValue;
 				right = bottom = int.MinValue;
@@ -967,8 +971,10 @@ namespace Dataweb.NShape {
 					if (boundingRect.Bottom > bottom) bottom = boundingRect.Bottom;
 				}
 				imageBounds = Rectangle.FromLTRB(left, top, right, bottom);
-				imageBounds.Inflate(margin, margin);
 			}
+			imageBounds.Inflate(margin, margin);
+			imageBounds.Width += 1;
+			imageBounds.Height += 1;
 
 			bool originalQualitySetting = this.HighQualityRendering;
 			HighQualityRendering = true;
@@ -976,29 +982,29 @@ namespace Dataweb.NShape {
 
 			float scaleX = 1, scaleY = 1;
 			switch (imageFormat) {
-				case nShapeImageFormat.Svg:
+				case ImageFileFormat.Svg:
 					throw new NotImplementedException("Not yet implemented.");
 
-				case nShapeImageFormat.Emf:
-				case nShapeImageFormat.EmfPlus:
+				case ImageFileFormat.Emf:
+				case ImageFileFormat.EmfPlus:
 					// Create MetaFile and graphics context
 					IntPtr hdc = DisplayService.InfoGraphics.GetHdc();
 					try {
 						Rectangle bounds = Rectangle.Empty;
 						bounds.Size = imageBounds.Size;
 						result = new Metafile(hdc, bounds, MetafileFrameUnit.Pixel,
-							imageFormat == nShapeImageFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
+							imageFormat == ImageFileFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
 							Name);
 					} finally {
 						DisplayService.InfoGraphics.ReleaseHdc(hdc);
 					}
 					break;
 
-				case nShapeImageFormat.Bmp:
-				case nShapeImageFormat.Gif:
-				case nShapeImageFormat.Jpeg:
-				case nShapeImageFormat.Png:
-				case nShapeImageFormat.Tiff:
+				case ImageFileFormat.Bmp:
+				case ImageFileFormat.Gif:
+				case ImageFileFormat.Jpeg:
+				case ImageFileFormat.Png:
+				case ImageFileFormat.Tiff:
 					if (dpi > 0 && dpi != DisplayService.InfoGraphics.DpiX && dpi != DisplayService.InfoGraphics.DpiY) {
 						scaleX = dpi / DisplayService.InfoGraphics.DpiX;
 						scaleY = dpi / DisplayService.InfoGraphics.DpiY;
@@ -1014,18 +1020,18 @@ namespace Dataweb.NShape {
 					break;
 
 				default:
-					throw new nShapeUnsupportedValueException(typeof(nShapeImageFormat), imageFormat);
+					throw new NShapeUnsupportedValueException(typeof(ImageFileFormat), imageFormat);
 			}
 
 			// Draw diagram
 			using (Graphics gfx = Graphics.FromImage(result)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
 
 				// Fill background with background color
 				if (backgroundColor.A < 255) {
 					// For image formats that do not support transparency, fill background with the RGB part of 
 					// the given backgropund color
-					if (imageFormat == nShapeImageFormat.Bmp || imageFormat == nShapeImageFormat.Jpeg)
+					if (imageFormat == ImageFileFormat.Bmp || imageFormat == ImageFileFormat.Jpeg)
 						gfx.Clear(Color.FromArgb(255, backgroundColor));
 					else if (backgroundColor.A > 0) gfx.Clear(backgroundColor);
 					// Skip filling background for meta files if transparency is 100%: 
@@ -1142,6 +1148,21 @@ namespace Dataweb.NShape {
 		#endregion
 
 
+		/// <summary>
+		/// Specifies whether the diagram is to render in high quality.
+		/// </summary>
+		public bool HighQualityRendering {
+			get { return highQualityRendering; }
+			set {
+				highQualityRendering = value;
+				if (colorBrush != null) {
+					colorBrush.Dispose();
+					colorBrush = null;
+				}
+			}
+		}
+		
+		
 		internal void NotifyBoundsChanged() {
 			if (displayService != null) displayService.NotifyBoundsChanged();
 		}
@@ -1197,7 +1218,7 @@ namespace Dataweb.NShape {
 			targetColor = Color.FromArgb(reader.ReadInt32());
 			backImage.Name = reader.ReadString();
 			backImage.Image = reader.ReadImage();
-			imageLayout = (nShapeImageLayout)reader.ReadByte();
+			imageLayout = (ImageLayoutMode)reader.ReadByte();
 			imageGamma = reader.ReadFloat();
 			imageTransparency = reader.ReadByte();
 			imageGrayScale = reader.ReadBool();
@@ -1327,7 +1348,7 @@ namespace Dataweb.NShape {
 		private bool highQualityRendering = true;
 		// Background image stuff
 		private NamedImage backImage = new NamedImage();
-		private nShapeImageLayout imageLayout;
+		private ImageLayoutMode imageLayout;
 		private float imageGamma = 1.0f;
 		private byte imageTransparency = 0;
 		private bool imageGrayScale = false;

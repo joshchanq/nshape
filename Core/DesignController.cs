@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -18,6 +18,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
 using Dataweb.NShape.Advanced;
+using System.Collections;
 
 
 namespace Dataweb.NShape.Controllers {
@@ -113,6 +114,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		[Category("NShape")]
 		public Project Project {
 			get { return project; }
 			set {
@@ -123,6 +125,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		[Browsable(false)]
 		public IEnumerable<Design> Designs {
 			get {
 				if (project == null) return EmptyEnumerator<Design>.Empty;
@@ -146,8 +149,7 @@ namespace Dataweb.NShape.Controllers {
 			Design design = GetOwnerDesign(style);
 			if (design != selectedDesign) return false;
 			// check if style is a standard style
-			if (design.IsStandardStyle(style))
-				return false;
+			if (design.IsStandardStyle(style)) return false;
 			// check if the deleted style is used by other styles 
 			// only ColorStyles are used by other styles
 			foreach (IStyle s in GetOwnerStyles(selectedDesign, style))
@@ -211,7 +213,7 @@ namespace Dataweb.NShape.Controllers {
 					style = new ParagraphStyle(GetNewStyleName(design.ParagraphStyles));
 					break;
 				//case StyleCategory.ShapeStyle: style = new ShapeStyle(GetNewStyleName(design.ShapeStyles)); break;
-				default: throw new nShapeUnsupportedValueException(typeof(StyleCategory), category);
+				default: throw new NShapeUnsupportedValueException(typeof(StyleCategory), category);
 			}
 			ICommand cmd = new CreateStyleCommand(design, style);
 			project.ExecuteCommand(cmd);
@@ -222,25 +224,12 @@ namespace Dataweb.NShape.Controllers {
 			if (design == null) throw new ArgumentNullException("design");
 			if (style == null) throw new ArgumentNullException("style");
 			PropertyInfo propertyInfo = style.GetType().GetProperty(propertyName);
-			if (propertyInfo == null) throw new nShapeException("Property {0} not found in Type {1}.", propertyName, style.GetType().Name);
+			if (propertyInfo == null) throw new NShapeException("Property {0} not found in Type {1}.", propertyName, style.GetType().Name);
 
 			bool performPropertyChange = true;
-			if (string.Compare(propertyName, "Name", true) == 0) {
-				if (style is CapStyle && StyleNameExists(design.CapStyles, (string)newValue))
-					performPropertyChange = false;
-				else if (style is CharacterStyle && StyleNameExists(design.CharacterStyles, (string)newValue))
-					performPropertyChange = false;
-				else if (style is ColorStyle && StyleNameExists(design.ColorStyles, (string)newValue))
-					performPropertyChange = false;
-				else if (style is FillStyle && StyleNameExists(design.FillStyles, (string)newValue))
-					performPropertyChange = false;
-				else if (style is LineStyle && StyleNameExists(design.LineStyles, (string)newValue))
-					performPropertyChange = false;
-				else if (style is ParagraphStyle && StyleNameExists(design.ParagraphStyles, (string)newValue))
-					performPropertyChange = false;
-				//else if (style is ShapeStyle && StyleNameExists(design.ShapeStyles, (string)newValue))
-				//   performPropertyChange = false;
-			}
+			if (string.Compare(propertyName, "Name", true) == 0)
+				performPropertyChange = StyleNameExists(design, style, (string)newValue);
+			
 			if (performPropertyChange) {
 				ICommand cmd = new StylePropertySetCommand(design, style, propertyInfo, oldValue, newValue);
 				project.ExecuteCommand(cmd);
@@ -264,7 +253,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 		#endregion
-
+		
 
 		#region [Private] Methods
 
@@ -316,10 +305,10 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		private bool StyleNameExists<T>(StyleCollection<T> styleCollection, string styleName)
-			where T : class, IStyle {
-			if (styleCollection == null) throw new ArgumentNullException("styleCollection");
-			return styleCollection.Contains(styleName);
+		private bool StyleNameExists(Design design, IStyle style, string newName) {
+			if (design == null) throw new ArgumentNullException("design");
+			if (style == null) throw new ArgumentNullException("style");
+			return (design.FindStyleByName(newName, style.GetType()) != null);
 		}
 
 		#endregion

@@ -7,8 +7,8 @@
     <ProjectGuid>{32FE8B99-4091-4B3B-95EF-53976217B8EB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>nShapeTest</RootNamespace>
-    <AssemblyName>nShapeTest</AssemblyName>
+    <RootNamespace>NShapeTest</RootNamespace>
+    <AssemblyName>NShapeTest</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Binaries\Debug\</OutputPath>
+    <OutputPath>..\Demo Programs\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -26,7 +26,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Binaries\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -58,9 +58,9 @@
     <Shadow Include="Test References\Dataweb.nShape.Core.accessor" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\nShape.csproj">
+    <ProjectReference Include="..\Core\NShape.csproj">
       <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>nShape</Name>
+      <Name>NShape</Name>
       <Private>False</Private>
     </ProjectReference>
     <ProjectReference Include="..\ElectricalShapes\ElectricalShapes.csproj">

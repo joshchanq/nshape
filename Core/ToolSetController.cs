@@ -1,24 +1,23 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Reflection;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -27,7 +26,7 @@ namespace Dataweb.NShape.Controllers {
 	/// <summary>
 	/// Controller class providing access to the templates of a project.
 	/// </summary>
-	public class ToolSetController : Component, IDisplayService, IPropertyController, IDisposable {
+	public class ToolSetController : Component, IDisplayService, IDisposable {
 
 		public ToolSetController() {
 			infoGraphics = Graphics.FromHwnd(IntPtr.Zero);
@@ -97,41 +96,6 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		#region IPropertyController Members
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsSet;
-
-		public event EventHandler<PropertyControllerPropertyChangedEventArgs> PropertyChanged;
-
-		public event EventHandler<PropertyControllerEventArgs> RefreshObjects;
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsDeleted;
-
-		public event EventHandler ProjectClosing;
-
-
-		public bool ReadOnly {
-			get { return (diagramSetController != null) ? diagramSetController.ReadOnly : true; }
-		}
-
-
-		public void SetObject(int pageIndex, object selectedObject) {
-			diagramSetController.SetObject(pageIndex, selectedObject);
-		}
-
-
-		public void SetObjects(int pageIndex, IEnumerable selectedObjects) {
-			diagramSetController.SetObjects(pageIndex, selectedObjects);
-		}
-
-
-		public void SelectedObjectsChanged(int pageIndex, IEnumerable<object> modifiedObjects, PropertyInfo propertyInfo, object[] oldValues, object newValue) {
-			diagramSetController.SelectedObjectsChanged(pageIndex, modifiedObjects, propertyInfo, oldValues, newValue);
-		}
-
-		#endregion
-
-
 		#region [Public] Events
 
 		/// <summary>
@@ -180,16 +144,17 @@ namespace Dataweb.NShape.Controllers {
 		#region [Public] Properties
 
 		/// <summary>
-		/// Specifies the nShape project to which this toolbox belongs. This is 
+		/// Specifies the NShape project to which this toolbox belongs. This is 
 		/// a mandatory property.
 		/// </summary>
-		[Description("Specifies the nShape project to which this toolbox belongs. "
-		+ "This is a mandotory property.")]
+		[Category("NShape")]
+		[Description("Specifies the NShape project to which this toolbox belongs. This is a mandotory property.")]
 		public Project Project {
 			get { return (diagramSetController == null) ? null : diagramSetController.Project; }
 		}
 
 
+		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
 			get { return diagramSetController; }
 			set {
@@ -204,6 +169,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		[Browsable(false)]
 		public IEnumerable<Tool> Tools {
 			get { return tools; }
 		}
@@ -247,19 +213,19 @@ namespace Dataweb.NShape.Controllers {
 		/// <param name="categoryTitle">Title of the toolbox category where the tool is inserted</param>
 		public void CreateTemplateTool(Template template, string categoryTitle) {
 			if (template == null) throw new ArgumentNullException("template");
-			if (FindTool(template) != null)
-				throw new nShapeException(string.Format("A tool for template '{0}' already exisis.", template.Name));
-			Tool tool = null;
-			if (template.Shape is ILinearShape) {
-				if (string.IsNullOrEmpty(categoryTitle))
-					tool = new LinearShapeCreationTool(template);
-				else tool = new LinearShapeCreationTool(template, categoryTitle);
-			} else {
-				if (string.IsNullOrEmpty(categoryTitle))
-					tool = new PlanarShapeCreationTool(template);
-				else tool = new PlanarShapeCreationTool(template, categoryTitle);
+			if (FindTool(template) == null) {
+				Tool tool = null;
+				if (template.Shape is ILinearShape) {
+					if (string.IsNullOrEmpty(categoryTitle))
+						tool = new LinearShapeCreationTool(template);
+					else tool = new LinearShapeCreationTool(template, categoryTitle);
+				} else {
+					if (string.IsNullOrEmpty(categoryTitle))
+						tool = new PlanarShapeCreationTool(template);
+					else tool = new PlanarShapeCreationTool(template, categoryTitle);
+				}
+				AddTool(tool);
 			}
-			AddTool(tool);
 		}
 
 
@@ -443,7 +409,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Get actions provided by the toolset controller.
 		/// </summary>
-		public IEnumerable<nShapeAction> GetActions(Tool clickedTool) {
+		public IEnumerable<MenuItemDef> GetActions(Tool clickedTool) {
 			// menu structure:
 			//
 			// Create Template...
@@ -460,32 +426,32 @@ namespace Dataweb.NShape.Controllers {
 
 			isFeasible = true;
 			description = "Create a new Template";
-			yield return new DelegateAction("Create Template...", null, description, isFeasible, Permission.Templates,
+			yield return new DelegateMenuItemDef("Create Template...", null, description, isFeasible, Permission.Templates,
 				(action, project) => OnShowTemplateEditorDialog(new ShowTemplateEditorEventArgs(project)));
 
 			isFeasible = (clickedTool is TemplateTool);
 			description = isFeasible ? string.Format("Edit Template '{0}'", clickedTemplate.Name) :
 				"No template tool selected";
-			yield return new DelegateAction("Edit Template...", null, description, isFeasible, Permission.Templates,
+			yield return new DelegateMenuItemDef("Edit Template...", null, description, isFeasible, Permission.Templates,
 				(action, project) => OnShowTemplateEditorDialog(new ShowTemplateEditorEventArgs(project, clickedTemplate)));
 
 			isFeasible = (clickedTool is TemplateTool);
 			description = isFeasible ? string.Format("Delete Template '{0}'", clickedTemplate.Name) :
 				"No template tool selected";
-			yield return new CommandAction("Delete Template...", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Delete Template...", null, description, isFeasible,
 				isFeasible ? new DeleteTemplateCommand(clickedTemplate) : null);
 
-			yield return new SeparatorAction();
+			yield return new SeparatorMenuItemDef();
 
 			isFeasible = true;
 			description = "Edit the current design or create new designs";
-			yield return new DelegateAction("Show Design Editor...", Properties.Resources.DesignEditorBtn,
+			yield return new DelegateMenuItemDef("Show Design Editor...", Properties.Resources.DesignEditorBtn,
 				description, isFeasible, Permission.Present,
 				(action, project) => OnShowDesignEditorDialog(new EventArgs()));
 
 			isFeasible = true;
 			description = "Load and unload shape and/or model libraries";
-			yield return new DelegateAction("Show Library Manager...", Properties.Resources.LibrariesBtn,
+			yield return new DelegateMenuItemDef("Show Library Manager...", Properties.Resources.LibrariesBtn,
 				description, isFeasible, Permission.Templates,
 				(action, project) => OnShowLibraryManagerDialog(new EventArgs()));
 		}
@@ -598,30 +564,6 @@ namespace Dataweb.NShape.Controllers {
 			}
 		}
 
-
-		//private void TemplateChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs) {
-		//   if (SelectedTool is TemplateTool) {
-		//      List<Template> templates = new List<Template>();
-		//      foreach (object obj in propertyChangedEventArgs.Objects) {
-		//         if (((TemplateTool)SelectedTool).Template.Shape == obj) {
-		//            templates.Add(((TemplateTool)SelectedTool).Template);
-		//         }
-		//      }
-
-		//      // SaveChanges tools
-		//      AggregatedCommand aggCmd = new AggregatedCommand();
-		//      int cnt = templates.Count;
-		//      for (int i = 0; i < cnt; ++i) {
-		//         ICommand cmd = new ShapePropertySetCommand(templates[i].Shape, propertyChangedEventArgs.PropertyInfo, propertyChangedEventArgs.OldValues, propertyChangedEventArgs.NewValue);
-		//         aggCmd.Add(cmd);
-		//      }
-		//      Project.ExecuteCommand(aggCmd);
-
-		//      for (int i = 0; i < cnt; ++i)
-		//         RefreshTool(templates[i]);
-		//   }
-		//}
-
 		#endregion
 
 
@@ -681,24 +623,6 @@ namespace Dataweb.NShape.Controllers {
 				diagramSetController.Project.Repository.TemplateDeleted -= Repository_TemplateDeleted;
 				repositoryInitialized = false;
 			}
-		}
-
-
-		private void RegisterPropertyControllerEvents() {
-			diagramSetController.ObjectsSet += diagramSetController_ObjectsSet;
-			diagramSetController.PropertyChanged += diagramSetController_PropertyChanged;
-			diagramSetController.RefreshObjects += diagramSetController_RefreshObjects;
-			diagramSetController.ProjectClosing += diagramSetController_ProjectClosing;
-			diagramSetController.ObjectsDeleted += diagramSetController_ObjectsDeleted;
-		}
-
-
-		private void UnregisterPropertyControllerEvents() {
-			diagramSetController.ObjectsSet -= diagramSetController_ObjectsSet;
-			diagramSetController.PropertyChanged -= diagramSetController_PropertyChanged;
-			diagramSetController.RefreshObjects -= diagramSetController_RefreshObjects;
-			diagramSetController.ProjectClosing -= diagramSetController_ProjectClosing;
-			diagramSetController.ObjectsDeleted -= diagramSetController_ObjectsDeleted;
 		}
 
 		#endregion
@@ -765,31 +689,6 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		private void diagramSetController_RefreshObjects(object sender, PropertyControllerEventArgs e) {
-			if (RefreshObjects != null) RefreshObjects(this, e);
-		}
-
-
-		private void diagramSetController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
-			if (PropertyChanged != null) PropertyChanged(this, e);
-		}
-
-
-		private void diagramSetController_ObjectsSet(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsSet != null) ObjectsSet(this, e);
-		}
-
-
-		private void diagramSetController_ObjectsDeleted(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsDeleted != null) ObjectsDeleted(this, e);
-		}
-
-
-		private void diagramSetController_ProjectClosing(object sender, EventArgs e) {
-			if (ProjectClosing != null) ProjectClosing(this, e);
-		}
-
-
 		private void Tool_ToolExecuted(object sender, ToolExecutedEventArgs e) {
 			switch (e.EventType) {
 				case ToolResult.Executed:
@@ -799,7 +698,7 @@ namespace Dataweb.NShape.Controllers {
 				case ToolResult.Canceled:
 					if (!selecting) SelectDefaultTool(true);
 					break;
-				default: throw new nShapeUnsupportedValueException(e.EventType);
+				default: throw new NShapeUnsupportedValueException(e.EventType);
 			}
 		}
 
@@ -810,7 +709,7 @@ namespace Dataweb.NShape.Controllers {
 
 		// IDisplayService
 		private Graphics infoGraphics;
-		// Project and PropertyController
+		// Provides the project, receives the selected tool
 		private DiagramSetController diagramSetController;
 
 		// Tools in the tool box

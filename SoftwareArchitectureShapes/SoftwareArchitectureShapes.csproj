@@ -14,13 +14,16 @@
     <OldToolsVersion>2.0</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <ApplicationIcon>Resources\Dataweb.Diagramming.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Dataweb.nShape.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Binaries\Debug\</OutputPath>
+    <OutputPath>..\Demo Programs\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -29,7 +32,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\Binaries\Release\</OutputPath>
+    <OutputPath>..\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -45,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -64,7 +68,6 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\Actor.emf" />
-    <EmbeddedResource Include="Resources\Actor_new.emf" />
     <EmbeddedResource Include="Resources\Monitor.emf" />
     <EmbeddedResource Include="Resources\Monitor_new1.emf" />
     <EmbeddedResource Include="Resources\Monitor_old.emf" />
@@ -74,17 +77,26 @@
     <EmbeddedResource Include="Resources\PC3.emf" />
     <EmbeddedResource Include="Resources\RTU.emf" />
     <EmbeddedResource Include="Resources\Tower.emf" />
-    <EmbeddedResource Include="Resources\Dataweb.Diagramming.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\nShape.csproj">
+    <ProjectReference Include="..\Core\NShape.csproj">
       <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>nShape</Name>
+      <Name>NShape</Name>
     </ProjectReference>
     <ProjectReference Include="..\GeneralShapes\GeneralShapes.csproj">
       <Project>{1272F77E-D926-4310-AE8B-858909B10F0C}</Project>
       <Name>GeneralShapes</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\Dataweb.NShape.ico">
+      <Link>Resources\Dataweb.NShape.ico</Link>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Dataweb.NShape.snk">
+      <Link>Dataweb.NShape.snk</Link>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -121,32 +121,11 @@
   <data name="Actor" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Actor.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Actor_new" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Actor_new.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Dataweb_nShape" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Dataweb.Diagramming.ico;System.Drawing.Icon, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="Monitor" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Monitor.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="Monitor_new1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Monitor_new1.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="Monitor_old" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Monitor_old.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="PC" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PC.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="PC2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PC2.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="PC21" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PC2.wmf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="PC3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PC3.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="RTU" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RTU.emf;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>

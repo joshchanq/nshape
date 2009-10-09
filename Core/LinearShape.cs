@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -75,9 +75,10 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
-	///<summary>
-	///A one-dimensional shape
-	///</summary>
+	/// <summary>
+	/// A one-dimensional shape
+	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class LineShapeBase : ShapeBase, ILinearShape {
 
 		#region Shape Members
@@ -224,9 +225,9 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
-		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			// return actions of base class
-			IEnumerator<nShapeAction> enumerator = GetBaseActions(mouseX, mouseY, range);
+			IEnumerator<MenuItemDef> enumerator = GetBaseActions(mouseX, mouseY, range);
 			while (enumerator.MoveNext()) yield return enumerator.Current;
 
 			ControlPointId clickedPointId = HitTest(mouseX, mouseY, ControlPointCapabilities.All, range);
@@ -239,7 +240,7 @@ namespace Dataweb.NShape.Advanced {
 				&& (clickedPointId == ControlPointId.None || clickedPointId == ControlPointId.Reference)
 				&& (VertexCount < MaxVertexCount);
 			description = "You have to click on the line in order to insert new points";
-			yield return new CommandAction("Insert Point", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Insert Point", null, description, isFeasible,
 				new InsertVertexCommand(this, mouseX, mouseY));
 
 			isFeasible = false;
@@ -255,7 +256,7 @@ namespace Dataweb.NShape.Advanced {
 			if (clickedPointId == ControlPointId.None || clickedPointId == ControlPointId.Reference)
 				description = "No control point was clicked";
 			else description = "Glue control points may not be removed.";
-			yield return new CommandAction("Remove Point", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Remove Point", null, description, isFeasible,
 				new RemoveVertexCommand(this, clickedPointId));
 		}
 
@@ -869,8 +870,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private IEnumerator<nShapeAction> GetBaseActions(int mouseX, int mouseY, int range) {
-			return base.GetActions(mouseX, mouseY, range).GetEnumerator();
+		private IEnumerator<MenuItemDef> GetBaseActions(int mouseX, int mouseY, int range) {
+			return base.GetMenuItemDefs(mouseX, mouseY, range).GetEnumerator();
 		}
 
 
@@ -977,6 +978,9 @@ namespace Dataweb.NShape.Advanced {
 		
 		#region Fields
 
+		protected const int PropertyIdStartCapStyle = 7;
+		protected const int PropertyIdEndCapStyle = 8;
+	
 		private static string[] pointAttrNames = new string[] { "PointIndex", "PointId", "X", "Y" };
 		private static Type[] pointAttrTypes = new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) };
 
@@ -1007,6 +1011,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Abstract base class for polylines.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class PolylineBase : LineShapeBase {
 
 		#region Shape Members
@@ -1073,7 +1078,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override IEnumerable<Point> CalculateCells(int cellSize) {
+		protected internal override IEnumerable<Point> CalculateCells(int cellSize) {
 			// The outer bounding rectangle (including the control points) is required here
 			Point startCell = Point.Empty;
 			Point endCell = Point.Empty;
@@ -1389,7 +1394,7 @@ namespace Dataweb.NShape.Advanced {
 					return result;
 				}
 			}
-			if (result == Geometry.InvalidPoint) throw new nShapeException("The given Point is not part of the line shape.");
+			if (result == Geometry.InvalidPoint) throw new NShapeException("The given Point is not part of the line shape.");
 			return result;
 		}
 
@@ -1437,7 +1442,7 @@ namespace Dataweb.NShape.Advanced {
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			if (image == null) throw new ArgumentNullException("image");
 			using (Graphics g = Graphics.FromImage(image)) {
-				GdiHelpers.ApplyGraphicsSettings(g, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(g, RenderingQuality.MaximumQuality);
 				g.Clear(transparentColor);
 
 				int startCapSize = 0;
@@ -1519,7 +1524,7 @@ namespace Dataweb.NShape.Advanced {
 					break;
 				}
 			}
-			if (ptId == ControlPointId.None) throw new nShapeException("Cannot add vertex {0}.", new Point(x, y));
+			if (ptId == ControlPointId.None) throw new NShapeException("Cannot add vertex {0}.", new Point(x, y));
 			Invalidate();
 			return ptId;
 		}
@@ -1590,12 +1595,31 @@ namespace Dataweb.NShape.Advanced {
 
 
 		protected override bool MovePointByCore(ControlPointId pointId, int deltaX, int deltaY, ResizeModifiers modifiers) {
+			Rectangle boundsBefore = Rectangle.Empty;
+			if ((modifiers & ResizeModifiers.MaintainAspect) == ResizeModifiers.MaintainAspect)
+				boundsBefore = GetBoundingRectangle(true);
+			
 			int vertexIdx = GetControlPointIndex(pointId);
 			Point p = vertices[vertexIdx];
 			p.Offset(deltaX, deltaY);
 			vertices[vertexIdx] = p;
 
-			// ToDo: Scale line if MainTainAspect flag is set and start- or endpoint was moved
+			// Scale line if MainTainAspect flag is set and start- or endpoint was moved
+			if ((modifiers & ResizeModifiers.MaintainAspect) == ResizeModifiers.MaintainAspect
+				&& (IsFirstVertex(pointId) || IsLastVertex(pointId))) {
+				// ToDo: Improve line scaling
+					if (deltaX != 0 || deltaY != 0) {
+					   int dx = (int)Math.Round(deltaX / (float)(VertexCount - 1));
+					   int dy = (int)Math.Round(deltaY / (float)(VertexCount - 1));
+					   // the first and the last points are glue points, so move only the points between
+						for (int i = VertexCount - 2; i > 0; --i) {
+							p = vertices[i];
+							p.Offset(dx, dy);
+							vertices[i] = p;
+					   }
+				}
+				InvalidateDrawCache();
+			}
 
 			ControlPointId id;
 			id = GetPreviousVertexId(pointId);
@@ -1605,65 +1629,6 @@ namespace Dataweb.NShape.Advanced {
 			if (id != ControlPointId.None && HasControlPointCapability(id, ControlPointCapabilities.Glue)) 
 				GluePointNeighbourMoved(pointId, id);
 			return true;
-
-			////Rectangle boundsBefore = GetBoundingRectangle(true);
-			//int pointIndex = GetControlPointIndex(pointId);
-			//Point p = vertices[pointIndex];
-			//p.Offset(deltaX, deltaY);
-			//vertices[pointIndex] = p;
-			//base.MovePointByCore(connectionPointId, deltaX, deltaY, modifiers);
-			//Rectangle boundsAfter = GetBoundingRectangle(true);
-
-			//if ((modifiers & ResizeModifiers.MaintainAspect) == ResizeModifiers.MaintainAspect) {
-			//   int maxIdx;
-			//   if (IsStartPoint(pointId)) {
-			//      // neuer Ansatz:
-			//      //maxIdx = vertices.Count - 1;
-			//      //float scale = Geometry.CalcScaleFactor(boundsBefore.Width, boundsBefore.Height, boundsAfter.Width, boundsAfter.Height);
-			//      //for (int i = 0; i < maxIdx; ++i ) {
-			//      //   vertices[i + 1] = Geometry.VectorLinearInterpolation(vertices[i], vertices[i + 1], scale);
-			//      //}
-
-
-
-			//      //for (int i = 1; i < shapePoints.Length - 1; ++i) {
-			//      //   float ratioX = shapePoints[i].X / (float)boundsBefore.right;
-			//      //   float ratioY = shapePoints[i].Y / (float)boundsBefore.bottom;
-			//      //   float x = (boundsAfter.X + (boundsAfter.Width * ratioX)) - (boundsBefore.X + (boundsBefore.Width * ratioX));
-			//      //   float y = (boundsAfter.Y + (boundsAfter.Height * ratioY)) - (boundsBefore.Y + (boundsBefore.Height * ratioY));
-			//      //   shapePoints[i].X += (int)Math.Round(x);
-			//      //   shapePoints[i].Y += (int)Math.Round(y);
-			//      //}
-
-			//      //// Die einfache Lösung:
-			//      //if (deltaX != 0 || deltaY != 0) {
-			//      //   double dx = deltaX / (double)(VertexCount - 1);
-			//      //   double dy = deltaY / (double)(VertexCount - 1);
-			//      //   // the first and the last points are glue points, so move only the points between
-			//      //   for (int i = 1; i < shapePoints.Length - 1; ++i) {
-			//      //      shapePoints[i].X = (int)Math.Round(shapePoints[i].X + dx);
-			//      //      shapePoints[i].Y = (int)Math.Round(shapePoints[i].Y + dy);
-			//      //   }
-			//      //   InvalidateDrawCache();
-			//      //}
-			//   } else if (IsEndPoint(pointId)) {
-			//   }
-			//   ControlPointsHaveMoved();
-			//} else {
-			//   if (pointIndex < 2) {
-			//      InvalidateDrawCache();
-			//   }
-			//   if (pointIndex > VertexCount - 3) {
-			//      InvalidateDrawCache();
-			//   }
-			//   //if (pointIndex != 0 && pointIndex != shapePoints.Length - 1)
-			//   //   ControlPointHasMoved(connectionPointId);
-			//   //ControlPointHasMoved(ControlPointId.Reference);
-			//}
-
-			//// ToDo: Hier etwas schlaueres überlegen: base.MoveControlPointBy ruft immer Invalidate auf, invalidiert also alle segmente obwohl man eigentlich nur die an den Punkt angrenzenden Segmente invalidieren müsste
-			////InvalidatePointSegments(connectionPointId);
-			//return base.MovePointByCore(pointId, deltaX, deltaY, modifiers);
 		}
 
 
@@ -1814,6 +1779,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Abstract base class for circular arcs.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class CircularArcBase : LineShapeBase {
 
 		#region Shape Members
@@ -1969,14 +1935,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override IEnumerable<Point> CalculateCells(int cellSize) {
+		protected internal override IEnumerable<Point> CalculateCells(int cellSize) {
 			return base.CalculateCells(cellSize);
 		}
 
 
-		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			// return actions of base class
-			IEnumerator<nShapeAction> enumerator = GetBaseActions(mouseX, mouseY, range);
+			IEnumerator<MenuItemDef> enumerator = GetBaseActions(mouseX, mouseY, range);
 			while (enumerator.MoveNext()) yield return enumerator.Current;
 			// return own actions
 			ControlPointId clickedPointId = FindNearestControlPoint(mouseX, mouseY, range, ControlPointCapabilities.Resize);
@@ -1986,14 +1952,14 @@ namespace Dataweb.NShape.Advanced {
 
 			isFeasible = (clickedPointId == ControlPointId.None || clickedPointId == ControlPointId.Reference) && ContainsPoint(mouseX, mouseY) && VertexCount < 3;
 			description = "You have to click on the line in order to insert new points";
-			yield return new CommandAction("Insert Point", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Insert Point", null, description, isFeasible,
 				new InsertVertexCommand(this, mouseX, mouseY));
 
 			isFeasible = !HasControlPointCapability(clickedPointId, ControlPointCapabilities.Glue) && VertexCount > 2;
 			if (clickedPointId == ControlPointId.None || clickedPointId == ControlPointId.Reference)
 				description = "No control point was clicked";
 			else description = "Glue control points may not be removed.";
-			yield return new CommandAction("RemoveRange Point", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Remove Point", null, description, isFeasible,
 				new RemoveVertexCommand(this, range));
 		}
 
@@ -2002,23 +1968,26 @@ namespace Dataweb.NShape.Advanced {
 			if (IsLine) {
 				if (Geometry.DistancePointLine(x, y, StartPoint.X, StartPoint.Y, EndPoint.X, EndPoint.Y, true) <= range) {
 					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability)
-						&& !(Geometry.DistancePointPoint(x, y, vertices[0].X, vertices[0].Y) <= range)
-						&& !(Geometry.DistancePointPoint(x, y, vertices[1].X, vertices[1].Y) <= range))
-						return ControlPointId.Reference;
+							&& !(Geometry.DistancePointPoint(x, y, vertices[0].X, vertices[0].Y) <= range)
+							&& !(Geometry.DistancePointPoint(x, y, vertices[1].X, vertices[1].Y) <= range)
+							&& IsConnectionPointEnabled(ControlPointId.Reference))
+								return ControlPointId.Reference;
 				}
 			} else {
 				float lineContainsDelta = (LineStyle.LineWidth / 2f) + 2;
 				if (Geometry.ArcContainsPoint(StartPoint.X, StartPoint.Y, RadiusPoint.X, RadiusPoint.Y, EndPoint.X, EndPoint.Y, Center.X, Center.Y, Radius, lineContainsDelta, x, y)) {
 					if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability)
 						&& !(Geometry.DistancePointPoint(x, y, vertices[0].X, vertices[0].Y) <= range)
-						&& !(Geometry.DistancePointPoint(x, y, vertices[2].X, vertices[2].Y) <= range))
-						return ControlPointId.Reference;
+						&& !(Geometry.DistancePointPoint(x, y, vertices[2].X, vertices[2].Y) <= range)
+						&& IsConnectionPointEnabled(ControlPointId.Reference))
+							return ControlPointId.Reference;
 				}
 			}
 			for (int i = 0; i < VertexCount; ++i) {
 				if (Geometry.DistancePointPoint(x, y, vertices[i].X, vertices[i].Y) <= range) {
 					ControlPointId ptId = GetControlPointId(i);
-					if (HasControlPointCapability(ptId, controlPointCapability)) return ptId;
+					if (HasControlPointCapability(ptId, controlPointCapability)
+						&& IsConnectionPointEnabled(ptId)) return ptId;
 				}
 			}
 			return ControlPointId.None;
@@ -2082,8 +2051,8 @@ namespace Dataweb.NShape.Advanced {
 		public override ControlPointId InsertVertex(ControlPointId beforePointId, int x, int y) {
 			int newPointId = ControlPointId.None;
 			if (IsFirstVertex(beforePointId) || beforePointId == ControlPointId.Reference || beforePointId == ControlPointId.None)
-				throw new nShapeException("{0} is not a valid {1} for this operation.", beforePointId, typeof(ControlPointId).Name);
-			if (VertexCount >= MaxVertexCount) throw new nShapeException("Numeric of maximum vertices reached.");
+				throw new NShapeException("{0} is not a valid {1} for this operation.", beforePointId, typeof(ControlPointId).Name);
+			if (VertexCount >= MaxVertexCount) throw new NShapeException("Numeric of maximum vertices reached.");
 
 			Point p = Point.Empty;
 			p.Offset(x, y);
@@ -2439,7 +2408,7 @@ namespace Dataweb.NShape.Advanced {
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			if (image == null) throw new ArgumentNullException("image");
 			using (Graphics g = Graphics.FromImage(image)) {
-				GdiHelpers.ApplyGraphicsSettings(g, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(g, RenderingQuality.MaximumQuality);
 				g.Clear(transparentColor);
 
 				int startCapSize = 0;
@@ -2797,8 +2766,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private IEnumerator<nShapeAction> GetBaseActions(int mouseX, int mouseY, int range) {
-			return base.GetActions(mouseX, mouseY, range).GetEnumerator();
+		private IEnumerator<MenuItemDef> GetBaseActions(int mouseX, int mouseY, int range) {
+			return base.GetMenuItemDefs(mouseX, mouseY, range).GetEnumerator();
 		}
 
 
@@ -2923,7 +2892,7 @@ namespace Dataweb.NShape.Advanced {
 				startPointIdx = 0;
 				endPointIdx = 2;
 				return false;
-			} else throw new nShapeInternalException("Unable to calculate drawCache.");
+			} else throw new NShapeInternalException("Unable to calculate drawCache.");
 
 			// calculate angles
 			sweepAngle = Geometry.RadiansToDegrees(Geometry.Angle(Center.X, Center.Y, vertices[startPointIdx].X, vertices[startPointIdx].Y, vertices[endPointIdx].X, vertices[endPointIdx].Y));
@@ -2975,7 +2944,7 @@ namespace Dataweb.NShape.Advanced {
 			//   break;
 			//}
 			//if (float.IsNaN(angle)) {
-			//   //throw new nShapeInternalException("Angle of line cap could not be calculated.");
+			//   //throw new NShapeInternalException("Angle of line cap could not be calculated.");
 			//   angle = 0;
 			//}
 			//return angle;

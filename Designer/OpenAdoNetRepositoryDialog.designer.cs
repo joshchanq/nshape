@@ -28,12 +28,12 @@ namespace Dataweb.NShape.Designer {
 			this.serverNameTextBox = new System.Windows.Forms.TextBox();
 			this.label2 = new System.Windows.Forms.Label();
 			this.databaseNameTextBox = new System.Windows.Forms.TextBox();
-			this.label3 = new System.Windows.Forms.Label();
-			this.projectNameTextBox = new System.Windows.Forms.TextBox();
+			this.projectNameLabel = new System.Windows.Forms.Label();
 			this.cancelButton = new System.Windows.Forms.Button();
 			this.okButton = new System.Windows.Forms.Button();
 			this.label4 = new System.Windows.Forms.Label();
 			this.providerNameComboBox = new System.Windows.Forms.ComboBox();
+			this.projectNameComboBox = new System.Windows.Forms.ComboBox();
 			this.SuspendLayout();
 			// 
 			// label1
@@ -47,10 +47,13 @@ namespace Dataweb.NShape.Designer {
 			// 
 			// serverNameTextBox
 			// 
+			this.serverNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
 			this.serverNameTextBox.Location = new System.Drawing.Point(12, 80);
 			this.serverNameTextBox.Name = "serverNameTextBox";
 			this.serverNameTextBox.Size = new System.Drawing.Size(306, 20);
 			this.serverNameTextBox.TabIndex = 1;
+			this.serverNameTextBox.TextChanged += new System.EventHandler(this.serverNameTextBox_TextChanged);
 			// 
 			// label2
 			// 
@@ -63,29 +66,26 @@ namespace Dataweb.NShape.Designer {
 			// 
 			// databaseNameTextBox
 			// 
+			this.databaseNameTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
 			this.databaseNameTextBox.Location = new System.Drawing.Point(12, 131);
 			this.databaseNameTextBox.Name = "databaseNameTextBox";
 			this.databaseNameTextBox.Size = new System.Drawing.Size(306, 20);
 			this.databaseNameTextBox.TabIndex = 3;
+			this.databaseNameTextBox.TextChanged += new System.EventHandler(this.databaseNameTextBox_TextChanged);
 			// 
-			// label3
+			// projectNameLabel
 			// 
-			this.label3.AutoSize = true;
-			this.label3.Location = new System.Drawing.Point(9, 166);
-			this.label3.Name = "label3";
-			this.label3.Size = new System.Drawing.Size(71, 13);
-			this.label3.TabIndex = 4;
-			this.label3.Text = "Project Name";
-			// 
-			// projectNameTextBox
-			// 
-			this.projectNameTextBox.Location = new System.Drawing.Point(12, 182);
-			this.projectNameTextBox.Name = "projectNameTextBox";
-			this.projectNameTextBox.Size = new System.Drawing.Size(306, 20);
-			this.projectNameTextBox.TabIndex = 5;
+			this.projectNameLabel.AutoSize = true;
+			this.projectNameLabel.Location = new System.Drawing.Point(9, 166);
+			this.projectNameLabel.Name = "projectNameLabel";
+			this.projectNameLabel.Size = new System.Drawing.Size(71, 13);
+			this.projectNameLabel.TabIndex = 4;
+			this.projectNameLabel.Text = "Project Name";
 			// 
 			// cancelButton
 			// 
+			this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.cancelButton.Location = new System.Drawing.Point(243, 227);
 			this.cancelButton.Name = "cancelButton";
@@ -96,6 +96,7 @@ namespace Dataweb.NShape.Designer {
 			// 
 			// okButton
 			// 
+			this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
 			this.okButton.Location = new System.Drawing.Point(162, 227);
 			this.okButton.Name = "okButton";
@@ -115,15 +116,28 @@ namespace Dataweb.NShape.Designer {
 			// 
 			// providerNameComboBox
 			// 
+			this.providerNameComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
 			this.providerNameComboBox.FormattingEnabled = true;
 			this.providerNameComboBox.Items.AddRange(new object[] {
-            "SQL Server",
-            "TurboDB"});
+            "SQL Server"});
 			this.providerNameComboBox.Location = new System.Drawing.Point(12, 29);
 			this.providerNameComboBox.Name = "providerNameComboBox";
 			this.providerNameComboBox.Size = new System.Drawing.Size(306, 21);
 			this.providerNameComboBox.TabIndex = 9;
 			this.providerNameComboBox.Text = "SQL Server";
+			this.providerNameComboBox.SelectedIndexChanged += new System.EventHandler(this.providerNameComboBox_SelectedIndexChanged);
+			// 
+			// projectNameComboBox
+			// 
+			this.projectNameComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
+			this.projectNameComboBox.FormattingEnabled = true;
+			this.projectNameComboBox.Location = new System.Drawing.Point(12, 182);
+			this.projectNameComboBox.Name = "projectNameComboBox";
+			this.projectNameComboBox.Size = new System.Drawing.Size(306, 21);
+			this.projectNameComboBox.TabIndex = 10;
+			this.projectNameComboBox.DropDown += new System.EventHandler(this.projectNameComboBox_DropDown);
 			// 
 			// OpenAdoNetRepositoryDialog
 			// 
@@ -132,12 +146,12 @@ namespace Dataweb.NShape.Designer {
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.cancelButton;
 			this.ClientSize = new System.Drawing.Size(330, 262);
+			this.Controls.Add(this.projectNameComboBox);
 			this.Controls.Add(this.providerNameComboBox);
 			this.Controls.Add(this.label4);
 			this.Controls.Add(this.okButton);
 			this.Controls.Add(this.cancelButton);
-			this.Controls.Add(this.projectNameTextBox);
-			this.Controls.Add(this.label3);
+			this.Controls.Add(this.projectNameLabel);
 			this.Controls.Add(this.databaseNameTextBox);
 			this.Controls.Add(this.label2);
 			this.Controls.Add(this.serverNameTextBox);
@@ -157,11 +171,11 @@ namespace Dataweb.NShape.Designer {
 		private System.Windows.Forms.TextBox serverNameTextBox;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.TextBox databaseNameTextBox;
-		private System.Windows.Forms.Label label3;
-		private System.Windows.Forms.TextBox projectNameTextBox;
+		private System.Windows.Forms.Label projectNameLabel;
 		private System.Windows.Forms.Button cancelButton;
 		private System.Windows.Forms.Button okButton;
 		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.ComboBox providerNameComboBox;
+		private System.Windows.Forms.ComboBox projectNameComboBox;
 	}
 }

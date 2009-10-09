@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -185,26 +185,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 		#endregion
-
-
-		//internal bool IsIntegerType(Type type) {
-		//   return (type == typeof(Byte) || type == typeof(Int16)	|| type == typeof(Int32) 
-		//      || type == typeof(Int64) || type == typeof(SByte) || type == typeof(UInt16)
-		//      || type == typeof(UInt32) || type == typeof(UInt64) || type == typeof(Enum));
-		//}
-
-
-		//internal bool IsFloatType(Type type) {
-		//   return (type == typeof(Single)
-		//      || type == typeof(Double)
-		//      || type == typeof(Decimal));
-		//}
-
-
-		//// Check if the given type is based on targetType
-		//internal bool IsOfType(Type type, Type targetType) {
-		//   return (type.IsSubclassOf(targetType) || type.GetInterface(targetType.Name, true) != null);
-		//}
 
 
 		// Fields
@@ -537,7 +517,7 @@ namespace Dataweb.NShape.Advanced {
 					return string.Format(Format, intValue);
 				case FormatModelMappingType.StringString:
 					return string.Format(Format, stringValue);
-				default: throw new nShapeUnsupportedValueException(mappingType);
+				default: throw new NShapeUnsupportedValueException(mappingType);
 			}
 		}
 
@@ -821,7 +801,7 @@ namespace Dataweb.NShape.Advanced {
 						style = ReadStyle(reader);
 						floatRanges.Add(floatValue, style);
 						break;
-					default: throw new nShapeUnsupportedValueException(mappingType);
+					default: throw new NShapeUnsupportedValueException(mappingType);
 				}
 				reader.EndReadInnerObject();
 			}
@@ -850,7 +830,7 @@ namespace Dataweb.NShape.Advanced {
 						writer.EndWriteInnerObject();
 					}
 					break;
-				default: throw new nShapeUnsupportedValueException(mappingType);
+				default: throw new NShapeUnsupportedValueException(mappingType);
 			}
 			writer.EndWriteInnerObjects();
 		}
@@ -965,7 +945,7 @@ namespace Dataweb.NShape.Advanced {
 					reader.ReadColorStyle();	// ToDo: Find a better solution for skipping an object id
 					result = null;
 					break;
-				default: throw new nShapeUnsupportedValueException(mappedStyleType);
+				default: throw new NShapeUnsupportedValueException(mappedStyleType);
 			}
 			return result;
 		}
@@ -986,7 +966,7 @@ namespace Dataweb.NShape.Advanced {
 			else if (style is ILineStyle) return MappedStyleType.LineStyle;
 			else if (style is IParagraphStyle) return MappedStyleType.ParagraphStyle;
 			else if (style is IShapeStyle) return MappedStyleType.ShapeStyle;
-			else throw new nShapeUnsupportedValueException(style);
+			else throw new NShapeUnsupportedValueException(style);
 		}
 		
 		
@@ -1135,7 +1115,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public IEnumerable<nShapeAction> GetActions() {
+		public IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			yield break;
 		}
 
@@ -1214,7 +1194,7 @@ namespace Dataweb.NShape.Advanced {
 			if (shape == null)
 				throw new InvalidOperationException("Template has no shape.");
 			if (!shape.HasControlPointCapability(connectionPointId, ControlPointCapabilities.Glue | ControlPointCapabilities.Connect))
-				throw new nShapeException("Control point {0} is not a valid connection point.", connectionPointId);
+				throw new NShapeException("Control point {0} is not a valid connection point.", connectionPointId);
 			//
 			if (connectionPointMappings.ContainsKey(connectionPointId))
 				connectionPointMappings[connectionPointId] = terminalId;

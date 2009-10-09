@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -22,46 +22,57 @@ namespace Dataweb.NShape {
 
 	[Flags()]
 	public enum Permission {
-		None = 0,
+		None = 0x0000,
 		/// <summary>
-		/// CopyFrom another permission set
+		/// Copy another permission set
 		/// </summary>
-		ModifyPermissionSet = 1,
+		ModifyPermissionSet = 0x0001,
 		/// <summary>
 		/// Modify position, size, rotation or z-order of shapes
 		/// </summary>
-		Layout = 2,
+		Layout = 0x0002,
 		/// <summary>
-		/// Modify the appearance of the shape (color, line thickness etc.) and assign 
-		/// another design
+		/// Modify the appearance of the shape (color, line thickness etc.) and assign another design
 		/// </summary>
-		Present = 4,
+		Present = 0x0004,
 		/// <summary>
 		/// Modify data properties
 		/// </summary>
-		ModifyData = 8,
+		ModifyData = 0x0008,
 		/// <summary>
 		/// Insert shape into diagram
 		/// </summary>
-		Insert = 16,
+		Insert = 0x0010,
 		/// <summary>
-		/// RemoveRange shape from diagram
+		/// Remove shape from diagram
 		/// </summary>
-		Delete = 32,
+		Delete = 0x0020,
 		/// <summary>
 		/// Connect or disconnect shapes
 		/// </summary>
-		Connect = 64,
+		Connect = 0x0040,
 		/// <summary>
 		/// Edit, insert and delete templates
 		/// </summary>
-		Templates = 128,
+		Templates = 0x0080,
 		/// <summary>
 		/// Edit, insert and delete designs
 		/// </summary>
-		Designs = 256,
+		Designs = 0x0100,
 		/// <summary>Everything</summary>
 		All = 0xffff
+	}
+
+
+	public class RequiredPermissionAttribute : Attribute {
+		
+		public RequiredPermissionAttribute(Permission requiredPermission) {
+			permission = requiredPermission;
+		}
+
+		public Permission Permission { get { return permission; } }
+
+		private Permission permission;
 	}
 
 
@@ -96,14 +107,14 @@ namespace Dataweb.NShape {
 		bool IsGranted(Permission permission, char domainName);
 
 		/// <summary>
-		/// Checks whether a given permission is granted for a given shape by the ObjectRef 
+		/// Checks whether a given permission is granted for a given shape by the current
 		/// user permissions.
 		/// </summary>
 		bool IsGranted(Permission permission, Shape shape);
 
 		/// <summary>
 		/// Checks whether a given permission is granted for all shapes of a list by 
-		/// the ObjectRef user permissions.
+		/// the current user permissions.
 		/// </summary>
 		bool IsGranted(Permission permission, IEnumerable<Shape> shapes);
 	}
@@ -139,19 +150,53 @@ namespace Dataweb.NShape {
 			currentRole = roles[0];
 			currentStdRole = StandardRole.Administrator;
 			//
-			AddDomain('A', "Everybody may do everything.");
-			AddPermissions('A', roleNameAdministrator, Permission.All);
-			AddPermissions('A', roleNameSuperUser, Permission.All);
-			AddPermissions('A', roleNameDesigner, Permission.All);
-			AddPermissions('A', roleNameOperator, Permission.All);
-			AddPermissions('A', roleNameGuest, Permission.None);
+			char domain;
+			domain = 'A';
+			AddDomain(domain, "SuperUser creates diagrams, Designer only modifies designs and styles, Operator modifies layout and data.");
+			AddPermissions(domain, roleNameAdministrator, Permission.All);
+			AddPermissions(domain, roleNameSuperUser,
+				Permission.Connect
+				| Permission.Delete
+				| Permission.Designs
+				| Permission.Insert
+				| Permission.Layout
+				| Permission.ModifyData
+				| Permission.Present
+				| Permission.Templates);
+			AddPermissions(domain, roleNameDesigner,
+				Permission.Designs
+				| Permission.Layout
+				| Permission.ModifyData
+				| Permission.Present);
+			AddPermissions(domain, roleNameOperator, Permission.Layout | Permission.ModifyData);
+			AddPermissions(domain, roleNameGuest, Permission.None);
+
+
+			domain = 'B';
+			AddDomain(domain, "SuperUser and Designer create diagrams, Operator may modify layout and data data.");
+			AddPermissions(domain, roleNameAdministrator, Permission.All);
+			AddPermissions(domain, roleNameSuperUser, 
+				Permission.Connect 
+				| Permission.Delete 
+				| Permission.Designs 
+				| Permission.Insert 
+				| Permission.Layout 
+				| Permission.ModifyData 
+				| Permission.Present 
+				| Permission.Templates);
+			AddPermissions(domain, roleNameDesigner,
+				Permission.Connect
+				| Permission.Delete
+				| Permission.Designs
+				| Permission.Insert
+				| Permission.Layout
+				| Permission.ModifyData
+				| Permission.Present);
+			AddPermissions(domain, roleNameOperator,
+				Permission.Layout
+				| Permission.ModifyData);
+			AddPermissions(domain, roleNameGuest, Permission.None);
 			//
-			AddDomain('B', "Even operators can move shapes.");
-			AddPermissions('A', roleNameAdministrator, Permission.All);
-			AddPermissions('A', roleNameSuperUser, Permission.All);
-			AddPermissions('A', roleNameDesigner, Permission.Connect | Permission.Delete | Permission.Insert | Permission.Layout | Permission.ModifyData | Permission.Present);
-			AddPermissions('A', roleNameOperator, Permission.Layout | Permission.ModifyData);
-			AddPermissions('A', roleNameGuest, Permission.None);
 		}
 
 
@@ -324,13 +369,16 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		public bool IsGranted(Permission permission, IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			bool result = true;
-			foreach (Shape s in shapes)
+			bool grantedForAllShapes = true;
+			bool shapeCollectionIsEmpty = true;
+			foreach (Shape s in shapes) {
+				if (shapeCollectionIsEmpty) shapeCollectionIsEmpty = false;
 				if (!IsGranted(permission, s)) {
-					result = false;
+					grantedForAllShapes = false;
 					break;
 				}
-			return result;
+			}
+			return (!shapeCollectionIsEmpty && grantedForAllShapes);
 		}
 
 		#endregion
@@ -385,7 +433,7 @@ namespace Dataweb.NShape {
 					break;
 				}
 			}
-			if (result == null && throwOnNotFound) throw new ArgumentException("A role with this name does not exist.");
+			if (result == null && throwOnNotFound) throw new ArgumentException(string.Format("The role '{0}' does not exist.", name));
 			return result;
 		}
 

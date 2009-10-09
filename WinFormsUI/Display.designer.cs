@@ -19,34 +19,34 @@ namespace Dataweb.NShape.WinFormsUI {
 
 				// Detach components 
 				if (Diagram != null) Diagram = null;
-				if (Controller != null) Controller = null;
+				if (DiagramController != null) DiagramController = null;
 				if (diagramSetController != null) DiagramSetController = null;
 
 				// Dispose pens
-				DisposeObject(gridPen);
-				DisposeObject(outlineInteriorPen);
-				DisposeObject(outlineNormalPen);
-				DisposeObject(outlineHilightPen);
-				DisposeObject(outlineInactivePen);
-				DisposeObject(handleNormalPen);
-				DisposeObject(handleHilightPen);
-				DisposeObject(handleInactivePen);
-				DisposeObject(toolPreviewPen);
-				DisposeObject(outerSnapPen);
-				DisposeObject(innerSnapPen);
+				DisposeObject(ref gridPen);
+				DisposeObject(ref outlineInteriorPen);
+				DisposeObject(ref outlineNormalPen);
+				DisposeObject(ref outlineHilightPen);
+				DisposeObject(ref outlineInactivePen);
+				DisposeObject(ref handleNormalPen);
+				DisposeObject(ref handleHilightPen);
+				DisposeObject(ref handleInactivePen);
+				DisposeObject(ref toolPreviewPen);
+				DisposeObject(ref outerSnapPen);
+				DisposeObject(ref innerSnapPen);
 
 				// Dispose brushes
-				DisposeObject(controlBrush);
-				DisposeObject(handleInteriorBrush);
-				DisposeObject(toolPreviewBackBrush);
-				DisposeObject(inplaceTextboxBackBrush);
-				DisposeObject(diagramShadowBrush);
+				DisposeObject(ref controlBrush);
+				DisposeObject(ref handleInteriorBrush);
+				DisposeObject(ref toolPreviewBackBrush);
+				DisposeObject(ref inplaceTextboxBackBrush);
+				DisposeObject(ref diagramShadowBrush);
 
 				// other drawing stuff
-				DisposeObject(previewTextFormatter);
-				DisposeObject(rotatePointPath);
-				DisposeObject(connectionPointPath);
-				DisposeObject(resizePointPath);
+				DisposeObject(ref previewTextFormatter);
+				DisposeObject(ref rotatePointPath);
+				DisposeObject(ref connectionPointPath);
+				DisposeObject(ref resizePointPath);
 
 				// Dispose other GDI+ objects
 				foreach (System.Collections.Generic.KeyValuePair<int, System.Windows.Forms.Cursor> pair in registeredCursors) {
@@ -55,7 +55,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				}
 				registeredCursors.Clear();
 
-				DisposeObject(infoGraphics);
+				DisposeObject(ref infoGraphics);
 			}
 			base.Dispose(disposing);
 		}

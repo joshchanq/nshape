@@ -119,7 +119,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "nShape Image Selector";
+			this.Text = "NShape Image Selector";
 			this.TopMost = true;
 			((System.ComponentModel.ISupportInitialize)(this.pictureBox)).EndInit();
 			this.ResumeLayout(false);

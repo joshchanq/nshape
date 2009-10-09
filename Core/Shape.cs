@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -24,6 +24,37 @@ using Dataweb.Utilities;
 
 
 namespace Dataweb.NShape.Advanced {
+
+	
+	//protected const int PropertyIdLineStyle = 1;
+	//protected const int PropertyIdAngle = 2;
+	//protected const int PropertyIdFillStyle = 3;
+	//protected const int PropertyIdText = 4;
+	//protected const int PropertyIdCharacterStyle = 5;
+	//protected const int PropertyIdParagraphStyle = 6;
+	
+	//protected const int PropertyIdDiameter = 7;	// DiameterBase
+	//protected const int PropertyIdWidth = 7;		// RectangleBase
+	//protected const int PropertyIdHeight = 8;
+	
+	//protected const int PropertyIdStartCapStyle = 7;
+	//protected const int PropertyIdEndCapStyle = 8;
+
+	//protected const int PropertyIdImage = 9;
+	//protected const int PropertyIdImageLayout = 10;
+	//protected const int PropertyIdImageGrayScale = 11;
+	//protected const int PropertyIdImageGamma = 12;
+	//protected const int PropertyIdImageTransparency = 13;
+	//protected const int PropertyIdImageTransparentColor = 14;
+	
+	//protected const int PropertyIdBodyHeight = 9;
+	//protected const int PropertyIdHeadWidth = 10;
+
+	//protected const int PropertyIdColumnBackgroundColorStyle = 9;
+	//protected const int PropertyIdColumnCharacterStyle = 10;
+	//protected const int PropertyIdColumnParagraphStyle = 11;
+
+	
 
 	#region Shape collection support
 
@@ -666,7 +697,7 @@ namespace Dataweb.NShape.Advanced {
 			if (newShapes is IList<Shape>) newShapesList = (IList<Shape>)newShapes;
 			else newShapesList = new List<Shape>(newShapes);
 
-			if (oldShapesList.Count != newShapesList.Count) throw new nShapeInternalException("Numer of elements in the given collections differ from each other.");
+			if (oldShapesList.Count != newShapesList.Count) throw new NShapeInternalException("Numer of elements in the given collections differ from each other.");
 			for (int i = 0; i < oldShapesList.Count; ++i)
 				ReplaceCore(oldShapesList[i], newShapesList[i]);
 		}
@@ -823,11 +854,11 @@ namespace Dataweb.NShape.Advanced {
 		private void AssertIndexIsValid(int index, Shape shape) {
 			if (Count > 0) {
 				if (index > Count)
-					throw new nShapeInternalException("Index {0} is out of range: The collection contains only {1} element.", index, Count);
+					throw new NShapeInternalException("Index {0} is out of range: The collection contains only {1} element.", index, Count);
 				if (index > 0 && index <= Count && shapes[index - 1].ZOrder > shape.ZOrder)
-					throw new nShapeInternalException("ZOrder value {0} cannot be inserted after ZOrder value {1}.", shape.ZOrder, shapes[index - 1].ZOrder);
+					throw new NShapeInternalException("ZOrder value {0} cannot be inserted after ZOrder value {1}.", shape.ZOrder, shapes[index - 1].ZOrder);
 				if (index < Count && shapes[index].ZOrder < shape.ZOrder)
-					throw new nShapeInternalException("ZOrder value {0} cannot be inserted before ZOrder value {1}.", shape.ZOrder, shapes[index].ZOrder);
+					throw new NShapeInternalException("ZOrder value {0} cannot be inserted before ZOrder value {1}.", shape.ZOrder, shapes[index].ZOrder);
 			}
 		}
 
@@ -1515,7 +1546,9 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Interface for all graphical objects.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	/// <status>reviewed</status>
+	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public abstract class Shape : IEntity, IDisposable {
 
 		~Shape() {
@@ -1589,36 +1622,46 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Indicates the type of the shape. Is always defined.
 		/// </summary>
+		[Description("The type of the shape.")]
 		public abstract ShapeType Type { get; }
 
 		/// <summary>
 		/// Indicates the model object displayed by this shape. May be null.
 		/// </summary>
+		[Browsable(false)]
+		[RequiredPermission(Permission.ModifyData)]
 		public abstract IModelObject ModelObject { get; set; }
 
 		/// <summary>
 		/// Indicates the template for this shape. Is null, if the shape has no template.
 		/// </summary>
+		[Browsable(false)]
 		public abstract Template Template { get; }
 
 		/// <summary>
 		/// Specifies a user-defined transient general purpose property.
 		/// </summary>
+		[Category("Data")]
+		[Description("User-defined data associated with the shape.")]
+		[RequiredPermission(Permission.ModifyData)]
 		public abstract object Tag { get; set; }
 
 		/// <summary>
 		/// Indicates the diagram this shape is part of.
 		/// </summary>
-		public abstract Diagram Diagram { get; set; }
+		[Browsable(false)]
+		public abstract Diagram Diagram { get; internal set; }
 
 		/// <summary>
 		/// Indicates the parent shape if this shape is part of an aggregation.
 		/// </summary>
+		[Browsable(false)]
 		public abstract Shape Parent { get; set; }
 
 		/// <summary>
 		/// Provides access to the child shapes.
 		/// </summary>
+		[Browsable(false)]
 		public abstract IShapeCollection Children { get; }
 
 		/// <summary>
@@ -1642,12 +1685,8 @@ namespace Dataweb.NShape.Advanced {
 		public abstract IEnumerable<ShapeConnectionInfo> GetConnectionInfos(ControlPointId ownPointId, Shape otherShape);
 
 		/// <summary>
-		/// Retrieve information of the connection status of the given gluePoint of this shape.
+		/// Returns the connection info for given glue point or ShapeConnectionInfo.Empty if the given glue point is not connected.
 		/// </summary>
-		/// <param name="otherShape">Target shape of the connections to return. 
-		/// If null/Nothing, connections to all connected shapes are returned.</param>
-		/// <param name="ownPointId">If a valid point id is given, all connections of this connection point are returned. 
-		/// If the constant ControlPointId.Any is given, connections of all connection points are returned.</param>
 		public abstract ShapeConnectionInfo GetConnectionInfo(ControlPointId gluePointId, Shape otherShape);
 
 		/// <summary>
@@ -1665,7 +1704,7 @@ namespace Dataweb.NShape.Advanced {
 		public abstract bool IntersectsWith(int x, int y, int width, int height);
 
 		/// <summary>
-		/// Calcutates all intersection points of the shape's outline with the given line segment. Does not return any point if there is no intersection.
+		/// Calculates all intersection points of the shape's outline with the given line segment. Does not return any point if there is no intersection.
 		/// </summary>
 		/// <param name="x1">X coordinate of the line segment's start point.</param>
 		/// <param name="y1">Y coordinate of the line segment's start point.</param>
@@ -1685,13 +1724,13 @@ namespace Dataweb.NShape.Advanced {
 		public abstract ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range);
 
 		/// <summary>
-		/// Calculates the x-axis aligned bounding rectangle of the shape.
+		/// Calculates the axis-aligned bounding rectangle of the shape.
 		/// </summary>
 		/// <param name="tight">
 		/// If true, the the minimum bounding rectangle of the shape will be calculated.
 		/// If false, the bounding rectangle of the shape including all its control points will be calculated.
 		/// </param>
-		/// <returns>The x-axis aligned bounding rectangle.</returns>
+		/// <returns>The axis-aligned bounding rectangle.</returns>
 		public abstract Rectangle GetBoundingRectangle(bool tight);
 
 		/// <summary>
@@ -1699,16 +1738,22 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="cellSize">Size of cell in vertical and horizontal direction.</param>
 		/// <returns>Cell indices starting with (0, 0) for the upper left cell.</returns>
-		public abstract IEnumerable<Point> CalculateCells(int cellSize);
+		protected internal abstract IEnumerable<Point> CalculateCells(int cellSize);
 
 		/// <summary>
 		/// Gets or sets the x-coordinate of the shape's location.
 		/// </summary>
+		[Category("Layout")]
+		[Description("Horizontal position of the shape's reference point.")]
+		[RequiredPermission(Permission.Layout)]
 		public abstract int X { get; set; }
 
 		/// <summary>
 		/// Gets or sets the y-coordinate of the shape's location.
 		/// </summary>
+		[Category("Layout")]
+		[Description("Vertical position of the shape's reference point.")]
+		[RequiredPermission(Permission.Layout)]
 		public abstract int Y { get; set; }
 
 		/// <summary>
@@ -1839,6 +1884,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Indicates the projectName of the security domain this shape belongs to.
 		/// </summary>
+		[Description("Modify the security domain of the shape.")]
+		[RequiredPermission(Permission.ModifyPermissionSet)]
 		public abstract char SecurityDomainName { get; set; }
 
 		/// <summary>
@@ -1848,7 +1895,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="y">The Y coordinate of the point clicked by the user.</param>
 		/// <param name="range">The radius of the grips representing the shape's control points.</param>
 		/// <returns></returns>
-		public abstract IEnumerable<nShapeAction> GetActions(int x, int y, int range);
+		public abstract IEnumerable<MenuItemDef> GetMenuItemDefs(int x, int y, int range);
 
 		#endregion
 
@@ -1865,6 +1912,10 @@ namespace Dataweb.NShape.Advanced {
 		/// Style used to draw the shape's outline.
 		/// </summary>
 		/// <remarks>Can be null, if no outline has to be drawn.</remarks>
+		[Category("Appearance")]
+		[Description("Defines the appearence of the shape's outline.")]
+		[PropertyMappingId(PropertyIdLineStyle)]
+		[RequiredPermission(Permission.Present)]
 		public abstract ILineStyle LineStyle { get; set; }
 
 		/// <summary>
@@ -1944,12 +1995,16 @@ namespace Dataweb.NShape.Advanced {
 		// For performance reasons the diagram stores the z-order and the layers
 		// of its shapes within the shapes themselves.
 		// These members must not be accessed but by the diagram.
+		[Browsable(false)]
+		[RequiredPermission(Permission.Layout)]
 		internal int ZOrder {
 			get { return zOrder; }
 			set { zOrder = value; }
 		}
 
 
+		[Browsable(false)]
+		[RequiredPermission(Permission.Layout)]
 		public LayerIds Layers {
 			get { return layers; }
 			internal set { layers = value; }
@@ -1969,6 +2024,8 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		protected internal abstract void DetachGluePointFromConnectionPoint(ControlPointId ownPointId, Shape otherShape, ControlPointId gluePointId);
 
+
+		protected const int PropertyIdLineStyle = 1;
 
 		private int zOrder = 0;
 		private LayerIds layers = LayerIds.None;

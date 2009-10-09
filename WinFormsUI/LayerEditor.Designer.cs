@@ -35,7 +35,7 @@
 			// 
 			// presenter
 			// 
-			this.presenter.Controller = this.controller;
+			this.presenter.LayerController = this.controller;
 			this.presenter.DiagramPresenter = null;
 			this.presenter.LayerView = this.layerListView;
 			// 

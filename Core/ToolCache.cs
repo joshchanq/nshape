@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -326,7 +326,7 @@ namespace Dataweb.NShape.Advanced {
 							brush = new TextureBrush(fillStyle.Image.Image, rectBuffer, imgAttribs);
 						}
 						break;
-					default: throw new nShapeUnsupportedValueException(fillStyle.FillMode);
+					default: throw new NShapeUnsupportedValueException(fillStyle.FillMode);
 				}
 
 				// add created brush to the BrushCache
@@ -338,7 +338,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public static TextureBrush GetBrush(Image image, nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
+		public static TextureBrush GetBrush(Image image, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			BrushKey brushKey;
 			brushKey.FillStyle = null;
@@ -570,7 +570,6 @@ namespace Dataweb.NShape.Advanced {
 				NotifyFillStyleChanged(fillStyle);
 			fillStyles.Clear();
 
-
 			// collect affected Pens
 			List<PenKey> penKeys = new List<PenKey>();
 			foreach (KeyValuePair<PenKey, Pen> item in penCache) {
@@ -765,7 +764,7 @@ namespace Dataweb.NShape.Advanced {
 					break;
 				case CapShape.None:
 					return;
-				default: throw new nShapeUnsupportedValueException(capShape);
+				default: throw new NShapeUnsupportedValueException(capShape);
 			}
 		}
 

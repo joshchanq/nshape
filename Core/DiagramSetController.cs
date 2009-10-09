@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -25,14 +25,14 @@ namespace Dataweb.NShape.Controllers {
 
 	#region Enums
 
-	public enum nShapeDrawMode { Normal, Highlighted, Deactivated };
+	public enum IndicatorDrawMode { Normal, Highlighted, Deactivated };
 
 
 	/// <summary>
-	/// This is the nShape representation of System.Windows.Forms.MouseButtons (Framework 2.0)
+	/// This is the NShape representation of System.Windows.Forms.MouseButtons (Framework 2.0)
 	/// </summary>
 	[Flags]
-	public enum nShapeMouseButtons {
+	public enum MouseButtonsDg {
 		/// <summary>
 		/// No mouse button was pressed.
 		/// </summary>
@@ -67,9 +67,9 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// This is the nShape representation of System.Windows.Forms.Keys (Framework 2.0)
+	/// This is the NShape representation of System.Windows.Forms.Keys (Framework 2.0)
 	/// </summary>
-	public enum nShapeKeys {
+	public enum KeysDg {
 		A = 0x41,
 		Add = 0x6b,
 		Alt = 0x40000,
@@ -271,9 +271,9 @@ namespace Dataweb.NShape.Controllers {
 
 	#region EventArgs
 
-	public class nShapeMouseEventArgs : EventArgs {
+	public class MouseEventArgsDg : EventArgs {
 
-		public nShapeMouseEventArgs(MouseEventType eventType, nShapeMouseButtons buttons, int clicks, int delta, Point location, nShapeKeys modifiers) {
+		public MouseEventArgsDg(MouseEventType eventType, MouseButtonsDg buttons, int clicks, int delta, Point location, KeysDg modifiers) {
 			this.buttons = buttons;
 			this.clicks = clicks;
 			this.wheelDelta = delta;
@@ -294,7 +294,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Contains a combination of all MouseButtons that were pressed.
 		/// </summary>
-		public nShapeMouseButtons Buttons {
+		public MouseButtonsDg Buttons {
 			get { return buttons; }
 		}
 
@@ -327,13 +327,13 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Contains the modifiers in case any modifier keys were pressed
 		/// </summary>
-		public nShapeKeys Modifiers {
+		public KeysDg Modifiers {
 			get { return modifiers; }
 		}
 
 
-		protected internal nShapeMouseEventArgs() {
-			this.buttons = nShapeMouseButtons.None;
+		protected internal MouseEventArgsDg() {
+			this.buttons = MouseButtonsDg.None;
 			this.clicks = 0;
 			this.wheelDelta = 0;
 			this.eventType = MouseEventType.MouseMove;
@@ -344,19 +344,19 @@ namespace Dataweb.NShape.Controllers {
 		#region Fields
 
 		protected MouseEventType eventType;
-		protected nShapeMouseButtons buttons;
+		protected MouseButtonsDg buttons;
 		protected Point position;
 		protected int wheelDelta;
 		protected int clicks;
-		protected nShapeKeys modifiers;
+		protected KeysDg modifiers;
 		
 		#endregion
 	}
 
 
-	public class nShapeKeyEventArgs : EventArgs {
+	public class KeyEventArgsDg : EventArgs {
 
-		public nShapeKeyEventArgs(KeyEventType eventType, int keyData, char keyChar, bool handled, bool suppressKeyPress) {
+		public KeyEventArgsDg(KeyEventType eventType, int keyData, char keyChar, bool handled, bool suppressKeyPress) {
 			this.eventType = eventType;
 			this.handled = handled;
 			this.keyChar = keyChar;
@@ -455,7 +455,7 @@ namespace Dataweb.NShape.Controllers {
 	/// <summary>
 	/// Controls the behavior of a set of diagrams.
 	/// </summary>
-	public class DiagramSetController : Component, IPropertyController {
+	public class DiagramSetController : Component {
 
 		public DiagramSetController() {
 		}
@@ -468,41 +468,10 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		#region IPropertyController Members
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsSet;
-
-		public event EventHandler<PropertyControllerPropertyChangedEventArgs> PropertyChanged;
-
-		public event EventHandler<PropertyControllerEventArgs> RefreshObjects;
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsDeleted;
-
-		public event EventHandler ProjectClosing;
-
-
-		public bool ReadOnly {
-			get { return (propertyController == null) ? true : propertyController.ReadOnly; }
+		~DiagramSetController() {
 		}
 
 
-		public void SetObject(int pageIndex, object selectedObject) {
-			propertyController.SetObject(pageIndex, selectedObject, SelectedObjectsChangedCallback);
-		}
-
-
-		public void SetObjects(int pageIndex, IEnumerable selectedObjects) {
-			propertyController.SetObjects(pageIndex, selectedObjects, SelectedObjectsChangedCallback);
-		}
-
-
-		public void SelectedObjectsChanged(int pageIndex, IEnumerable<object> modifiedObjects, System.Reflection.PropertyInfo propertyInfo, object[] oldValues, object newValue) {
-			propertyController.SelectedObjectsChanged(pageIndex, modifiedObjects, propertyInfo, oldValues, newValue);
-		}
-
-		#endregion
-
-	
 		#region [Public] Events
 
 		public event EventHandler ProjectChanging;
@@ -522,22 +491,20 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		[Category("NShape")]
 		public Project Project {
 			get { return project; }
 			set {
 				if (ProjectChanging != null) ProjectChanging(this, new EventArgs());
 				if (project != null) UnregisterProjectEvents();
 				project = value;
-				if (PropertyController != null) PropertyController.Project = value;
-				if (project != null) {
-					if (PropertyController == null) PropertyController = new PropertyController(project);
-					RegisterProjectEvents();
-				}
+				if (project != null) RegisterProjectEvents();
 				if (ProjectChanged != null) ProjectChanged(this, new EventArgs());
 			}
 		}
 
 
+		[Browsable(false)]
 		public Tool ActiveTool {
 			get { return tool; }
 			set {
@@ -547,6 +514,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		[Browsable(false)]
 		public IEnumerable<Diagram> Diagrams {
 			get {
 				for (int i = 0; i < diagramControllers.Count; ++i)
@@ -1008,21 +976,10 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		private PropertyController PropertyController {
-			get { return propertyController; }
-			set {
-				if (propertyController != null) UnregisterPropertyControllerEvents();
-				propertyController = value;
-				if (propertyController != null) RegisterPropertyControllerEvents();
-			}
-		}
-		
-		
 		#region [Private] Methods: Registering event handlers
 
 		private void RegisterProjectEvents() {
 			project.Opened += project_ProjectOpen;
-			project.Closing += project_ProjectClosing;
 			project.Closed += project_ProjectClosed;
 			if (project.IsOpen) RegisterRepositoryEvents();
 		}
@@ -1030,7 +987,6 @@ namespace Dataweb.NShape.Controllers {
 
 		private void UnregisterProjectEvents(){
 			project.Opened -= project_ProjectOpen;
-			project.Closing -= project_ProjectClosing;
 			project.Closed -= project_ProjectClosed;
 		}
 
@@ -1060,24 +1016,6 @@ namespace Dataweb.NShape.Controllers {
 			project.Repository.ShapesDeleted -= Repository_ShapesDeleted;
 		}
 
-
-		private void RegisterPropertyControllerEvents() {
-			propertyController.ObjectsSet += propertyController_ObjectsSet;
-			propertyController.PropertyChanged += propertyController_PropertyChanged;
-			propertyController.RefreshObjects += propertyController_RefreshObjects;
-			propertyController.ProjectClosing += propertyController_ProjectClosing;
-			propertyController.ObjectsDeleted += propertyController_ObjectsDeleted;
-		}
-
-
-		private void UnregisterPropertyControllerEvents() {
-			propertyController.ObjectsSet -= propertyController_ObjectsSet;
-			propertyController.PropertyChanged -= propertyController_PropertyChanged;
-			propertyController.RefreshObjects -= propertyController_RefreshObjects;
-			propertyController.ProjectClosing -= propertyController_ProjectClosing;
-			propertyController.ObjectsDeleted -= propertyController_ObjectsDeleted;
-		}
-
 		#endregion
 
 
@@ -1085,12 +1023,6 @@ namespace Dataweb.NShape.Controllers {
 
 		private void project_ProjectClosed(object sender, EventArgs e) {
 			UnregisterRepositoryEvents();
-		}
-
-		
-		private void project_ProjectClosing(object sender, EventArgs e) {
-			propertyController.SetObject(0, null, SelectedObjectsChangedCallback);
-			propertyController.SetObject(1, null, SelectedObjectsChangedCallback);
 		}
 
 		
@@ -1150,39 +1082,14 @@ namespace Dataweb.NShape.Controllers {
 			}
 		}
 
-
-		private void propertyController_RefreshObjects(object sender, PropertyControllerEventArgs e) {
-			if (RefreshObjects != null) RefreshObjects(this, e);
-		}
-
-
-		private void propertyController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
-			if (PropertyChanged != null) PropertyChanged(this, e);
-		}
-
-
-		private void propertyController_ObjectsSet(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsSet != null) ObjectsSet(this, e);
-		}
-
-
-		private void propertyController_ObjectsDeleted(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsDeleted != null) ObjectsDeleted(this, e);
-		}
-
-
-		private void propertyController_ProjectClosing(object sender, EventArgs e) {
-			if (ProjectClosing != null) ProjectClosing(this, e);
-		}
-
 		#endregion
 
 
 		#region [Private] Methods
 
 		private void AssertProjectIsOpen() {
-			if (project == null) throw new nShapePropertyNotSetException(this, "Project");
-			if (!project.IsOpen) throw new nShapeException("Project is not open.");
+			if (project == null) throw new NShapePropertyNotSetException(this, "Project");
+			if (!project.IsOpen) throw new NShapeException("Project is not open.");
 		}
 
 
@@ -1238,45 +1145,11 @@ namespace Dataweb.NShape.Controllers {
 			return modelObjectEventArgs;
 		}
 
-
-		private void SelectedObjectsChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs) {
-			ICommand cmd = null;
-			if (propertyChangedEventArgs.ObjectsType == typeof(Shape)) {
-				shapeBuffer.Clear();
-				foreach (object obj in propertyChangedEventArgs.Objects)
-					if (obj is Shape) shapeBuffer.Add((Shape)obj);
-				if (shapeBuffer.Count > 0) {
-					cmd = new ShapePropertySetCommand(shapeBuffer, propertyChangedEventArgs.PropertyInfo, propertyChangedEventArgs.OldValues, propertyChangedEventArgs.NewValue);
-					shapeBuffer.Clear();
-				}
-			} else if (propertyChangedEventArgs.ObjectsType == typeof(IModelObject)) {
-				modelBuffer.Clear();
-				foreach (object obj in propertyChangedEventArgs.Objects)
-					if (obj is IModelObject) modelBuffer.Add((IModelObject)obj);
-				if (modelBuffer.Count > 0) {
-					cmd = new ModelObjectPropertySetCommand(modelBuffer, propertyChangedEventArgs.PropertyInfo, propertyChangedEventArgs.OldValues, propertyChangedEventArgs.NewValue);
-					modelBuffer.Clear();
-				}
-			} else if (propertyChangedEventArgs.ObjectsType == typeof(Diagram)
-				|| propertyChangedEventArgs.ObjectsType == typeof(Diagram)) {
-				List<Diagram> diagramBuffer = new List<Diagram>(propertyChangedEventArgs.Objects.Count);
-				foreach (object obj in propertyChangedEventArgs.Objects)
-					diagramBuffer.Add((Diagram)obj);
-				if (diagramBuffer.Count > 0)
-					cmd = new DiagramPropertySetCommand(diagramBuffer, propertyChangedEventArgs.PropertyInfo, propertyChangedEventArgs.OldValues, propertyChangedEventArgs.NewValue);
-			} else {
-				// ToDo: Implement a generic SetObjectPropertyCommand (and execute it here)
-				throw new NotImplementedException();
-			}
-			if (cmd != null) Project.ExecuteCommand(cmd);
-		}
-
 		#endregion
 
 
 		#region Fields
 
-		private PropertyController propertyController = null;
 		private Project project = null;
 		private Tool tool;
 		private ReadOnlyList<DiagramController> diagramControllers = new ReadOnlyList<DiagramController>();
@@ -1299,7 +1172,7 @@ namespace Dataweb.NShape.Controllers {
 
 	#region Exceptions
 
-	public class DiagramControllerNotFoundException : nShapeException {
+	public class DiagramControllerNotFoundException : NShapeException {
 		public DiagramControllerNotFoundException(Diagram diagram)
 			: base("No {0} found for {1} '{2}'", typeof(DiagramController).Name, typeof(Diagram).Name, (diagram != null) ? diagram.Name : string.Empty) {
 		}
@@ -1429,9 +1302,9 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
-	public class ShapeMouseEventArgs : nShapeMouseEventArgs {
+	public class ShapeMouseEventArgs : MouseEventArgsDg {
 
-		public ShapeMouseEventArgs(IEnumerable<Shape> shapes, Diagram diagram, MouseEventType eventType, nShapeMouseButtons buttons, int clicks, int delta, Point location, nShapeKeys modifiers)
+		public ShapeMouseEventArgs(IEnumerable<Shape> shapes, Diagram diagram, MouseEventType eventType, MouseButtonsDg buttons, int clicks, int delta, Point location, KeysDg modifiers)
 			: base(eventType, buttons, clicks, delta, location, modifiers) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			this.shapes.AddRange(shapes);

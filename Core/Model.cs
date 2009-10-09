@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -144,7 +144,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// Defines the interface between the nShape framework and the model objects.
+	/// Defines the interface between the NShape framework and the model objects.
 	/// </summary>
 	public interface IModelObject : IEntity {
 
@@ -227,7 +227,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Gets the possible actions for this model object.
 		/// </summary>
 		/// <returns></returns>
-		IEnumerable<nShapeAction> GetActions();
+		IEnumerable<MenuItemDef> GetMenuItemDefs();
 
 	}
 
@@ -371,6 +371,7 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public class GenericModelObjectType : ModelObjectType {
 
 		public GenericModelObjectType(string name, string namespaceName, string categoryTitle, CreateModelObjectDelegate createModelObjectDelegate,
@@ -532,6 +533,7 @@ namespace Dataweb.NShape.Advanced {
 	/// Base class for model objects implementing naming, model hierarchy and shape management.
 	/// </summary>
 	/// <remarks>ModelObjectTypes objects can inherit from this class but need not.</remarks>
+	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public abstract class ModelObjectBase : IModelObject {
 
 		protected internal ModelObjectBase(ModelObjectBase source) {
@@ -574,21 +576,21 @@ namespace Dataweb.NShape.Advanced {
 
 
 		public virtual int GetInteger(int propertyId) {
-			throw new nShapeException("No integer property with PropertyId {0} found.", propertyId);
+			throw new NShapeException("No integer property with PropertyId {0} found.", propertyId);
 		}
 
 
 		public virtual float GetFloat(int propertyId) {
-			throw new nShapeException("No float property with PropertyId {0} found.", propertyId);
+			throw new NShapeException("No float property with PropertyId {0} found.", propertyId);
 		}
 
 
 		public virtual string GetString(int propertyId) {
-			throw new nShapeException("No string property with PropertyId {0} found.", propertyId);
+			throw new NShapeException("No string property with PropertyId {0} found.", propertyId);
 		}
 
 
-		public abstract IEnumerable<nShapeAction> GetActions();
+		public abstract IEnumerable<MenuItemDef> GetMenuItemDefs();
 
 
 		public abstract void Connect(TerminalId ownTerminalId, IModelObject targetConnector, TerminalId targetTerminalId);
@@ -606,7 +608,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public void AttachShape(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
-			if (shapes.ContainsKey(shape)) throw new nShapeException("{0} '{1}' is already attached to this shape.", Type.Name, Name);
+			if (shapes.ContainsKey(shape)) throw new NShapeException("{0} '{1}' is already attached to this shape.", Type.Name, Name);
 			shapes.Add(shape, null);
 		}
 
@@ -614,7 +616,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public void DetachShape(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
-			if (!shapes.ContainsKey(shape)) throw new nShapeException("{0} '{1}' is not attached to this shape.", Type.Name, Name);
+			if (!shapes.ContainsKey(shape)) throw new NShapeException("{0} '{1}' is not attached to this shape.", Type.Name, Name);
 			shapes.Remove(shape);
 		}
 
@@ -784,7 +786,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override IEnumerable<nShapeAction> GetActions() {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			//yield return new NotImplementedAction("Set State");
 			yield break;
 		}

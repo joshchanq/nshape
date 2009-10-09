@@ -88,13 +88,6 @@ namespace Dataweb.NShape.WinFormsUI.Properties {
             }
         }
         
-        internal static System.Drawing.Icon Dataweb_nShape {
-            get {
-                object obj = ResourceManager.GetObject("Dataweb_nShape", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
         internal static System.Drawing.Bitmap DeleteBtn {
             get {
                 object obj = ResourceManager.GetObject("DeleteBtn", resourceCulture);

@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebVisits", "WebVisits.csproj", "{EBF703AE-B9B4-4A30-ADDC-0D1B27821C8E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBF703AE-B9B4-4A30-ADDC-0D1B27821C8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBF703AE-B9B4-4A30-ADDC-0D1B27821C8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBF703AE-B9B4-4A30-ADDC-0D1B27821C8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBF703AE-B9B4-4A30-ADDC-0D1B27821C8E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TextTemplating) = postSolution
+		TextTemplating = 1
+	EndGlobalSection
+EndGlobal

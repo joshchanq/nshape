@@ -44,8 +44,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// addLibraryButton
 			// 
-			this.addLibraryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.addLibraryButton.Location = new System.Drawing.Point(364, 131);
+			this.addLibraryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.addLibraryButton.Location = new System.Drawing.Point(12, 131);
 			this.addLibraryButton.Name = "addLibraryButton";
 			this.addLibraryButton.Size = new System.Drawing.Size(115, 23);
 			this.addLibraryButton.TabIndex = 4;
@@ -60,11 +60,11 @@ namespace Dataweb.NShape.WinFormsUI {
 			// closeButton
 			// 
 			this.closeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.closeButton.Location = new System.Drawing.Point(485, 131);
+			this.closeButton.Location = new System.Drawing.Point(477, 131);
 			this.closeButton.Name = "closeButton";
 			this.closeButton.Size = new System.Drawing.Size(75, 23);
 			this.closeButton.TabIndex = 5;
-			this.closeButton.Text = "Close";
+			this.closeButton.Text = "OK";
 			this.closeButton.UseVisualStyleBackColor = true;
 			this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
 			// 

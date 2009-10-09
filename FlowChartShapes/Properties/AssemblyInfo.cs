@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an library is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an library.
-[assembly: AssemblyTitle("nShape FlowChart Shapes")]
+[assembly: AssemblyTitle("NShape FlowChart Shapes")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH - www.dataweb.de")]
-[assembly: AssemblyProduct("nShape FlowChart Shapes")]
+[assembly: AssemblyProduct("NShape FlowChart Shapes")]
 [assembly: AssemblyCopyright("Copyright © dataweb GmbH 2007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

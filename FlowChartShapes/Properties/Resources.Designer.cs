@@ -59,12 +59,5 @@ namespace Dataweb.NShape.FlowChartShapes.Properties {
                 resourceCulture = value;
             }
         }
-        
-        internal static System.Drawing.Icon Dataweb_nShape {
-            get {
-                object obj = ResourceManager.GetObject("Dataweb_nShape", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
     }
 }

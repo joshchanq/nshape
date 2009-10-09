@@ -1,15 +1,28 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  NShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using Dataweb.NShape;
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.GeneralShapes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Dataweb.nShape;
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.GeneralShapes;
 
-
-namespace nShapeTest {
+namespace NShapeTest {
 
 	/// <summary>
 	/// Summary description for UnitTest1
@@ -73,7 +86,7 @@ namespace nShapeTest {
 			project.Repository.Erase();
 			project.Create();
 		
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			//
 			Diagram diagram = new Diagram("All Shapes");
 			diagram.Width = 800;
@@ -162,7 +175,7 @@ namespace nShapeTest {
 			((CachedRepository)project.Repository).Store = new XmlStore("C:\\Temp", ".xml");
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			//
 			foreach (ShapeType st in project.ShapeTypes) {
 				Shape s = st.CreateInstance();
@@ -240,7 +253,7 @@ namespace nShapeTest {
 				bounds1.Inflate(10, 10);
 				Assert.IsTrue(bounds1.Contains(s.GetBoundingRectangle(true)));
 				//
-				foreach (nShapeAction a in s.GetActions(0, 0, 0))
+				foreach (MenuItemDef a in s.GetMenuItemDefs(0, 0, 0))
 					Assert.IsNotNull(a.Name);
 				//
 				// Connections
@@ -277,7 +290,7 @@ namespace nShapeTest {
 			((CachedRepository)project.Repository).Store = new XmlStore("C:\\Temp", ".xml");
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			Diagram diagram = new Diagram("Diagram A");
 			// Create a group
 			ShapeGroup group = (ShapeGroup)project.ShapeTypes["ShapeGroup"].CreateInstance();
@@ -335,7 +348,7 @@ namespace nShapeTest {
 			((CachedRepository)project.Repository).Store = new XmlStore("C:\\Temp", ".xml");
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			Template template = new Template("Template1", project.ShapeTypes["RoundedBox"].CreateInstance());
 			((IPlanarShape)template.Shape).FillStyle = project.Design.FillStyles.Red;
 			project.Repository.InsertTemplate(template);
@@ -366,7 +379,7 @@ namespace nShapeTest {
 			project.Name = "Test";
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			// Create a diagram with one shape
 			Diagram diagram = new Diagram("Diagram A");
 			project.Repository.InsertDiagram(diagram);
@@ -374,7 +387,7 @@ namespace nShapeTest {
 			shape.X = 100;
 			shape.Y = 100;
 			// Execute commands
-			project.ExecuteCommand(new InsertShapeCommand(diagram, LayerIds.None, shape, false));
+			project.ExecuteCommand(new InsertShapeCommand(diagram, LayerIds.None, shape, true, false));
 			project.ExecuteCommand(new MoveShapeByCommand(shape, 200, 200));
 			project.History.Undo();
 			project.History.Undo();
@@ -397,7 +410,7 @@ namespace nShapeTest {
 			project.Name = "Test";
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			ColorStyle colorStyle = (ColorStyle)project.Design.ColorStyles.Blue;
 			colorStyle.Color = Color.LightBlue;
 			project.Repository.UpdateStyle(colorStyle);
@@ -422,13 +435,13 @@ namespace nShapeTest {
 
 			// Add Libraries:
 			// GeneralShapes
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 			// ElectricalShapes
-			project.AddLibrary(typeof(Dataweb.nShape.ElectricalShapes.AutoDisconnectorSymbol).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.ElectricalShapes.AutoDisconnectorSymbol).Assembly);
 			// FlowChartShapes
-			project.AddLibrary(typeof(Dataweb.nShape.FlowChartShapes.ProcessSymbol).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.FlowChartShapes.ProcessSymbol).Assembly);
 			// SoftwareArchitectureShapes
-			project.AddLibrary(typeof(Dataweb.nShape.SoftwareArchitectureShapes.CloudSymbol).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.SoftwareArchitectureShapes.CloudSymbol).Assembly);
 
 			//
 			Diagram diagram = new Diagram("All Shapes");
@@ -498,7 +511,7 @@ namespace nShapeTest {
 			((CachedRepository)project1.Repository).Store = store1;
 			project1.Repository.Erase();
 			project1.Create();
-			project1.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project1.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 
 			// Create test data, populate repository, save repository
 			string diagramName = "Diagram";
@@ -515,21 +528,21 @@ namespace nShapeTest {
 			// Compare the saved repository with the loaded repository
 			//
 			// Compare Designs
-			nShapeComparer.Compare(((IStyleSetProvider)project1).StyleSet, ((IStyleSetProvider)project2).StyleSet);
+			Comparer.Compare(((IStyleSetProvider)project1).StyleSet, ((IStyleSetProvider)project2).StyleSet);
 			foreach (Design d in project2.Repository.GetDesigns())
-				nShapeComparer.Compare(d, project2.Repository.GetDesign(((IEntity)d).Id));
+				Comparer.Compare(d, project2.Repository.GetDesign(((IEntity)d).Id));
 			
 			// Compare Templates
 			foreach (Template savedTemplate in project1.Repository.GetTemplates())
-			   nShapeComparer.Compare(savedTemplate, project2.Repository.GetTemplate(savedTemplate.Id));
+			   Comparer.Compare(savedTemplate, project2.Repository.GetTemplate(savedTemplate.Id));
 			
 			// Compare ModelObjects
 			foreach (IModelObject modelObject in project1.Repository.GetModelObjects(null))
-				nShapeComparer.Compare(modelObject, project2.Repository.GetModelObject(modelObject.Id));
+				Comparer.Compare(modelObject, project2.Repository.GetModelObject(modelObject.Id));
 			
 			// Compare Diagrams
 			foreach (Diagram diagram in project1.Repository.GetDiagrams()) {
-				nShapeComparer.Compare(diagram, project2.Repository.GetDiagram(((IEntity)diagram).Id));
+				Comparer.Compare(diagram, project2.Repository.GetDiagram(((IEntity)diagram).Id));
 
 				// Compare ZOrder and LayerIds
 				List<Shape> savedShapes = new List<Shape>(diagram.Shapes.BottomUp);
@@ -550,7 +563,7 @@ namespace nShapeTest {
 			((CachedRepository)project.Repository).Store = store;
 			project.Repository.Erase();
 			project.Create();
-			project.AddLibrary(typeof(Dataweb.nShape.GeneralShapes.Circle).Assembly);
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 
 			string diagramName = "Large Diagram";
 			CreateLargeDiagram(project, diagramName);
@@ -622,8 +635,8 @@ namespace nShapeTest {
 		#region Helper methods
 
 		private void CreateLargeDiagram(Project project, string diagramName) {
-			const int shapeCount = 100;
-			CreateDiagram(project, diagramName, shapeCount, shapeCount, true, true, true, true);
+			const int shapesPerSide = 100;
+			CreateDiagram(project, diagramName, shapesPerSide, shapesPerSide, true, false, false, true);
 		}
 
 

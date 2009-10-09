@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -25,7 +25,8 @@ namespace Dataweb.NShape.Advanced {
 
 	/// <summary>
 	/// Base class for all graphical objects
-	/// </summary>	
+	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	[Serializable]
 	public abstract class ShapeBase : Shape, IEntity, IShapeCollection, IReadOnlyShapeCollection {
 
@@ -86,10 +87,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// This Method is called when ever a style used by the shape has changed.
-		/// If the style is null, the shape refreshes itself.
-		/// </summary>
 		public override bool NotifyStyleChanged(IStyle style) {
 			bool result = false;
 			if (style == null || IsStyleAffected(LineStyle, style)) {
@@ -102,17 +99,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Description("The type of the shape.")]
 		public override ShapeType Type {
 			get { return shapeType; }
 		}
 
 
-		[Browsable(false)]
 		public override Template Template { get { return template; } }
 
 
-		[Browsable(false)]
 		public override IModelObject ModelObject {
 			get { return modelObject; }
 			set {
@@ -125,20 +119,18 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Browsable(false)]
 		public override IShapeCollection Children {
 			get { return (IShapeCollection)this; }
 		}
 
 
-		[Browsable(false)]
 		public override Diagram Diagram {
 			get {
 				if (owner is DiagramShapeCollection)
 					return ((DiagramShapeCollection)owner).Owner;
 				else return null;
 			}
-			set {
+			internal set {
 				//if (owner != null && owner != value.Shapes) {
 				if (owner != null && owner.Contains(this)) {
 					owner.Remove(this);
@@ -153,7 +145,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Browsable(false)]
 		public override Shape Parent {
 			get {
 				if (owner is ShapeAggregation) return ((ShapeAggregation)owner).Owner;
@@ -179,8 +170,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Category("Data")]
-		[Description("User-defined data associated with the shape.")]
 		public override object Tag {
 			get { return tag; }
 			set { tag = value; }
@@ -193,10 +182,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			bool isFeasible = ContainsPoint(mouseX, mouseY);
 			string description = "Create a new template.";
-			yield return new CommandAction("Create Template", null, Color.Empty, "CreateTemplateAction", 
+			yield return new CommandMenuItemDef("Create Template", null, Color.Empty, "CreateTemplateAction", 
 				description, false, isFeasible,
 				new CreateTemplateCommand(string.Format("{0} {1}", Type.Name, GetHashCode()), this));
 
@@ -207,23 +196,27 @@ namespace Dataweb.NShape.Advanced {
 
 
 		public override void NotifyModelChanged(int modelPropertyId) {
-			Debug.Assert(Template != null);
 			Debug.Assert(ModelObject != null);
-			IModelMapping propertyMapping = Template.GetPropertyMapping(modelPropertyId);
-			if (propertyMapping != null) {
-				// set model object value
-				if (propertyMapping.CanSetInteger) {
-					Debug.Assert(!propertyMapping.CanSetFloat && !propertyMapping.CanSetString);
-					propertyMapping.SetInteger(ModelObject.GetInteger(propertyMapping.ModelPropertyId));
-				} else if (propertyMapping.CanSetFloat) {
-					Debug.Assert(!propertyMapping.CanSetInteger && !propertyMapping.CanSetString);
-					propertyMapping.SetFloat(ModelObject.GetFloat(propertyMapping.ModelPropertyId));
-				} else if (propertyMapping.CanSetString) {
-					Debug.Assert(!propertyMapping.CanSetInteger && !propertyMapping.CanSetFloat);
-					propertyMapping.SetString(ModelObject.GetString(propertyMapping.ModelPropertyId));
-				} else throw new nShapeException("PropertyMapping cannot set any of the supported types: Neither integer nor float nor string.");
-				// Convert model value with the help of the propertyMapping and set the new value
-				ProcessExecModelPropertyChange(propertyMapping);
+			// ToDo: 
+			// If the shape is the template's shape, it has no template although there is a 
+			// valid property mapping. Find a better solution for this case.
+			if (Template != null) {
+				IModelMapping propertyMapping = Template.GetPropertyMapping(modelPropertyId);
+				if (propertyMapping != null) {
+					// set model object value
+					if (propertyMapping.CanSetInteger) {
+						Debug.Assert(!propertyMapping.CanSetFloat && !propertyMapping.CanSetString);
+						propertyMapping.SetInteger(ModelObject.GetInteger(propertyMapping.ModelPropertyId));
+					} else if (propertyMapping.CanSetFloat) {
+						Debug.Assert(!propertyMapping.CanSetInteger && !propertyMapping.CanSetString);
+						propertyMapping.SetFloat(ModelObject.GetFloat(propertyMapping.ModelPropertyId));
+					} else if (propertyMapping.CanSetString) {
+						Debug.Assert(!propertyMapping.CanSetInteger && !propertyMapping.CanSetFloat);
+						propertyMapping.SetString(ModelObject.GetString(propertyMapping.ModelPropertyId));
+					} else throw new NShapeException("PropertyMapping cannot set any of the supported types: Neither integer nor float nor string.");
+					// Convert model value with the help of the propertyMapping and set the new value
+					ProcessExecModelPropertyChange(propertyMapping);
+				}
 			}
 		}
 
@@ -244,7 +237,7 @@ namespace Dataweb.NShape.Advanced {
 			// If the own ControlPoint is not a GluePoint, call the other shape's Connect method.
 			if (!HasControlPointCapability(ownPointId, ControlPointCapabilities.Glue)) {
 				if (!otherShape.HasControlPointCapability(otherPointId, ControlPointCapabilities.Glue))
-					throw new nShapeException(string.Format("Neither {0}'s point {1} nor {2}'s point {3} is a glue point. At least one glue point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
+					throw new NShapeException(string.Format("Neither {0}'s point {1} nor {2}'s point {3} is a glue point. At least one glue point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
 				otherShape.Connect(otherPointId, this, ownPointId);
 			} else {
 				// Check if connecting is possible:
@@ -253,13 +246,13 @@ namespace Dataweb.NShape.Advanced {
 				if (!ci.IsEmpty) throw new InvalidOperationException(string.Format("{0}'s glue point {1} is already connected to {2}.", Type.Name, ci.OwnPointId, ci.OtherShape.Type.Name));
 				// 2. The target shape's control point must not be a glue point
 				if (otherShape.HasControlPointCapability(otherPointId, ControlPointCapabilities.Glue))
-					throw new nShapeException(string.Format("{0}'s point {1} and {2}'s point {3} are both glue points. At least one connection point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
+					throw new NShapeException(string.Format("{0}'s point {1} and {2}'s point {3} are both glue points. At least one connection point is required for a connection between shapes.", Type.Name, ownPointId, otherShape.Type.Name, otherPointId));
 				// 3. The target shape's control point has to be a connection point
 				if (otherPointId != ControlPointId.Reference
 					&& !otherShape.HasControlPointCapability(otherPointId, ControlPointCapabilities.Connect))
-					throw new nShapeException(string.Format("{0}'s point {1} has to be a connection point.", otherShape.Type.Name, otherPointId));
+					throw new NShapeException(string.Format("{0}'s point {1} has to be a connection point.", otherShape.Type.Name, otherPointId));
 				//if (!IsConnectionPointEnabled(ownPointId))
-				//   throw new nShapeException(string.Format("{0}'s connection point {1} is disabled.", otherShape.Type.Name, ownPointId));
+				//   throw new NShapeException(string.Format("{0}'s connection point {1} is disabled.", otherShape.Type.Name, ownPointId));
 				//
 				// Perform the connection operation
 				ShapeConnectionInfo connectionInfo = ShapeConnectionInfo.Create(ownPointId, otherShape, otherPointId);
@@ -450,10 +443,12 @@ namespace Dataweb.NShape.Advanced {
 					return pointId;
 			if ((range > 0 && IntersectsWith(r.X, r.Y, r.Width, r.Height))
 					|| ContainsPoint(x, y)) {
-				if (controlPointCapability == ControlPointCapabilities.All) return ControlPointId.Reference;
-				else if (((controlPointCapability & ControlPointCapabilities.Connect) == ControlPointCapabilities.Connect)
-					|| ((controlPointCapability & ControlPointCapabilities.Glue) == ControlPointCapabilities.Glue)) {
-					if (IsConnectionPointEnabled(ControlPointId.Reference)) return ControlPointId.Reference;
+				if (HasControlPointCapability(ControlPointId.Reference, controlPointCapability)) {
+					if (controlPointCapability == ControlPointCapabilities.All) return ControlPointId.Reference;
+					else if ((controlPointCapability & ControlPointCapabilities.Connect) == ControlPointCapabilities.Connect
+						|| (controlPointCapability & ControlPointCapabilities.Glue) == ControlPointCapabilities.Glue) {
+						if (IsConnectionPointEnabled(ControlPointId.Reference)) return ControlPointId.Reference;
+					}
 				}
 			}
 			return ControlPointId.None;
@@ -517,7 +512,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <overriden></overriden>
 		/// <remarks>This is a very approximative implementation and should be overriden for 
 		/// better performance. Do not call the base class when overriding.</remarks>
-		public override IEnumerable<Point> CalculateCells(int cellSize) {
+		protected internal override IEnumerable<Point> CalculateCells(int cellSize) {
 			// The outer bounding rectangle (including the control points) is required here
 			Rectangle r = GetBoundingRectangle(false);
 			// This not 100% correct as cell 0 will be occupied by objects at 10/10 
@@ -680,16 +675,12 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
-		[PropertyMappingId(PropertyIdLineStyle)]
-		[Category("Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("Defines the appearence of the shape's outline.")]
 		public override ILineStyle LineStyle {
-			get { return privateLineStyle ?? ((Shape)Template.Shape).LineStyle; }
+			get { return privateLineStyle ?? Template.Shape.LineStyle; }
 			set {
 				Invalidate();
 				// Set private LineStyle only if it differs from the template's line style (if a template exists)
-				privateLineStyle = (Template != null && value == ((Shape)Template.Shape).LineStyle) ? null : value;
+				privateLineStyle = (Template != null && value == Template.Shape.LineStyle) ? null : value;
 				InvalidateDrawCache();
 				Invalidate();
 			}
@@ -725,7 +716,7 @@ namespace Dataweb.NShape.Advanced {
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			if (image == null) throw new ArgumentNullException("image");
 			using (Graphics g = Graphics.FromImage(image)) {
-				GdiHelpers.ApplyGraphicsSettings(g, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(g, RenderingQuality.MaximumQuality);
 				g.Clear(transparentColor);
 
 				Rectangle srcRectangle = GetBoundingRectangle(true);
@@ -851,9 +842,9 @@ namespace Dataweb.NShape.Advanced {
 		protected internal override sealed void AttachGluePointToConnectionPoint(ControlPointId ownPointId, Shape otherShape, ControlPointId gluePointId) {
 			if (ownPointId != ControlPointId.Reference
 				&& !HasControlPointCapability(ownPointId, ControlPointCapabilities.Connect))
-				throw new nShapeException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
+				throw new NShapeException(string.Format("{0}'s point {1} has to be a connection point.", Type.Name, ownPointId));
 			if (!otherShape.HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
-				throw new nShapeException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
+				throw new NShapeException(string.Format("{0}'s point {1} has to be a glue point.", otherShape.Type.Name, gluePointId));
 			// store the ShapeConnectionInfo
 			ShapeConnectionInfo connectionInfo = ShapeConnectionInfo.Create(ownPointId, otherShape, gluePointId);
 			if (connectionInfos == null) connectionInfos = new List<ShapeConnectionInfo>();
@@ -884,7 +875,7 @@ namespace Dataweb.NShape.Advanced {
 					ModelObject.Disconnect(Template.GetMappedTerminalId(ownPointId), otherShape.ModelObject, otherShape.Template.GetMappedTerminalId(gluePointId));
 				// delete list if there are no more connections
 				if (connectionInfos.Count == 0) connectionInfos = null;
-			} else throw new nShapeException("The connection does not exist.");
+			} else throw new NShapeException("The connection does not exist.");
 		}
 
 
@@ -971,9 +962,9 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		protected virtual Point CalcGluePoint(ControlPointId gluePointId, Shape shape) {
 			if (HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
-				throw new nShapeException("This Method has to be implemented. Base Method may not be called.");
+				throw new NShapeException("This Method has to be implemented. Base Method may not be called.");
 			else
-				throw new nShapeException("'{0}' has no GluePoints.", this.Type.Name);
+				throw new NShapeException("'{0}' has no GluePoints.", this.Type.Name);
 		}
 
 
@@ -1076,7 +1067,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Recalculate all objects that define the shape's outline and appearance, such 
 		/// as ControlPoints and GraphicsPath. The objects have to be calculated at the 
-		/// ObjectRef position and with the ObjectRef size but unrotated.
+		/// current position and with the current size but unrotated.
 		/// </summary>
 		protected abstract void RecalcDrawCache();
 
@@ -1515,8 +1506,6 @@ namespace Dataweb.NShape.Advanced {
 
 
 		#region Fields
-
-		protected const int PropertyIdLineStyle = 1;
 
 		// true if the draw cache has to be recalculated
 		protected bool drawCacheIsInvalid = true;

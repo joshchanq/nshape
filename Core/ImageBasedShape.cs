@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -23,6 +23,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 
 using Dataweb.Utilities;
+using System.Drawing.Design;
 
 
 namespace Dataweb.NShape.Advanced {
@@ -31,6 +32,7 @@ namespace Dataweb.NShape.Advanced {
 	/// Abstract base class for shapes that draw themselves using a bitmap or
 	/// meta file.
 	/// </summary>
+	/// <remarks>RequiredPermissions set</remarks>
 	public class ImageBasedShape : ShapeBase, IPlanarShape, ICaptionedShape {
 
 		protected internal ImageBasedShape(ShapeType shapeType, Template template,
@@ -98,14 +100,21 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Category("Data")]
+		[Category("Text")]
+		[Description("Text displayed inside the shape")]
+		[PropertyMappingId(PropertyIdText)]
+		[RequiredPermission(Permission.Present)]
+		[Editor("Dataweb.NShape.WinFormsUI.TextEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public string Text {
 			get { return caption.Text; }
 			set { caption.Text = value; }
 		}
 
 
-		[Category("Appearance")]
+		[Category("Text")]
+		[Description("Determines the style of the shape's text.")]
+		[PropertyMappingId(PropertyIdCharacterStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICharacterStyle CharacterStyle {
 			get { return charStyle ?? ((ImageBasedShape)Template.Shape).CharacterStyle; }
 			set {
@@ -116,7 +125,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Category("Appearance")]
+		[Category("Text")]
+		[Description("Determines the layout of the shape's text.")]
+		[RequiredPermission(Permission.Present)]
+		[PropertyMappingId(PropertyIdParagraphStyle)]
 		public IParagraphStyle ParagraphStyle {
 			get { return paragraphStyle ?? ((ImageBasedShape)Template.Shape).ParagraphStyle; }
 			set {
@@ -164,7 +176,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		public override Point CalculateNormalVector(int x, int y) {
-			if (!ContainsPoint(x, y)) throw new nShapeException("Coordinates {0} are outside {1}.", new Point(x, y), Type.FullName);
+			if (!ContainsPoint(x, y)) throw new NShapeException("Coordinates {0} are outside {1}.", new Point(x, y), Type.FullName);
 			return Geometry.CalcNormalVectorOfRectangle(x - (w / 2), y - (h / 2), x + (w / 2), y + (h / 2), x, y, 100);
 		}
 
@@ -322,6 +334,10 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IPlanarShape Members
 
+		[Category("Layout")]
+		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
+		[PropertyMappingId(PropertyIdAngle)]
+		[RequiredPermission(Permission.Layout)]
 		public int Angle {
 			get { return angle; }
 			set { angle = value; }
@@ -329,7 +345,10 @@ namespace Dataweb.NShape.Advanced {
 
 
 		[Category("Appearance")]
-		public IFillStyle FillStyle {
+		[Description("Defines the appearence of the shape's interior.")]
+		[PropertyMappingId(PropertyIdFillStyle)]
+		[RequiredPermission(Permission.Present)]
+		public virtual IFillStyle FillStyle {
 			get { return fillStyle ?? ((ImageBasedShape)Template.Shape).FillStyle; }
 			set {
 				fillStyle = (Template != null && value == ((ImageBasedShape)Template.Shape).FillStyle) ? null : value;
@@ -489,7 +508,7 @@ namespace Dataweb.NShape.Advanced {
 				case 1: return 2;
 				case 2: return 3;
 				case 3: return 8;
-				default: throw new nShapeException("NotSupported control point index.");
+				default: throw new NShapeException("NotSupported control point index.");
 			}
 		}
 
@@ -609,6 +628,12 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		protected const int PropertyIdAngle = 2;
+		protected const int PropertyIdFillStyle = 3;
+		protected const int PropertyIdText = 4;
+		protected const int PropertyIdCharacterStyle = 5;
+		protected const int PropertyIdParagraphStyle = 6;
+
 		protected const int minW = 10;
 		protected const int minH = 10;
 
@@ -616,54 +641,27 @@ namespace Dataweb.NShape.Advanced {
 		protected int w, h; // Size of shape
 		protected int angle;
 		protected Image image;
-		private ICharacterStyle charStyle;
-		private IParagraphStyle paragraphStyle;
-		private IFillStyle fillStyle;
+		// these are needed for calling the constructor when cloning
+		protected string resourceName;
+		protected Assembly resourceAssembly;
 
 		// Caption fields
 		protected bool captionUpdated = false;
 		protected int ch; // Height of the caption
 		protected Caption caption = new Caption("Test");
 
+		private ICharacterStyle charStyle;
+		private IParagraphStyle paragraphStyle;
+		private IFillStyle fillStyle;
 		private Matrix transformation = new Matrix();
-
-		// these are needed for calling the constructor when cloning
-		protected string resourceName;
-		protected Assembly resourceAssembly;
 	}
 
 
 	/// <summary>
 	/// Provides a metafile whose color and line color can be customized.
 	/// </summary>
-	public class CustomizableMetaFile : ImageBasedShape, IPlanarShape {
-
-		protected internal CustomizableMetaFile(ShapeType shapeType, Template template,
-			string resourceBaseName, Assembly resourceAssembly)
-			: base(shapeType, template, resourceBaseName, resourceAssembly) {
-			Construct();
-		}
-
-
-		protected internal CustomizableMetaFile(ShapeType shapeType, IStyleSet styleSet,
-			string resourceBaseName, Assembly resourceAssembly)
-			: base(shapeType, styleSet, resourceBaseName, resourceAssembly) {
-			Construct();
-		}
-
-
-		protected internal override void InitializeToDefault(IStyleSet styleSet) {
-			base.InitializeToDefault(styleSet);
-			Debug.Assert(image is Metafile);
-			metafileDataSize = 20;
-			metafileData = new byte[metafileDataSize];
-
-			LineStyle = styleSet.LineStyles.Normal;
-			FillStyle = styleSet.FillStyles.Red;
-
-			imageAttribs = GdiHelpers.GetImageAttributes(nShapeImageLayout.Original);
-		}
-
+	/// <remarks>RequiredPermissions set</remarks>
+	public class CustomizableMetaFile : ImageBasedShape {
 
 		public override Shape Clone() {
 			Shape result = new CustomizableMetaFile(Type, (Template)null, resourceName, resourceAssembly);
@@ -688,20 +686,6 @@ namespace Dataweb.NShape.Advanced {
 			dstBounds.Width = w;
 			dstBounds.Height = h - ch;
 
-			//Matrix origTransform = graphics.Transform;
-			//float scaleX, scaleY;
-			//GdiHelpers.CalcImageScaleAndAspect(out scaleX, out scaleY, dstBounds.Width, dstBounds.Height, image, nShapeImageLayout.Stretch);
-			//int offsetX, offsetY;
-			//MetafileHeader header = ((Metafile)image).GetMetafileHeader();
-			//offsetX = dstBounds.X - header.Bounds.X;
-			//offsetY = dstBounds.Y - header.Bounds.Y;
-			//graphics.ResetTransform();
-			//graphics.TranslateTransform(-header.Bounds.X, -header.Bounds.Y, MatrixOrder.Append);
-			//graphics.ScaleTransform(scaleX, scaleY, MatrixOrder.Append);
-			//graphics.TranslateTransform(dstBounds.X, dstBounds.Y, MatrixOrder.Append);
-			//graphics.EnumerateMetafile((Metafile)image, Point.Empty, metafileDelegate, IntPtr.Zero, imageAttribs);
-			//graphics.Transform = origTransform;
-
 			// Workaround: Create a buffer image to draw
 			if (bufferImage == null) bufferImage = CreateImage();
 			MetafileHeader header = bufferImage.GetMetafileHeader();
@@ -711,9 +695,6 @@ namespace Dataweb.NShape.Advanced {
 			//graphics.DrawRectangle(Pens.Red, dstBounds);
 #endif
 			if (h >= ch + 2 * minH) caption.Draw(graphics, CharacterStyle, ParagraphStyle);
-
-			//using (Image img = CreateImage())
-			//   GdiHelpers.SaveImageToFile(img, "S:\\CustomizableMetafile " + Type.Name + " Export Test.emf", nShapeImageFormat.EmfPlus);
 		}
 
 
@@ -730,6 +711,46 @@ namespace Dataweb.NShape.Advanced {
 				result = true;
 			}
 			return result;
+		}
+
+
+		public override IFillStyle FillStyle {
+			get { return base.FillStyle; }
+			set {
+				brushReplaced = false;
+				if (bufferImage != null) {
+					bufferImage.Dispose();
+					bufferImage = null;
+				}
+				base.FillStyle = value;
+			}
+		}
+
+
+		protected internal CustomizableMetaFile(ShapeType shapeType, Template template,
+			string resourceBaseName, Assembly resourceAssembly)
+			: base(shapeType, template, resourceBaseName, resourceAssembly) {
+			Construct();
+		}
+
+
+		protected internal CustomizableMetaFile(ShapeType shapeType, IStyleSet styleSet,
+			string resourceBaseName, Assembly resourceAssembly)
+			: base(shapeType, styleSet, resourceBaseName, resourceAssembly) {
+			Construct();
+		}
+
+
+		protected internal override void InitializeToDefault(IStyleSet styleSet) {
+			base.InitializeToDefault(styleSet);
+			Debug.Assert(image is Metafile);
+			metafileDataSize = 20;
+			metafileData = new byte[metafileDataSize];
+
+			LineStyle = styleSet.LineStyles.Normal;
+			FillStyle = styleSet.FillStyles.Red;
+
+			imageAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
 		}
 
 
@@ -820,7 +841,7 @@ namespace Dataweb.NShape.Advanced {
 				}
 			}
 			using (Graphics gfx = Graphics.FromImage(metaFile)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
 				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
 				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds,
 					GraphicsUnit.Pixel, metafileDelegate, IntPtr.Zero, imageAttribs);

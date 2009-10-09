@@ -1,0 +1,38 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Database Designer", "Database Designer.csproj", "{31C370A4-8C4A-449E-974F-DEFBAD9308F3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurboDiagram", "..\..\Source\TurboDiagram\TurboDiagram.csproj", "{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurboDiagramBaseShapes", "..\..\Source\TurboDiagramBaseShapes\TurboDiagramBaseShapes.csproj", "{1272F77E-D926-4310-AE8B-858909B10F0C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TurboDiagramSoftwareArchitectureShapes", "..\..\Source\TurboDiagramSoftwareArchitetureShapes\TurboDiagramSoftwareArchitectureShapes.csproj", "{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{31C370A4-8C4A-449E-974F-DEFBAD9308F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31C370A4-8C4A-449E-974F-DEFBAD9308F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31C370A4-8C4A-449E-974F-DEFBAD9308F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31C370A4-8C4A-449E-974F-DEFBAD9308F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1272F77E-D926-4310-AE8B-858909B10F0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1272F77E-D926-4310-AE8B-858909B10F0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1272F77E-D926-4310-AE8B-858909B10F0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1272F77E-D926-4310-AE8B-858909B10F0C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

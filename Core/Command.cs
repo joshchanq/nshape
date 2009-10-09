@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -216,7 +216,7 @@ namespace Dataweb.NShape {
 
 
 	//   protected void RemoveShapes() {
-	//      if (Shapes.Count == 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+	//      if (Shapes.Count == 0) throw new NShapeInternalException("No shapes set. Call SetShapes() before.");
 
 	//      // disconnect all selectedShapes connected to the deleted shape(s)
 	//      Disconnect(Shapes);
@@ -280,7 +280,7 @@ namespace Dataweb.NShape {
 
 	//   private void DoInsertShapes(bool useOriginalLayers, LayerIds activeLayers) {
 	//      int startIdx = Shapes.Count - 1;
-	//      if (startIdx < 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+	//      if (startIdx < 0) throw new NShapeInternalException("No shapes set. Call SetShapes() before.");
 
 	//      if (Repository == null) throw new ArgumentNullException("Repository"); 
 	//      for (int i = startIdx; i >= 0; --i) {
@@ -323,7 +323,7 @@ namespace Dataweb.NShape {
 
 		protected void InsertModelObjects(bool insertShapes) {
 			int cnt = ModelObjects.Count;
-			if (cnt == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
+			if (cnt == 0) throw new NShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
 				if (UndeleteEntities(ModelObjects.Keys))
 					Repository.UndeleteModelObjects(ModelObjects.Keys);
@@ -335,7 +335,7 @@ namespace Dataweb.NShape {
 
 
 		protected void RemoveModelObjects(bool deleteShapes) {
-			if (ModelObjects.Count == 0) throw new nShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
+			if (ModelObjects.Count == 0) throw new NShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
 				foreach (KeyValuePair<IModelObject, AttachedObjects> item in ModelObjects)
 					DetachAndDeleteObjects(item.Value, Repository, deleteShapes);
@@ -473,7 +473,7 @@ namespace Dataweb.NShape {
 
 
 		protected void RemoveShapes() {
-			if (Shapes.Count == 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+			if (Shapes.Count == 0) throw new NShapeInternalException("No shapes set. Call SetShapes() before.");
 
 			// disconnect all selectedShapes connected to the deleted shape(s)
 			Disconnect(Shapes);
@@ -600,7 +600,7 @@ namespace Dataweb.NShape {
 
 		private void DoInsertShapes(bool useOriginalLayers, LayerIds activeLayers) {
 			int startIdx = Shapes.Count - 1;
-			if (startIdx < 0) throw new nShapeInternalException("No shapes set. Call SetShapes() before.");
+			if (startIdx < 0) throw new NShapeInternalException("No shapes set. Call SetShapes() before.");
 
 			for (int i = startIdx; i >= 0; --i) {
 				//Shapes[i].ZOrder = Repository.ObtainNewTopZOrder(diagram);
@@ -663,6 +663,7 @@ namespace Dataweb.NShape {
 			for (int sIdx = attachedObjects.Shapes.Count - 1; sIdx >= 0; --sIdx)
 				attachedObjects.Shapes[sIdx].ModelObject = modelObject;
 			repository.UpdateShapes(attachedObjects.Shapes);
+			repository.UpdateModelObject(modelObject);
 		}
 
 
@@ -738,59 +739,56 @@ namespace Dataweb.NShape {
 
 
 		protected void CreateShapeAggregation(bool maintainZOrders) {
-			// Remove shapes from repository, or otherwise they would be inserted twice
-			if (Repository != null) Repository.DeleteShapes(shapes);
-			diagram.Shapes.RemoveRange(shapes);
-
-			// Add Shapes to aggregation shape
-			if (maintainZOrders) {
-				int cnt = shapes.Count;
-				for (int i = 0; i < cnt; ++i)
-					aggregationShape.Children.Add(shapes[i], shapes[i].ZOrder);
-			} else aggregationShape.Children.AddRange(shapes);
-			
-			// As the shapes are already aggregated, they will be inserted along with the parent shape
-			// Add aggregation shape to diagram and repository
+			// Add aggregation shape to diagram
 			if (!diagramContainsAggregationShape) {
 				diagram.Shapes.Add(aggregationShape);
 				diagram.AddShapeToLayers(aggregationShape, aggregationLayerIds);
 			}
-			
+			// Insert aggregation shape to repository (if necessary)
 			if (Repository != null) {
 				if (!diagramContainsAggregationShape)
-					// Shape aggregations are added along with all their children
 					if (UndeleteEntity(aggregationShape))
 						Repository.UndeleteShape(aggregationShape, diagram);
 					else Repository.InsertShape(aggregationShape, diagram);
-				else {
-					Repository.UpdateShape(aggregationShape);
-					if (UndeleteEntities(aggregationShape.Children))
-						Repository.UndeleteShapes(aggregationShape.Children, aggregationShape);
-					else Repository.InsertShapes(aggregationShape.Children, aggregationShape);
-				}
+				else Repository.UpdateShape(aggregationShape);
+			}
+
+			// Remove shapes from diagram
+			diagram.Shapes.RemoveRange(shapes);
+			// Add Shapes to aggregation shape
+			if (maintainZOrders) {
+				int cnt = shapes.Count;
+				for (int i = 0; i < cnt; ++i) 
+					aggregationShape.Children.Add(shapes[i], shapes[i].ZOrder);
+			} else aggregationShape.Children.AddRange(shapes);
+
+			// Finally, update the child shape's owner
+			if (Repository != null) {
+				foreach (Shape childShape in aggregationShape.Children)
+					Repository.UpdateShapeOwner(childShape, aggregationShape);
 			}
 		}
 
 
 		protected void DeleteShapeAggregation() {
-			// Delete shapes from repository
+			// Update the child shape's owner
 			if (Repository != null) {
-				if (!diagramContainsAggregationShape)
-					// Shape aggregations are deleted with all their children
-					Repository.DeleteShape(aggregationShape);
-				else Repository.DeleteShapes(shapes);
+				foreach (Shape childShape in aggregationShape.Children)
+					Repository.UpdateShapeOwner(childShape, diagram);
 			}
 
+			// Move the shapes to their initial owner
 			aggregationShape.Children.RemoveRange(shapes);
 			if (!diagramContainsAggregationShape)
 				diagram.Shapes.Remove(aggregationShape);
 			diagram.Shapes.AddRange(shapes);
 
-			// Insert shapes into repository
+			// Delete shapes from repository
 			if (Repository != null) {
-				Repository.InsertShapes(shapes, diagram);
-				if (diagramContainsAggregationShape)
-					Repository.UpdateShape(aggregationShape);
+				if (!diagramContainsAggregationShape)
+					// Shape aggregations are deleted with all their children
+					Repository.DeleteShape(aggregationShape);
+				else Repository.UpdateShape(aggregationShape);
 			}
 		}
 
@@ -803,6 +801,119 @@ namespace Dataweb.NShape {
 	}
 
 
+	public abstract class PropertySetCommand<T> : Command {
+
+		public PropertySetCommand(IEnumerable<T> modifiedObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			: base() {
+			if (modifiedObjects == null) throw new ArgumentNullException("modifiedObjects");
+			Construct(propertyInfo);
+			this.modifiedObjects = new List<T>(modifiedObjects);
+			this.oldValues = new List<object>(oldValues);
+			this.newValues = new List<object>(newValues);
+		}
+
+
+		public PropertySetCommand(IEnumerable<T> modifiedObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			: base() {
+			if (modifiedObjects == null) throw new ArgumentNullException("modifiedObjects");
+			Construct(propertyInfo);
+			this.modifiedObjects = new List<T>(modifiedObjects);
+			this.oldValues=new List<object>(oldValues);
+			this.newValues = new List<object>(1);
+			this.newValues.Add(newValue);
+		}
+
+
+		public PropertySetCommand(T modifiedObject, PropertyInfo propertyInfo, object oldValue, object newValue)
+			: base() {
+			if (modifiedObject == null) throw new ArgumentNullException("modifiedObject");
+			Construct(propertyInfo);
+			this.modifiedObjects = new List<T>(1);
+			this.modifiedObjects.Add(modifiedObject);
+			this.oldValues = new List<object>(1);
+			this.oldValues.Add(oldValue);
+			this.newValues = new List<object>(1);
+			this.newValues.Add(newValue);
+		}
+
+
+		public override void Execute() {
+			int valCnt = newValues.Count;
+			int objCnt = modifiedObjects.Count;
+			for (int i = 0; i < objCnt; ++i) {
+				object newValue = newValues[(valCnt == objCnt) ? i : 0];
+				object currValue = propertyInfo.GetValue(modifiedObjects[i], null);
+				// Check if the new value has been set already (e.g. by the PropertyGrid). If the new value is 
+				// already set, skip setting the new value (again).
+				// This check is necessary because if the value is a value that is exclusive-or'ed when set 
+				// (e.g. a FontStyle), the change would be undone when setting the value again
+				if (currValue == null && newValue != null
+					|| (currValue != null && !currValue.Equals(newValue)))
+					propertyInfo.SetValue(modifiedObjects[i], newValue, null);
+			}
+		}
+
+
+		public override void Revert() {
+			int valCnt = oldValues.Count;
+			int objCnt = modifiedObjects.Count;
+			for (int i = 0; i < objCnt; ++i) {
+				object oldValue = oldValues[(valCnt == objCnt) ? i : 0];
+				object currValue = propertyInfo.GetValue(modifiedObjects[i], null);
+				if (currValue == null && oldValue != null
+					|| (currValue != null && !currValue.Equals(oldValue)))
+				propertyInfo.SetValue(modifiedObjects[i], oldValue, null);
+			}
+		}
+
+
+		public override string Description {
+			get {
+				if (string.IsNullOrEmpty(description)) {
+					if (modifiedObjects.Count == 1)
+						description = string.Format("Change property '{0}' of {1} from '{2}' to '{3}'",
+							propertyInfo.Name, modifiedObjects[0].GetType().Name, oldValues[0], newValues[0]);
+					else {
+						if (oldValues.Count == 1 && newValues.Count == 1) {
+							description = string.Format("Change property '{0}' of {1} {2}{3} from '{4}' to '{5}'",
+								propertyInfo.Name,
+								this.modifiedObjects.Count,
+								this.modifiedObjects[0].GetType().Name,
+								this.modifiedObjects.Count > 1 ? "s" : string.Empty,
+								oldValues[0],
+								newValues[0]);
+						} else if (oldValues.Count > 1 && newValues.Count == 1) {
+							this.description = string.Format("Change property '{0}' of {1} {2}{3} to '{4}'",
+								propertyInfo.Name,
+								this.modifiedObjects.Count,
+								this.modifiedObjects[0].GetType().Name,
+								this.modifiedObjects.Count > 1 ? "s" : string.Empty,
+								newValues[0]);
+						} else {
+							description = string.Format("Change property '{0}' of {1} {2}{3}",
+								propertyInfo.Name, this.modifiedObjects.Count, typeof(T).Name,
+								modifiedObjects.Count > 1 ? "s" : string.Empty);
+						}
+					}
+				}
+				return base.Description;
+			}
+		}
+
+
+		private void Construct(PropertyInfo propertyInfo) {
+			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
+			this.propertyInfo = propertyInfo;
+		}
+
+
+		protected PropertyInfo propertyInfo;
+		protected List<object> oldValues;
+		protected List<object> newValues;
+		protected List<T> modifiedObjects;
+	}
+	
+	
 	/// <summary>
 	/// Base class for Connecting and disconnecting two shapes
 	/// </summary>
@@ -831,7 +942,7 @@ namespace Dataweb.NShape {
 			if (!sci.IsEmpty) {
 				this.targetShape = sci.OtherShape;
 				this.targetPointId = sci.OtherPointId;
-			} throw new nShapeException("GluePoint {0} is not connected.", gluePointId);
+			} throw new NShapeException("GluePoint {0} is not connected.", gluePointId);
 		}
 
 
@@ -1099,7 +1210,7 @@ namespace Dataweb.NShape {
 
 			this.connectionInfo = connectorShape.GetConnectionInfo(gluePointId, null);
 			if (this.connectionInfo.IsEmpty)
-				throw new nShapeInternalException(string.Format("There is no connection for Point {0} of shape {1}.", gluePointId, connectorShape));
+				throw new NShapeInternalException(string.Format("There is no connection for Point {0} of shape {1}.", gluePointId, connectorShape));
 		}
 
 
@@ -1610,7 +1721,7 @@ namespace Dataweb.NShape {
 		public SetCaptionTextCommand(ICaptionedShape shape, int captionIndex, string newValue)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
-			if (!(shape is Shape)) throw new nShapeException("{0} is not of type {1}.", shape.GetType().Name, typeof(Shape).Name);
+			if (!(shape is Shape)) throw new NShapeException("{0} is not of type {1}.", shape.GetType().Name, typeof(Shape).Name);
 			this.modifiedLabeledShapes = new List<ICaptionedShape>(1);
 			this.modifiedLabeledShapes.Add(shape);
 			this.labelIndex = captionIndex;
@@ -1660,86 +1771,36 @@ namespace Dataweb.NShape {
 
 
 	#region ShapePropertySetCommand class
-	public class ShapePropertySetCommand : Command {
-		public ShapePropertySetCommand(IEnumerable<Shape> modifiedShapes, PropertyInfo propertyInfo, object[] oldValues, object[] newValues)
-			: base() {
-			if (modifiedShapes == null) throw new ArgumentNullException("modifiedShapes");
-			Construct(propertyInfo, oldValues.Length, newValues.Length);
-
-			this.modifiedShapes = new List<Shape>(modifiedShapes);
-			Array.Copy(oldValues, this.oldValues, oldValues.Length);
-			Array.Copy(newValues, this.newValues, newValues.Length);
-			this.description = string.Format("Change property '{0}' of {1} shapes", propertyInfo.Name, this.modifiedShapes.Count);
+	public class ShapePropertySetCommand : PropertySetCommand<Shape> {
+		public ShapePropertySetCommand(IEnumerable<Shape> modifiedShapes, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			: base(modifiedShapes, propertyInfo, oldValues, newValues) {
 		}
 
 
-		public ShapePropertySetCommand(IEnumerable<Shape> modifiedShapes, PropertyInfo propertyInfo, object[] oldValues, object newValue)
-			: base() {
-			if (modifiedShapes == null) throw new ArgumentNullException("modifiedShapes");
-			Construct(propertyInfo, oldValues.Length, 1);
-
-			this.modifiedShapes = new List<Shape>(modifiedShapes);
-			Array.Copy(oldValues, this.oldValues, oldValues.Length);
-			this.newValues[0] = newValue;
-			if (oldValues.Length == 1)
-				this.description = string.Format("Change property '{0}' of {1} shapes from '{2}' to '{3}'", propertyInfo.Name, this.modifiedShapes.Count, oldValues[0], newValue);
-			else
-				this.description = string.Format("Change property '{0}' of {1} shapes to '{2}'", propertyInfo.Name, this.modifiedShapes.Count, newValue);
+		public ShapePropertySetCommand(IEnumerable<Shape> modifiedShapes, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			: base(modifiedShapes, propertyInfo, oldValues, newValue) {
 		}
 
 
 		public ShapePropertySetCommand(Shape modifiedShape, PropertyInfo propertyInfo, object oldValue, object newValue)
-			: base() {
-			if (modifiedShape == null) throw new ArgumentNullException("modifiedShape");
-			Construct(propertyInfo, 1, 1);
-
-			this.modifiedShapes = new List<Shape>(1);
-			this.modifiedShapes.Add(modifiedShape);
-			this.oldValues[0] = oldValue;
-			this.newValues[0] = newValue;
-			this.description = string.Format("Change property '{0}' of {1} from '{2}' to '{3}'", propertyInfo.Name, modifiedShape.Type.Name, oldValue, newValue);
+			: base(modifiedShape, propertyInfo, oldValue, newValue) {
 		}
 
 
 		public override void Execute() {
-			int newValuesCnt = newValues.Length;
-			int shapeCnt = modifiedShapes.Count;
-			for (int i = 0; i < shapeCnt; ++i) {
-				object newValue = (newValuesCnt > 1) ? newValues[i] : newValues[0];
-
-				// Check if the new value has been set already (e.g. by the PropertyGrid). If the new value is 
-				// already set, skip setting the new value (again).
-				// This check is necessary because if the value is a value that is exclusive-or'ed when set 
-				// (e.g. a FontStyle), the change would be undone when setting the value again
-				bool performSetValue = true;
-				if (newValue != null) {
-					object currentValue = propertyInfo.GetValue(modifiedShapes[i], null);
-					performSetValue = !newValue.Equals(currentValue);
-				}
-				if (performSetValue) propertyInfo.SetValue(modifiedShapes[i], newValue, null);
-			}
+			base.Execute();
 			if (Repository != null) {
-				if (shapeCnt == 1)
-					Repository.UpdateShape(modifiedShapes[0]);
-				else Repository.UpdateShapes(modifiedShapes);
+				if (modifiedObjects.Count == 1) Repository.UpdateShape(modifiedObjects[0]);
+				else Repository.UpdateShapes(modifiedObjects);
 			}
 		}
 
 
 		public override void Revert() {
-			int oldValuesCnt = oldValues.Length;
-			int shapeCnt = modifiedShapes.Count;
-			for (int i = 0; i < shapeCnt; ++i) {
-				object oldValue = (oldValuesCnt > 1) ? oldValues[i] : oldValues[0];
-				bool skipSettingProperty = true;
-				if (oldValue != null)
-					skipSettingProperty = oldValue.Equals(propertyInfo.GetValue(modifiedShapes[i], null));
-				if (!skipSettingProperty) propertyInfo.SetValue(modifiedShapes[i], oldValue, null);
-			}
+			base.Revert();
 			if (Repository != null) {
-				if (shapeCnt == 1)
-					Repository.UpdateShape(modifiedShapes[0]);
-				else Repository.UpdateShapes(modifiedShapes);
+				if (modifiedObjects.Count == 1) Repository.UpdateShape(modifiedObjects[0]);
+				else Repository.UpdateShapes(modifiedObjects);
 			}
 		}
 
@@ -1747,22 +1808,6 @@ namespace Dataweb.NShape {
 		public override Permission RequiredPermission {
 			get { return Permission.Present | Permission.ModifyData | Permission.Layout; }
 		}
-
-
-		private void Construct(PropertyInfo propertyInfo, int oldValueCount, int newValueCount) {
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			this.propertyInfo = propertyInfo;
-			this.oldValues = new object[oldValueCount];
-			this.newValues = new object[newValueCount];
-		}
-
-
-		#region Fields
-		private PropertyInfo propertyInfo;
-		private object[] oldValues;
-		private object[] newValues;
-		private List<Shape> modifiedShapes;
-		#endregion
 	}
 	#endregion
 
@@ -1809,7 +1854,7 @@ namespace Dataweb.NShape {
 					}
 					break;
 				default:
-					throw new nShapeUnsupportedValueException(liftMode);
+					throw new NShapeUnsupportedValueException(liftMode);
 			}
 			if (Repository != null) Repository.UpdateShapes(modifiedShapes);
 		}
@@ -1837,7 +1882,7 @@ namespace Dataweb.NShape {
 			switch (liftMode) {
 				case ZOrderDestination.ToTop: formatStr = "Bring {0} shape{1} on top"; break;
 				case ZOrderDestination.ToBottom: formatStr = "Send {0} shape{1} to bottom"; break;
-				default: throw new nShapeUnsupportedValueException(liftMode);
+				default: throw new NShapeUnsupportedValueException(liftMode);
 			}
 			if (modifiedShapes.Count == 1)
 				this.description = string.Format(formatStr, modifiedShapes.TopMost.Type.Name, string.Empty);
@@ -1867,7 +1912,7 @@ namespace Dataweb.NShape {
 					}
 					break;
 				default:
-					throw new nShapeUnsupportedValueException(liftMode);
+					throw new NShapeUnsupportedValueException(liftMode);
 			}
 		}
 		
@@ -2008,58 +2053,37 @@ namespace Dataweb.NShape {
 
 
 	#region ModelObjectPropertySetCommand class
-	public class ModelObjectPropertySetCommand : Command {
-		public ModelObjectPropertySetCommand(IEnumerable<IModelObject> modifiedModelObjects, PropertyInfo propertyInfo, object[] oldValues, object newValue)
-			: base() {
-			if (modifiedModelObjects == null) throw new ArgumentNullException("modifiedModelObjects");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			this.modifiedModelObjects = new List<IModelObject>(modifiedModelObjects);
-			if (oldValues.Length == 1)
-				this.description = string.Format("Change property '{0}' of {1} model object(s) from '{2}' to '{3}'", propertyInfo.Name, this.modifiedModelObjects.Count, oldValues[0], newValue);
-			else
-				this.description = string.Format("Change property '{0}' of {1} model object(s) to '{2}'", propertyInfo.Name, this.modifiedModelObjects.Count, newValue);
-			this.oldValues = new object[oldValues.Length];
-			Array.Copy(oldValues, this.oldValues, oldValues.Length);
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
+	public class ModelObjectPropertySetCommand : PropertySetCommand<IModelObject> {
+
+		public ModelObjectPropertySetCommand(IEnumerable<IModelObject> modifiedModelObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			: base(modifiedModelObjects, propertyInfo, oldValues, newValues) {
+		}
+
+
+		public ModelObjectPropertySetCommand(IEnumerable<IModelObject> modifiedModelObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			: base(modifiedModelObjects, propertyInfo, oldValues, newValue) {
 		}
 
 
 		public ModelObjectPropertySetCommand(IModelObject modifiedModelObject, PropertyInfo propertyInfo, object oldValue, object newValue)
-			: base() {
-			if (modifiedModelObject == null) throw new ArgumentNullException("modifiedModelObject");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			this.description = string.Format("Change property '{0}' of {1} from '{2}' to '{3}'", propertyInfo.Name, modifiedModelObject.Type.Name, oldValue, newValue);
-			this.modifiedModelObjects = new List<IModelObject>(1);
-			this.modifiedModelObjects.Add(modifiedModelObject);
-			this.oldValues = new object[1];
-			this.oldValues[0] = oldValue;
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
+			: base(modifiedModelObject, propertyInfo, oldValue, newValue) {
 		}
 
 
 		public override void Execute() {
-			foreach (IModelObject modelObject in modifiedModelObjects) {
-				object currValue = propertyInfo.GetValue(modelObject, null);
-				propertyInfo.SetValue(modelObject, newValue, null);
-			}
+			base.Execute();
 			if (Repository != null) {
-				if (modifiedModelObjects.Count == 1) Repository.UpdateModelObject(modifiedModelObjects[0]);
-				Repository.UpdateModelObjects(modifiedModelObjects);
+				if (modifiedObjects.Count == 1) Repository.UpdateModelObject(modifiedObjects[0]);
+				else Repository.UpdateModelObjects(modifiedObjects);
 			}
 		}
 
 
 		public override void Revert() {
-			int oldValuesCnt = oldValues.Length;
-			for (int i = 0; i < modifiedModelObjects.Count; ++i) {
-				if (oldValuesCnt > 1)
-					propertyInfo.SetValue(modifiedModelObjects[i], oldValues[i], null);
-				else
-					propertyInfo.SetValue(modifiedModelObjects[i], oldValues[0], null);
-
-				if (Repository != null) Repository.UpdateModelObject(modifiedModelObjects[i]);
+			base.Revert();
+			if (Repository != null) {
+				if (modifiedObjects.Count == 1) Repository.UpdateModelObject(modifiedObjects[0]);
+				else Repository.UpdateModelObjects(modifiedObjects);
 			}
 		}
 
@@ -2068,13 +2092,6 @@ namespace Dataweb.NShape {
 			get { return Permission.ModifyData; }
 		}
 
-
-		#region Fields
-		private PropertyInfo propertyInfo;
-		private object[] oldValues;
-		private object newValue;
-		private List<IModelObject> modifiedModelObjects;
-		#endregion
 	}
 	#endregion
 
@@ -2423,68 +2440,37 @@ namespace Dataweb.NShape {
 
 
 	#region DiagramPropertySetCommand class
-	public class DiagramPropertySetCommand : Command {
+	public class DiagramPropertySetCommand : PropertySetCommand<Diagram> {
 
-		public DiagramPropertySetCommand(IEnumerable<Diagram> modifiedDiagrams, PropertyInfo propertyInfo, object[] oldValues, object newValue)
-			: base() {
-			if (modifiedDiagrams == null) throw new ArgumentNullException("modifiedDiagrams");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			Debug.Assert(oldValues is object[]);
-			this.modifiedDiagrams = new List<Diagram>(modifiedDiagrams);
-			if (oldValues.Length == 1)
-				this.description = string.Format("Change property '{0}' of {1} diagram(s) from '{2}' to '{3}'", propertyInfo.Name, this.modifiedDiagrams.Count, oldValues[0], newValue);
-			else
-				this.description = string.Format("Change property '{0}' of {1} diagram(s) to '{2}'", propertyInfo.Name, this.modifiedDiagrams.Count, newValue);
-			this.oldValues = new object[oldValues.Length];
-			Array.Copy(oldValues, this.oldValues, oldValues.Length);
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
+		public DiagramPropertySetCommand(IEnumerable<Diagram> modifiedDiagrams, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			: base(modifiedDiagrams, propertyInfo, oldValues, newValues) {
+		}
+
+
+		public DiagramPropertySetCommand(IEnumerable<Diagram> modifiedDiagrams, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			: base(modifiedDiagrams, propertyInfo, oldValues, newValue) {
 		}
 
 
 		public DiagramPropertySetCommand(Diagram modifiedDiagram, PropertyInfo propertyInfo, object oldValue, object newValue)
-			: base() {
-			if (modifiedDiagram == null) throw new ArgumentNullException("modifiedDiagram");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			Debug.Assert(!(oldValue is object[]));
-			this.description = string.Format("Change property '{0}' of diagram '{1}' from '{2}' to '{3}'", propertyInfo.Name, modifiedDiagram.Name, oldValue, newValue);
-			this.modifiedDiagrams = new List<Diagram>(1);
-			this.modifiedDiagrams.Add(modifiedDiagram);
-			this.oldValues = new object[1];
-			this.oldValues[0] = oldValue;
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
+			: base(modifiedDiagram, propertyInfo, oldValue, newValue) {
 		}
 
 
 		public override void Execute() {
-			for (int i = 0; i < modifiedDiagrams.Count; ++i) {
-				// this is necessary because if the Value that will be exclusive-or'ed, 
-				// the change would be undone
-				bool setProperty = true;
-				if (newValue != null)
-					setProperty = !newValue.Equals(propertyInfo.GetValue(modifiedDiagrams[i], null));
-
-				if (setProperty)
-					propertyInfo.SetValue(modifiedDiagrams[i], newValue, null);
-
-				if (Repository != null) Repository.UpdateDiagram(modifiedDiagrams[i]);
+			base.Execute();
+			if (Repository != null) {
+				for (int i = modifiedObjects.Count - 1; i >= 0; --i)
+					Repository.UpdateDiagram(modifiedObjects[i]);
 			}
 		}
 
 
 		public override void Revert() {
-			int oldValuesCnt = oldValues.Length;
-			for (int i = 0; i < modifiedDiagrams.Count; ++i) {
-				object oldValue = (oldValuesCnt > 1) ? oldValues[i] : oldValues[0];
-
-				bool setProperty = true;
-				if (oldValue != null)
-					setProperty = !oldValue.Equals(propertyInfo.GetValue(modifiedDiagrams[i], null));
-				if (setProperty)
-					propertyInfo.SetValue(modifiedDiagrams[i], oldValue, null);
-
-				if (Repository != null) Repository.UpdateDiagram(modifiedDiagrams[i]);
+			base.Revert();
+			if (Repository != null) {
+				for (int i = modifiedObjects.Count - 1; i >= 0; --i)
+					Repository.UpdateDiagram(modifiedObjects[i]);
 			}
 		}
 
@@ -2492,102 +2478,86 @@ namespace Dataweb.NShape {
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData | Permission.Present; }
 		}
-
-
-		#region Fields
-		private PropertyInfo propertyInfo;
-		private object[] oldValues;
-		private object newValue;
-		private List<Diagram> modifiedDiagrams;
-		#endregion
 	}
 	#endregion
 
 
 	#region DesignPropertySetCommand class
-	public class DesignPropertySetCommand : Command {
-		public DesignPropertySetCommand(Design modifiedObject, PropertyInfo propertyInfo, object oldValue, object newValue)
-			: base() {
-			if (modifiedObject == null) throw new ArgumentNullException("modifiedObject");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			this.description = string.Format("Change property '{0}' of {1} '{2}' from '{3}' to '{4}'", propertyInfo.Name, modifiedObject.GetType().Name, modifiedObject.Name, oldValue, newValue);
-			this.modifiedObject = modifiedObject;
-			this.oldValue = oldValue;
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
+	public class DesignPropertySetCommand : PropertySetCommand<Design> {
+
+		public DesignPropertySetCommand(IEnumerable<Design> modifiedDesigns, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			: base(modifiedDesigns, propertyInfo, oldValues, newValues) {
+		}
+
+		
+		public DesignPropertySetCommand(IEnumerable<Design> modifiedDesigns, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			:base(modifiedDesigns, propertyInfo, oldValues, newValue){
+		}
+
+
+		public DesignPropertySetCommand(Design modifiedDesign, PropertyInfo propertyInfo, object oldValue, object newValue)
+			: base(modifiedDesign, propertyInfo, oldValue, newValue) {
 		}
 
 
 		public override void Execute() {
-			bool setProperty = true;
-			if (newValue != null)
-				setProperty = !newValue.Equals(propertyInfo.GetValue(modifiedObject, null));
-
-			if (setProperty)
-				propertyInfo.SetValue(modifiedObject, newValue, null);
-
-			if (Repository != null) Repository.UpdateDesign(modifiedObject);
+			base.Execute();
+			if (Repository != null) {
+				for (int i = modifiedObjects.Count - 1; i >= 0; --i)
+					Repository.UpdateDesign(modifiedObjects[i]);
+			}
 		}
 
 
 		public override void Revert() {
-			bool setProperty = true;
-			if (oldValue != null)
-				setProperty = !oldValue.Equals(propertyInfo.GetValue(modifiedObject, null));
-
-			if (setProperty)
-				propertyInfo.SetValue(modifiedObject, oldValue, null);
-
-			if (Repository != null) Repository.UpdateDesign(modifiedObject);
+			base.Revert();
+			if (Repository != null) {
+				for (int i = modifiedObjects.Count - 1; i >= 0; --i)
+					Repository.UpdateDesign(modifiedObjects[i]);
+			}
 		}
 
 
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
-
-
-		#region Fields
-		private PropertyInfo propertyInfo;
-		private object oldValue;
-		private object newValue;
-		private Design modifiedObject;
-		#endregion
 	}
 	#endregion
 
 
 	#region LayerPropertySetCommand class
 
-	public class LayerPropertySetCommand : Command {
+	public class LayerPropertySetCommand : PropertySetCommand<Layer> {
+
+		public LayerPropertySetCommand(Diagram diagram, IEnumerable<Layer> modifiedLayers, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			:base(modifiedLayers, propertyInfo, oldValues, newValues) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			this.diagram = diagram;
+		}
+
+
+		public LayerPropertySetCommand(Diagram diagram, IEnumerable<Layer> modifiedLayers, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			: base(modifiedLayers, propertyInfo, oldValues, newValue) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			this.diagram = diagram;
+		}
+
 
 		public LayerPropertySetCommand(Diagram diagram, Layer modifiedLayer, PropertyInfo propertyInfo, object oldValue, object newValue)
-			: base() {
+			: base(modifiedLayer, propertyInfo, oldValue, newValue) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			this.description = string.Format("Change property '{0}' of {1} '{2}' from '{3}' to '{4}'", propertyInfo.Name, modifiedLayer.GetType().Name, modifiedLayer.Name, oldValue, newValue);
 			this.diagram = diagram;
-			this.modifiedObject = modifiedLayer;
-			this.oldValue = oldValue;
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
 		}
 
 
 		public override void Execute() {
-			bool setProperty = true;
-			if (newValue != null)
-				setProperty = !newValue.Equals(propertyInfo.GetValue(modifiedObject, null));
-			if (setProperty) propertyInfo.SetValue(modifiedObject, newValue, null);
+			base.Execute();
 			if (Repository != null) Repository.UpdateDiagram(diagram);
 		}
 
 
 		public override void Revert() {
-			bool setProperty = true;
-			if (oldValue != null)
-				setProperty = !oldValue.Equals(propertyInfo.GetValue(modifiedObject, null));
-			if (setProperty) propertyInfo.SetValue(modifiedObject, oldValue, null);
+			base.Revert();
 			if (Repository != null) Repository.UpdateDiagram(diagram);
 		}
 
@@ -2598,10 +2568,6 @@ namespace Dataweb.NShape {
 
 
 		#region Fields
-		private PropertyInfo propertyInfo;
-		private object oldValue;
-		private object newValue;
-		private Layer modifiedObject;
 		private Diagram diagram;
 		#endregion
 	}
@@ -2609,53 +2575,38 @@ namespace Dataweb.NShape {
 
 
 	#region StylePropertySetCommand class
-	public class StylePropertySetCommand : Command {
+	public class StylePropertySetCommand : PropertySetCommand<Style> {
+
+		public StylePropertySetCommand(Design design, IEnumerable<Style> modifiedStyles, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
+			: base(modifiedStyles, propertyInfo, oldValues, newValues) {
+			if (design == null) throw new ArgumentNullException("design");
+			this.design = design;
+		}
+
+
+		public StylePropertySetCommand(Design design, IEnumerable<Style> modifiedStyles, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
+			: base(modifiedStyles, propertyInfo, oldValues, newValue) {
+			if (design == null) throw new ArgumentNullException("design");
+			this.design = design;
+		}
+
 
 		public StylePropertySetCommand(Design design, Style modifiedStyle, PropertyInfo propertyInfo, object oldValue, object newValue)
-			: base() {
+			: base(modifiedStyle, propertyInfo, oldValue, newValue) {
 			if (design == null) throw new ArgumentNullException("design");
-			if (modifiedStyle == null) throw new ArgumentNullException("modifiedStyle");
-			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
-			this.description = string.Format("Change property '{0}' of {1} '{2}' from '{3}' to '{4}'", propertyInfo.Name, modifiedStyle.GetType().Name, modifiedStyle.Title, oldValue, newValue);
-			this.modifiedStyle = modifiedStyle;
 			this.design = design;
-			this.oldValue = oldValue;
-			this.newValue = newValue;
-			this.propertyInfo = propertyInfo;
 		}
 
 
 		public override void Execute() {
-			// Check if the property was set before.
-			// This is necessary because if the Value is e.g. a FontStyle, which will be 
-			// exclusive-or'ed, the change would be undone.
-			bool doSetProperty = true;
-			if (newValue != null) 
-				doSetProperty = !newValue.Equals(propertyInfo.GetValue(modifiedStyle, null));
-			// Check if the style was renamed.
-			if (string.Compare(propertyInfo.Name, "Name") == 0) 
-				MaintainStyleName((string)oldValue, (string)newValue);
-
-			if (doSetProperty) propertyInfo.SetValue(modifiedStyle, newValue, null);
-			if (Repository != null) Repository.UpdateStyle(modifiedStyle);
-			if (Repository != null) Repository.UpdateDesign(design);
+			base.Execute();
+			UpdateDesignAndRepository();
 		}
 
 
 		public override void Revert() {
-			// Check if the property value has to be set
-			bool doSetProperty = true;
-			if (oldValue != null) 
-				doSetProperty = !oldValue.Equals(propertyInfo.GetValue(modifiedStyle, null));
-			// Check if the style was renamed.
-			if (string.Compare(propertyInfo.Name, "Name") == 0) 
-				MaintainStyleName((string)newValue, (string)oldValue);
-			
-			if (doSetProperty) propertyInfo.SetValue(modifiedStyle, oldValue, null);
-			if (Repository != null) {
-				Repository.UpdateStyle(modifiedStyle);
-				Repository.UpdateDesign(design);
-			}
+			base.Revert();
+			UpdateDesignAndRepository();
 		}
 
 
@@ -2664,19 +2615,32 @@ namespace Dataweb.NShape {
 		}
 
 
-		private void MaintainStyleName(string oldName, string newName) {
-			Type styleType = modifiedStyle.GetType();
-			IStyle style = design.FindStyleByName(oldName, styleType);
-			design.RemoveStyle(oldName, styleType);
+		private void UpdateDesignAndRepository() {
+			int oldValCnt = oldValues.Count;
+			int newValCnt = newValues.Count;
+			int objCnt = modifiedObjects.Count;
+			// Check if the style was renamed.
+			bool maintainName = (string.Compare(propertyInfo.Name, "Name") == 0);
+			for (int i = modifiedObjects.Count - 1; i >= 0; --i) {
+				if (maintainName) {
+					MaintainStyleName(
+						modifiedObjects[i],
+						(string)oldValues[oldValCnt == objCnt ? i : 0],
+						(string)newValues[newValCnt == objCnt ? i : 0]);
+				}
+				if (Repository != null) Repository.UpdateStyle(modifiedObjects[i]);
+			}
+			if (Repository != null) Repository.UpdateDesign(design);
+		}
+		
+		
+		private void MaintainStyleName(Style style, string oldName, string newName) {
+			design.RemoveStyle(oldName, style.GetType());
 			design.AddStyle(style);
 		}
 
 
 		#region Fields
-		private PropertyInfo propertyInfo;
-		private object oldValue;
-		private object newValue;
-		private Style modifiedStyle;
 		private Design design;
 		#endregion
 	}
@@ -2723,12 +2687,14 @@ namespace Dataweb.NShape {
 
 
 		public override void Execute() {
-			InsertShapes(layerIds);
+			//InsertShapes(layerIds);
+			InsertShapesAndModels(layerIds);
 		}
 
 
 		public override void Revert() {
-			RemoveShapes();
+			//RemoveShapes();
+			DeleteShapesAndModels();
 		}
 
 
@@ -2769,123 +2735,6 @@ namespace Dataweb.NShape {
 		#endregion
 	}
 	#endregion
-
-
-	//#region InsertShapeAndModelCommand class
-	///// <summary>
-	///// Inserts the given shapes and their model objects into diagram and cache.
-	///// </summary>
-	//public class InsertShapeAndModelCommand : InsertOrRemoveShapeCommand {
-		
-	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder)
-	//      : base(diagram) {
-	//      Construct(layerIds, shape, 0, 0, keepZOrder);
-	//      this.description = string.Format(CreateDescription, shape.Type.Name, shape.ModelObject.Type.Name + " ", string.Empty);
-	//   }
-
-
-	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool keepZOrder, int toX, int toY)
-	//      : base(diagram) {			
-	//      Construct(layerIds, shape, toX - shape.X, toY - shape.Y, keepZOrder);
-	//      this.description = string.Format(CreateDescription + " at {3}", shape.Type.Name, shape.ModelObject.Type.Name + " ", string.Empty, new Point(toX, toY));
-	//   }
-
-
-	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder, int deltaX, int deltaY)
-	//      : base(diagram) {
-	//      Construct(layerIds, shapes, deltaX, deltaY, keepZOrder);
-	//      this.description = string.Format(CreateDescription, Shapes.Count, string.Empty, 's');
-	//   }
-
-
-	//   public InsertShapeAndModelCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool keepZOrder)
-	//      : base(diagram) {
-	//      Construct(layerIds, shapes, 0, 0, keepZOrder);
-	//      this.description = string.Format(CreateDescription, Shapes.Count, string.Empty, 's');
-	//   }
-
-
-	//   public override void Execute() {
-	//      InsertShapesAndModels(layerIds);
-	//   }
-
-
-	//   public override void Revert() {
-	//      DeleteShapesAndModels();
-	//   }
-
-
-	//   public override Permission RequiredPermission {
-	//      get { return Permission.Insert; }
-	//   }
-
-
-	//   private void Construct(LayerIds layerIds, Shape shape, int offsetX, int offsetY, bool keepZOrder) {
-	//      if (shape == null) throw new ArgumentNullException("shape");
-	//      this.layerIds = layerIds;
-	//      PrepareShape(shape, offsetX, offsetY, keepZOrder);
-	//      SetShape(shape);
-	//   }
-
-
-	//   private void Construct(LayerIds layerIds, IEnumerable<Shape> shapes, int offsetX, int offsetY, bool keepZOrder) {
-	//      if (shapes == null) throw new ArgumentNullException("shapes");
-	//      this.layerIds = layerIds;
-	//      foreach (Shape shape in shapes)
-	//         PrepareShape(shape, offsetX, offsetY, keepZOrder);
-	//      SetShapes(shapes);
-	//   }
-
-
-	//   /// <summary>
-	//   /// Reset shape's ZOrder to 'Unassigned' and offset shape's position if neccessary
-	//   /// </summary>
-	//   private void PrepareShape(Shape shape, int offsetX, int offsetY, bool keepZOrder) {
-	//      if (!keepZOrder) shape.ZOrder = 0;
-	//      if (offsetX != 0 || offsetY != 0)
-	//         shape.MoveBy(offsetX, offsetY);
-	//   }
-
-
-	//   private LayerIds layerIds;
-	//}
-	//#endregion
-
-
-	//#region DeleteShapeOnlyCommand class
-	///// <summary>
-	///// Removes the given shape(s) from diagram and cache.
-	///// </summary>
-	//public class DeleteShapeOnlyCommand : InsertOrRemoveShapeCommand {
-	//   public DeleteShapeOnlyCommand(Diagram diagram, IEnumerable<Shape> deletedShapes)
-	//      : base(diagram) {
-	//      SetShapes(deletedShapes);
-	//      this.description = string.Format(InsertOrRemoveShapeCommand.DeleteDescription, Shapes.Count, 's');
-	//   }
-
-
-	//   public DeleteShapeOnlyCommand(Diagram diagram, Shape shape)
-	//      : base(diagram) {
-	//      SetShape(shape);
-	//      this.description = string.Format(InsertOrRemoveShapeCommand.DeleteDescription, shape.Type.Name, string.Empty);
-	//   }
-
-
-	//   public override void Execute() {
-	//      RemoveShapes();
-	//   }
-
-
-	//   public override void Revert() {
-	//      InsertShapes();
-	//   }
-
-
-	//   public override Permission RequiredPermission {
-	//      get { return Permission.Delete; }
-	//   }
-	//}
-	//#endregion
 
 
 	#region DeleteShapeCommand class

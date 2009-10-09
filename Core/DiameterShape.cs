@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -20,6 +20,7 @@ using System.Drawing;
 
 namespace Dataweb.NShape.Advanced {
 
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class DiameterShapeBase : CaptionedShapeBase {
 
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
@@ -260,6 +261,9 @@ namespace Dataweb.NShape.Advanced {
 
 
 		#region Fields
+		// PropertyId constant
+		protected const int PropertyIdDiameter = 7;
+
 		// ControlPoint Id Constants
 		private const int TopLeftControlPoint = 1;
 		private const int TopCenterControlPoint = 2;
@@ -276,8 +280,13 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class SquareBase : DiameterShapeBase {
 
+		[Category("Layout")]
+		[Description("Size of the sqare.")]
+		[PropertyMappingId(PropertyIdDiameter)]
+		[RequiredPermission(Permission.Layout)]
 		public int Size {
 			get { return base.DiameterInternal; }
 			set { base.DiameterInternal = value; }
@@ -408,30 +417,16 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class CircleBase : DiameterShapeBase {
 
+		[Category("Layout")]
+		[Description("Diameter of the circle.")]
+		[PropertyMappingId(PropertyIdDiameter)]
+		[RequiredPermission(Permission.Layout)]
 		public int Diameter {
 			get { return base.DiameterInternal; }
 			set { base.DiameterInternal = value; }
-		}
-
-
-		protected override Rectangle CalculateBoundingRectangle(bool tight) {
-			if (tight) {
-				Rectangle result = Geometry.InvalidRectangle;
-				if (DiameterInternal >= 0) {
-					// No need to rotate the tight bounding rectangle of a circle
-					result.X = X - (int)Math.Round(Diameter / 2f);
-					result.Y = Y - (int)Math.Round(Diameter / 2f);
-					result.Width = result.Height = Diameter;
-				}
-				return result;
-			} else return base.CalculateBoundingRectangle(tight);
-		}
-
-
-		protected internal override int ControlPointCount { 
-			get { return 13; } 
 		}
 
 
@@ -467,6 +462,25 @@ namespace Dataweb.NShape.Advanced {
 
 		protected internal CircleBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
+		}
+
+
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				Rectangle result = Geometry.InvalidRectangle;
+				if (DiameterInternal >= 0) {
+					// No need to rotate the tight bounding rectangle of a circle
+					result.X = X - (int)Math.Round(Diameter / 2f);
+					result.Y = Y - (int)Math.Round(Diameter / 2f);
+					result.Width = result.Height = Diameter;
+				}
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
+		protected internal override int ControlPointCount { 
+			get { return 13; } 
 		}
 
 

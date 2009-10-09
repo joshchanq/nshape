@@ -74,13 +74,6 @@ namespace Dataweb.NShape.GeneralShapes.Properties {
             }
         }
         
-        internal static System.Drawing.Icon Dataweb_nShape {
-            get {
-                object obj = ResourceManager.GetObject("Dataweb_nShape", resourceCulture);
-                return ((System.Drawing.Icon)(obj));
-            }
-        }
-        
         internal static System.Drawing.Bitmap ShaperReferenceCircle {
             get {
                 object obj = ResourceManager.GetObject("ShaperReferenceCircle", resourceCulture);

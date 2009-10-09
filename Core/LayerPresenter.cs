@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -32,18 +32,18 @@ namespace Dataweb.NShape.Controllers {
 	}
 	
 	
-	public class LayerMouseEventArgs : nShapeMouseEventArgs {
+	public class LayerMouseEventArgs : MouseEventArgsDg {
 
 		public LayerMouseEventArgs(Layer layer, LayerItem item, 
-			MouseEventType eventType, nShapeMouseButtons buttons, int clickCount, int wheelDelta, 
-			Point position, nShapeKeys modifiers)
+			MouseEventType eventType, MouseButtonsDg buttons, int clickCount, int wheelDelta, 
+			Point position, KeysDg modifiers)
 			: base(eventType, buttons, clickCount, wheelDelta, position, modifiers) {
 			this.layer = layer;
 			this.item = item;
 		}
 		
 		
-		public LayerMouseEventArgs(Layer layer, LayerItem item, nShapeMouseEventArgs mouseEventArgs)
+		public LayerMouseEventArgs(Layer layer, LayerItem item, MouseEventArgsDg mouseEventArgs)
 			: this(layer, item, mouseEventArgs.EventType, mouseEventArgs.Buttons, mouseEventArgs.Clicks, mouseEventArgs.WheelDelta, mouseEventArgs.Position, mouseEventArgs.Modifiers) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			this.layer = layer;
@@ -70,8 +70,8 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 		
-		protected internal void SetMouseEvent(MouseEventType eventType, nShapeMouseButtons buttons, 
-			int clickCount, int wheelDelta, Point position, nShapeKeys modifiers){
+		protected internal void SetMouseEvent(MouseEventType eventType, MouseButtonsDg buttons, 
+			int clickCount, int wheelDelta, Point position, KeysDg modifiers){
 			this.eventType = eventType;
 			this.buttons = buttons;
 			this.clicks = clickCount;
@@ -129,7 +129,7 @@ namespace Dataweb.NShape.Controllers {
 
 		void Invalidate();
 
-		void OpenContextMenu(int x, int y, IEnumerable<nShapeAction> contextMenuActions, Project project);
+		void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> contextMenuActions, Project project);
 
 		#endregion
 	}
@@ -147,7 +147,8 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
-		public LayerController Controller {
+		[Category("NShape")]
+		public LayerController LayerController {
 			get { return layerController; }
 			set {
 				if (layerController != null) UnregisterLayerControllerEvents();
@@ -157,6 +158,25 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		[Category("NShape")]
+		public IDiagramPresenter DiagramPresenter {
+			get { return diagramPresenter; }
+			set {
+				if (diagramPresenter != null) {
+					// Unregister events and clear layer view
+					UnregisterDiagramPresenterEvents();
+					if (layerView != null) layerView.Clear();
+				}
+				diagramPresenter = value;
+				if (diagramPresenter != null) {
+					RegisterDiagramPresenterEvents();
+					TryFillLayerView();
+				}
+			}
+		}
+
+
+		[Category("NShape")]
 		public Project Project {
 			get { return (layerController == null) ? null : layerController.Project; }
 		}
@@ -180,23 +200,6 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		public IDiagramPresenter DiagramPresenter {
-			get { return diagramPresenter; }
-			set {
-				if (diagramPresenter != null) {
-					// Unregister events and clear layer view
-					UnregisterDiagramPresenterEvents();
-					if (layerView != null) layerView.Clear();
-				}
-				diagramPresenter = value;
-				if (diagramPresenter != null) {
-					RegisterDiagramPresenterEvents();
-					TryFillLayerView();
-				}
-			}
-		}
-
-
 		[Browsable(false)]
 		public IReadOnlyCollection<Layer> SelectedLayers {
 			get { return selectedLayers; }
@@ -207,19 +210,19 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods (protected)
 
-		protected IEnumerable<nShapeAction> GetActions() {
+		protected IEnumerable<MenuItemDef> GetActions() {
 			if (layerController == null || diagramPresenter == null)
 				yield break;
 
 			string pluralPostFix = (selectedLayers.Count > 1) ? "s" : string.Empty;
 
 			bool separatorNeeded = false;
-			foreach (nShapeAction controllerAction in Controller.GetActions(diagramPresenter.Diagram, selectedLayers)) {
+			foreach (MenuItemDef controllerAction in LayerController.GetActions(diagramPresenter.Diagram, selectedLayers)) {
 				if (!separatorNeeded) separatorNeeded = true;
 				yield return controllerAction;
 			}
 
-			if (separatorNeeded) yield return new SeparatorAction();
+			if (separatorNeeded) yield return new SeparatorMenuItemDef();
 
 			bool isFeasible;
 			string description;
@@ -228,37 +231,37 @@ namespace Dataweb.NShape.Controllers {
 			if (selectedLayers.Count == 0) description = string.Empty;
 			else if (selectedLayers.Count == 1) description = string.Format("Rename layer '{0}'", selectedLayers[0].Title);
 			else description = "Too many layers selected";
-			yield return new DelegateAction("Rename Layer", Properties.Resources.RenameBtn,
+			yield return new DelegateMenuItemDef("Rename Layer", Properties.Resources.RenameBtn,
 				description, isFeasible, Permission.ModifyData, (a, p) => BeginRenameSelectedLayer());
 
 			isFeasible = selectedLayers.Count > 0;
 			if (isFeasible)
 				description = string.Format("Set {0} layer{1} as the active layer{1}", selectedLayers.Count, pluralPostFix);
 			else description = "No layers selected";
-			yield return new DelegateAction(string.Format("Activate Layer{0}", pluralPostFix),
+			yield return new DelegateMenuItemDef(string.Format("Activate Layer{0}", pluralPostFix),
 				Properties.Resources.Enabled, description, isFeasible, Permission.ModifyData,
 				(a, p) => ActivateSelectedLayers());
 
 			isFeasible = selectedLayers.Count > 0;
 			description = isFeasible ? string.Format("Deactivate {0} layer{1}", selectedLayers.Count, pluralPostFix) :
 				"No layers selected";
-			yield return new DelegateAction(string.Format("Deactivate Layer{0}", pluralPostFix),
+			yield return new DelegateMenuItemDef(string.Format("Deactivate Layer{0}", pluralPostFix),
 				Properties.Resources.Disabled, description, isFeasible, Permission.ModifyData,
 				(a, p) => DeactivateSelectedLayers());
 
-			yield return new SeparatorAction();
+			yield return new SeparatorMenuItemDef();
 
 			isFeasible = selectedLayers.Count > 0;
 			description = isFeasible ? string.Format("Show {0} layer{1}", selectedLayers.Count, pluralPostFix) :
 				"No layers selected";
-			yield return new DelegateAction(string.Format("Show Layer{0}", pluralPostFix),
+			yield return new DelegateMenuItemDef(string.Format("Show Layer{0}", pluralPostFix),
 				Properties.Resources.Visible, description, isFeasible, Permission.None,
 				(a, p) => ShowSelectedLayers());
 
 			isFeasible = selectedLayers.Count > 0;
 			description = isFeasible ? string.Format("Hide {0} layer{1}", selectedLayers.Count, pluralPostFix) :
 			"No layers selected";
-			yield return new DelegateAction(string.Format("Hide Layer{0}", pluralPostFix),
+			yield return new DelegateMenuItemDef(string.Format("Hide Layer{0}", pluralPostFix),
 			Properties.Resources.Invisible, description, isFeasible, Permission.None,
 			(a, p) => HideSelectedLayers());
 		}
@@ -298,7 +301,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		protected void BeginRenameSelectedLayer() {
-			if (selectedLayers.Count == 0) throw new nShapeException("No layers selected.");
+			if (selectedLayers.Count == 0) throw new NShapeException("No layers selected.");
 			layerView.BeginEditLayerName(selectedLayers[0]);
 		}
 
@@ -430,7 +433,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private void AssertControllerIsSet() {
-			if (Controller == null) throw new ArgumentNullException("Controller");
+			if (LayerController == null) throw new ArgumentNullException("Controller");
 		}
 
 		#endregion
@@ -500,7 +503,7 @@ namespace Dataweb.NShape.Controllers {
 
 		private void layerView_MouseDown(object sender, LayerMouseEventArgs e) {
 			if (e.Layer != null) {
-				bool multiSelect = e.Modifiers == nShapeKeys.Shift || e.Modifiers == nShapeKeys.Control;
+				bool multiSelect = e.Modifiers == KeysDg.Shift || e.Modifiers == KeysDg.Control;
 				if (multiSelect) {
 					if (selectedLayers.Contains(e.Layer))
 						UnselectLayer(e.Layer);
@@ -517,7 +520,7 @@ namespace Dataweb.NShape.Controllers {
 
 		private void layerView_MouseUp(object sender, LayerMouseEventArgs e) {
 			switch (e.Buttons) {
-				case nShapeMouseButtons.Left:
+				case MouseButtonsDg.Left:
 					switch (e.Item) {
 						case LayerItem.Name:
 							if (e.Layer != null && selectedLayers.Contains(e.Layer)) layerView.BeginEditLayerName(e.Layer);
@@ -541,8 +544,8 @@ namespace Dataweb.NShape.Controllers {
 					}
 					break;
 
-				case nShapeMouseButtons.Right:
-					layerView.OpenContextMenu(e.Position.X, e.Position.Y, GetActions(), Controller.DiagramSetController.Project);
+				case MouseButtonsDg.Right:
+					layerView.OpenContextMenu(e.Position.X, e.Position.Y, GetActions(), LayerController.DiagramSetController.Project);
 					break;
 			}
 		}

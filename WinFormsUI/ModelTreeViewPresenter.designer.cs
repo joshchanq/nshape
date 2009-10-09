@@ -40,7 +40,7 @@ namespace Dataweb.NShape.WinFormsUI {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-						 global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.nShape.ModelTreeAdapter", typeof(ModelTreeViewPresenter).Assembly);
+						 global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Dataweb.NShape.ModelTreeAdapter", typeof(ModelTreeViewPresenter).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;

@@ -1,36 +1,36 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Reflection;
+
 using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.Controllers {
 
-	public class ModelController : Component, IPropertyController {
+	public class ModelController : Component {
 
 		public ModelController() {
 		}
 
 
-		public ModelController(DiagramSetController diagramSetController) {
+		public ModelController(DiagramSetController diagramSetController)
+			: this() {
 			if (diagramSetController == null) throw new ArgumentNullException("diagramSetController");
 			DiagramSetController = diagramSetController;
 		}
@@ -43,51 +43,6 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		#region IPropertyController Members
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsSet;
-
-		public event EventHandler<PropertyControllerPropertyChangedEventArgs> PropertyChanged;
-
-		public event EventHandler<PropertyControllerEventArgs> RefreshObjects;
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsDeleted;
-
-		public event EventHandler ProjectClosing;
-
-
-		[Browsable(false)]
-		public bool ReadOnly {
-			get {
-				if (diagramSetController != null) return diagramSetController.ReadOnly;
-				else return (PropertyController != null) ? PropertyController.ReadOnly : true; 
-			}
-		}
-
-		
-		public void SetObject(int pageIndex, object selectedObject) {
-			if (Project == null) throw new InvalidOperationException("Project property is not set.");
-			if (diagramSetController != null) diagramSetController.SetObject(pageIndex, selectedObject);
-			else PropertyController.SetObject(pageIndex, selectedObject, selectedObjectsChangedCallback);
-		}
-
-
-		public void SetObjects(int pageIndex, IEnumerable selectedObjects) {
-			if (Project == null) throw new InvalidOperationException("Project property is not set.");
-			if (diagramSetController != null) diagramSetController.SetObjects(pageIndex, selectedObjects);
-			else PropertyController.SetObjects(pageIndex, selectedObjects, selectedObjectsChangedCallback);
-		}
-
-
-		public void SelectedObjectsChanged(int pageIndex, IEnumerable<object> modifiedObjects, PropertyInfo propertyInfo, object[] oldValues, object newValue) {
-			if (Project == null) throw new InvalidOperationException("Project property is not set.");
-			if (diagramSetController != null) diagramSetController.SelectedObjectsChanged(pageIndex, modifiedObjects, propertyInfo, oldValues, newValue);
-			else PropertyController.SelectedObjectsChanged(pageIndex, modifiedObjects, propertyInfo, oldValues, newValue);
-		}
-
-		#endregion
-
-	
 		#region [Public] Events
 
 		public event EventHandler Initialized;
@@ -111,6 +66,7 @@ namespace Dataweb.NShape.Controllers {
 		#region [Public] Properties
 
 		[ReadOnly(true)]
+		[Category("NShape")]
 		public Project Project {
 			get { return (diagramSetController == null) ? project : diagramSetController.Project; }
 			set {
@@ -127,6 +83,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
 			get { return diagramSetController; }
 			set {
@@ -215,20 +172,20 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		public IEnumerable<nShapeAction> GetActions(IReadOnlyCollection<IModelObject> modelObjects) {
+		public IEnumerable<MenuItemDef> GetActions(IReadOnlyCollection<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			
 			// New...
 			// Rename
 			yield return CreateDeleteModelObjectsAction(modelObjects);
 			
-			yield return new SeparatorAction();
+			yield return new SeparatorMenuItemDef();
 
 			yield return CreateCopyModelObjectsAction(modelObjects);
 			// Cut
 			yield return CreatePasteModelObjectsAction(modelObjects);
 
-			yield return new SeparatorAction();
+			yield return new SeparatorMenuItemDef();
 			
 			// Find model object...
 			yield return CreateFindShapesAction(modelObjects);
@@ -237,31 +194,10 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		private PropertyController PropertyController {
-			get {
-				if (diagramSetController != null) return null;
-				else {
-					if (PropertyController == null && project != null)
-						propertyController = new PropertyController(project);
-					return propertyController;
-				}
-			}
-		}
-
-
-		private void selectedObjectsChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs) {
-			throw new NotImplementedException();
-		}
-
-
 		#region [Private] Methods: (Un)Registering event handlers
 
 		private void DetachProject() {
 			if (Project != null) {
-				// Unregister and delete property controller
-				UnregisterPropertyControllerEvents();
-				propertyController = null;
-				// Unregister current project
 				UnregisterProjectEvents();
 				project = null;
 			}
@@ -272,8 +208,6 @@ namespace Dataweb.NShape.Controllers {
 			if (Project != null) {
 				// Register current project
 				RegisterProjectEvents();
-				// Register property controller events
-				RegisterPropertyControllerEvents();
 			}
 		}
 
@@ -339,42 +273,6 @@ namespace Dataweb.NShape.Controllers {
 			Project.Repository.TemplateUpdated -= repository_TemplateUpdated;
 			Project.Repository.TemplateDeleted -= repository_TemplateDeleted;
 			Project.Repository.TemplateShapeReplaced -= repository_TemplateShapeReplaced;
-		}
-
-
-		private void RegisterPropertyControllerEvents() {
-			if (diagramSetController != null) {
-				diagramSetController.ObjectsDeleted += propertyController_ObjectsDeleted;
-				diagramSetController.ObjectsSet += propertyController_ObjectsSet;
-				diagramSetController.ProjectClosing += propertyController_ProjectClosing;
-				diagramSetController.PropertyChanged += propertyController_PropertyChanged;
-				diagramSetController.RefreshObjects += propertyController_RefreshObjects;
-			} else {
-				Debug.Assert(Project != null);
-				PropertyController.ObjectsDeleted += propertyController_ObjectsDeleted;
-				PropertyController.ObjectsSet += propertyController_ObjectsSet;
-				PropertyController.ProjectClosing += propertyController_ProjectClosing;
-				PropertyController.PropertyChanged += propertyController_PropertyChanged;
-				PropertyController.RefreshObjects += propertyController_RefreshObjects;
-			}
-		}
-
-
-		private void UnregisterPropertyControllerEvents() {
-			if (diagramSetController != null) {
-				diagramSetController.ObjectsDeleted += propertyController_ObjectsDeleted;
-				diagramSetController.ObjectsSet += propertyController_ObjectsSet;
-				diagramSetController.ProjectClosing += propertyController_ProjectClosing;
-				diagramSetController.PropertyChanged += propertyController_PropertyChanged;
-				diagramSetController.RefreshObjects += propertyController_RefreshObjects;
-			} else {
-				Debug.Assert(Project != null);
-				PropertyController.ObjectsDeleted -= propertyController_ObjectsDeleted;
-				PropertyController.ObjectsSet -= propertyController_ObjectsSet;
-				PropertyController.ProjectClosing -= propertyController_ProjectClosing;
-				PropertyController.PropertyChanged -= propertyController_PropertyChanged;
-				PropertyController.RefreshObjects -= propertyController_RefreshObjects;
-			}
 		}
 
 		#endregion
@@ -457,38 +355,9 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		#region [Private] Methods: PropertyController event handler implementations
-
-		private void propertyController_RefreshObjects(object sender, PropertyControllerEventArgs e) {
-			if (RefreshObjects != null) RefreshObjects(this, e);
-		}
-
-
-		private void propertyController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
-			if (PropertyChanged != null) PropertyChanged(this, e);
-		}
-
-
-		private void propertyController_ProjectClosing(object sender, EventArgs e) {
-			if (ProjectClosing != null) ProjectClosing(this, e);
-		}
-
-
-		private void propertyController_ObjectsSet(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsSet != null) ObjectsSet(this, e);
-		}
-
-
-		private void propertyController_ObjectsDeleted(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsDeleted != null) ObjectsDeleted(sender, e);
-		}
-
-		#endregion
-
-
 		#region [Private] Methods: Create actions
 
-		private nShapeAction CreateDeleteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private MenuItemDef CreateDeleteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			string description;
 			bool isFeasible;
 			if (modelObjects != null && modelObjects.Count > 0) {
@@ -506,25 +375,25 @@ namespace Dataweb.NShape.Controllers {
 				description = "No model objects selected";
 			}
 
-			return new DelegateAction("Delete", null, Color.Empty, "DeleteModelObjectsAction",
+			return new DelegateMenuItemDef("Delete", null, Color.Empty, "DeleteModelObjectsAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => DeleteModelObjects(modelObjects));
 		}
 
 
-		private nShapeAction CreateCopyModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private MenuItemDef CreateCopyModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (modelObjects != null && modelObjects.Count > 0);
 			string description;
 			if (isFeasible)
 				description = string.Format("Copy {0} model object{1}.", modelObjects.Count, (modelObjects.Count > 1) ? "s" : string.Empty);
 			else description = "No model objects selected";
-			return new DelegateAction("Copy", null, Color.Empty, "CopyModelObjectsAction",
+			return new DelegateMenuItemDef("Copy", null, Color.Empty, "CopyModelObjectsAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => Copy(modelObjects));
 		}
 
 
-		private nShapeAction CreatePasteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private MenuItemDef CreatePasteModelObjectsAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (copyPasteBuffer.Count > 0 && modelObjects.Count <= 1);
 			string description;
 			if (isFeasible)
@@ -536,16 +405,16 @@ namespace Dataweb.NShape.Controllers {
 				parent = mo;
 				break;
 			}
-			return new DelegateAction("Paste", null, Color.Empty, "DeleteModelObjectsAction",
+			return new DelegateMenuItemDef("Paste", null, Color.Empty, "DeleteModelObjectsAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => Paste(parent));
 		}
 
 
-		private nShapeAction CreateFindShapesAction(IReadOnlyCollection<IModelObject> modelObjects) {
+		private MenuItemDef CreateFindShapesAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (diagramSetController != null);
 			string description = "Find and select all assigned shapes.";
-			return new DelegateAction("Find assigned shapes", null, Color.Empty, "FindShapesAction",
+			return new DelegateMenuItemDef("Find assigned shapes", null, Color.Empty, "FindShapesAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => FindShapes(modelObjects));
 		}
@@ -557,8 +426,6 @@ namespace Dataweb.NShape.Controllers {
 
 		private DiagramSetController diagramSetController;
 		private Project project;
-		private PropertyController propertyController;
-
 		private List<IModelObject> copyPasteBuffer = new List<IModelObject>();
 
 		#endregion

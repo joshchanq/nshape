@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -2552,9 +2552,12 @@ namespace Dataweb.NShape.Advanced {
 					double rd = Math.Sqrt(d);
 					double u1 = (-b - rd) / a;
 					double u2 = (-b + rd) / a;
-					return ((0 <= u1 && u1 <= 1) || (0 <= u2 && u2 <= 1));
-				}
-				else return true;
+					if (double.IsNaN(u1) && (0 <= u1 && u1 <= 1))
+						return true;
+					else if (!double.IsNaN(u2) && (0 <= u2 && u2 <= 1))
+						return true;
+					else return false;
+				} else return true;
 			}
 		}
 
@@ -3442,7 +3445,7 @@ namespace Dataweb.NShape.Advanced {
 				double rd = Math.Sqrt(d);
 				double u1 = (-b - rd) / a;
 				double u2 = (-b + rd) / a;
-				if (0 <= u1 && u1 <= 1 || !isSegment) {
+				if (!double.IsNaN(u1) && (0 <= u1 && u1 <= 1 || !isSegment)) {
 					x = (float)(x1 + dXLine * u1);
 					y = (float)(y1 + dYLine * u1);
 					if (ellipseAngleDeg != 0) RotatePoint(centerX, centerY, ellipseAngleDeg, ref x, ref y);
@@ -3450,7 +3453,7 @@ namespace Dataweb.NShape.Advanced {
 					result.Y = (int)Math.Round(y);
 					yield return result;
 				}
-				if (0 <= u2 && u2 <= 1 || !isSegment) {
+				if (!double.IsNaN(u2) && (0 <= u2 && u2 <= 1 || !isSegment)) {
 					x = (float)(x1 + dXLine * u2);
 					y = (float)(y1 + dYLine * u2);
 					if (ellipseAngleDeg != 0) RotatePoint(centerX, centerY, ellipseAngleDeg, ref x, ref y);
@@ -3499,7 +3502,7 @@ namespace Dataweb.NShape.Advanced {
 				double rd = Math.Sqrt(d);
 				double u1 = (-b - rd) / a;
 				double u2 = (-b + rd) / a;
-				if (0 <= u1 && u1 <= 1 || !isSegment) {
+				if (!double.IsNaN(u1) && (0 <= u1 && u1 <= 1 || !isSegment)) {
 					x = (float)(x1 + dXLine * u1);
 					y = (float)(y1 + dYLine * u1);
 					if (ellipseAngleDeg != 0) RotatePoint(centerX, centerY, ellipseAngleDeg, ref x, ref y);
@@ -3507,7 +3510,7 @@ namespace Dataweb.NShape.Advanced {
 					result.Y = y;
 					yield return result;
 				}
-				if (0 <= u2 && u2 <= 1 || !isSegment) {
+				if (!double.IsNaN(u2) && (0 <= u2 && u2 <= 1 || !isSegment)) {
 					x = (float)(x1 + dXLine * u2);
 					y = (float)(y1 + dYLine * u2);
 					if (ellipseAngleDeg != 0) RotatePoint(centerX, centerY, ellipseAngleDeg, ref x, ref y);
@@ -4334,7 +4337,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Calculates the x-axis aligned bounding rectangle of the given point collection. 
+		/// Calculates the axis-aligned bounding rectangle of the given point collection. 
 		/// </summary>
 		/// <param name="points">Collection of points</param>
 		/// <param name="rectangle">The resulting bounding rectangle</param>
@@ -4360,7 +4363,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Calculates the x-axis aligned bounding rectangle of the given point collection
+		/// Calculates the axis-aligned bounding rectangle of the given point collection
 		/// </summary>
 		public static void CalcBoundingRectangle(IEnumerable<PointF> points, out Rectangle rectangle) {
 			CalcBoundingRectangle(points, out rectangle, false);

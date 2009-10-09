@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -48,7 +48,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Defines the directory, where the nShape project is stored.
+		/// Defines the directory, where the NShape project is stored.
 		/// </summary>
 		public string DirectoryName {
 			get { return directory; }
@@ -72,7 +72,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Defines the file projectName without extension, where the nShape designs are stored.
+		/// Defines the file projectName without extension, where the NShape designs are stored.
 		/// </summary>
 		public string DesignFileName {
 			get { return designFileName; }
@@ -106,7 +106,7 @@ namespace Dataweb.NShape {
 				string result;
 				if (string.IsNullOrEmpty(directory)) {
 					result = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-					result += Path.DirectorySeparatorChar + "Dataweb" + Path.DirectorySeparatorChar + "nShape";
+					result += Path.DirectorySeparatorChar + "Dataweb" + Path.DirectorySeparatorChar + "NShape";
 				} else result = directory;
 				if (string.IsNullOrEmpty(DesignFileName)) throw new InvalidOperationException("Project name for XML repository not set.");
 				result += Path.DirectorySeparatorChar;
@@ -243,8 +243,8 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		public override void SaveChanges(IStoreCache cache) {
 			if (cache == null) throw new ArgumentNullException("cache");
-			if (!isOpen) throw new nShapeException("Store is not open.");
-			if (string.IsNullOrEmpty(ProjectFilePath)) throw new nShapeException("File name was not specified.");
+			if (!isOpen) throw new NShapeException("Store is not open.");
+			if (string.IsNullOrEmpty(ProjectFilePath)) throw new NShapeException("File name was not specified.");
 			// If it is a new project, we must create the file. Otherwise it is already open.
 			if (cache.ProjectId == null) {
 				CreateFile(cache, ProjectFilePath, false);
@@ -288,10 +288,10 @@ namespace Dataweb.NShape {
 				try {
 					xmlReader.MoveToContent();
 					if (xmlReader.Name != rootTag || !xmlReader.HasAttributes)
-						throw new nShapeException("XML file '{0}' is not a valid nShape project file.", ProjectFilePath);
+						throw new NShapeException("XML file '{0}' is not a valid NShape project file.", ProjectFilePath);
 					version = int.Parse(xmlReader.GetAttribute(0));
 					if (version < 1 || version > currentVersion)
-						throw new nShapeException("XML file has an invalid version or is newer than this version of nShape.");
+						throw new NShapeException("XML file has an invalid version or is newer than this version of NShape.");
 					cache.SetRepositoryBaseVersion(version);
 					// Reading functions check whether cache is open.
 					// isOpen = true;
@@ -314,7 +314,7 @@ namespace Dataweb.NShape {
 		#region Read from XML file
 
 		private void ReadProjectSettings(IStoreCache cache, XmlReader xmlReader) {
-			if (!XmlSkipToElement(projectTag)) throw new nShapeException("Invalid XML file. Project tag not found.");
+			if (!XmlSkipToElement(projectTag)) throw new NShapeException("Invalid XML file. Project tag not found.");
 			// Load project data
 			IEntityType projectSettingsEntityType = cache.FindEntityTypeByName(ProjectSettings.EntityTypeName);
 			ProjectSettings project = (ProjectSettings)projectSettingsEntityType.CreateInstanceForLoading();
@@ -391,7 +391,7 @@ namespace Dataweb.NShape {
 
 		private void ReadStyles(IStoreCache cache, XmlReader xmlReader, Design design, IEntityType styleEntityType) {
 			if (!xmlReader.IsStartElement(GetElementCollectionTag(styleEntityType)))
-				throw new nShapeException("Element '{0}' expected but not found.", GetElementCollectionTag(styleEntityType));
+				throw new NShapeException("Element '{0}' expected but not found.", GetElementCollectionTag(styleEntityType));
 			xmlReader.Read(); // Read over the collection tag
 			repositoryReader.ResetFieldReading(styleEntityType.PropertyDefinitions);
 			while (xmlReader.Name == GetElementTag(styleEntityType)) {
@@ -449,7 +449,7 @@ namespace Dataweb.NShape {
 			string templateCollectionTag = GetElementCollectionTag(templateEntityType);
 			string templateTag = GetElementTag(templateEntityType);
 			if (!xmlReader.IsStartElement(templateCollectionTag))
-				throw new nShapeException("Element '{0}' expected but not found.", templateCollectionTag);
+				throw new NShapeException("Element '{0}' expected but not found.", templateCollectionTag);
 			xmlReader.Read(); // Read over the collection tag
 			repositoryReader.ResetFieldReading(templateEntityType.PropertyDefinitions);
 			XmlStoreReader innerReader = new XmlStoreReader(xmlReader, this, cache);
@@ -501,7 +501,7 @@ namespace Dataweb.NShape {
 			string modelMappingTag = xmlReader.Name;
 			IEntityType entityType = cache.FindEntityTypeByElementName(modelMappingTag);
 			if (entityType == null)
-				throw new nShapeException("No shape type found for tag '{0}'.", modelMappingTag);
+				throw new NShapeException("No shape type found for tag '{0}'.", modelMappingTag);
 			XmlSkipStartElement(modelMappingTag);
 			IModelMapping modelMapping = (IModelMapping)entityType.CreateInstanceForLoading();
 			reader.ResetFieldReading(entityType.PropertyDefinitions);
@@ -567,7 +567,7 @@ namespace Dataweb.NShape {
 			string shapeTag = xmlReader.Name;
 			IEntityType shapeEntityType = cache.FindEntityTypeByElementName(shapeTag);
 			if (shapeEntityType == null)
-				throw new nShapeException("No shape type found for tag '{0}'.", shapeTag);
+				throw new NShapeException("No shape type found for tag '{0}'.", shapeTag);
 			XmlSkipStartElement(shapeTag);
 			Shape shape = (Shape)shapeEntityType.CreateInstanceForLoading();
 			reader.ResetFieldReading(shapeEntityType.PropertyDefinitions);
@@ -584,7 +584,7 @@ namespace Dataweb.NShape {
 					Shape s = ReadShape(cache, reader, shape);
 					shape.Children.Add(s);
 				} while (xmlReader.Name != childrenTag && xmlReader.NodeType != XmlNodeType.EndElement);
-				if (xmlReader.Name != childrenTag) throw new nShapeException("Shape children are invalid in XML document.");
+				if (xmlReader.Name != childrenTag) throw new NShapeException("Shape children are invalid in XML document.");
 				XmlReadEndElement(childrenTag);
 			}
 			// Reads the shape's end element
@@ -633,7 +633,7 @@ namespace Dataweb.NShape {
 			string modelObjectTag = xmlReader.Name;
 			IEntityType entityType = cache.FindEntityTypeByElementName(modelObjectTag);
 			if (entityType == null)
-				throw new nShapeException("No model object type found for tag '{0}'.", modelObjectTag);
+				throw new NShapeException("No model object type found for tag '{0}'.", modelObjectTag);
 			XmlSkipStartElement(modelObjectTag);
 			IModelObject modelObject = (IModelObject)entityType.CreateInstanceForLoading();
 			reader.ResetFieldReading(entityType.PropertyDefinitions);
@@ -649,7 +649,7 @@ namespace Dataweb.NShape {
 				do {
 					IModelObject m = ReadModelObject(cache, reader, modelObject);
 				} while (xmlReader.Name != childrenTag && xmlReader.NodeType != XmlNodeType.EndElement);
-				if (xmlReader.Name != childrenTag) throw new nShapeException("Shape children are invalid in XML document.");
+				if (xmlReader.Name != childrenTag) throw new NShapeException("Shape children are invalid in XML document.");
 				XmlReadEndElement(childrenTag);
 			}
 			// Reads the shape's end element
@@ -718,7 +718,7 @@ namespace Dataweb.NShape {
 			WriteTemplates(cache);
 			WriteDiagrams(cache);
 			XmlCloseElement(); // project tag
-			XmlCloseElement(); // nShape tag
+			XmlCloseElement(); // NShape tag
 			xmlWriter.WriteEndDocument();
 		}
 
@@ -760,7 +760,7 @@ namespace Dataweb.NShape {
 						WriteDesign(cache, designItem.ObjectRef);
 						break;
 					default:
-						throw new nShapeUnsupportedValueException(designItem.State.GetType(), designItem.State);
+						throw new NShapeUnsupportedValueException(designItem.State.GetType(), designItem.State);
 				}
 			}
 			// Save new designs
@@ -899,7 +899,7 @@ namespace Dataweb.NShape {
 			if (modelMapping is NumericModelMapping) entityTypeName = NumericModelMapping.EntityTypeName;
 			else if (modelMapping is FormatModelMapping) entityTypeName = FormatModelMapping.EntityTypeName;
 			else if (modelMapping is StyleModelMapping) entityTypeName = StyleModelMapping.EntityTypeName;
-			else throw new nShapeUnsupportedValueException(modelMapping);
+			else throw new NShapeUnsupportedValueException(modelMapping);
 
 			IEntityType entityType = cache.FindEntityTypeByName(entityTypeName);
 			// write Shape-Tag with EntityType
@@ -1101,9 +1101,9 @@ namespace Dataweb.NShape {
 			private string GetXmlAttributeName(int propertyIndex) {
 				/* Not required for inner objects
 				 * if (Entity == null) 
-					throw new nShapeException("Persistable object to store is not set. Please assign an IEntity object to the property Object before calling a save method.");*/
+					throw new NShapeException("Persistable object to store is not set. Please assign an IEntity object to the property Object before calling a save method.");*/
 				if (propertyInfos == null)
-					throw new nShapeException("EntityType is not set. Please assign an EntityType to the property EntityType before calling a save method.");
+					throw new NShapeException("EntityType is not set. Please assign an EntityType to the property EntityType before calling a save method.");
 				return propertyIndex == -1 ? "id" : propertyInfos[propertyIndex].ElementName;
 			}
 
@@ -1212,8 +1212,8 @@ namespace Dataweb.NShape {
 								Rectangle bounds = Rectangle.Empty;
 								bounds.Width = image.Width;
 								bounds.Height = image.Height;
-								ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(nShapeImageLayout.Original);
-								GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, nShapeImageLayout.Original, bounds, bounds);
+								ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
+								GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, ImageLayoutMode.Original, bounds, bounds);
 							}
 						}
 					} else image.Save(filePath, image.RawFormat);
@@ -1354,7 +1354,7 @@ namespace Dataweb.NShape {
 			#region RepositoryReader Implementation
 
 			public override void BeginReadInnerObjects() {
-				if (propertyInfos == null) throw new nShapeException("Property EntityType is not set.");
+				if (propertyInfos == null) throw new NShapeException("Property EntityType is not set.");
 				if (innerObjectsReader != null) throw new InvalidOperationException("EndReadInnerObjects was not called.");
 				++PropertyIndex;
 				string elementName = Cache.CalculateElementName(propertyInfos[PropertyIndex].Name);
@@ -1478,8 +1478,8 @@ namespace Dataweb.NShape {
 
 			protected override void ValidatePropertyIndex() {
 				base.ValidatePropertyIndex();
-				if (PropertyIndex >= xmlReader.AttributeCount)
-					throw new nShapeException("Element {0} of the entity could not be loaded because the repository is invalid. Check whether it is a valid and/or up-to-date repository.", PropertyIndex);
+				if (PropertyIndex + xmlAttributeOffset >= xmlReader.AttributeCount)
+					throw new NShapeException("An entity tries to read {0} properties although there are only {1} properties stored in the repository. Check whether the repository is valid and/or up-to-date.", PropertyIndex + xmlAttributeOffset + 1, xmlReader.AttributeCount);
 			}
 
 

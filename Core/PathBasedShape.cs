@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -64,9 +64,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Category("Layout")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("Horizontal position of the shape's reference point.")]
 		public override int X {
 			get { return location.X; }
 			set {
@@ -79,9 +76,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Category("Layout")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("Vertical position of the shape's reference point.")]
 		public override int Y {
 			get { return location.Y; }
 			set {
@@ -90,6 +84,134 @@ namespace Dataweb.NShape.Advanced {
 					MoveTo(origValue, Y);
 					throw new InvalidOperationException(string.Format("Shape cannot move to {0}", new Point(location.X, value)));
 				}
+			}
+		}
+
+
+		// Default implementation assuming a rectangular outline.
+		public override Point CalculateConnectionFoot(int startX, int startY) {
+			Point result = Geometry.InvalidPoint;
+			Rectangle boundingRect = GetBoundingRectangle(true);
+			result = Geometry.IntersectLineWithRectangle(startX, startY, X, Y, boundingRect.X, boundingRect.Y, boundingRect.Right, boundingRect.Bottom);
+			if (result == Geometry.InvalidPoint) result = Center;
+			return result;
+		}
+
+
+		public override void DrawOutline(Graphics graphics, Pen pen) {
+			base.DrawOutline(graphics, pen);
+			graphics.DrawPath(pen, Path);
+		}
+
+
+		public override Point GetControlPointPosition(ControlPointId controlPointId) {
+			if (controlPointId == ControlPointId.Reference) {
+				Point center = Point.Empty;
+				center.X = X;
+				center.Y = Y;
+				return center;
+			} else if (controlPointId == ControlPointId.None)
+				throw new NShapeException("NotSupported PointId.");
+			UpdateDrawCache();
+			int index = GetControlPointIndex(controlPointId);
+			return controlPoints[index];
+		}
+
+
+		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
+			if (controlPointId == ControlPointId.Reference)
+				return (controlPointCapability & ControlPointCapabilities.Connect) != 0;
+			else return base.HasControlPointCapability(controlPointId, controlPointCapability);
+		}
+
+
+		public override void Invalidate() {
+			base.Invalidate();
+			if (DisplayService != null) DisplayService.Invalidate(GetBoundingRectangle(false));
+		}
+
+		#endregion
+
+
+		#region IEntity Members
+
+		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+			base.LoadFieldsCore(reader, version);
+			angle = reader.ReadInt32();
+			privateFillStyle = reader.ReadFillStyle();
+		}
+
+
+		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			base.SaveFieldsCore(writer, version);
+			writer.WriteInt32(Angle);
+			writer.WriteStyle(privateFillStyle);
+		}
+
+
+		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+			foreach (EntityPropertyDefinition pi in ShapeBase.GetPropertyDefinitions(version))
+				yield return pi;
+			yield return new EntityFieldDefinition("Angle", typeof(int));
+			yield return new EntityFieldDefinition("FillStyle", typeof(object));
+		}
+
+		#endregion
+
+
+		#region IPlanarShape Members
+
+		[Category("Layout")]
+		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
+		[PropertyMappingId(PropertyIdAngle)]
+		[RequiredPermission(Permission.Layout)]
+		public virtual int Angle {
+			get { return angle; }
+			set { Rotate(value - angle, X, Y); }
+		}
+
+
+		[Category("Appearance")]
+		[Description("Defines the appearence of the shape's interior.")]
+		[PropertyMappingId(PropertyIdFillStyle)]
+		[RequiredPermission(Permission.Present)]
+		public virtual IFillStyle FillStyle {
+			get { return privateFillStyle ?? ((PathBasedPlanarShape)Template.Shape).FillStyle; }
+			set {
+				privateFillStyle = (Template != null && value == ((PathBasedPlanarShape)Template.Shape).FillStyle) ? null : value;
+				Invalidate();
+			}
+		}
+
+		#endregion
+
+
+		protected internal PathBasedPlanarShape(ShapeType shapeType, Template template)
+			: base(shapeType, template) {
+			Construct();
+		}
+
+
+		protected internal PathBasedPlanarShape(ShapeType shapeType, IStyleSet styleSet)
+			: base(shapeType, styleSet) {
+			Construct();
+		}
+
+
+		private void Construct() {
+			ControlPoints = new Point[ControlPointCount];
+		}
+
+
+		protected override void ProcessExecModelPropertyChange(IModelMapping propertyMapping) {
+			switch (propertyMapping.ShapePropertyId) {
+				case PropertyIdAngle: Angle = propertyMapping.GetInteger(); break;
+				case PropertyIdFillStyle:
+					// assign private stylebecause if the style matches the template's style, it would not be assigned.
+					privateFillStyle = (IFillStyle)propertyMapping.GetStyle();
+					Invalidate();
+					break;
+				default: base.ProcessExecModelPropertyChange(propertyMapping); break;
 			}
 		}
 
@@ -171,134 +293,6 @@ namespace Dataweb.NShape.Advanced {
 					result.Offset(X, Y);
 				} else Geometry.CalcBoundingRectangle(ControlPoints, out result);
 				return result;
-			}
-		}
-
-
-		public override void DrawOutline(Graphics graphics, Pen pen) {
-			base.DrawOutline(graphics, pen);
-			graphics.DrawPath(pen, Path);
-		}
-
-
-		public override Point GetControlPointPosition(ControlPointId controlPointId) {
-			if (controlPointId == ControlPointId.Reference) {
-				Point center = Point.Empty;
-				center.X = X;
-				center.Y = Y;
-				return center;
-			} else if (controlPointId == ControlPointId.None)
-				throw new nShapeException("NotSupported PointId.");
-			UpdateDrawCache();
-			int index = GetControlPointIndex(controlPointId);
-			return controlPoints[index];
-		}
-
-
-		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			if (controlPointId == ControlPointId.Reference)
-				return (controlPointCapability & ControlPointCapabilities.Connect) != 0;
-			else return base.HasControlPointCapability(controlPointId, controlPointCapability);
-		}
-
-
-		public override void Invalidate() {
-			base.Invalidate();
-			if (DisplayService != null) DisplayService.Invalidate(GetBoundingRectangle(false));
-		}
-
-		#endregion
-
-
-		#region IEntity Members
-
-		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
-			base.LoadFieldsCore(reader, version);
-			angle = reader.ReadInt32();
-			privateFillStyle = reader.ReadFillStyle();
-		}
-
-
-		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
-			base.SaveFieldsCore(writer, version);
-			writer.WriteInt32(Angle);
-			writer.WriteStyle(privateFillStyle);
-		}
-
-
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in ShapeBase.GetPropertyDefinitions(version))
-				yield return pi;
-			yield return new EntityFieldDefinition("Angle", typeof(int));
-			yield return new EntityFieldDefinition("FillStyle", typeof(object));
-		}
-
-		#endregion
-
-
-		#region IPlanarShape Members
-
-		[PropertyMappingId(PropertyIdAngle)]
-		[Category("Layout")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
-		public virtual int Angle {
-			get { return angle; }
-			set { Rotate(value - angle, X, Y); }
-		}
-
-
-		[PropertyMappingId(PropertyIdFillStyle)]
-		[Category("Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("Defines the appearence of the shape's interior.")]
-		public virtual IFillStyle FillStyle {
-			get { return privateFillStyle ?? ((PathBasedPlanarShape)Template.Shape).FillStyle; }
-			set {
-				privateFillStyle = (Template != null && value == ((PathBasedPlanarShape)Template.Shape).FillStyle) ? null : value;
-				Invalidate();
-			}
-		}
-
-
-		// Default implementation assuming a rectangular outline.
-		public override Point CalculateConnectionFoot(int startX, int startY) {
-			Point result = Geometry.InvalidPoint;
-			Rectangle boundingRect = GetBoundingRectangle(true);
-			result = Geometry.IntersectLineWithRectangle(startX, startY, X, Y, boundingRect.X, boundingRect.Y, boundingRect.Right, boundingRect.Bottom);
-			if (result == Geometry.InvalidPoint) result = Center;
-			return result;
-		}
-
-		#endregion
-
-
-		protected internal PathBasedPlanarShape(ShapeType shapeType, Template template)
-			: base(shapeType, template) {
-			Construct();
-		}
-
-
-		protected internal PathBasedPlanarShape(ShapeType shapeType, IStyleSet styleSet)
-			: base(shapeType, styleSet) {
-			Construct();
-		}
-
-
-		private void Construct() {
-			ControlPoints = new Point[ControlPointCount];
-		}
-
-
-		protected override void ProcessExecModelPropertyChange(IModelMapping propertyMapping) {
-			switch (propertyMapping.ShapePropertyId) {
-				case PropertyIdAngle: Angle = propertyMapping.GetInteger(); break;
-				case PropertyIdFillStyle:
-					// assign private stylebecause if the style matches the template's style, it would not be assigned.
-					privateFillStyle = (IFillStyle)propertyMapping.GetStyle();
-					Invalidate();
-					break;
-				default: base.ProcessExecModelPropertyChange(propertyMapping); break;
 			}
 		}
 
@@ -427,7 +421,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Calculates the coordinates of the control points.
 		/// </summary>
 		/// <remarks>
-		/// The control point positions have to be calculated assuming X|Y at the coordinate origin 0|0 because it will be translated to the ObjectRef position X|Y after calculating.
+		/// The control point positions have to be calculated assuming X|Y at the coordinate origin 0|0 because it will be translated to the current position X|Y after calculating.
 		/// (unrotated) shape's control points.		/// 
 		/// </remarks>
 		protected abstract void CalcControlPoints();

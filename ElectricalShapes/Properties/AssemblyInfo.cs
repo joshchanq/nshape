@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an library is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an library.
-[assembly: AssemblyTitle("nShape Electrical Shapes")]
+[assembly: AssemblyTitle("NShape Electrical Shapes")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH")]

@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="3.5" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{3C8D7E14-7DF7-409B-8BEC-07DD837FF205}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Database_Designer</RootNamespace>
+    <AssemblyName>Database Designer</AssemblyName>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Dataweb.NShape, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\bin\Dataweb.NShape.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\bin\Dataweb.NShape.GeneralShapes.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Dataweb.NShape.SoftwareArchitectureShapes, Version=0.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\bin\Dataweb.NShape.SoftwareArchitectureShapes.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Dataweb.NShape.WinFormsUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\bin\Dataweb.NShape.WinFormsUI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="PropertyWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PropertyWindow.Designer.cs">
+      <DependentUpon>PropertyWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ToolBoxWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ToolBoxWindow.Designer.cs">
+      <DependentUpon>ToolBoxWindow.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="PropertyWindow.resx">
+      <DependentUpon>PropertyWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ToolBoxWindow.resx">
+      <DependentUpon>ToolBoxWindow.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NewBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OpenBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\SaveBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ZoomInBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ZoomOutBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DesignEditorBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CutBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CopyBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PasteBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeleteBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ToggleGridBtn2.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ToolBoxBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DiagramPropertiesBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ResetProjectBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\PropertiesBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DeleteDiagramBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DiagramBtn.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\NY028_3.png" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

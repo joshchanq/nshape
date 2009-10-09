@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an library is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an library.
-[assembly: AssemblyTitle("nShape General ModelObjects")]
+[assembly: AssemblyTitle("NShape General ModelObjects")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH - www.dataweb.de")]
-[assembly: AssemblyProduct("nShape General ModelObjects")]
+[assembly: AssemblyProduct("NShape General ModelObjects")]
 [assembly: AssemblyCopyright("Copyright © dataweb GmbH 2007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

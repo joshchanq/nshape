@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -28,17 +28,17 @@ namespace Dataweb.NShape.Controllers {
 
 	public class DiagramPresenterShapeClickEventArgs : EventArgs {
 
-		public DiagramPresenterShapeClickEventArgs(Shape shape, nShapeMouseEventArgs mouseEventArgs) {
+		public DiagramPresenterShapeClickEventArgs(Shape shape, MouseEventArgsDg mouseEventArgs) {
 			this.shape = shape;
 			this.mouseEventArgs = mouseEventArgs;
 		}
 
 		public Shape Shape { get { return shape; } }
 
-		public nShapeMouseEventArgs Mouse { get { return mouseEventArgs; } }
+		public MouseEventArgsDg Mouse { get { return mouseEventArgs; } }
 
 		private Shape shape;
-		private nShapeMouseEventArgs mouseEventArgs;
+		private MouseEventArgsDg mouseEventArgs;
 	}
 
 
@@ -312,15 +312,15 @@ namespace Dataweb.NShape.Controllers {
 
 		void DrawShapes(IEnumerable<Shape> shapes);
 
-		void DrawShapeOutline(nShapeDrawMode drawMode, Shape shape);
+		void DrawShapeOutline(IndicatorDrawMode drawMode, Shape shape);
 
-		void DrawConnectionPoint(nShapeDrawMode drawMode, Shape shape, ControlPointId pointId);
+		void DrawConnectionPoint(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawRotateGrip(nShapeDrawMode drawMode, Shape shape, ControlPointId pointId);
+		void DrawRotateGrip(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawResizeGrip(nShapeDrawMode drawMode, Shape shape, ControlPointId pointId);
+		void DrawResizeGrip(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawCaptionBounds(nShapeDrawMode drawMode, ICaptionedShape shape, int captionIndex);
+		void DrawCaptionBounds(IndicatorDrawMode drawMode, ICaptionedShape shape, int captionIndex);
 
 		void DrawSnapIndicators(Shape shape);
 

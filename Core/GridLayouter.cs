@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -68,7 +68,7 @@ namespace Dataweb.NShape.Layouters {
 		public override bool ExecuteStep() {
 			// If executing multiple times in a row, we want the layouter to restart from the
 			// original situation.
-			if (project.History.IsNextUndoCommand(lastCommand))
+			if (lastCommand != null && project.History.IsNextUndoCommand(lastCommand))
 				project.History.Undo();
 			else lastCommand = null;
 
@@ -341,7 +341,7 @@ namespace Dataweb.NShape.Layouters {
 
 
 		public override void Prepare() {
-			if (selectedShapes.Count <= 0) throw new nShapeException("There are no shapes.");
+			if (selectedShapes.Count <= 0) throw new NShapeException("There are no shapes.");
 			// Wir mache die Gitterlinien soweit auseinander, das das durchschnittliche 
 			// Shape noch einen Abstand von 0.1 durchschnittlicher Shape-Größe hat
 			int sumWidths = 0;

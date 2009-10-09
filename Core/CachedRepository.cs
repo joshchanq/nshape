@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -514,7 +514,7 @@ namespace Dataweb.NShape.Advanced {
 		protected virtual void ValidatePropertyIndex() {
 			// We cannot check propertyIndex < 0 because some readers use PropertyIndex == -1 for the id.
 			if (propertyIndex >= propertyInfos.Count)
-				throw new nShapeException("An entity tries to read more properties from the repository than there are defined.");
+				throw new NShapeException("An entity tries to read more properties from the repository than there are defined.");
 		}
 
 
@@ -872,10 +872,10 @@ namespace Dataweb.NShape.Advanced {
 		public void AddEntityType(IEntityType entityType) {
 			if (entityType == null) throw new ArgumentNullException("entityType");
 			if (entityTypes.ContainsKey(CalcElementName(entityType.FullName)))
-				throw new nShapeException("The repository already contains an entity type called '{0}'.", entityType.FullName);
+				throw new NShapeException("The repository already contains an entity type called '{0}'.", entityType.FullName);
 			foreach (KeyValuePair<string, IEntityType> item in entityTypes) {
 				if (item.Value.FullName.Equals(entityType.FullName, StringComparison.InvariantCultureIgnoreCase))
-					throw new nShapeException("The repository already contains an entity type called '{0}'.", entityType.FullName);
+					throw new NShapeException("The repository already contains an entity type called '{0}'.", entityType.FullName);
 			}
 			// Calculate the XML element names for all entity identifiers
 			entityType.ElementName = CalcElementName(entityType.FullName);
@@ -913,7 +913,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public virtual void Create() {
 			AssertClosed();
-			if (string.IsNullOrEmpty(projectName)) throw new nShapeException("No project name defined.");
+			if (string.IsNullOrEmpty(projectName)) throw new NShapeException("No project name defined.");
 			settings = new ProjectSettings();
 			newProjects.Add(settings, projectOwner);
 			projectDesign = new Design("Project");
@@ -929,7 +929,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public void Open() {
 			AssertClosed();
-			if (string.IsNullOrEmpty(projectName)) throw new nShapeException("No project name defined.");
+			if (string.IsNullOrEmpty(projectName)) throw new NShapeException("No project name defined.");
 			if (store == null) throw new InvalidOperationException("Repository has no store attached. An in-memory repository must be created, not opened.");
 			store.ProjectName = projectName;
 			store.Open(this);
@@ -937,18 +937,20 @@ namespace Dataweb.NShape.Advanced {
 			store.LoadProjects(this, FindEntityType(ProjectSettings.EntityTypeName, true));
 			IEnumerator<EntityBucket<ProjectSettings>> projectEnumerator = projects.Values.GetEnumerator();
 			if (!projectEnumerator.MoveNext())
-				throw new nShapeException("Project '{0}' not found in repository.", projectName);
+				throw new NShapeException("Project '{0}' not found in repository.", projectName);
 			settings = projectEnumerator.Current.ObjectRef;
 			if (projectEnumerator.MoveNext())
-				throw new nShapeException("Two projects named '{0}' found in repository.", projectName);
+				throw new NShapeException("Two projects named '{0}' found in repository.", projectName);
 			// Load the design, there must be exactly one returned
 			store.LoadDesigns(this, ((IEntity)settings).Id);
 			IEnumerator<EntityBucket<Design>> designEnumerator = designs.Values.GetEnumerator();
 			if (!designEnumerator.MoveNext())
-				throw new nShapeException("Project styles not found.");
+				throw new NShapeException("Project styles not found.");
 			projectDesign = designEnumerator.Current.ObjectRef;
-			if (designEnumerator.MoveNext())
-				throw new nShapeException("More than one project design found in repository.");
+			if (designEnumerator.MoveNext()) {
+				//throw new NShapeException("More than one project design found in repository.");
+				// ToDo: Load addinional designs
+			}
 			isOpen = true;
 			isModified = false;
 		}
@@ -1127,7 +1129,7 @@ namespace Dataweb.NShape.Advanced {
 				AssertStoreExists();
 				store.LoadTemplates(this, ((IEntity)settings).Id);
 				if (!templates.TryGetValue(id, out result))
-					throw new nShapeException("Template with id '{0}' not found in store.", id);
+					throw new NShapeException("Template with id '{0}' not found in store.", id);
 			}
 			return result.ObjectRef;
 		}
@@ -1235,7 +1237,7 @@ namespace Dataweb.NShape.Advanced {
 				DoUpdateModelMapping(modelMapping);
 				if (owner == null) owner = GetModelMappingOwner(modelMapping);
 				else if (owner != GetModelMappingOwner(modelMapping)) 
-					throw new nShapeException("Invalid model mapping owner.");
+					throw new NShapeException("Invalid model mapping owner.");
 			}
 			if (ModelMappingsUpdated != null) ModelMappingsUpdated(this, GetTemplateEventArgs(owner));
 		}
@@ -1254,7 +1256,7 @@ namespace Dataweb.NShape.Advanced {
 				DoDeleteModelMapping(modelMapping);
 				if (owner == null) owner = GetModelMappingOwner(modelMapping);
 				else if (owner != GetModelMappingOwner(modelMapping))
-					throw new nShapeException("Invalid model mapping owner.");
+					throw new NShapeException("Invalid model mapping owner.");
 			}
 			if (ModelMappingsDeleted != null) ModelMappingsDeleted(this, GetTemplateEventArgs(owner));
 		}
@@ -1307,7 +1309,7 @@ namespace Dataweb.NShape.Advanced {
 				AssertStoreExists();
 				store.LoadDiagrams(this, ((IEntity)settings).Id);
 				if (!diagrams.TryGetValue(id, out result))
-					throw new nShapeException("Diagram with id '{0}' not found in repository.", id);
+					throw new NShapeException("Diagram with id '{0}' not found in repository.", id);
 			}
 			return result.ObjectRef;
 		}
@@ -1412,13 +1414,8 @@ namespace Dataweb.NShape.Advanced {
 				|| ((IEntity)diagram).Id == null && !newDiagrams.ContainsKey(diagram))
 				throw new InvalidOperationException("Diagram not found in repository.");
 			DoInsertShape(shape, diagram);
-			// --------------------------------------
-			// @@Kurt: Einfügen der Kinder
-			if (shape.Children.Count > 0) {
-				foreach (Shape childShape in shape.Children.BottomUp)
-					DoInsertShape(childShape, shape);
-			}
-			// --------------------------------------
+			foreach (Shape childShape in shape.Children.BottomUp)
+				DoInsertShape(childShape, shape);
 			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shape, diagram));
 		}
 
@@ -1648,10 +1645,10 @@ namespace Dataweb.NShape.Advanced {
 		#region ModelObjects
 
 		private EntityBucket<IModelObject> GetModelObjectItem(object id) {
-			if (id == null) throw new nShapeException("ModelObject has no identifier.");
+			if (id == null) throw new NShapeException("ModelObject has no identifier.");
 			EntityBucket<IModelObject> item;
 			if (!modelObjects.TryGetValue(id, out item))
-				throw new nShapeException(string.Format("ModelObject {0} not found.", id));
+				throw new NShapeException(string.Format("ModelObject {0} not found.", id));
 			return item;
 		}
 
@@ -1672,18 +1669,20 @@ namespace Dataweb.NShape.Advanced {
 				if (modelObjects.TryGetValue(id, out moeb))
 					result = moeb.ObjectRef;
 			}
-			if (result == null) throw new nShapeException("Model object with id '{0}' not found in repository.", id);
+			if (result == null) throw new NShapeException("Model object with id '{0}' not found in repository.", id);
 			return result;
 		}
 
 
 		public IEnumerable<IModelObject> GetModelObjects(IModelObject parent) {
 			AssertOpen();
-			if (((IEntity)settings).Id != null && modelObjects.Count == 0) {
+			if (store != null && ((IEntity)settings).Id != null) {
 				if (parent == null) {
-					Model model = GetModel();
-					if (store != null && model != null) store.LoadModelModelObjects(this, model.Id);
-				} else if (store != null) store.LoadChildModelObjects(this, ((IEntity)parent).Id);
+					if (GetModel() != null && modelObjects.Count == 0)
+						store.LoadModelModelObjects(this, GetModel().Id);
+				} else if (parent.Id != null) {
+					store.LoadChildModelObjects(this, ((IEntity)parent).Id);
+				}
 			}
 			foreach (EntityBucket<IModelObject> mob in modelObjects) {
 				if (mob.ObjectRef.Parent == parent) yield return mob.ObjectRef;
@@ -1808,7 +1807,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public IEnumerable<Design> GetDesigns() {
 			AssertOpen();
-			if (store != null && designs.Count <= 0)
+			if (store != null && ((IEntity)settings).Id != null && designs.Count <= 0)
 				store.LoadDesigns(this, null);
 			return GetCachedEntities<Design>(designs, newDesigns);
 		}
@@ -1826,7 +1825,7 @@ namespace Dataweb.NShape.Advanced {
 				if (store != null && designs.Count <= 0)
 					store.LoadDesigns(this, null);
 				if (!designs.TryGetValue(id, out designBucket))
-					throw new nShapeException("Design with id '{0}' not found in repository.", id);
+					throw new NShapeException("Design with id '{0}' not found in repository.", id);
 				result = designBucket.ObjectRef;
 			}
 			return result;
@@ -1837,8 +1836,8 @@ namespace Dataweb.NShape.Advanced {
 		public void InsertDesign(Design design) {
 			if (design == null) throw new ArgumentNullException("design");
 			AssertOpen();
-			if (((IEntity)design).Id != null) throw new nShapeException("Can only insert new designs.");
-			if (newDesigns.ContainsKey(design)) throw new nShapeException("Design already exists in the repository.");
+			if (((IEntity)design).Id != null) throw new NShapeException("Can only insert new designs.");
+			if (newDesigns.ContainsKey(design)) throw new NShapeException("Design already exists in the repository.");
 			//
 			DoInsertDesign(design, settings);
 			if (DesignInserted != null) DesignInserted(this, GetDesignEventArgs(design));
@@ -2170,7 +2169,7 @@ namespace Dataweb.NShape.Advanced {
 		protected IStyle GetProjectStyle(object id) {
 			EntityBucket<IStyle> styleItem;
 			if (!styles.TryGetValue(id, out styleItem))
-				throw new nShapeException("Style with id '{0}' does not exist.", id);
+				throw new NShapeException("Style with id '{0}' does not exist.", id);
 			return styleItem.ObjectRef;
 		}
 
@@ -2203,11 +2202,11 @@ namespace Dataweb.NShape.Advanced {
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
 				if (!newEntities.ContainsKey(entity))
-					throw new nShapeException(string.Format("Entity not found in Repository."));
+					throw new NShapeException(string.Format("Entity not found in repository."));
 			} else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
-					throw new nShapeException("Entity not found in repository.");
+					throw new NShapeException("Entity not found in repository.");
 				item.State = ItemState.Modified;
 			}
 			isModified = true;
@@ -2226,12 +2225,12 @@ namespace Dataweb.NShape.Advanced {
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
 				if (!newEntities.ContainsKey(entity))
-					throw new nShapeException(string.Format("Entity not found in repository.", entity.Id));
+					throw new NShapeException(string.Format("Entity not found in repository.", entity.Id));
 				newEntities.Remove(entity);
 			} else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
-					throw new nShapeException("Entity not found in repository.");
+					throw new NShapeException("Entity not found in repository.");
 				item.State = ItemState.Deleted;
 			}
 			isModified = true;
@@ -2240,11 +2239,11 @@ namespace Dataweb.NShape.Advanced {
 
 		protected void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			TEntity entity) where TEntity : IEntity {
-			if (entity.Id == null) throw new nShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
+			if (entity.Id == null) throw new NShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
 			else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
-					throw new nShapeException("Entity not found in repository.");
+					throw new NShapeException("Entity not found in repository.");
 				item.State = ItemState.Modified;
 			}
 			isModified = true;
@@ -2253,7 +2252,7 @@ namespace Dataweb.NShape.Advanced {
 
 		protected void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			TEntity entity, IEntity owner) where TEntity : IEntity {
-			if (entity.Id == null) throw new nShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
+			if (entity.Id == null) throw new NShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
 			else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
@@ -2447,7 +2446,7 @@ namespace Dataweb.NShape.Advanced {
 			IEntityType result;
 			entityTypes.TryGetValue(CalcElementName(entityTypeName), out result);
 			if (mustExist && result == null)
-				throw new nShapeException("Entity type '{0}' does not exist in the repository.", entityTypeName);
+				throw new NShapeException("Entity type '{0}' does not exist in the repository.", entityTypeName);
 			return result;
 		}
 
@@ -2462,18 +2461,18 @@ namespace Dataweb.NShape.Advanced {
 
 
 		protected void AssertOpen() {
-			if (!isOpen) throw new nShapeException("Repository is not open.");
+			if (!isOpen) throw new NShapeException("Repository is not open.");
 			Debug.Assert(settings != null && projectDesign != null);
 		}
 
 
 		protected void AssertClosed() {
-			if (isOpen) throw new nShapeException("Repository is already open.");
+			if (isOpen) throw new NShapeException("Repository is already open.");
 		}
 
 
 		protected void AssertStoreExists() {
-			if (store == null) throw new nShapeException("There is no store component connected to the repository.");
+			if (store == null) throw new NShapeException("There is no store component connected to the repository.");
 		}
 
 

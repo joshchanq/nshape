@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -216,7 +216,7 @@ namespace Dataweb.NShape.Controllers {
 	/// <summary>
 	/// A non-visual component for editing templates. 
 	/// </summary>
-	public class TemplateController : Component, IPropertyController, IDisplayService {
+	public class TemplateController : Component, IDisplayService {
 
 		/// <summary>
 		/// Creates a new TemplateController instance
@@ -240,7 +240,6 @@ namespace Dataweb.NShape.Controllers {
 
 
 		~TemplateController() {
-			PropertyController = null;
 			infoGraphics.Dispose();
 			infoGraphics = null;
 		}
@@ -292,40 +291,6 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		#region IPropertyController Members
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsSet;
-
-		public event EventHandler<PropertyControllerPropertyChangedEventArgs> PropertyChanged;
-
-		public event EventHandler<PropertyControllerEventArgs> RefreshObjects;
-
-		public event EventHandler<PropertyControllerEventArgs> ObjectsDeleted;
-		
-		public event EventHandler ProjectClosing;
-
-		public bool ReadOnly {
-			get { return (propertyController != null && propertyController.ReadOnly); }
-		}
-
-		public void SetObject(int pageIndex, object selectedObject) {
-			if (propertyController != null)
-				propertyController.SetObject(pageIndex, selectedObject, SelectedObjectsChangedCallback);
-		}
-
-		public void SetObjects(int pageIndex, IEnumerable selectedObjects) {
-			if (propertyController != null)
-				propertyController.SetObjects(pageIndex, selectedObjects, SelectedObjectsChangedCallback);
-		}
-
-		public void SelectedObjectsChanged(int pageIndex, IEnumerable<object> modifiedObjects, PropertyInfo propertyInfo, object[] oldValues, object newValue) {
-			if (propertyController != null)
-				propertyController.SelectedObjectsChanged(pageIndex, modifiedObjects, propertyInfo, oldValues, newValue);
-		}
-
-		#endregion
-
-
 		#region [Public] Events
 
 		/// <summary>
@@ -344,35 +309,29 @@ namespace Dataweb.NShape.Controllers {
 		public event EventHandler DiscardingChanges;
 
 		/// <summary>
-		/// Raised when ever a property of the template itself or a property of the template's shape or model obejct was changed.
-		/// Usually, this event is used for signalling the user interface that there was 
+		/// Raised when ever a property of the template (such as name, title or description) was changed.
 		/// </summary>
-		public event EventHandler TemplatePropertyChanged;
+		public event EventHandler TemplateModified;
 
 		/// <summary>
-		/// Raised when the template was renamed
+		/// Raised when ever a property of the template's shape was changed.
 		/// </summary>
-		public event EventHandler<TemplateControllerStringChangedEventArgs> TemplateNameChanged;
+		public event EventHandler TemplateShapeModified;
 
 		/// <summary>
-		/// Raised when the template title changed
+		/// Raised when ever a property of the template's model object was changed.
 		/// </summary>
-		public event EventHandler<TemplateControllerStringChangedEventArgs> TemplateTitleChanged;
-
-		/// <summary>
-		/// Raised when the template's description changed
-		/// </summary>
-		public event EventHandler<TemplateControllerStringChangedEventArgs> TemplateDescriptionChanged;
+		public event EventHandler TemplateModelObjectModified;
 
 		/// <summary>
 		/// Raised when the template's shape is replaced by another shape.
 		/// </summary>
-		public event EventHandler<TemplateControllerTemplateShapeReplacedEventArgs> TemplateShapeReplaced;
+		public event EventHandler<TemplateControllerTemplateShapeReplacedEventArgs> TemplateShapeChanged;
 
 		/// <summary>
 		/// Raised when the template's ModelObject is replaced by another ModelObject
 		/// </summary>
-		public event EventHandler<TemplateControllerModelObjectReplacedEventArgs> TemplateModelObjectReplaced;
+		public event EventHandler<TemplateControllerModelObjectReplacedEventArgs> TemplateModelObjectChanged;
 
 		/// <summary>
 		/// Raised when the property mapping between shape and ModelObject was created or changed
@@ -397,17 +356,12 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// The TemplateController's Project.
 		/// </summary>
+		[Category("NShape")]
 		public Project Project {
 			get { return project; }
 			set {
-				if (project != null && propertyController != null)
-					propertyController.Project = null;
 				project = value;
-				if (project != null) {
-					// Set with proerty in order to (un)register events
-					if (propertyController == null) PropertyController = new PropertyController(project);
-					Initialize(project, OriginalTemplate);
-				}
+				if (project != null) Initialize(project, OriginalTemplate);
 			}
 		}
 
@@ -415,6 +369,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Specified wether the TemplateController edits an existing or creates a new template.
 		/// </summary>
+		[Browsable(false)]
 		public TemplateControllerEditMode EditMode {
 			get { return editMode; }
 		}
@@ -423,6 +378,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// A list of all shapes available.
 		/// </summary>
+		[Browsable(false)]
 		public IReadOnlyCollection<Shape> Shapes {
 			get { return shapes; }
 		}
@@ -431,6 +387,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// A list of all model objects available.
 		/// </summary>
+		[Browsable(false)]
 		public IReadOnlyCollection<IModelObject> ModelObjects {
 			get { return modelObjects; }
 		}
@@ -440,19 +397,28 @@ namespace Dataweb.NShape.Controllers {
 		/// A clone of the original template. This template will be modified. 
 		/// When applying the changes, it will be copied into the original template property-by-property .
 		/// </summary>
-		public Template WorkTemplate { get { return workTemplate; } }
+		[Browsable(false)]
+		public Template WorkTemplate {
+			get { return workTemplate; }
+		}
 
 
 		/// <summary>
 		/// The original template. Remains unchanged until applying changes.
 		/// </summary>
-		public Template OriginalTemplate { get { return originalTemplate; } }
+		[Browsable(false)]
+		public Template OriginalTemplate {
+			get { return originalTemplate; }
+		}
 
 
 		/// <summary>
 		/// Specifies wether the TemplateController is isInitialized completly
 		/// </summary>
-		public bool IsInitialized { get { return isInitialized; } }
+		[Browsable(false)]
+		public bool IsInitialized {
+			get { return isInitialized; }
+		}
 
 		#endregion
 
@@ -482,7 +448,7 @@ namespace Dataweb.NShape.Controllers {
 					break;
 				}
 			}
-			if (!templateSupportingShapeTypeFound) throw new nShapeException("No template supporting shape types found. Load a shape library first.");
+			if (!templateSupportingShapeTypeFound) throw new NShapeException("No template supporting shape types found. Load a shape library first.");
 
 			// Disable all controls if the user has not the appropriate access rights
 			if (!project.SecurityManager.IsGranted(Permission.Templates)) {
@@ -503,7 +469,9 @@ namespace Dataweb.NShape.Controllers {
 				// As a shape is mandatory for every template, find a shape first
 				Shape shape = FindFirstShapeOfType(true);
 				if (shape == null) shape = FindFirstShapeOfType(false); // if no planar shape was found, get the first one
-				workTemplate = new Template("", shape);
+				int templateCnt = 1;
+				foreach (Template t in project.Repository.GetTemplates()) ++templateCnt;
+				workTemplate = new Template(string.Format("Template {0}", templateCnt), shape);
 				shape.DisplayService = this;
 			}
 
@@ -528,11 +496,7 @@ namespace Dataweb.NShape.Controllers {
 				workTemplate.Name = name;
 				TemplateWasChanged = true;
 
-				if (TemplateNameChanged != null) {
-					stringChangedEventArgs.OldString = oldName;
-					stringChangedEventArgs.NewString = name;
-					TemplateNameChanged(this, stringChangedEventArgs);
-				}
+				if (TemplateModified != null) TemplateModified(this, new EventArgs());
 			}
 		}
 
@@ -546,11 +510,7 @@ namespace Dataweb.NShape.Controllers {
 				workTemplate.Title = title;
 				TemplateWasChanged = true;
 
-				if (TemplateTitleChanged != null) {
-					stringChangedEventArgs.OldString = oldTitle;
-					stringChangedEventArgs.NewString = title;
-					TemplateTitleChanged(this, stringChangedEventArgs);
-				}
+				if (TemplateModified != null) TemplateModified(this, new EventArgs());
 			}
 		}
 
@@ -565,11 +525,7 @@ namespace Dataweb.NShape.Controllers {
 				workTemplate.Description = description;
 				TemplateWasChanged = true;
 
-				if (TemplateDescriptionChanged != null) {
-					stringChangedEventArgs.OldString = oldDescription;
-					stringChangedEventArgs.NewString = description;
-					TemplateDescriptionChanged(this, stringChangedEventArgs);
-				}
+				if (TemplateModified != null) TemplateModified(this, new EventArgs());
 			}
 		}
 		
@@ -590,14 +546,12 @@ namespace Dataweb.NShape.Controllers {
 			workTemplate.Shape = newShape;
 
 			TemplateWasChanged = true;
-			if (TemplateShapeReplaced != null) {
+			if (TemplateShapeChanged != null) {
 				shapeReplacedEventArgs.Template = workTemplate;
 				shapeReplacedEventArgs.OldTemplateShape = oldShape;
 				shapeReplacedEventArgs.NewTemplateShape = newShape;
-				TemplateShapeReplaced(this, shapeReplacedEventArgs);
+				TemplateShapeChanged(this, shapeReplacedEventArgs);
 			}
-			// edit new shape in the PropertyEditor
-			propertyController.SetObject(0, newShape, SelectedObjectsChangedCallback);
 		}
 
 
@@ -605,7 +559,7 @@ namespace Dataweb.NShape.Controllers {
 		/// Set the given Modelobject as the template's ModelObject
 		/// </summary>
 		public void SetTemplateModel(IModelObject newModelObject) {
-			if (workTemplate.Shape == null) throw new nShapeException("The template's shape property is not set to a reference of an object.");
+			if (workTemplate.Shape == null) throw new NShapeException("The template's shape property is not set to a reference of an object.");
 			IModelObject oldModelObject = workTemplate.Shape.ModelObject;
 			if (oldModelObject != null) {
 				// ToDo: Implement ModelObject.CopyFrom()
@@ -615,20 +569,14 @@ namespace Dataweb.NShape.Controllers {
 			workTemplate.Shape.ModelObject = newModelObject;
 			TemplateWasChanged = true;
 
-			if (TemplateModelObjectReplaced != null) {
+			if (TemplateModelObjectChanged != null) {
 				modelObjectReplacedEventArgs.Template = workTemplate;
 				modelObjectReplacedEventArgs.OldModelObject = oldModelObject;
 				modelObjectReplacedEventArgs.NewModelObject = newModelObject;
-				TemplateModelObjectReplaced(this, modelObjectReplacedEventArgs);
+				TemplateModelObjectChanged(this, modelObjectReplacedEventArgs);
 			}
-			// edit newModelObject in the PropertyEditor
-			if (newModelObject != null) {
-				propertyController.SetObjects(0, newModelObject.Shapes, SelectedObjectsChangedCallback);
-				propertyController.SetObject(1, newModelObject, SelectedObjectsChangedCallback);
-			} else propertyController.SetObject(0, workTemplate.Shape, SelectedObjectsChangedCallback);
-
-			if (TemplateModelObjectReplaced != null)
-				TemplateModelObjectReplaced(this, null);
+			if (TemplateModelObjectChanged != null)
+				TemplateModelObjectChanged(this, null);
 		}
 
 
@@ -684,18 +632,10 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Handle changes on objects edited by the PropertyController
-		/// </summary>
-		/// <param name="propertyChangedEventArgs"></param>
-		public void SelectedObjectsChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs) {
-			TemplateWasChanged = true;
-		}
-
-
-		/// <summary>
 		/// Applies all changes made on the working template to the original template.
 		/// </summary>
 		public void ApplyChanges() {
+			if (string.IsNullOrEmpty(workTemplate.Name)) throw new NShapeException("The template's name must not be empty.");
 			if (TemplateWasChanged) {
 				ICommand cmd = null;
 				switch (editMode) {
@@ -724,7 +664,7 @@ namespace Dataweb.NShape.Controllers {
 						project.ExecuteCommand(cmd);
 						break;
 
-					default: throw new nShapeUnsupportedValueException(typeof(TemplateControllerEditMode), editMode);
+					default: throw new NShapeUnsupportedValueException(typeof(TemplateControllerEditMode), editMode);
 				}
 				TemplateWasChanged = false;
 				if (ApplyingChanges != null) ApplyingChanges(this, eventArgs);
@@ -748,14 +688,23 @@ namespace Dataweb.NShape.Controllers {
 		/// Clears all buffers and objects used by the TemplateController
 		/// </summary>
 		public void Clear() {
-			if (propertyController != null)
-				propertyController.SetObject(0, null, SelectedObjectsChangedCallback);
-
 			ClearShapeList();
 			ClearModelObjectList();
 
 			workTemplate = null;
 			originalTemplate = null;
+		}
+
+
+		public void NotifyTemplateShapeChanged() {
+			templateWasChanged = true;
+			if (TemplateShapeModified != null) TemplateShapeModified(this, new EventArgs());
+		}
+
+
+		public void NotifyTemplateModelObjectChanged() {
+			templateWasChanged = true;
+			if (TemplateModelObjectModified != null) TemplateModelObjectModified(this, new EventArgs());
 		}
 
 		#endregion
@@ -768,39 +717,21 @@ namespace Dataweb.NShape.Controllers {
 		protected override void Dispose(bool disposing) {
 			if (disposing) {
 				Clear();
-
-				UnregisterPropertyControllerEvents();
-				propertyController = null;
-
 				infoGraphics.Dispose();
 			}
 			base.Dispose(disposing);
 		}
 
 
-		#region [Private] Properties
-
 		private bool TemplateWasChanged {
 			get { return templateWasChanged; }
 			set {
 				if (project.SecurityManager.IsGranted(Permission.Templates)) {
 					templateWasChanged = value;
-					if (TemplatePropertyChanged != null) TemplatePropertyChanged(this, eventArgs);
+					if (TemplateModified != null) TemplateModified(this, eventArgs);
 				}
 			}
 		}
-
-
-		private PropertyController PropertyController {
-			get { return propertyController; }
-			set {
-				if (propertyController != null) UnregisterPropertyControllerEvents();
-				propertyController = value;
-				if (propertyController != null) RegisterPropertyControllerEvents();
-			}
-		}
-
-		#endregion
 
 
 		#region [Private] Methods
@@ -853,67 +784,13 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		#region [Private] Methods: Register for events
-
-		private void RegisterPropertyControllerEvents() {
-			if (propertyController != null) {
-				propertyController.ObjectsSet += propertyController_ObjectsSet;
-				propertyController.PropertyChanged += propertyController_PropertyChanged;
-				propertyController.RefreshObjects += propertyController_RefreshObjects;
-				propertyController.ObjectsDeleted += propertyController_ObjectsDeleted;
-				propertyController.ProjectClosing += propertyController_ProjectClosing;
-			}
-		}
-
-
-		private void UnregisterPropertyControllerEvents() {
-			if (propertyController != null) {
-				propertyController.ObjectsSet -= propertyController_ObjectsSet;
-				propertyController.PropertyChanged -= propertyController_PropertyChanged;
-				propertyController.RefreshObjects -= propertyController_RefreshObjects;
-				propertyController.ObjectsDeleted -= propertyController_ObjectsDeleted;
-				propertyController.ProjectClosing -= propertyController_ProjectClosing;
-			}
-		}
-
-		#endregion
-
-
-		#region [Private] Methods: PropertyController Event Handler implementations
-
-		private void propertyController_RefreshObjects(object sender, PropertyControllerEventArgs e) {
-			if (RefreshObjects != null) RefreshObjects(this, e);
-		}
-
-
-		private void propertyController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
-			if (PropertyChanged != null) PropertyChanged(this, e);
-		}
-
-
-		private void propertyController_ObjectsSet(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsSet != null) ObjectsSet(this, e);
-		}
-
-
-		private void propertyController_ProjectClosing(object sender, EventArgs e) {
-			if (ProjectClosing != null) ProjectClosing(this, e);
-		}
-
-
-		private void propertyController_ObjectsDeleted(object sender, PropertyControllerEventArgs e) {
-			if (ObjectsDeleted != null) ObjectsDeleted(this, e);
-		}
-
-		#endregion
-
-
 		#region Fields
+
 		// IDisplayService fields
 		private Graphics infoGraphics;
 		// TemplateController fields
 		private Project project;
-		private PropertyController propertyController;
+
 		private TemplateControllerEditMode editMode;
 		private Template originalTemplate;
 		private Template workTemplate;
@@ -936,4 +813,5 @@ namespace Dataweb.NShape.Controllers {
 
 		#endregion
 	}
+
 }

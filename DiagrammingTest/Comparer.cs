@@ -1,17 +1,28 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  NShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing;
+using Dataweb.NShape;
+using Dataweb.NShape.Advanced;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Dataweb.nShape;
-using Dataweb.nShape.Advanced;
-using Dataweb.nShape.GeneralShapes;
 
-
-namespace nShapeTest {
+namespace NShapeTest {
 	
-	public class nShapeComparer {
+	public class Comparer {
 
 		public static void CompareId(IEntity savedEntity, IEntity loadedEntity) {
 			Assert.AreEqual<bool>(savedEntity != null, loadedEntity != null);
@@ -129,7 +140,7 @@ namespace nShapeTest {
 			//Assert.AreEqual<Dataweb.Utilities.NamedImage>(savedStyle.Image, loadedStyle.Image);
 			Assert.AreEqual<byte>(savedStyle.ImageCompressionQuality, loadedStyle.ImageCompressionQuality);
 			Assert.AreEqual<float>(savedStyle.ImageGammaCorrection, loadedStyle.ImageGammaCorrection);
-			Assert.AreEqual<nShapeImageLayout>(savedStyle.ImageLayout, loadedStyle.ImageLayout);
+			Assert.AreEqual<ImageLayoutMode>(savedStyle.ImageLayout, loadedStyle.ImageLayout);
 			Assert.AreEqual<byte>(savedStyle.ImageTransparency, loadedStyle.ImageTransparency);
 		}
 
@@ -251,7 +262,7 @@ namespace nShapeTest {
 				Assert.AreEqual<int>(savedDiagram.BackgroundImage.Height, loadedDiagram.BackgroundImage.Height);
 				Assert.AreEqual<float>(savedDiagram.BackgroundImageGamma, loadedDiagram.BackgroundImageGamma);
 				Assert.AreEqual<bool>(savedDiagram.BackgroundImageGrayScale, loadedDiagram.BackgroundImageGrayScale);
-				Assert.AreEqual<nShapeImageLayout>(savedDiagram.BackgroundImageLayout, loadedDiagram.BackgroundImageLayout);
+				Assert.AreEqual<ImageLayoutMode>(savedDiagram.BackgroundImageLayout, loadedDiagram.BackgroundImageLayout);
 				Assert.AreEqual<byte>(savedDiagram.BackgroundImageTransparency, loadedDiagram.BackgroundImageTransparency);
 				Assert.AreEqual<int>(savedDiagram.BackgroundImageTransparentColor.ToArgb(), loadedDiagram.BackgroundImageTransparentColor.ToArgb());
 				Assert.AreEqual<IDisplayService>(savedDiagram.DisplayService, loadedDiagram.DisplayService);

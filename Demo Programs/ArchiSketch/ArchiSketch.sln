@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{D9EB308E-6219-49F2-92FC-EA23AF8C907F}"
+	ProjectSection(FolderStartupServices) = postProject
+		{B4F97281-0DBD-4835-9ED8-7DFB966E87FF} = {B4F97281-0DBD-4835-9ED8-7DFB966E87FF}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArchiSketch", "ArchiSketch.csproj", "{DF434DEE-8FCD-41DE-A6FC-D3584BB7D2C6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF434DEE-8FCD-41DE-A6FC-D3584BB7D2C6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF434DEE-8FCD-41DE-A6FC-D3584BB7D2C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF434DEE-8FCD-41DE-A6FC-D3584BB7D2C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF434DEE-8FCD-41DE-A6FC-D3584BB7D2C6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(TextTemplating) = postSolution
+		TextTemplating = 1
+	EndGlobalSection
+EndGlobal

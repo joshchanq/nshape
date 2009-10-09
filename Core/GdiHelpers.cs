@@ -1,26 +1,27 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using Dataweb.NShape;
 
 
 namespace Dataweb.NShape.Advanced {
 
-	public enum nShapeRenderingQuality {
+	public enum RenderingQuality {
 		/// <summary>
 		/// Best rendering Quality, lowest rendering speed.
 		/// </summary>
@@ -174,20 +175,19 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Sets all parameters that affect rendering quality / rendering speed
 		/// </summary>
-		public static void ApplyGraphicsSettings(Graphics graphics, nShapeRenderingQuality renderingQuality) {
+		public static void ApplyGraphicsSettings(Graphics graphics, RenderingQuality renderingQuality) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			switch (renderingQuality) {
-				case nShapeRenderingQuality.MaximumQuality:
+				case RenderingQuality.MaximumQuality:
 					graphics.SmoothingMode = SmoothingMode.HighQuality;
 					//graphics.TextRenderingHint = System.Drawing.Title.TextRenderingHint.AntiAliasGridFit;	// smoothed but blurry fonts
 					graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;	// sharp but slightly chunky fonts
 					graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
 					graphics.CompositingQuality = CompositingQuality.HighQuality;
-					//graphics.CompositingMode = CompositingMode.SourceOver;				// Transparency too high
 					//graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;			// produces quite blurry results
 					break;
 
-				case nShapeRenderingQuality.HighQuality:
+				case RenderingQuality.HighQuality:
 					// antialiasing and nice font rendering
 					graphics.SmoothingMode = SmoothingMode.HighQuality;
 					//graphics.TextRenderingHint = System.Drawing.Title.TextRenderingHint.AntiAliasGridFit;	// smoothed but blurry fonts
@@ -195,21 +195,19 @@ namespace Dataweb.NShape.Advanced {
 					graphics.InterpolationMode = InterpolationMode.High;
 					break;
 
-				case nShapeRenderingQuality.LowQuality:
+				case RenderingQuality.LowQuality:
 					graphics.SmoothingMode = SmoothingMode.HighSpeed;
 					graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
 					graphics.InterpolationMode = InterpolationMode.Low;
-					graphics.CompositingMode = CompositingMode.SourceCopy;
 					graphics.CompositingQuality = CompositingQuality.HighSpeed;
 					graphics.PixelOffsetMode = PixelOffsetMode.HighSpeed;
 					break;
 
-				case nShapeRenderingQuality.DefaultQuality:
+				case RenderingQuality.DefaultQuality:
 				default:
 					graphics.SmoothingMode = SmoothingMode.Default;
 					graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.SystemDefault;
 					graphics.InterpolationMode = InterpolationMode.Default;
-					graphics.CompositingMode = CompositingMode.SourceCopy;
 					graphics.CompositingQuality = CompositingQuality.Default;
 					graphics.PixelOffsetMode = PixelOffsetMode.Default;
 					break;
@@ -239,21 +237,21 @@ namespace Dataweb.NShape.Advanced {
 		#region Drawing images
 
 		/// <summary>
-		/// Get a suitable GDI+ WrapMode out of the given nShapeImageLayout.
+		/// Get a suitable GDI+ WrapMode out of the given NShapeImageLayout.
 		/// </summary>
-		public static WrapMode GetWrapMode(nShapeImageLayout imageLayout) {
+		public static WrapMode GetWrapMode(ImageLayoutMode imageLayout) {
 			switch (imageLayout) {
-				case nShapeImageLayout.Center:
-				case nShapeImageLayout.Fit:
-				case nShapeImageLayout.Original:
-				case nShapeImageLayout.Stretch:
+				case ImageLayoutMode.Center:
+				case ImageLayoutMode.Fit:
+				case ImageLayoutMode.Original:
+				case ImageLayoutMode.Stretch:
 					return WrapMode.Clamp;
-				case nShapeImageLayout.CenterTile:
-				case nShapeImageLayout.Tile:
+				case ImageLayoutMode.CenterTile:
+				case ImageLayoutMode.Tile:
 					return WrapMode.Tile;
-				case nShapeImageLayout.FilpTile:
+				case ImageLayoutMode.FilpTile:
 					return WrapMode.TileFlipXY;
-				default: throw new nShapeUnsupportedValueException(imageLayout);
+				default: throw new NShapeUnsupportedValueException(imageLayout);
 			}
 		}
 
@@ -269,7 +267,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout) {
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout) {
 			return GetImageAttributes(imageLayout, -1f, 0, false, false, Color.Empty);
 		}
 
@@ -277,7 +275,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, Color transparentColor) {
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, Color transparentColor) {
 			return GetImageAttributes(imageLayout, -1f, 0, false, false, transparentColor);
 		}
 
@@ -285,7 +283,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			return GetImageAttributes(imageLayout, gamma, transparency, grayScale, false, Color.Empty);
 		}
 
@@ -293,7 +291,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview) {
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview) {
 			return GetImageAttributes(imageLayout, gamma, transparency, grayScale, forPreview, Color.Empty);
 		}
 
@@ -301,7 +299,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
-		public static ImageAttributes GetImageAttributes(nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview, Color transparentColor) {
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview, Color transparentColor) {
 			if (transparency < 0 || transparency > 100) throw new ArgumentOutOfRangeException("transparency");
 			ImageAttributes imageAttribs = new ImageAttributes();
 
@@ -352,7 +350,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Draw an image into the specified bounds
 		/// </summary>
-		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, nShapeImageLayout imageLayout, Rectangle dstBounds, Rectangle srcBounds) {
+		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, ImageLayoutMode imageLayout, Rectangle dstBounds, Rectangle srcBounds) {
 			DrawImage(gfx, image, imageAttribs, imageLayout, dstBounds, srcBounds, 0);
 		}
 
@@ -360,7 +358,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Draw an image into the specified bounds
 		/// </summary>
-		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, nShapeImageLayout imageLayout, Rectangle dstBounds, Rectangle srcBounds, float angle) {
+		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, ImageLayoutMode imageLayout, Rectangle dstBounds, Rectangle srcBounds, float angle) {
 			if (gfx == null) throw new ArgumentNullException("gfx");
 			if (image == null) throw new ArgumentNullException("image");
 			// ToDo: Optimize this (draw only the drawArea part of the image, optimize calculations and variable use, draw bitmaps by using a TextureBrush)
@@ -371,28 +369,28 @@ namespace Dataweb.NShape.Advanced {
 			Rectangle destinationBounds = Rectangle.Empty;
 			// transform image bounds
 			switch (imageLayout) {
-				case nShapeImageLayout.Tile:
-				case nShapeImageLayout.FilpTile:
+				case ImageLayoutMode.Tile:
+				case ImageLayoutMode.FilpTile:
 					destinationBounds = dstBounds;
 					break;
-				case nShapeImageLayout.Original:
+				case ImageLayoutMode.Original:
 					destinationBounds.X = dstBounds.X;
 					destinationBounds.Y = dstBounds.Y;
 					destinationBounds.Width = Math.Min(image.Width, dstBounds.Width);
 					destinationBounds.Height = Math.Min(image.Height, dstBounds.Height);
 					break;
-				case nShapeImageLayout.CenterTile:
-				case nShapeImageLayout.Center:
+				case ImageLayoutMode.CenterTile:
+				case ImageLayoutMode.Center:
 					destinationBounds.X = dstBounds.X + (int)Math.Round((dstBounds.Width - image.Width) / 2f);
 					destinationBounds.Y = dstBounds.Y + (int)Math.Round((dstBounds.Height - image.Height) / 2f);
 					destinationBounds.Width = image.Width;
 					destinationBounds.Height = image.Height;
 					break;
-				case nShapeImageLayout.Stretch:
-				case nShapeImageLayout.Fit:
+				case ImageLayoutMode.Stretch:
+				case ImageLayoutMode.Fit:
 					destinationBounds.X = dstBounds.X;
 					destinationBounds.Y = dstBounds.Y;
-					if (imageLayout == nShapeImageLayout.Fit) {
+					if (imageLayout == ImageLayoutMode.Fit) {
 						destinationBounds.X += (int)Math.Round((dstBounds.Width - (image.Width * scaleX)) / 2f);
 						destinationBounds.Y += (int)Math.Round((dstBounds.Height - (image.Height * scaleY)) / 2f);
 					}
@@ -400,7 +398,7 @@ namespace Dataweb.NShape.Advanced {
 					destinationBounds.Height = (int)Math.Round(image.Height * scaleY);
 					break;
 				default:
-					throw new nShapeException(string.Format("Unexpected {0} '{1}'.", imageLayout.GetType(), imageLayout));
+					throw new NShapeException(string.Format("Unexpected {0} '{1}'.", imageLayout.GetType(), imageLayout));
 			}
 
 			PointF center = PointF.Empty;
@@ -416,11 +414,11 @@ namespace Dataweb.NShape.Advanced {
 			RectangleF imageBounds = image.GetBounds(ref gfxUnit);
 			int srcX, srcY, srcWidth, srcHeight;
 			switch (imageLayout) {
-				case nShapeImageLayout.CenterTile:
-				case nShapeImageLayout.FilpTile:
-				case nShapeImageLayout.Tile:
+				case ImageLayoutMode.CenterTile:
+				case ImageLayoutMode.FilpTile:
+				case ImageLayoutMode.Tile:
 					int startX, startY, endX, endY;
-					if (imageLayout == nShapeImageLayout.CenterTile) {
+					if (imageLayout == ImageLayoutMode.CenterTile) {
 						int nX = (int)Math.Ceiling(dstBounds.Width / (float)image.Width);
 						int nY = (int)Math.Ceiling(dstBounds.Height / (float)image.Height);
 						if (nX == 1) startX = destinationBounds.X;
@@ -456,7 +454,7 @@ namespace Dataweb.NShape.Advanced {
 							else
 								srcHeight = r.Height = image.Height - srcY;
 
-							if (imageLayout == nShapeImageLayout.FilpTile) {
+							if (imageLayout == ImageLayoutMode.FilpTile) {
 								int modX = (x / image.Width) % 2;
 								int modY = (y / image.Height) % 2;
 								if (modX != 0) {
@@ -472,8 +470,8 @@ namespace Dataweb.NShape.Advanced {
 						}
 					}
 					break;
-				case nShapeImageLayout.Original:
-				case nShapeImageLayout.Center:
+				case ImageLayoutMode.Original:
+				case ImageLayoutMode.Center:
 					if (image.Width > dstBounds.Width || image.Height > dstBounds.Height) {
 						srcWidth = destinationBounds.Width = Math.Min(image.Width, dstBounds.Width);
 						srcHeight = destinationBounds.Height = Math.Min(image.Height, dstBounds.Height);
@@ -483,7 +481,7 @@ namespace Dataweb.NShape.Advanced {
 						srcWidth = image.Width;
 						srcHeight = image.Height;
 					}
-					if (imageLayout == nShapeImageLayout.Center) {
+					if (imageLayout == ImageLayoutMode.Center) {
 						srcX = image.Width - srcWidth;
 						srcY = image.Height - srcHeight;
 					} else {
@@ -492,11 +490,11 @@ namespace Dataweb.NShape.Advanced {
 					}
 					gfx.DrawImage(image, destinationBounds, srcX, srcY, srcWidth, srcHeight, GraphicsUnit.Pixel, imageAttribs);
 					break;
-				case nShapeImageLayout.Fit:
-				case nShapeImageLayout.Stretch:
+				case ImageLayoutMode.Fit:
+				case ImageLayoutMode.Stretch:
 					gfx.DrawImage(image, destinationBounds, imageBounds.X, imageBounds.Y, imageBounds.Width, imageBounds.Height, gfxUnit, imageAttribs);
 					break;
-				default: throw new nShapeUnsupportedValueException(imageLayout);
+				default: throw new NShapeUnsupportedValueException(imageLayout);
 			}
 			if (angle != 0) {
 				gfx.TranslateTransform(center.X, center.Y);
@@ -510,7 +508,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Creating and transforming brushes
 
-		public static TextureBrush CreateTextureBrush(Image image, nShapeImageLayout imageLayout, float gamma, byte transparency, bool grayScale) {
+		public static TextureBrush CreateTextureBrush(Image image, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			return CreateTextureBrush(image, GetImageAttributes(imageLayout, gamma, transparency, grayScale));
 		}
@@ -546,7 +544,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public static void TransformTextureBrush(TextureBrush brush, nShapeImageLayout imageLayout, Rectangle unrotatedBounds, Point center, float angleDeg) {
+		public static void TransformTextureBrush(TextureBrush brush, ImageLayoutMode imageLayout, Rectangle unrotatedBounds, Point center, float angleDeg) {
 			if (brush == null) throw new ArgumentNullException("brush");
 			// scale image
 			float scaleX, scaleY;
@@ -558,22 +556,22 @@ namespace Dataweb.NShape.Advanced {
 			((TextureBrush)brush).TranslateTransform(-unrotatedBounds.Width / 2f, -unrotatedBounds.Height / 2f);
 			// scale image
 			switch (imageLayout) {
-				case nShapeImageLayout.Tile:
-				case nShapeImageLayout.FilpTile:
+				case ImageLayoutMode.Tile:
+				case ImageLayoutMode.FilpTile:
 					// nothing to do
 					break;
-				case nShapeImageLayout.Center:
-				case nShapeImageLayout.CenterTile:
-				case nShapeImageLayout.Original:
+				case ImageLayoutMode.Center:
+				case ImageLayoutMode.CenterTile:
+				case ImageLayoutMode.Original:
 					((TextureBrush)brush).TranslateTransform((unrotatedBounds.Width - brush.Image.Width) / 2f, (unrotatedBounds.Height - brush.Image.Height) / 2f);
 					break;
-				case nShapeImageLayout.Stretch:
-				case nShapeImageLayout.Fit:
-					if (imageLayout == nShapeImageLayout.Fit)
+				case ImageLayoutMode.Stretch:
+				case ImageLayoutMode.Fit:
+					if (imageLayout == ImageLayoutMode.Fit)
 						((TextureBrush)brush).TranslateTransform((unrotatedBounds.Width - (brush.Image.Width * scaleX)) / 2f, (unrotatedBounds.Height - (brush.Image.Height * scaleY)) / 2f);
 					((TextureBrush)brush).ScaleTransform(scaleX, scaleY);
 					break;
-				default: throw new nShapeUnsupportedValueException(imageLayout);
+				default: throw new NShapeUnsupportedValueException(imageLayout);
 			}
 		}
 
@@ -588,33 +586,33 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="image">the untransformed Image object.</param>
 		/// <param name="imageLayout">ImageLayout enumeration. Deines the scaling behaviour.</param>
 		/// <returns>Aspect ratio of the image.</returns>
-		public static float CalcImageScaleAndAspect(out float scaleFactorX, out float scaleFactorY, int dstWidth, int dstHeight, Image image, nShapeImageLayout imageLayout) {
+		public static float CalcImageScaleAndAspect(out float scaleFactorX, out float scaleFactorY, int dstWidth, int dstHeight, Image image, ImageLayoutMode imageLayout) {
 			float aspectRatio = 1;
 			scaleFactorX = 1f;
 			scaleFactorY = 1f;
 			if (image != null) {
 				aspectRatio = (float)image.Width / image.Height;
 				switch (imageLayout) {
-					case nShapeImageLayout.Fit:
+					case ImageLayoutMode.Fit:
 						double lowestRatio = Math.Min((double)dstWidth / (double)image.Width, (double)dstHeight / (double)image.Height);
 						scaleFactorX = (float)Math.Round(lowestRatio, 6);
 						scaleFactorY = (float)Math.Round(lowestRatio, 6);
 						break;
-					case nShapeImageLayout.Stretch:
+					case ImageLayoutMode.Stretch:
 						scaleFactorX = (float)dstWidth / image.Width;
 						scaleFactorY = (float)dstHeight / image.Height;
 						break;
-					case nShapeImageLayout.Original:
-					case nShapeImageLayout.Center:
+					case ImageLayoutMode.Original:
+					case ImageLayoutMode.Center:
 						// nothing to do
 						break;
-					case nShapeImageLayout.CenterTile:
-					case nShapeImageLayout.Tile:
-					case nShapeImageLayout.FilpTile:
+					case ImageLayoutMode.CenterTile:
+					case ImageLayoutMode.Tile:
+					case ImageLayoutMode.FilpTile:
 						// nothing to do
 						break;
 					default:
-						throw new nShapeException(string.Format("Unexpected {0} '{1}'", imageLayout.GetType(), imageLayout));
+						throw new NShapeException(string.Format("Unexpected {0} '{1}'", imageLayout.GetType(), imageLayout));
 				}
 			}
 			return aspectRatio;
@@ -656,12 +654,12 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Exporting Images
 
-		public static void SaveImageToFile(Image image, string filePath, nShapeImageFormat imageFormat) {
+		public static void SaveImageToFile(Image image, string filePath, ImageFileFormat imageFormat) {
 			SaveImageToFile(image, filePath, imageFormat, 75);
 		}
 
 
-		public static void SaveImageToFile(Image image, string filePath, nShapeImageFormat imageFormat, int compressionQuality) {
+		public static void SaveImageToFile(Image image, string filePath, ImageFileFormat imageFormat, int compressionQuality) {
 			if (image == null) throw new ArgumentNullException("image");
 			if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException("filePath");
 			if (image is Metafile) {
@@ -675,13 +673,13 @@ namespace Dataweb.NShape.Advanced {
 				//   hdc, 
 				//   Rectangle.FromLTRB(0, 0, image.Width, image.Height), 
 				//   MetafileFrameUnit.Pixel, 
-				//   (imageFormat == nShapeImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
+				//   (imageFormat == NShapeImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
 				//gfx.ReleaseHdc(hdc);
 				//gfx.Dispose();
 
 				//// Create graphics context for drawing
 				//gfx = Graphics.FromImage(metaFile);
-				//GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
+				//GdiHelpers.ApplyGraphicsSettings(gfx, NShapeRenderingQuality.MaximumQuality);
 				//// Draw image
 				//gfx.DrawImage(image, Point.Empty);
 				
@@ -699,7 +697,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public static void CreateMetafile(string filePath, nShapeImageFormat imageFormat, int width, int height, DrawCallback callback) {
+		public static void CreateMetafile(string filePath, ImageFileFormat imageFormat, int width, int height, DrawCallback callback) {
 			if (callback == null) throw new ArgumentNullException("callback");
 			if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException("filePath");
 			Metafile metaFile = null;
@@ -711,13 +709,13 @@ namespace Dataweb.NShape.Advanced {
 						hdc,
 						Rectangle.FromLTRB(0, 0, width, height),
 						MetafileFrameUnit.Pixel,
-						(imageFormat == nShapeImageFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
+						(imageFormat == ImageFileFormat.EmfPlus) ? EmfType.EmfPlusDual : EmfType.EmfOnly);
 				} finally { gfx.ReleaseHdc(hdc); }
 			}
 			// Create graphics context for drawing
 			if (metaFile != null) {
 				using (Graphics gfx = Graphics.FromImage(metaFile)) {
-					GdiHelpers.ApplyGraphicsSettings(gfx, nShapeRenderingQuality.MaximumQuality);
+					GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
 					// Draw image
 					Rectangle bounds = Rectangle.Empty;
 					bounds.Width = width;
@@ -730,23 +728,23 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public static ImageFormat GetGdiImageFormat(nShapeImageFormat imageFormat) {
+		public static ImageFormat GetGdiImageFormat(ImageFileFormat imageFormat) {
 			ImageFormat result;
 			switch (imageFormat) {
-				case nShapeImageFormat.Bmp: result = ImageFormat.Bmp; break;
-				case nShapeImageFormat.Emf:
-				case nShapeImageFormat.EmfPlus: result = ImageFormat.Emf; break;
-				case nShapeImageFormat.Gif: result = ImageFormat.Gif; break;
-				case nShapeImageFormat.Jpeg: result = ImageFormat.Jpeg; break;
-				case nShapeImageFormat.Png: result = ImageFormat.Png; break;
-				case nShapeImageFormat.Tiff: result = ImageFormat.Tiff; break;
+				case ImageFileFormat.Bmp: result = ImageFormat.Bmp; break;
+				case ImageFileFormat.Emf:
+				case ImageFileFormat.EmfPlus: result = ImageFormat.Emf; break;
+				case ImageFileFormat.Gif: result = ImageFormat.Gif; break;
+				case ImageFileFormat.Jpeg: result = ImageFormat.Jpeg; break;
+				case ImageFileFormat.Png: result = ImageFormat.Png; break;
+				case ImageFileFormat.Tiff: result = ImageFormat.Tiff; break;
 				default: return result = ImageFormat.Bmp;
 			}
 			return result;
 		}
 		
 		
-		public static ImageCodecInfo GetEncoderInfo(nShapeImageFormat imageFormat) {
+		public static ImageCodecInfo GetEncoderInfo(ImageFileFormat imageFormat) {
 			ImageFormat format = GetGdiImageFormat(imageFormat);
 			ImageCodecInfo result = null;
 			ImageCodecInfo[] encoders = ImageCodecInfo.GetImageEncoders();

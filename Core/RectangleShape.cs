@@ -1,25 +1,27 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 
 namespace Dataweb.NShape.Advanced {
 
+	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class RectangleBase : CaptionedShapeBase {
 
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
@@ -67,8 +69,9 @@ namespace Dataweb.NShape.Advanced {
 		#region Properties
 
 		[Category("Layout")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("The size of the Shape.")]
+		[Description("The horizontal size of the Shape.")]
+		[PropertyMappingId(PropertyIdWidth)]
+		[RequiredPermission(Permission.Layout)]
 		public virtual int Width {
 			get { return size.Width; }
 			set {
@@ -90,8 +93,9 @@ namespace Dataweb.NShape.Advanced {
 
 
 		[Category("Layout")]
-		[RefreshProperties(RefreshProperties.All)]
-		[Description("The horizontal size of the Shape.")]
+		[Description("The vertical size of the Shape.")]
+		[PropertyMappingId(PropertyIdHeight)]
+		[RequiredPermission(Permission.Layout)]
 		public virtual int Height {
 			get { return size.Height; }
 			set {
@@ -638,6 +642,9 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
+		protected const int PropertyIdWidth = 7;
+		protected const int PropertyIdHeight = 8;
+
 		// ControlPoint Id Constants
 		private const int TopLeftControlPoint = 1;
 		private const int TopCenterControlPoint = 2;
@@ -1102,26 +1109,8 @@ namespace Dataweb.NShape.Advanced {
 			Rectangle boundingRect = GetBoundingRectangle(true);
 			int x = boundingRect.X + (int)Math.Round(boundingRect.Width / 2f);
 			int y = boundingRect.Y + (int)Math.Round(boundingRect.Height / 2f);
-			Point result = Point.Empty;
-			result.X = x;
-			result.Y = y;
-
-			int left = (int)Math.Round(X - (Width / 2f));
-			int top = Y - (int)Math.Round(Height * CenterPosFactorY);
-			int right = left + Width;
-			int bottom = top + Height;
-
-			shapePoints[0].X = X;
-			shapePoints[0].Y = top;
-			shapePoints[1].X = left;
-			shapePoints[1].Y = bottom;
-			shapePoints[2].X = right;
-			shapePoints[2].Y = bottom;
-
-			Matrix.Reset();
-			Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center);
-			Matrix.TransformPoints(shapePoints);
-
+			Point result = Geometry.InvalidPoint;
+			CalculateTranslatedShapePoints();
 			result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(shapePoints, startX, startY, x, y, true));
 			if (result == Geometry.InvalidPoint) result = Center;
 			return result;
@@ -1147,21 +1136,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		protected override bool ContainsPointCore(int x, int y) {
-			int left = (int)Math.Round(X - (Width / 2f));
-			int top = Y - (int)Math.Round(Height * CenterPosFactorY);
-			int right = left + Width;
-			int bottom = top + Height;
-			shapePoints[0].X = X;
-			shapePoints[0].Y = top;
-			shapePoints[1].X = left;
-			shapePoints[1].Y = bottom;
-			shapePoints[2].X = right;
-			shapePoints[2].Y = bottom;
-			if (Angle != 0) {
-				Matrix.Reset();
-				Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center);
-				Matrix.TransformPoints(shapePoints);
-			}
+			CalculateTranslatedShapePoints();
 			return Geometry.TriangleContainsPoint(x, y, shapePoints[0], shapePoints[1], shapePoints[2]);
 		}
 
@@ -1258,40 +1233,44 @@ namespace Dataweb.NShape.Advanced {
 					bounds.Width = Height;
 					bounds.Height = Width;
 				} else {
-					float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
-					int x1, y1, x2, y2, x3, y3;
-					x1 = X; y1 = top;
-					x2 = left; y2 = bottom;
-					x3 = right; y3 = bottom;
-					Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
-					Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
-					Geometry.RotatePoint(X, Y, angleDeg, ref x3, ref y3);
-
-					bounds.X = Math.Min(Math.Min(x1, x2), Math.Min(x1, x3));
-					bounds.Y = Math.Min(Math.Min(y1, y2), Math.Min(y1, y3));
-					bounds.Width = Math.Max(Math.Max(x1, x2), Math.Max(x1, x3)) - bounds.X;
-					bounds.Height = Math.Max(Math.Max(y1, y2), Math.Max(y1, y3)) - bounds.Y;
+					CalculateTranslatedShapePoints();
+					Geometry.CalcBoundingRectangle(shapePoints[0], shapePoints[1], shapePoints[2], shapePoints[0], out bounds);
 				}
 			}
 			return bounds;
 		}
 
 
+		/// <summary>
+		/// Calculated the untransformed shape points of the triangle
+		/// </summary>
+		protected virtual void CalculateShapePoints() {
+			int left = (int)Math.Round(-Width * centerPosFactorX);
+			int top = (int)Math.Round(-Height * centerPosFactorY);
+			int right = left + Width;
+			int bottom = top + Height;
+
+			shapePoints[0].X = 0;
+			shapePoints[0].Y = top;
+			shapePoints[1].X = left;
+			shapePoints[1].Y = bottom;
+			shapePoints[2].X = right;
+			shapePoints[2].Y = bottom;
+		}
+
+
+		protected void CalculateTranslatedShapePoints() {
+			CalculateShapePoints();
+			Matrix.Reset();
+			Matrix.Translate(X, Y);
+			if (Angle != 0) Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, MatrixOrder.Append);
+			Matrix.TransformPoints(shapePoints);
+		}
+
+
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				int left = (int)Math.Round(-Width * centerPosFactorX);
-				int top = (int)Math.Round(-Height * centerPosFactorY);
-				int right = left + Width;
-				int bottom = top + Height;
-
-				shapePoints[0].X = 0;
-				shapePoints[0].Y = top;
-
-				shapePoints[1].X = left;
-				shapePoints[1].Y = bottom;
-
-				shapePoints[2].X = right;
-				shapePoints[2].Y = bottom;
+				CalculateShapePoints();
 
 				Path.Reset();
 				Path.StartFigure();

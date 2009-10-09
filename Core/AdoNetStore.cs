@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -79,7 +79,7 @@ namespace Dataweb.NShape {
 	}
 
 
-	public class AdoNetStoreException : nShapeException {
+	public class AdoNetStoreException : NShapeException {
 
 		internal protected AdoNetStoreException(string message) : base(message) { }
 
@@ -114,7 +114,7 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Stores nShape projects in any ADO.NET enabled database management system.
+	/// Stores NShape projects in any ADO.NET enabled database management system.
 	/// </summary>
 	public abstract class AdoNetStore : Store {
 
@@ -435,6 +435,8 @@ namespace Dataweb.NShape {
 							Template t = (Template)sb.Owner;
 							if (t.Shape != null) throw new AdoNetStoreException("Template {0} has more than one shape.", t.Id);
 							((Template)sb.Owner).Shape = sb.ObjectRef;
+							LoadChildShapes(cache, sb.ObjectRef);
+							cache.LoadedShapes.Add(sb);
 						}
 					}
 				}
@@ -487,7 +489,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		public override void LoadDesigns(IStoreCache cache, object projectId) {
 			if (cache == null) throw new ArgumentNullException("cache");
-			Debug.Assert(((IEntity)cache.Project).Id.Equals(projectId));
+			Debug.Assert(projectId == null && ((IEntity)cache.Project).Id == null || ((IEntity)cache.Project).Id.Equals(projectId));
 			EnsureDataSourceOpen();
 			try {
 				foreach (EntityBucket<Design> pb in LoadEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName),
@@ -695,8 +697,9 @@ namespace Dataweb.NShape {
 
 
 		protected virtual IDbCommand GetInsertSysParameterCommand() {
-			IDbCommand result = CreateCommand("INSERT INTO SysParameter (Command, Name, Type) VALUES (@Command, @Name, @Type)",
+			IDbCommand result = CreateCommand("INSERT INTO SysParameter (Command, No, Name, Type) VALUES (@Command, @No, @Name, @Type)",
 				CreateParameter("Command", DbType.Int32),
+				CreateParameter("No", DbType.Int32),
 				CreateParameter("Name", DbType.String),
 				CreateParameter("Type", DbType.String));
 			result.Connection = Connection;
@@ -712,7 +715,7 @@ namespace Dataweb.NShape {
 
 
 		protected IDbCommand GetSelectSysParameterCommand() {
-			IDbCommand result = CreateCommand("SELECT Name, Type FROM SysParameter WHERE Command = @Command",
+			IDbCommand result = CreateCommand("SELECT Name, Type FROM SysParameter WHERE Command = @Command ORDER BY No",
 				CreateParameter("Command", DbType.Int32));
 			result.Connection = Connection;
 			return result;
@@ -766,7 +769,7 @@ namespace Dataweb.NShape {
 
 		protected IDbCommand CreateCommand() {
 			if (factory == null)
-				throw new nShapeException("No valid ADO.NET provider specified.");
+				throw new NShapeException("No valid ADO.NET provider specified.");
 			return factory.CreateCommand();
 		}
 
@@ -788,7 +791,7 @@ namespace Dataweb.NShape {
 
 
 		public IDbCommand GetCreateTablesCommand() {
-			if (createTablesCommand == null) throw new nShapeException("Command for creating the schema is not defined.");
+			if (createTablesCommand == null) throw new NShapeException("Command for creating the schema is not defined.");
 			if (createTablesCommand.Connection != Connection) createTablesCommand.Connection = Connection;
 			return createTablesCommand;
 		}
@@ -1485,7 +1488,8 @@ namespace Dataweb.NShape {
 					Entity.AssignId(command.ExecuteScalar());
 				} else {
 					// Updating an entity
-					command.ExecuteNonQuery();
+					if (command.ExecuteNonQuery() == 0)
+						throw new Exception(string.Format("No Records affected by statement \n{0}", command.CommandText));
 				}
 			}
 
@@ -1580,7 +1584,7 @@ namespace Dataweb.NShape {
 			protected override void DoBeginWriteInnerObjects() {
 				++PropertyIndex;
 				ValidateInnerObjectsIndex();
-				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new nShapeException("Property is not an inner objects property.");
+				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
 				//
 				EntityInnerObjectsDefinition innerInfo = (EntityInnerObjectsDefinition)propertyInfos[PropertyIndex];
 				if (AdoNetStore.IsComposition(innerInfo)) {
@@ -1622,9 +1626,9 @@ namespace Dataweb.NShape {
 
 			protected override void DoDeleteInnerObjects() {
 				ValidateInnerObjectsIndex();
-				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new nShapeException("Property is not an inner objects property.");
+				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
 				//
-				// Delete all existing inner objects of the ObjectRef persistable object			
+				// Delete all existing inner objects of the current persistable object			
 				IDbCommand command = store.GetDeleteInnerObjectsCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName);
 				command.Transaction = store.CurrentTransaction;
 				((IDataParameter)command.Parameters[0]).Value = Entity.Id;
@@ -1638,14 +1642,14 @@ namespace Dataweb.NShape {
 			// columns, e.g for the parent id and the id.
 			private void ValidateFieldIndex() {
 				if (PropertyIndex >= command.Parameters.Count)
-					throw new nShapeException("Field '{0}' of entity cannot be written to the repository because the mapping contains less items. Check whether the SQL commands for this entity are correct.", PropertyIndex);
+					throw new NShapeException("Field '{0}' of entity cannot be written to the repository because the mapping contains less items. Check whether the SQL commands for this entity are correct.", PropertyIndex);
 			}
 
 
 			// Can check against the property count here, becuause there are no hidden inner objects.
 			private void ValidateInnerObjectsIndex() {
 				if (PropertyIndex >= propertyInfos.Count)
-					throw new nShapeException("Inner objects '{0}' of entity cannot be written to the data store because the entity defines less properties.", PropertyIndex);
+					throw new NShapeException("Inner objects '{0}' of entity cannot be written to the data store because the entity defines less properties.", PropertyIndex);
 			}
 
 
@@ -1711,7 +1715,7 @@ namespace Dataweb.NShape {
 
 
 			protected internal override void DoEndObject() {
-				if (str[p] != ';') throw new nShapeException("NotSupported string. ';' expected.");
+				if (str[p] != ';') throw new NShapeException("NotSupported string. ';' expected.");
 				++p;
 			}
 
@@ -1754,7 +1758,7 @@ namespace Dataweb.NShape {
 			protected override byte DoReadByte() {
 				long value = DoReadInteger();
 				if (value < byte.MinValue || byte.MaxValue < value)
-					throw new nShapeException("Invalid repository format");
+					throw new NShapeException("Invalid repository format");
 				return (byte)value;
 			}
 
@@ -1762,7 +1766,7 @@ namespace Dataweb.NShape {
 			protected override short DoReadInt16() {
 				long value = DoReadInteger();
 				if (value < short.MinValue || short.MaxValue < value)
-					throw new nShapeException("Invalid repository format");
+					throw new NShapeException("Invalid repository format");
 				return (short)value;
 			}
 
@@ -1770,7 +1774,7 @@ namespace Dataweb.NShape {
 			protected override int DoReadInt32() {
 				long value = DoReadInteger();
 				if (value < int.MinValue || int.MaxValue < value)
-					throw new nShapeException("Invalid repository format");
+					throw new NShapeException("Invalid repository format");
 				return (int)value;
 			}
 
@@ -1783,7 +1787,7 @@ namespace Dataweb.NShape {
 			protected override float DoReadFloat() {
 				double value = DoReadDouble();
 				if (value < float.MinValue || float.MaxValue < value)
-					throw new nShapeException("Invalid repository format");
+					throw new NShapeException("Invalid repository format");
 				return (float)value;
 			}
 
@@ -2078,9 +2082,9 @@ namespace Dataweb.NShape {
 							repositoryWriter.Command.Transaction = transaction;
 							repositoryWriter.Reset(entityType.PropertyDefinitions);
 						}
-						((DbParameter)repositoryWriter.Command.Parameters[0]).Value = ei.ObjectRef.Id;
 						repositoryWriter.Prepare(ei.ObjectRef);
-						repositoryWriter.WriteId(ei.Owner == null? null: ei.Owner.Id);
+						repositoryWriter.WriteId(ei.ObjectRef.Id);
+						// repositoryWriter.WriteId(ei.Owner == null? null: ei.Owner.Id);
 						ei.ObjectRef.SaveFields(repositoryWriter, version);
 						// Save all the composite inner objects.
 						foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions)
@@ -2097,7 +2101,7 @@ namespace Dataweb.NShape {
 					case ItemState.Original:
 						continue;	// nothing to do
 					default:
-						throw new nShapeUnsupportedValueException(ei.State.GetType(), ei.State);
+						throw new NShapeUnsupportedValueException(ei.State.GetType(), ei.State);
 				}
 			}
 		}
@@ -2113,7 +2117,6 @@ namespace Dataweb.NShape {
 			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities) where TEntity : IEntity {
 			// store id's of deleted shapes in this list and remove them after iterating with the IEnumerable enumerator
 			List<object> deletedIds = new List<object>(100);
-			//
 			DbParameterWriter repositoryWriter = null;
 			foreach (EntityBucket<TEntity> ei in loadedEntities) {
 				if (ei.ObjectRef is TEntity) {
@@ -2127,7 +2130,7 @@ namespace Dataweb.NShape {
 							}
 							repositoryWriter.Prepare(ei.ObjectRef);
 							repositoryWriter.WriteId(ei.ObjectRef.Id);
-							ei.ObjectRef.Delete(repositoryWriter, 1);
+							ei.ObjectRef.Delete(repositoryWriter, version);
 							repositoryWriter.Flush();
 							// add to list of deleted ids
 							deletedIds.Add(ei.ObjectRef.Id);
@@ -2137,7 +2140,7 @@ namespace Dataweb.NShape {
 						case ItemState.Original:
 							continue;
 						default:
-							throw new nShapeUnsupportedValueException(ei.State.GetType(), ei.State);
+							throw new NShapeUnsupportedValueException(ei.State.GetType(), ei.State);
 					}
 				}
 			}
@@ -2296,7 +2299,7 @@ namespace Dataweb.NShape {
 					case RepositoryCommandType.Update:
 						return UpdateCommand;
 					default:
-						throw new nShapeUnsupportedValueException(typeof(RepositoryCommandType), commandType);
+						throw new NShapeUnsupportedValueException(typeof(RepositoryCommandType), commandType);
 				}
 			}
 
@@ -2367,10 +2370,12 @@ namespace Dataweb.NShape {
 						((IDbDataParameter)cmdCmd.Parameters[1]).Value = item.Key.EntityTypeName;
 						((IDbDataParameter)cmdCmd.Parameters[2]).Value = item.Value.CommandText;
 						int cmdId = (int)cmdCmd.ExecuteScalar();
-						foreach (IDataParameter p in item.Value.Parameters) {
+						for (int i = 0; i < item.Value.Parameters.Count; ++i) {
+							IDataParameter p = (IDataParameter)item.Value.Parameters[i];
 							((IDbDataParameter)paramCmd.Parameters[0]).Value = cmdId;
-							((IDbDataParameter)paramCmd.Parameters[1]).Value = p.ParameterName;
-							((IDbDataParameter)paramCmd.Parameters[2]).Value = p.DbType.ToString();
+							((IDbDataParameter)paramCmd.Parameters[1]).Value = i + 1;
+							((IDbDataParameter)paramCmd.Parameters[2]).Value = p.ParameterName;
+							((IDbDataParameter)paramCmd.Parameters[3]).Value = p.DbType.ToString();
 							paramCmd.ExecuteNonQuery();
 						}
 					}
@@ -2392,7 +2397,7 @@ namespace Dataweb.NShape {
 					LoadSysCommands();
 				} catch (DbException exc) {
 					Debug.Print(exc.Message);
-					// Assumption: No SysCommand table available, i.e. no nShape tables present
+					// Assumption: No SysCommand table available, i.e. no NShape tables present
 					return;
 				}
 				IDbCommand dropCommand = GetCommand("All", RepositoryCommandType.Delete);
@@ -2413,9 +2418,9 @@ namespace Dataweb.NShape {
 			get {
 				if (connection == null) {
 					if (string.IsNullOrEmpty(ProviderName))
-						throw new nShapeException("ProviderName is not set.");
+						throw new NShapeException("ProviderName is not set.");
 					if (string.IsNullOrEmpty(ConnectionString))
-						throw new nShapeException("ConnectionString is not set.");
+						throw new NShapeException("ConnectionString is not set.");
 					connection = factory.CreateConnection();
 					connection.ConnectionString = ConnectionString;
 				}
