@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -35,7 +35,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		[Category("nShape")]
+		[Category("NShape")]
 		public ToolSetController ToolSetController {
 			get { return toolSetController; }
 			set {
@@ -121,7 +121,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void toolSetController_ToolAdded(object sender, ToolEventArgs e) {
 			// SaveChanges the list view: Move this to ToolSetListViewPresenter
 			if (FindItem(e.Tool) != null)
-				throw new nShapeException(string.Format("Tool {0} already exists.", e.Tool.Title));
+				throw new NShapeException(string.Format("Tool {0} already exists.", e.Tool.Title));
 			ToolStripItem item = CreateItem(e.Tool);
 			// ToDo: Put the tool into the right group, seperrate groups by seperators
 			//   if (!string.IsNullOrEmpty(e.Tool.Category)) {
@@ -178,5 +178,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private ToolSetController toolSetController;
+		private PropertyController propertyController;
 	}
 }

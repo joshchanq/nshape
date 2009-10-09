@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -20,6 +20,7 @@ using System.Drawing.Imaging;
 using System.Windows.Forms;
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.Controllers;
+using System.IO;
 
 namespace Dataweb.NShape.WinFormsUI {
 
@@ -73,7 +74,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void emfPlusRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (emfPlusRadioButton.Checked) {
-				imageFormat = nShapeImageFormat.EmfPlus;
+				imageFormat = ImageFileFormat.EmfPlus;
 				descriptionLabel.Text = emfPlusDescription;
 				EnableResolutionAndQualitySelection();
 				RefreshPreview();
@@ -83,7 +84,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void emfRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (emfRadioButton.Checked) {
-				imageFormat = nShapeImageFormat.Emf;
+				imageFormat = ImageFileFormat.Emf;
 				descriptionLabel.Text = emfDescription;
 				EnableResolutionAndQualitySelection();
 				RefreshPreview();
@@ -93,7 +94,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void pngRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (pngRadioButton.Checked) {
-				imageFormat = nShapeImageFormat.Png;
+				imageFormat = ImageFileFormat.Png;
 				descriptionLabel.Text = pngDescription;
 				EnableResolutionAndQualitySelection();
 				RefreshPreview();
@@ -103,7 +104,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void jpgRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (jpgRadioButton.Checked) {
-				imageFormat = nShapeImageFormat.Jpeg;
+				imageFormat = ImageFileFormat.Jpeg;
 				descriptionLabel.Text = jpgDescription;
 				EnableResolutionAndQualitySelection();
 				backColorCheckBox.Checked = true;
@@ -114,7 +115,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void bmpRadioButton_CheckedChanged(object sender, EventArgs e) {
 			if (bmpRadioButton.Checked) {
-				imageFormat = nShapeImageFormat.Bmp;
+				imageFormat = ImageFileFormat.Bmp;
 				descriptionLabel.Text = bmpDescription;
 				EnableResolutionAndQualitySelection();
 				backColorCheckBox.Checked = true;
@@ -150,19 +151,22 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void browseButton_Click(object sender, EventArgs e) {
 			string fileFilter = null;
 			switch (imageFormat) {
-				case nShapeImageFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
-				case nShapeImageFormat.EmfPlus: 
-				case nShapeImageFormat.Emf: fileFilter = "Enhanced Meta Files|*.emf|All Files|*.*"; break;
-				case nShapeImageFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
-				case nShapeImageFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
-				case nShapeImageFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
-				case nShapeImageFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
-				default: throw new nShapeUnsupportedValueException(imageFormat);
+				case ImageFileFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
+				case ImageFileFormat.EmfPlus: 
+				case ImageFileFormat.Emf: fileFilter = "Enhanced Meta Files|*.emf|All Files|*.*"; break;
+				case ImageFileFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
+				case ImageFileFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
+				case ImageFileFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
+				case ImageFileFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
+				default: throw new NShapeUnsupportedValueException(imageFormat);
 			}
+			string fileName = string.Empty;
 			saveFileDialog.Filter = fileFilter;
+			saveFileDialog.AddExtension = true;
+			saveFileDialog.SupportMultiDottedExtensions = true;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK)
-				SetFilePath(saveFileDialog.FileName);
-			else SetFilePath(string.Empty);
+				fileName = saveFileDialog.FileName;
+			SetFilePath(fileName);
 		}
 
 
@@ -171,7 +175,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void dpiComboBox_SelectedIndexChanged(object sender, EventArgs e) {
-
 		}
 
 		
@@ -261,7 +264,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void previewPanel_Paint(object sender, PaintEventArgs e) {
 			if (previewCheckBox.Checked) {
 				// Apply graphics settings
-				GdiHelpers.ApplyGraphicsSettings(e.Graphics, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.MaximumQuality);
 				// Create image
 				if (image == null) CreateImage();
 				if (imgAttribs == null) imgAttribs = GdiHelpers.GetImageAttributes(imageLayout);
@@ -323,27 +326,42 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		private string GetFileExtension(ImageFileFormat imageFileFormat) {
+			switch (imageFileFormat) {
+				case ImageFileFormat.Bmp: return "bmp";
+				case ImageFileFormat.Emf:
+				case ImageFileFormat.EmfPlus: return "emf";
+				case ImageFileFormat.Gif: return "gif";
+				case ImageFileFormat.Jpeg: return "jpg";
+				case ImageFileFormat.Png: return "png";
+				case ImageFileFormat.Svg: return "svg";
+				case ImageFileFormat.Tiff: return "tiff";
+				default: return string.Empty;
+			}
+		}
+		
+		
 		private void ExportImage() {
 			if (image == null) CreateImage();
 			switch (imageFormat) {
-				case nShapeImageFormat.Emf:
-				case nShapeImageFormat.EmfPlus:
+				case ImageFileFormat.Emf:
+				case ImageFileFormat.EmfPlus:
 					if (exportToClipboard)
 						EmfHelper.PutEnhMetafileOnClipboard(this.Handle, (Metafile)image.Clone());
 					else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
 					break;
-				case nShapeImageFormat.Bmp:
-				case nShapeImageFormat.Gif:
-				case nShapeImageFormat.Jpeg:
-				case nShapeImageFormat.Png:
-				case nShapeImageFormat.Tiff:
+				case ImageFileFormat.Bmp:
+				case ImageFileFormat.Gif:
+				case ImageFileFormat.Jpeg:
+				case ImageFileFormat.Png:
+				case ImageFileFormat.Tiff:
 					if (exportToClipboard)
 						Clipboard.SetImage((Image)image.Clone());
 					else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
 					break;
-				case nShapeImageFormat.Svg:
+				case ImageFileFormat.Svg:
 					throw new NotImplementedException();
-				default: throw new nShapeUnsupportedValueException(imageFormat);
+				default: throw new NShapeUnsupportedValueException(imageFormat);
 			}
 		}
 		
@@ -387,15 +405,15 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void EnableResolutionAndQualitySelection() {
 			bool enable;
 			switch (imageFormat) {
-				case nShapeImageFormat.EmfPlus:
-				case nShapeImageFormat.Emf:
-				case nShapeImageFormat.Svg:
+				case ImageFileFormat.EmfPlus:
+				case ImageFileFormat.Emf:
+				case ImageFileFormat.Svg:
 					enable = false; break;
-				case nShapeImageFormat.Bmp:
-				case nShapeImageFormat.Gif:
-				case nShapeImageFormat.Jpeg:
-				case nShapeImageFormat.Png:
-				case nShapeImageFormat.Tiff:
+				case ImageFileFormat.Bmp:
+				case ImageFileFormat.Gif:
+				case ImageFileFormat.Jpeg:
+				case ImageFileFormat.Png:
+				case ImageFileFormat.Tiff:
 					enable = !exportToClipboard; break;
 				default: enable = false; break;
 			}
@@ -415,7 +433,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private const string bmpDescription = "Bitmap (*.png)\nCreates an uncompressed bitmap image file. The Bmp file format does not support transparency.";
 
 		// Rendering stuff
-		private const nShapeImageLayout imageLayout = nShapeImageLayout.Fit;
+		private const ImageLayoutMode imageLayout = ImageLayoutMode.Fit;
 		private Image image = null;
 		private Rectangle imageBounds = Rectangle.Empty;
 
@@ -426,7 +444,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private IEnumerable<Shape> shapes;
 
 		// Export stuff
-		private nShapeImageFormat imageFormat;
+		private ImageFileFormat imageFormat;
 		private bool exportToClipboard;
 		private byte compressionQuality = 75;
 		private string filePath = null;

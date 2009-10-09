@@ -1,21 +1,22 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
 using System.Drawing;
 
 using Dataweb.NShape.Advanced;
+using System.Drawing.Drawing2D;
 
 
 namespace Dataweb.NShape.FlowChartShapes {
@@ -70,9 +71,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 	public abstract class FlowChartSquareBase : SquareBase {
-		protected override int ControlPointCount { get { return 9; } }
-
-
+		
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -84,6 +83,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return 9; } }
 
 
 		protected internal FlowChartSquareBase(ShapeType shapeType, Template template)
@@ -105,9 +107,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 	public abstract class FlowChartEllipseBase : EllipseBase {
-		protected override int ControlPointCount { get { return 9; } }
-
-
+		
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -119,6 +119,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return 9; } }
 
 
 		protected internal FlowChartEllipseBase(ShapeType shapeType, Template template)
@@ -141,9 +144,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartCircleBase : CircleBase {
 
-		protected override int ControlPointCount { get { return 9; } }
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -155,6 +155,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return 9; } }
 
 
 		protected internal FlowChartCircleBase(ShapeType shapeType, Template template)
@@ -177,11 +180,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartDiamondBase : DiamondBase {
 
-		protected override int ControlPointCount {
-			get { return 9; }
-		}
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -194,6 +192,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 				default:
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
+		}
+
+
+		protected override int ControlPointCount {
+			get { return 9; }
 		}
 
 
@@ -218,9 +221,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartTriangleBase : IsoscelesTriangleBase {
 
-		protected override int ControlPointCount { get { return 5; } }
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case ControlPointId.Reference:
@@ -234,6 +234,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 				//return (controlPointCapability & ControlPointCapabilities.Resize) != 0;
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return 5; } }
 
 
 		protected internal FlowChartTriangleBase(ShapeType shapeType, Template template)
@@ -484,31 +487,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		protected override bool CalculatePath() {
-			if (base.CalculatePath()) {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-
-				// refresh edge positions
-				shapeBuffer[0].X = 0;
-				shapeBuffer[0].Y = top;
-				shapeBuffer[1].X = right;
-				shapeBuffer[1].Y = 0;
-				shapeBuffer[2].X = 0;
-				shapeBuffer[2].Y = bottom;
-				shapeBuffer[3].X = left;
-				shapeBuffer[3].Y = 0;
-
-				Path.StartFigure();
-				Path.AddPolygon(shapeBuffer);
-				Path.CloseFigure();
-				return true;
-			} else return false;
-		}
-
-
 		#region Fields
 		Point[] shapeBuffer = new Point[4];
 		#endregion
@@ -720,11 +698,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		protected override int ControlPointCount {
-			get { return 7; }
-		}
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if ((controlPointCapability & ControlPointCapabilities.Connect) != 0
 				|| (controlPointCapability & ControlPointCapabilities.Resize) != 0)
@@ -735,6 +708,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 			if ((controlPointCapability & ControlPointCapabilities.Glue) != 0)
 				return false;
 			return false;
+		}
+
+
+		protected override int ControlPointCount {
+			get { return 7; }
 		}
 
 
@@ -837,9 +815,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		protected override int ControlPointCount { get { return base.ControlPointCount + 2; } }
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -855,6 +830,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return base.ControlPointCount + 2; } }
 
 
 		protected internal ExtractSymbol(ShapeType shapeType, Template template)
@@ -904,9 +882,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		protected override int ControlPointCount { get { return base.ControlPointCount + 2; } }
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -922,6 +897,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return base.ControlPointCount + 2; } }
 
 
 		protected internal MergeSymbol(ShapeType shapeType, Template template)
@@ -1024,34 +1002,21 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		protected override bool CalculatePath() {
-			if (base.CalculatePath()) {
-				Path.Reset();
-				int left = (int)Math.Round(-Width * CenterPosFactorX);
-				int top = (int)Math.Round(-Height * CenterPosFactorY);
-				int right = left + Width;
-				int bottom = top + Height;
+		protected override void CalculateShapePoints() {
+			int left = (int)Math.Round(-Width * CenterPosFactorX);
+			int top = (int)Math.Round(-Height * CenterPosFactorY);
+			int right = left + Width;
+			int bottom = top + Height;
 
-				shapePoints[0].X = left;
-				shapePoints[0].Y = top;
-				shapePoints[1].X = right;
-				shapePoints[1].Y = top;
-				shapePoints[2].X = 0;
-				shapePoints[2].Y = bottom;
-
-				Path.StartFigure();
-				Path.AddPolygon(shapePoints);
-				Path.CloseFigure();
-				return true;
-			} else return false;
+			shapePoints[0].X = left;
+			shapePoints[0].Y = top;
+			shapePoints[1].X = right;
+			shapePoints[1].Y = top;
+			shapePoints[2].X = 0;
+			shapePoints[2].Y = bottom;
 		}
-
-
-		public override void Draw(Graphics graphics) {
-			base.Draw(graphics);
-		}
-
-
+		
+		
 		protected override float CenterPosFactorY { get { return centerPosFactorY; } }
 
 
@@ -1847,10 +1812,36 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		protected override bool ContainsPointCore(int x, int y) {
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+
+			shapePointBuffer[0].X = left;
+			shapePointBuffer[0].Y = top;
+			shapePointBuffer[1].X = right;
+			shapePointBuffer[1].Y = top;
+			shapePointBuffer[2].X = right;
+			shapePointBuffer[2].Y = bottom;
+			shapePointBuffer[3].X = left;
+			shapePointBuffer[3].Y = bottom;
+			Matrix.Reset();
+			Matrix.Translate(X, Y);
+			if (Angle != 0) Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, MatrixOrder.Append);
+			Matrix.TransformPoints(shapePointBuffer);
+
+			if (Geometry.TriangleContainsPoint(x, y, shapePointBuffer[0], shapePointBuffer[1], Center)
+				|| Geometry.TriangleContainsPoint(x, y, Center, shapePointBuffer[2], shapePointBuffer[3]))
+				return true;
+			else return false;
+		}
+		
+		
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
-			Height = 80;
-			Width = 80;
+			Height = 40;
+			Width = 40;
 		}
 
 
@@ -1871,6 +1862,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 			}
 			return false;
 		}
+
+
+		private Point[] shapePointBuffer = new Point[4];
 	}
 
 
@@ -1927,11 +1921,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		protected override int ControlPointCount {
-			get { return 5; }
-		}
-
-
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -1958,6 +1947,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 		protected internal CommLinkSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 			pointBuffer = new Point[6];
+		}
+
+
+		protected override int ControlPointCount {
+			get { return 5; }
 		}
 
 
@@ -2060,7 +2054,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 	}
 
 
-	public static class nShapeLibraryInitializer {
+	public static class NShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
@@ -2143,6 +2137,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 		private const string namespaceName = "FlowChartShapes";
-		private const int preferredRepositoryVersion = 3;
+		private const int preferredRepositoryVersion = 2;
 	}
 }

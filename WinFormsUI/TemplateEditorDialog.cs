@@ -1,18 +1,19 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 using Dataweb.NShape.Advanced;
@@ -40,6 +41,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			: this(project, null) { }
 
 
+		[Category("NShape")]
 		public Project Project {
 			get { return templateController.Project; }
 			set { templateController.Project = value; }
@@ -56,7 +58,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 		
 		
-		public TemplateController Controller {
+		public TemplateController TemplateController {
 			get { return templateController; }
 		}
 
@@ -64,7 +66,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void EnableButtons() {
 			if (templateController.Project != null) {
 				okButton.Enabled =
-				applyButton.Enabled = templatePresenter.TemplateWasModified && Project.SecurityManager.IsGranted(Permission.Templates);
+				applyButton.Enabled = 
+					(templatePresenter.TemplateWasModified 
+					 && Project.SecurityManager.IsGranted(Permission.Templates));
 			} else {
 				okButton.Enabled =
 				applyButton.Enabled = false;
@@ -73,29 +77,19 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		#region [Private] Methods: TemplateController event handler imlpementations
+		#region [Private] Methods: TemplateController event handler implementations
 
-		private void templateController_TemplateDescriptionChanged(object sender, TemplateControllerStringChangedEventArgs e) {
+		private void templateController_TemplateShapeChanged(object sender, TemplateControllerTemplateShapeReplacedEventArgs e) {
 			EnableButtons();
 		}
 
 
-		private void templateController_TemplateModelObjectReplaced(object sender, TemplateControllerModelObjectReplacedEventArgs e) {
+		private void templateController_TemplateModelObjectChanged(object sender, TemplateControllerModelObjectReplacedEventArgs e) {
 			EnableButtons();
 		}
 
 
-		private void templateController_TemplateNameChanged(object sender, TemplateControllerStringChangedEventArgs e) {
-			EnableButtons();
-		}
-
-
-		private void templateController_TemplatePropertyChanged(object sender, EventArgs e) {
-			EnableButtons();
-		}
-
-
-		private void templateController_TemplateShapeControlPointMappingChanged(object sender, TemplateControllerPointMappingChangedEventArgs e) {
+		private void templateController_TemplateShapeControlPointMappingModified(object sender, TemplateControllerPointMappingChangedEventArgs e) {
 			EnableButtons();
 		}
 
@@ -110,12 +104,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		private void templateController_TemplateShapeReplaced(object sender, TemplateControllerTemplateShapeReplacedEventArgs e) {
-			EnableButtons();
-		}
-
-
-		private void templateController_TemplateTitleChanged(object sender, TemplateControllerStringChangedEventArgs e) {
+		private void templateController_TemplateModified(object sender, EventArgs e) {
 			EnableButtons();
 		}
 
@@ -137,16 +126,22 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void applyButton_Click(object sender, EventArgs e) {
-			templatePresenter.ApplyChanges();
-			EnableButtons();
+			if (string.IsNullOrEmpty(templatePresenter.TemplateController.WorkTemplate.Name))
+				MessageBox.Show(this, "The template name must not be empty.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			else {
+				if (templatePresenter.TemplateWasModified)
+					templatePresenter.ApplyChanges();
+				EnableButtons();
+			}
 		}
 
 
 		private void okButton_Click(object sender, EventArgs e) {
-			if (templatePresenter.TemplateWasModified)
-				templatePresenter.ApplyChanges();
-			if (Modal) DialogResult = DialogResult.OK;
-			else Close();
+			applyButton_Click(sender, e);
+			if (!string.IsNullOrEmpty(templatePresenter.TemplateController.WorkTemplate.Name)) {
+				if (Modal) DialogResult = DialogResult.OK;
+				else Close();
+			}
 		}
 
 

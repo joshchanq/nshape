@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -22,9 +22,6 @@ using Dataweb.NShape.GeneralShapes;
 namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalRectangleBase : RectangleBase {
-
-		protected override int ControlPointCount { get { return 9; } }
-
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
@@ -56,6 +53,9 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		protected override int ControlPointCount { get { return 9; } }
+
+
 		// ControlPoint Id Constants
 		private const int TopLeftControlPoint = 1;
 		private const int TopCenterControlPoint = 2;
@@ -70,9 +70,6 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 	public abstract class ElectricalSquareBase : SquareBase {
-
-		protected override int ControlPointCount { get { return 9; } }
-
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
@@ -97,6 +94,9 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		protected override int ControlPointCount { get { return 9; } }
+
+
 		// ControlPoint Id Constants
 		private const int TopCenterControlPoint = 2;
 		private const int MiddleLeftControlPoint = 4;
@@ -106,9 +106,6 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 	public abstract class ElectricalEllipseBase : EllipseBase {
-
-		protected override int ControlPointCount { get { return 9; } }
-
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
@@ -121,6 +118,9 @@ namespace Dataweb.NShape.ElectricalShapes {
 					return base.HasControlPointCapability(controlPointId, controlPointCapability);
 			}
 		}
+
+
+		protected override int ControlPointCount { get { return 9; } }
 
 
 		protected internal ElectricalEllipseBase(ShapeType shapeType, Template template)
@@ -142,9 +142,6 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 	public abstract class ElectricalCircleBase : CircleBase {
-
-		protected override int ControlPointCount { get { return 9; } }
-
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
@@ -169,6 +166,9 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		protected override int ControlPointCount { get { return 9; } }
+
+
 		// ControlPoint Id Constants
 		private const int TopLeftControlPoint = 1;
 		private const int TopRightControlPoint = 3;
@@ -178,9 +178,6 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 	public abstract class ElectricalTriangleBase : IsoscelesTriangleBase {
-
-		protected override int ControlPointCount { get { return 5; } }
-
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
@@ -205,6 +202,9 @@ namespace Dataweb.NShape.ElectricalShapes {
 		protected internal ElectricalTriangleBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
+
+
+		protected override int ControlPointCount { get { return 5; } }
 
 
 		// ControlPoint Id Constants
@@ -239,12 +239,12 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
-		public DisconnectorSymbol(ShapeType shapeType, Template template)
+		protected internal DisconnectorSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
-		public DisconnectorSymbol(ShapeType shapeType, IStyleSet styleSet)
+		protected internal DisconnectorSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 	}
@@ -279,31 +279,31 @@ namespace Dataweb.NShape.ElectricalShapes {
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			if (tight) {
 				Rectangle result = Rectangle.Empty;
-				result.X = result.Y = -(int)Math.Round(Diameter / 2f);
+				result.X = X - (int)Math.Round(Diameter / 2f);
+				result.Y = Y - (int)Math.Round(Diameter / 2f);
 				result.Width = result.Height = Diameter;
-				// Rotate bottom line
+				// Rotate top line
 				if (Angle != 0) {
 					float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
 					Point tl = Point.Empty;
 					tl.Offset(result.Left, result.Top);
-					tl = Geometry.RotatePoint(Point.Empty, angleDeg, tl);
+					tl = Geometry.RotatePoint(X, Y, angleDeg, tl);
 					Point tr = Point.Empty;
 					tr.Offset(result.Right, result.Top);
-					tr = Geometry.RotatePoint(Point.Empty, angleDeg, tr);
+					tr = Geometry.RotatePoint(X, Y, angleDeg, tr);
 					Geometry.UniteRectangles(tl.X, tl.Y, tr.X, tr.Y, result);
-					result.Offset(X, Y);
 				}
 				return result;
 			} return base.CalculateBoundingRectangle(tight);
 		}
 
 
-		public AutoDisconnectorSymbol(ShapeType shapeType, Template template)
+		protected internal AutoDisconnectorSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
-		public AutoDisconnectorSymbol(ShapeType shapeType, IStyleSet styleSet)
+		protected internal AutoDisconnectorSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 	}
@@ -345,12 +345,12 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
-		public AutoSwitchSymbol(ShapeType shapeType, Template template)
+		protected internal AutoSwitchSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
-		public AutoSwitchSymbol(ShapeType shapeType, IStyleSet styleSet)
+		protected internal AutoSwitchSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 
@@ -389,12 +389,12 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
-		public SwitchSymbol(ShapeType shapeType, Template template)
+		protected internal SwitchSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
-		public SwitchSymbol(ShapeType shapeType, IStyleSet styleSet)
+		protected internal SwitchSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 
@@ -411,6 +411,11 @@ namespace Dataweb.NShape.ElectricalShapes {
 			Shape result = new BusBarSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
+		}
+
+
+		public override int MaxVertexCount {
+			get { return 2; }
 		}
 
 
@@ -844,7 +849,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 	}
 
 
-	public static class nShapeLibraryInitializer {
+	public static class NShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(libraryName, preferredRepositoryVersion);
@@ -882,6 +887,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 		private const string libraryName = "ElectricalShapes";
-		private const int preferredRepositoryVersion = 3;
+		private const int preferredRepositoryVersion = 2;
 	}
+
 }

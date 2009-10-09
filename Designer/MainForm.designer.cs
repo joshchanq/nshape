@@ -26,7 +26,7 @@ namespace Dataweb.NShape.Designer {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DiagramDesignerMainForm));
-			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.DefaultSecurity defaultSecurity5 = new Dataweb.NShape.DefaultSecurity();
 			this.BottomToolStripPanel = new System.Windows.Forms.ToolStripPanel();
 			this.statusStrip = new System.Windows.Forms.StatusStrip();
 			this.statusLabelPosition = new System.Windows.Forms.ToolStripStatusLabel();
@@ -95,15 +95,11 @@ namespace Dataweb.NShape.Designer {
 			this.listView = new System.Windows.Forms.ListView();
 			this.propertyWindowTabControl = new System.Windows.Forms.TabControl();
 			this.propertyWindowShapeTab = new System.Windows.Forms.TabPage();
-			this.viewObjectPropertyGrid = new System.Windows.Forms.PropertyGrid();
+			this.primaryPropertyGrid = new System.Windows.Forms.PropertyGrid();
 			this.propertyWindowModelTab = new System.Windows.Forms.TabPage();
-			this.modelObjectPropertyGrid = new System.Windows.Forms.PropertyGrid();
+			this.secondaryPropertyGrid = new System.Windows.Forms.PropertyGrid();
 			this.layersTab = new System.Windows.Forms.TabPage();
 			this.layerEditorListView1 = new Dataweb.NShape.WinFormsUI.LayerListView();
-			this.diagramSetController = new Dataweb.NShape.Controllers.DiagramSetController();
-			this.project = new Dataweb.NShape.Project(this.components);
-			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
-			this.layerController = new Dataweb.NShape.Controllers.LayerController();
 			this.splitter2 = new System.Windows.Forms.Splitter();
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
 			this.displayTabControl = new System.Windows.Forms.TabControl();
@@ -130,11 +126,16 @@ namespace Dataweb.NShape.Designer {
 			this.runtimeModeComboBox = new System.Windows.Forms.ToolStripComboBox();
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
 			this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
-			this.toolBoxController = new Dataweb.NShape.Controllers.ToolSetController();
+			this.diagramSetController = new Dataweb.NShape.Controllers.DiagramSetController();
+			this.project = new Dataweb.NShape.Project(this.components);
+			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
+			this.layerController = new Dataweb.NShape.Controllers.LayerController();
+			this.toolSetController = new Dataweb.NShape.Controllers.ToolSetController();
 			this.modelTreeController = new Dataweb.NShape.Controllers.ModelController();
-			this.modelTreeAdapter = new Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter();
-			this.propertyGridAdapter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
-			this.toolBoxListViewAdapter = new Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter(this.components);
+			this.modelTreePresenter = new Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter();
+			this.propertyPresenter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
+			this.propertyController = new Dataweb.NShape.Controllers.PropertyController();
+			this.toolSetListViewPresenter = new Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter(this.components);
 			this.layerPresenter = new Dataweb.NShape.Controllers.LayerPresenter();
 			this.statusStrip.SuspendLayout();
 			this.mainMenuStrip.SuspendLayout();
@@ -757,7 +758,7 @@ namespace Dataweb.NShape.Designer {
 			// 
 			// propertyWindowShapeTab
 			// 
-			this.propertyWindowShapeTab.Controls.Add(this.viewObjectPropertyGrid);
+			this.propertyWindowShapeTab.Controls.Add(this.primaryPropertyGrid);
 			this.propertyWindowShapeTab.Location = new System.Drawing.Point(4, 22);
 			this.propertyWindowShapeTab.Name = "propertyWindowShapeTab";
 			this.propertyWindowShapeTab.Padding = new System.Windows.Forms.Padding(3);
@@ -766,17 +767,17 @@ namespace Dataweb.NShape.Designer {
 			this.propertyWindowShapeTab.Text = "Shape";
 			this.propertyWindowShapeTab.UseVisualStyleBackColor = true;
 			// 
-			// viewObjectPropertyGrid
+			// primaryPropertyGrid
 			// 
-			this.viewObjectPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.viewObjectPropertyGrid.Location = new System.Drawing.Point(3, 3);
-			this.viewObjectPropertyGrid.Name = "viewObjectPropertyGrid";
-			this.viewObjectPropertyGrid.Size = new System.Drawing.Size(214, 363);
-			this.viewObjectPropertyGrid.TabIndex = 1;
+			this.primaryPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.primaryPropertyGrid.Location = new System.Drawing.Point(3, 3);
+			this.primaryPropertyGrid.Name = "primaryPropertyGrid";
+			this.primaryPropertyGrid.Size = new System.Drawing.Size(214, 363);
+			this.primaryPropertyGrid.TabIndex = 1;
 			// 
 			// propertyWindowModelTab
 			// 
-			this.propertyWindowModelTab.Controls.Add(this.modelObjectPropertyGrid);
+			this.propertyWindowModelTab.Controls.Add(this.secondaryPropertyGrid);
 			this.propertyWindowModelTab.Location = new System.Drawing.Point(4, 22);
 			this.propertyWindowModelTab.Name = "propertyWindowModelTab";
 			this.propertyWindowModelTab.Padding = new System.Windows.Forms.Padding(3);
@@ -785,13 +786,13 @@ namespace Dataweb.NShape.Designer {
 			this.propertyWindowModelTab.Text = "Model";
 			this.propertyWindowModelTab.UseVisualStyleBackColor = true;
 			// 
-			// modelObjectPropertyGrid
+			// secondaryPropertyGrid
 			// 
-			this.modelObjectPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.modelObjectPropertyGrid.Location = new System.Drawing.Point(3, 3);
-			this.modelObjectPropertyGrid.Name = "modelObjectPropertyGrid";
-			this.modelObjectPropertyGrid.Size = new System.Drawing.Size(214, 333);
-			this.modelObjectPropertyGrid.TabIndex = 0;
+			this.secondaryPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.secondaryPropertyGrid.Location = new System.Drawing.Point(3, 3);
+			this.secondaryPropertyGrid.Name = "secondaryPropertyGrid";
+			this.secondaryPropertyGrid.Size = new System.Drawing.Size(214, 333);
+			this.secondaryPropertyGrid.TabIndex = 0;
 			// 
 			// layersTab
 			// 
@@ -821,34 +822,6 @@ namespace Dataweb.NShape.Designer {
 			this.layerEditorListView1.TabIndex = 0;
 			this.layerEditorListView1.UseCompatibleStateImageBehavior = false;
 			this.layerEditorListView1.View = System.Windows.Forms.View.Details;
-			// 
-			// diagramSetController
-			// 
-			this.diagramSetController.ActiveTool = null;
-			this.diagramSetController.Project = this.project;
-			// 
-			// project
-			// 
-			this.project.AutoGenerateTemplates = true;
-			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
-			this.project.Name = "";
-			this.project.Repository = this.cachedRepository;
-			defaultSecurity1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			defaultSecurity1.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = defaultSecurity1;
-			this.project.LibraryLoaded += new System.EventHandler<Dataweb.NShape.LibraryLoadedEventArgs>(this.project_LibraryLoaded);
-			this.project.Opened += new System.EventHandler(this.project_Opened);
-			this.project.Closed += new System.EventHandler(this.project_Closed);
-			// 
-			// cachedRepository
-			// 
-			this.cachedRepository.ProjectName = "";
-			this.cachedRepository.Store = null;
-			this.cachedRepository.Version = 0;
-			// 
-			// layerController
-			// 
-			this.layerController.DiagramSetController = this.diagramSetController;
 			// 
 			// splitter2
 			// 
@@ -1133,7 +1106,7 @@ namespace Dataweb.NShape.Designer {
             this.runtimeModeComboBox});
 			this.displayToolStrip.Location = new System.Drawing.Point(384, 24);
 			this.displayToolStrip.Name = "displayToolStrip";
-			this.displayToolStrip.Size = new System.Drawing.Size(168, 25);
+			this.displayToolStrip.Size = new System.Drawing.Size(137, 25);
 			this.displayToolStrip.TabIndex = 12;
 			// 
 			// toolStripButton1
@@ -1164,39 +1137,72 @@ namespace Dataweb.NShape.Designer {
 			// 
 			// saveFileDialog
 			// 
-			this.saveFileDialog.CreatePrompt = true;
+			this.saveFileDialog.CreatePrompt = false;
 			this.saveFileDialog.Filter = "XML Repository Files|*.xml|All Files|*.*";
 			// 
-			// toolBoxController
+			// diagramSetController
 			// 
-			this.toolBoxController.DiagramSetController = this.diagramSetController;
-			this.toolBoxController.LibraryManagerSelected += new System.EventHandler(this.toolBoxAdapter_ShowLibraryManagerDialog);
-			this.toolBoxController.DesignEditorSelected += new System.EventHandler(this.toolBoxAdapter_ShowDesignEditor);
-			this.toolBoxController.TemplateEditorSelected += new Dataweb.NShape.Controllers.TemplateEditorSelectedEventHandler(this.toolBoxAdapter_ShowTemplateEditorDialog);
+			this.diagramSetController.ActiveTool = null;
+			this.diagramSetController.Project = this.project;
+			// 
+			// project
+			// 
+			this.project.AutoGenerateTemplates = true;
+			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
+			this.project.Name = "";
+			this.project.Repository = this.cachedRepository;
+			defaultSecurity5.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			defaultSecurity5.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = defaultSecurity5;
+			this.project.LibraryLoaded += new System.EventHandler<Dataweb.NShape.LibraryLoadedEventArgs>(this.project_LibraryLoaded);
+			this.project.Opened += new System.EventHandler(this.project_Opened);
+			this.project.Closed += new System.EventHandler(this.project_Closed);
+			// 
+			// cachedRepository
+			// 
+			this.cachedRepository.ProjectName = "";
+			this.cachedRepository.Store = null;
+			this.cachedRepository.Version = 0;
+			// 
+			// layerController
+			// 
+			this.layerController.DiagramSetController = this.diagramSetController;
+			// 
+			// toolSetController
+			// 
+			this.toolSetController.DiagramSetController = this.diagramSetController;
+			this.toolSetController.TemplateEditorSelected += new Dataweb.NShape.Controllers.TemplateEditorSelectedEventHandler(this.toolBoxAdapter_ShowTemplateEditorDialog);
+			this.toolSetController.DesignEditorSelected += new System.EventHandler(this.toolBoxAdapter_ShowDesignEditor);
+			this.toolSetController.LibraryManagerSelected += new System.EventHandler(this.toolBoxAdapter_ShowLibraryManagerDialog);
 			// 
 			// modelTreeController
 			// 
 			this.modelTreeController.DiagramSetController = this.diagramSetController;
 			// 
-			// modelTreeAdapter
+			// modelTreePresenter
 			// 
-			this.modelTreeAdapter.ModelTreeController = this.modelTreeController;
-			this.modelTreeAdapter.TreeView = this.modelTreeView;
+			this.modelTreePresenter.ModelTreeController = this.modelTreeController;
+			this.modelTreePresenter.PropertyController = this.propertyController;
+			this.modelTreePresenter.TreeView = this.modelTreeView;
 			// 
-			// propertyGridAdapter
+			// propertyPresenter
 			// 
-			this.propertyGridAdapter.Controller = this.diagramSetController;
-			this.propertyGridAdapter.PrimaryPropertyGrid = this.viewObjectPropertyGrid;
-			this.propertyGridAdapter.SecondaryPropertyGrid = this.modelObjectPropertyGrid;
+			this.propertyPresenter.PrimaryPropertyGrid = this.primaryPropertyGrid;
+			this.propertyPresenter.PropertyController = this.propertyController;
+			this.propertyPresenter.SecondaryPropertyGrid = this.secondaryPropertyGrid;
 			// 
-			// toolBoxListViewAdapter
+			// propertyController
 			// 
-			this.toolBoxListViewAdapter.ListView = this.listView;
-			this.toolBoxListViewAdapter.ToolSetController = this.toolBoxController;
+			this.propertyController.Project = this.project;
+			// 
+			// toolSetListViewPresenter
+			// 
+			this.toolSetListViewPresenter.ListView = this.listView;
+			this.toolSetListViewPresenter.ToolSetController = this.toolSetController;
 			// 
 			// layerPresenter
 			// 
-			this.layerPresenter.Controller = this.layerController;
+			this.layerPresenter.LayerController = this.layerController;
 			this.layerPresenter.DiagramPresenter = null;
 			this.layerPresenter.LayerView = this.layerEditorListView1;
 			// 
@@ -1209,8 +1215,8 @@ namespace Dataweb.NShape.Designer {
 			this.DoubleBuffered = true;
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MainMenuStrip = this.mainMenuStrip;
-			this.Name = "nShapeDesignerMainForm";
-			this.Text = "nShape Designer";
+			this.Name = "DiagramDesignerMainForm";
+			this.Text = "NShape Designer";
 			this.Load += new System.EventHandler(this.nShapeDesignerMainForm_Load);
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.nShapeDesignerMainForm_FormClosing);
 			this.statusStrip.ResumeLayout(false);
@@ -1282,14 +1288,14 @@ namespace Dataweb.NShape.Designer {
 		private System.Windows.Forms.TrackBar historyTrackBar;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem4;
 		private System.Windows.Forms.ToolStripMenuItem defaultToolStripMenuItem;
-		private Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter modelTreeAdapter;
+		private Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter modelTreePresenter;
 		private System.Windows.Forms.TabControl propertyWindowTabControl;
 		private System.Windows.Forms.TabPage propertyWindowShapeTab;
-		private System.Windows.Forms.PropertyGrid viewObjectPropertyGrid;
+		private System.Windows.Forms.PropertyGrid primaryPropertyGrid;
 		private System.Windows.Forms.TabPage propertyWindowModelTab;
-		private System.Windows.Forms.PropertyGrid modelObjectPropertyGrid;
-		private Dataweb.NShape.WinFormsUI.PropertyPresenter propertyGridAdapter;
-		private Dataweb.NShape.Controllers.ToolSetController toolBoxController;
+		private System.Windows.Forms.PropertyGrid secondaryPropertyGrid;
+		private Dataweb.NShape.WinFormsUI.PropertyPresenter propertyPresenter;
+		private Dataweb.NShape.Controllers.ToolSetController toolSetController;
 		private System.Windows.Forms.ListView listView;
 		private System.Windows.Forms.ToolStrip displayToolStrip;
 		private System.Windows.Forms.ToolStripMenuItem openProjectMenuItem;
@@ -1317,7 +1323,7 @@ namespace Dataweb.NShape.Designer {
 		private System.Windows.Forms.ToolStripButton toolStripButton1;
 		private System.Windows.Forms.ToolStripComboBox runtimeModeComboBox;
 #if TdbRepository
-		private Dataweb.nShape.TurboDBRepository turboDBRepository;
+		private Dataweb.NShape.TurboDBRepository turboDBRepository;
 #endif
 
 		private System.Windows.Forms.ToolStripMenuItem viewShowLayoutControlToolStripMenuItem;
@@ -1337,7 +1343,7 @@ namespace Dataweb.NShape.Designer {
 		private System.Windows.Forms.ToolStripButton cutShapeButton;
 		private System.Windows.Forms.ToolStripButton copyShapeButton;
 		private System.Windows.Forms.ToolStripButton deleteShapeButton;
-		private Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter toolBoxListViewAdapter;
+		private Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter toolSetListViewPresenter;
 		private System.Windows.Forms.ToolStripMenuItem projectInXMLFileToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem projectInSQLServerDatabaseToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem openXMLRepositoryToolStripMenuItem;
@@ -1359,6 +1365,7 @@ namespace Dataweb.NShape.Designer {
 		private Dataweb.NShape.Advanced.CachedRepository cachedRepository;
 		private Dataweb.NShape.Controllers.LayerPresenter layerPresenter;
 		private System.Windows.Forms.ToolStripMenuItem graphicsFileToolStripMenuItem;
+		private Dataweb.NShape.Controllers.PropertyController propertyController;
 	}
 }
 

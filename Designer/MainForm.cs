@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 
@@ -35,7 +35,8 @@ namespace Dataweb.NShape.Designer {
 				InitializeComponent();
 				runtimeModeComboBox.SelectedIndex = 0;
 
-				configFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\dataweb\\nShape Designer\\";
+				xmlStoreDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\dataweb\\NShape Designer\\";
+				configFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\dataweb\\NShape Designer\\";
 				if (!Directory.Exists(configFolder)) Directory.CreateDirectory(configFolder);
 				configFile = "Config.cfg";
 
@@ -50,12 +51,11 @@ namespace Dataweb.NShape.Designer {
 				project.History.CommandsExecuted += history_CommandsExecuted;
 				project.LibrarySearchPaths.Add(Application.StartupPath);
 
-				ReadRecentProjectsFromConfigFile();
-				CreateRecentProjectsMenuItems();
-
-				XmlStore store = new XmlStore(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\nShape Designer\\", ".xml");
+				XmlStore store = new XmlStore(xmlStoreDirectory, ".xml");
 				if (!Directory.Exists(store.DirectoryName))
 					Directory.CreateDirectory(store.DirectoryName);
+
+				ReadRecentProjectsFromConfigFile();
 
 				// Get command line parameters and check if a repository should be loaded on startup
 				RepositoryInfo repository = RepositoryInfo.Empty;
@@ -101,12 +101,12 @@ namespace Dataweb.NShape.Designer {
 					project.LibrarySearchPaths.Add(Application.StartupPath);
 
 					// Shape libraries
-					project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
-					//project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
-					//project.AddLibraryByName("Dataweb.nShape.FlowChartShapes");
-					//project.AddLibraryByName("Dataweb.nShape.ElectricalShapes");
+					project.AddLibraryByName("Dataweb.NShape.GeneralShapes");
+					//project.AddLibraryByName("Dataweb.NShape.SoftwareArchitectureShapes");
+					//project.AddLibraryByName("Dataweb.NShape.FlowChartShapes");
+					//project.AddLibraryByName("Dataweb.NShape.ElectricalShapes");
 					// ModelObjectTypes libraries
-					//project.AddLibraryByFilePath("Dataweb.nShape.GeneralModelObjects.dll");
+					//project.AddLibraryByFilePath("Dataweb.NShape.GeneralModelObjects.dll");
 #endif
 				}
 			} catch (Exception ex) {
@@ -264,7 +264,6 @@ namespace Dataweb.NShape.Designer {
 			xmlDoc.Load(cfgReader);
 			cfgReader.Close();
 
-			recentProjects = new List<RepositoryInfo>();
 			foreach (XmlNode xmlNode in xmlDoc.GetElementsByTagName(projectsTag)) {
 				foreach (XmlNode childNode in xmlNode.ChildNodes) {
 					RepositoryInfo repositoryInfo = RepositoryInfo.Empty;
@@ -279,8 +278,7 @@ namespace Dataweb.NShape.Designer {
 							repositoryInfo.location = attr.Value;
 						}
 					}
-					if (repositoryInfo != RepositoryInfo.Empty
-						&& (repositoryInfo.typeName == xmlStoreTypeName || repositoryInfo.typeName == sqlServerStoreTypeName))
+					if (repositoryInfo != RepositoryInfo.Empty && !recentProjects.Contains(repositoryInfo)) 
 						recentProjects.Add(repositoryInfo);
 				}
 			}
@@ -342,6 +340,27 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
+		private void MaintainRecentProjects() {
+			bool modified = false, remove = false;
+			for (int i = recentProjects.Count - 1; i >= 0; --i) {
+				remove = false;
+				if (recentProjects[i].typeName == sqlServerStoreTypeName)
+					continue;
+				else if (recentProjects[i].typeName == xmlStoreTypeName) {
+					if (!File.Exists(recentProjects[i].location)) {
+						string msgFormat = "The file or folder '{0}' cannot be opened. Do you want to remove it from the 'Recently opened projects' list?";
+						remove = (MessageBox.Show(this, string.Format(msgFormat, recentProjects[i].location), "File not found", MessageBoxButtons.YesNo) == DialogResult.Yes);
+					}
+				}
+				if (remove) {
+					recentProjects.RemoveAt(i);
+					modified = true;
+				}
+			}
+			if (modified) SaveRecentProjectsToConfigFile();
+		}
+
+
 		private void ReplaceRepository(string projectName, Store repository) {
 			UnregisterRepositoryEvents();
 			project.Name = projectName;
@@ -361,6 +380,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void CreateRecentProjectsMenuItems() {
+			ClearRecentProjectsMenu();
 			recentProjectsMenuItem.Visible = (recentProjects.Count > 0);
 			for (int i = 0; i < recentProjects.Count; ++i)
 				PrependRecentProjectsMenuItem(recentProjects[i]);
@@ -378,7 +398,7 @@ namespace Dataweb.NShape.Designer {
 				projectInfo.computerName = Environment.MachineName;
 			} else if (store is SqlStore) {
 				projectInfo.typeName = sqlServerStoreTypeName;
-				projectInfo.location = ((SqlStore)store).ConnectionString;
+				projectInfo.location = ((SqlStore)store).DatabaseName;
 				projectInfo.computerName = ((SqlStore)store).ServerName;
 			} else Debug.Fail("Unexpected repository type");
 #if TdbRepository
@@ -419,9 +439,18 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void UpdateRecentProjectsMenu() {
-			recentProjectsMenuItem.DropDownItems.Clear();
+			ClearRecentProjectsMenu();
 			foreach (RepositoryInfo pi in recentProjects)
 				PrependRecentProjectsMenuItem(pi);
+		}
+
+
+		private void ClearRecentProjectsMenu() {
+			for (int i = recentProjectsMenuItem.DropDownItems.Count - 1; i >= 0; --i) {
+				recentProjectsMenuItem.DropDownItems[i].Click -= openRecentProjectMenuItem_Click;
+				recentProjectsMenuItem.DropDownItems[i].Dispose();
+			}
+			recentProjectsMenuItem.DropDownItems.Clear();
 		}
 
 
@@ -436,15 +465,60 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void OpenProject(string projectName, Store repository) {
+			this.Refresh();
+			this.Cursor = Cursors.WaitCursor;
 			try {
 				ReplaceRepository(projectName, repository);
 				project.Open();
 				DisplayDiagrams();
-				AddToRecentProjects(project);
+				// Move project on top of the recent projects list 
+				RepositoryInfo repositoryInfo = GetReposistoryInfo(project);
+				RemoveFromRecentProjects(repositoryInfo);
+				AddToRecentProjects(repositoryInfo);
 				UpdateRecentProjectsMenu();
 			} catch (Exception exc) {
 				MessageBox.Show(this, exc.Message, "Error while opening Repository.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			} finally {
+				this.Cursor = Cursors.Default;
 			}
+		}
+
+
+		// Returns false, if the save should be retried with another project projectName.
+		private bool SaveProject() {
+			bool result = false;
+			this.Refresh();
+			this.Cursor = Cursors.WaitCursor;
+			try {
+				project.Repository.SaveChanges();
+				RepositoryInfo projectInfo = GetReposistoryInfo(project);
+				RemoveFromRecentProjects(projectInfo);
+				AddToRecentProjects(projectInfo);
+				UpdateRecentProjectsMenu();
+				result = true;
+			} catch (IOException exc) {
+				MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			} catch (Exception exc) {
+				MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			} finally {
+				this.Cursor = Cursors.Default;
+			}
+			return result;
+		}
+
+
+		// Returns false, if the save should be retried with another project entityTypeName.
+		private bool SaveProjectAs() {
+			bool saveProject = true;
+			if (project.Repository.Exists()) {
+				if (MessageBox.Show(this,
+					string.Format("The repository already contains a project named '{0}'. Overwrite?", project.Name),
+					"Saving Project", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
+					project.Repository.Erase();
+				} else saveProject = false;
+			}
+			if (saveProject) return SaveProject();
+			else return false;
 		}
 
 
@@ -454,7 +528,7 @@ namespace Dataweb.NShape.Designer {
 				DialogResult dlgResult = MessageBox.Show(this, "Do you want to save your project before closing it?", "Save changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 				switch (dlgResult) {
 					case DialogResult.Yes:
-						project.Repository.SaveChanges();
+						SaveProject();
 						break;
 					case DialogResult.No:
 						// do nothing
@@ -576,8 +650,10 @@ namespace Dataweb.NShape.Designer {
 				display.Dock = DockStyle.Fill;
 				//
 				// Assign DiagramSetController and diagram
+				display.PropertyController = propertyController;
 				display.DiagramSetController = diagramSetController;
 				display.Diagram = diagram;
+				display.CurrentTool = toolSetController.SelectedTool;
 				//
 				// Create and add a new tabPage for the display
 				TabPage tabPage = new TabPage(diagram.Name);
@@ -659,48 +735,12 @@ namespace Dataweb.NShape.Designer {
 					currentDisplay.ShowGrid = ShowGrid;
 					currentDisplay.HighQualityBackground = HighQuality;
 					currentDisplay.ZoomLevel = Zoom;
-					currentDisplay.CurrentTool = toolBoxController.SelectedTool;
+					if (currentDisplay.Diagram != null)
+						currentDisplay.CurrentTool = toolSetController.SelectedTool;
 
 					display_ShapesSelected(currentDisplay, null);
 				}
 			}
-		}
-
-
-		// Returns false, if the save should be retried with another project projectName.
-		private bool SaveProject() {
-			bool result;
-			try {
-				project.Repository.SaveChanges();
-				RepositoryInfo projectInfo = GetReposistoryInfo(project);
-				RemoveFromRecentProjects(projectInfo);
-				AddToRecentProjects(projectInfo);
-				UpdateRecentProjectsMenu();
-				result = true;
-			} catch (IOException exc) {
-				MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				result = false;
-			} catch (Exception exc) {
-				MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				result = true;
-			}
-			return result;
-		}
-
-
-		// Returns false, if the save should be retried with another project entityTypeName.
-		private bool SaveProjectAs() {
-			bool result;
-			if (project.Repository.Exists()) {
-				if (MessageBox.Show(this,
-					string.Format("The repository already contains a project named '{0}'. Overwrite?", project.Name),
-					"Saving Project", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes) {
-					project.Repository.Erase();
-					result = SaveProject();
-				} else result = false;
-			} else
-				result = SaveProject();
-			return result;
 		}
 
 
@@ -941,6 +981,8 @@ namespace Dataweb.NShape.Designer {
 		#region Event handler implementations
 
 		private void nShapeDesignerMainForm_Load(object sender, EventArgs e) {
+			MaintainRecentProjects();
+			CreateRecentProjectsMenuItems();
 			UpdateToolBarAndMenuItems();
 		}
 
@@ -1062,20 +1104,42 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
-		private void newSQLServerRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
-			using (OpenAdoNetRepositoryDialog dlg = new OpenAdoNetRepositoryDialog()) {
+		private AdoNetStore GetAdoNetStore() {
+			string projectName;
+			return GetAdoNetStore(out projectName, false);
+		}
+
+
+		private AdoNetStore GetAdoNetStore(out string projectName) {
+			return GetAdoNetStore(out projectName, true);
+		}
+
+
+		private AdoNetStore GetAdoNetStore(out string projectName, bool askForProjectName) {
+			projectName = string.Empty;
+			AdoNetStore result = null;
+			using (OpenAdoNetRepositoryDialog dlg = new OpenAdoNetRepositoryDialog(defaultServerName, defaultDatabaseName, askForProjectName)) {
 				if (dlg.ShowDialog() == DialogResult.OK && CloseProject()) {
-					SqlStore repository = new SqlStore();
-					repository.ServerName = ".\\SQLEXPRESS";
-					repository.DatabaseName = "TurboDiagram";
-					CreateProject(dlg.ProjectName, repository);
+					if (dlg.ProviderName == sqlServerStoreTypeName) {
+						result = new SqlStore(dlg.ServerName, dlg.DatabaseName);
+						projectName = dlg.ProjectName;
+					} else MessageBox.Show(this, "Unsupported database repository.", "Unsupported repository", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			}
+			return result;
+		}
+		
+		
+		private void newSQLServerRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
+			string projectName;
+			AdoNetStore store = GetAdoNetStore(out projectName);
+			if (store != null) CreateProject(projectName, store);
 		}
 
 
 		private void openXMLRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = fileFilterXmlRepository;
+			openFileDialog.InitialDirectory = xmlStoreDirectory;
 			if (openFileDialog.ShowDialog() == DialogResult.OK && CloseProject()) {
 				XmlStore repository = new XmlStore(Path.GetDirectoryName(openFileDialog.FileName), Path.GetExtension(openFileDialog.FileName));
 				OpenProject(Path.GetFileNameWithoutExtension(openFileDialog.FileName), repository);
@@ -1084,14 +1148,9 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void openSQLServerRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
-			using (OpenAdoNetRepositoryDialog dlg = new OpenAdoNetRepositoryDialog()) {
-				if (dlg.ShowDialog() == DialogResult.OK && CloseProject()) {
-					SqlStore repository = new SqlStore();
-					repository.ServerName = ".\\SQLEXPRESS";
-					repository.DatabaseName = "TurboDiagram";
-					OpenProject(dlg.ProjectName, repository);
-				}
-			}
+			string projectName;
+			AdoNetStore store = GetAdoNetStore(out projectName);
+			if (store != null) OpenProject(projectName, store);
 		}
 
 
@@ -1114,7 +1173,7 @@ namespace Dataweb.NShape.Designer {
 					((TurboDBRepository)repository).ServerName = projectInfo.serverName;
 				} 
 #endif
- else MessageBox.Show(this, "Unknown repository type in recent list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				else MessageBox.Show(this, "Unknown repository type in recent list.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				if (store != null) OpenProject(repositoryInfo.projectName, store);
 			}
 		}
@@ -1150,7 +1209,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void saveToolStripMenuItem_Click(object sender, EventArgs e) {
-			if (project.Name == newProjectName)
+			if (project.Name == newProjectName || string.IsNullOrEmpty(project.Name))
 				saveAsToolStripMenuItem_Click(sender, e);
 			else SaveProject();
 		}
@@ -1177,27 +1236,27 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void emfPlusFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportMetaFile(nShapeImageFormat.EmfPlus);
+			ExportMetaFile(ImageFileFormat.EmfPlus);
 		}
 
 
 		private void emfOnlyFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportMetaFile(nShapeImageFormat.Emf);
+			ExportMetaFile(ImageFileFormat.Emf);
 		}
 
 
 		private void pngFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportBitmapFile(nShapeImageFormat.Png);
+			ExportBitmapFile(ImageFileFormat.Png);
 		}
 
 
 		private void jpgFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportBitmapFile(nShapeImageFormat.Jpeg);
+			ExportBitmapFile(ImageFileFormat.Jpeg);
 		}
 
 
 		private void bmpFileToolStripMenuItem_Click(object sender, EventArgs e) {
-			ExportBitmapFile(nShapeImageFormat.Bmp);
+			ExportBitmapFile(ImageFileFormat.Bmp);
 		}
 
 
@@ -1206,7 +1265,7 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
-		private Image GetImageFromDiagram(nShapeImageFormat imageFormat) {
+		private Image GetImageFromDiagram(ImageFileFormat imageFormat) {
 			Image result = null;
 			Color backColor = Color.Transparent;
 			if (CurrentDisplay.SelectedShapes.Count > 0)
@@ -1217,7 +1276,7 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
-		private void ExportMetaFile(nShapeImageFormat imageFormat) {
+		private void ExportMetaFile(ImageFileFormat imageFormat) {
 			saveFileDialog.Filter = "Enhanced Meta Files|*.emf|All Files|*.*";
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
 				using (Image image = GetImageFromDiagram(imageFormat)) {
@@ -1227,15 +1286,15 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
-		private void ExportBitmapFile(nShapeImageFormat imageFormat) {
+		private void ExportBitmapFile(ImageFileFormat imageFormat) {
 			string fileFilter = null;
 			switch (imageFormat) {
-				case nShapeImageFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
-				case nShapeImageFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
-				case nShapeImageFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
-				case nShapeImageFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
-				case nShapeImageFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
-				default: throw new nShapeUnsupportedValueException(imageFormat);
+				case ImageFileFormat.Bmp: fileFilter = "Bitmap Picture Files|*.bmp|All Files|*.*"; break;
+				case ImageFileFormat.Gif: fileFilter = "Graphics Interchange Format Files|*.gif|All Files|*.*"; break;
+				case ImageFileFormat.Jpeg: fileFilter = "Joint Photographic Experts Group (JPEG) Files|*.jpeg;*.jpg|All Files|*.*"; break;
+				case ImageFileFormat.Png: fileFilter = "Portable Network Graphics Files|*.png|All Files|*.*"; break;
+				case ImageFileFormat.Tiff: fileFilter = "Tagged Image File Format Files|*.tiff;*.tif|All Files|*.*"; break;
+				default: throw new NShapeUnsupportedValueException(imageFormat);
 			}
 			saveFileDialog.Filter = fileFilter;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
@@ -1325,7 +1384,7 @@ namespace Dataweb.NShape.Designer {
 					else if (d > 0) project.History.Redo(d);
 					commandExecuted = true;
 				}
-			} catch (nShapeSecurityException exc) {
+			} catch (NShapeSecurityException exc) {
 				MessageBox.Show(this, exc.Message, "Command execution failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				commandExecuted = false;
 			} finally {
@@ -1424,7 +1483,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void showDiagramSettingsToolStripMenuItem_Click(object sender, EventArgs e) {
-			diagramSetController.SetObject(0, CurrentDisplay.Diagram);
+			propertyController.SetObject(0, CurrentDisplay.Diagram);
 		}
 
 
@@ -1462,22 +1521,35 @@ namespace Dataweb.NShape.Designer {
 
 		private void adoNetDatabaseGeneratorToolStripMenuItem_Click(object sender, EventArgs e) {
 			if (project.IsOpen) {
-				DialogResult result = MessageBox.Show(this, "The project has to be closed before creating a new ADO.NET database repository.\nClose Project Now?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-				if (result == DialogResult.Yes) CloseProject();
+				string msgStr = "You are about to create a new database schema for a NShape database repository." + Environment.NewLine + Environment.NewLine;
+				msgStr += "If you proceed, the current project will be closed and you will be asked for a database server and for choosing a set of NShape libraries." + Environment.NewLine;
+				msgStr += "You can not save projects in the database using other than the selected libraries." + Environment.NewLine + Environment.NewLine;
+				msgStr += "Do you want to proceed?";
+				DialogResult result = MessageBox.Show(this, msgStr, "Create ADO.NET database schema", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+				if (result == DialogResult.OK) CloseProject();
 				else return;
 			}
+			AdoNetStore store = GetAdoNetStore();
+			if (store != null) {
+				((CachedRepository)project.Repository).Store = store;
+				project.RemoveAllLibraries();
+				using (LibraryManagementDialog dlg = new LibraryManagementDialog(project))
+					dlg.ShowDialog(this);
+				project.RegisterEntityTypes();
 
-			SqlStore store = new SqlStore();
-			store.ServerName = ".\\SQLEXPRESS";
-			store.DatabaseName = "nShape";
-			((CachedRepository)project.Repository).Store = store;
-			project.RemoveAllLibraries();
-			store.DropDbSchema();
-			project.AddLibraryByFilePath("Dataweb.nShape.GeneralShapes.dll");
-			project.RegisterEntityTypes();
-			store.CreateDbCommands((IStoreCache)project.Repository);
-			store.CreateDbSchema();
-			project.Close();
+				this.Refresh();
+				this.Cursor = Cursors.WaitCursor;
+				try {
+					store.DropDbSchema();
+					store.CreateDbCommands((IStoreCache)project.Repository);
+					store.CreateDbSchema();
+					project.Close();
+				} catch (Exception exc) {
+					MessageBox.Show(this, "An error occured while creating database schema:" + Environment.NewLine + exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				} finally {
+					this.Cursor = Cursors.Default;
+				}
+			}
 		}
 
 		#endregion
@@ -1485,10 +1557,14 @@ namespace Dataweb.NShape.Designer {
 
 		#region Fields
 
-		private const string newProjectName = "New nShape Project";
+		private const string newProjectName = "New NShape Project";
 		private const string xmlStoreTypeName = "XML";
 		private const string sqlServerStoreTypeName = "SQL Server";
-		private const string appTitle = "nShape Designer";
+		private const string appTitle = "NShape Designer";
+		private const string defaultDatabaseName = "NShape";
+		private const string defaultServerName = ".\\SQLEXPRESS";
+
+		private string xmlStoreDirectory;
 
 		private Point p;
 		private int currHistoryPos;
@@ -1515,7 +1591,7 @@ namespace Dataweb.NShape.Designer {
 
 		private XmlWriter cfgWriter;
 		private XmlReader cfgReader;
-		private List<RepositoryInfo> recentProjects;
+		private List<RepositoryInfo> recentProjects = new List<RepositoryInfo>();
 
 
 		private struct RepositoryInfo {
@@ -1587,7 +1663,7 @@ namespace Dataweb.NShape.Designer {
 		private const string dataSourceTag = "DataSource";
 
 #if TdbRepository
-		private const string fileFilterAllRepositories = "nShape Repository Files|*.xml;*.tdbd|XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
+		private const string fileFilterAllRepositories = "NShape Repository Files|*.xml;*.tdbd|XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
 		private const string fileFilterTurboDBRepository = "TurboDB Repository Databases|*.tdbd|All Files|*.*";
 #endif
 		private const string fileFilterXmlRepository = "XML Repository Files|*.xml|All Files|*.*";

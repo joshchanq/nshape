@@ -17,6 +17,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this.styleListBox = new Dataweb.NShape.WinFormsUI.StyleListBox();
 			this.styleCollectionListBox = new Dataweb.NShape.WinFormsUI.VerticalTabControl();
+			this.propertyPresenter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
+			this.propertyController = new Dataweb.NShape.Controllers.PropertyController();
 			this.SuspendLayout();
 			// 
 			// propertyGrid
@@ -86,6 +88,16 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.styleCollectionListBox.TabIndex = 5;
 			this.styleCollectionListBox.SelectedIndexChanged += new System.EventHandler(this.styleCollectionListBox_SelectedIndexChanged);
 			// 
+			// propertyPresenter
+			// 
+			this.propertyPresenter.PrimaryPropertyGrid = this.propertyGrid;
+			this.propertyPresenter.PropertyController = this.propertyController;
+			this.propertyPresenter.SecondaryPropertyGrid = null;
+			// 
+			// propertyController
+			// 
+			this.propertyController.Project = null;
+			// 
 			// DesignPresenter
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -106,5 +118,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private System.Windows.Forms.Splitter splitter1;
 		private StyleListBox styleListBox;
 		private VerticalTabControl styleCollectionListBox;
+		private PropertyPresenter propertyPresenter;
+		private Dataweb.NShape.Controllers.PropertyController propertyController;
 	}
 }

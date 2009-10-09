@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -144,7 +144,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		public void OpenContextMenu(int x, int y, IEnumerable<nShapeAction> actions, Project project) {
+		public void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
 			if (showDefaultContextMenu && contextMenuStrip != null) {
@@ -474,8 +474,8 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private class LayerListViewMouseEventArgs : LayerMouseEventArgs {
 			public LayerListViewMouseEventArgs(Layer layer, LayerItem item,
-				MouseEventType eventType, nShapeMouseButtons buttons, int clickCount, int wheelDelta,
-				Point position, nShapeKeys modifiers)
+				MouseEventType eventType, MouseButtonsDg buttons, int clickCount, int wheelDelta,
+				Point position, KeysDg modifiers)
 				: base(layer, item, eventType, buttons, clickCount, wheelDelta, position, modifiers) {
 			}
 
@@ -485,13 +485,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 
 			protected internal void SetMouseEvent(Layer layer, LayerItem item, MouseEventType eventType, MouseEventArgs eventArgs) {
-				this.SetMouseEvent(eventType, (nShapeMouseButtons)eventArgs.Button, eventArgs.Clicks, eventArgs.Delta, eventArgs.Location, (nShapeKeys)Control.ModifierKeys);
+				this.SetMouseEvent(eventType, (MouseButtonsDg)eventArgs.Button, eventArgs.Clicks, eventArgs.Delta, eventArgs.Location, (KeysDg)Control.ModifierKeys);
 				this.Layer = layer;
 				this.Item = item;
 			}
 
 
-			protected internal void SetMouseEvent(Layer layer, LayerItem item, MouseEventType eventType, nShapeMouseEventArgs eventArgs) {
+			protected internal void SetMouseEvent(Layer layer, LayerItem item, MouseEventType eventType, MouseEventArgsDg eventArgs) {
 				this.SetMouseEvent(eventType, eventArgs.Buttons, eventArgs.Clicks, eventArgs.WheelDelta, eventArgs.Position, eventArgs.Modifiers);
 				this.Item = item;
 				this.Layer = layer;

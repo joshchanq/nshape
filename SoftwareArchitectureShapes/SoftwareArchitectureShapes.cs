@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -306,7 +306,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
-		#region IPersistable
+		#region IEntity
 
 		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
 			base.SaveFieldsCore(writer, version);
@@ -462,10 +462,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		#region Properties
-		[
-		Category("Appearance"),
-		Description("Defines the appearence of the shape's interior.")
-		]
+		[Category("Appearance")]
+		[Description("Defines the appearence of the shape's interior.")]
+		[PropertyMappingId(PropertyIdColumnBackgroundColorStyle)]
+		[RequiredPermission(Permission.Present)]
 		public virtual IColorStyle ColumnBackgroundColorStyle {
 			get { return privateColumnBackgroundColorStyle ?? ((EntitySymbol)Template.Shape).ColumnBackgroundColorStyle; }
 			set {
@@ -475,10 +475,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
-		[
-		Category("Text Appearance"),
-		Description("Determines the style of the shape's column names.")
-		]
+		[Category("Text Appearance")]
+		[Description("Determines the style of the shape's column names.")]
+		[PropertyMappingId(PropertyIdColumnCharacterStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICharacterStyle ColumnCharacterStyle {
 			get { return privateColumnCharacterStyle ?? ((EntitySymbol)Template.Shape).ColumnCharacterStyle; }
 			set {
@@ -490,10 +490,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
-		[
-		Category("Text Appearance"),
-		Description("Determines the layout of the shape's column names.")
-		]
+		[Category("Text Appearance")]
+		[Description("Determines the layout of the shape's column names.")]
+		[PropertyMappingId(PropertyIdColumnParagraphStyle)]
+		[RequiredPermission(Permission.Present)]
 		public IParagraphStyle ColumnParagraphStyle {
 			get { return privateColumnParagraphStyle ?? ((EntitySymbol)Template.Shape).ColumnParagraphStyle;
 			}
@@ -506,10 +506,11 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
-		[Category("Text Layout"),
-		Description("The column names of this table."),
-		TypeConverter("Dataweb.nShape.WinFormsUI.nShapeTextConverter"),
-		Editor("Dataweb.nShape.WinFormsUI.nShapeTextEditor", typeof(UITypeEditor))]
+		[Category("Text Layout")]
+		[Description("The column names of this table.")]
+		[RequiredPermission(Permission.Present)]
+		[TypeConverter("Dataweb.NShape.WinFormsUI.TextConverter")]
+		[Editor("Dataweb.NShape.WinFormsUI.TextEditor", typeof(UITypeEditor))]
 		public string[] ColumnNames {
 			get { return columnNames; }
 			set {
@@ -542,7 +543,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		#endregion
 
 
-		#region Title objects stuff
+		#region Caption objects stuff
 
 		public void AddColumn(string columnName) {
 			columnCaptions.Add(new Caption(columnName));
@@ -597,9 +598,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		#endregion
 
 
-		public override IEnumerable<nShapeAction> GetActions(int mouseX, int mouseY, int range) {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			// return actions of base class
-			IEnumerator<nShapeAction> enumerator = GetBaseActions(mouseX, mouseY, range);
+			IEnumerator<MenuItemDef> enumerator = GetBaseActions(mouseX, mouseY, range);
 			while (enumerator.MoveNext()) yield return enumerator.Current;
 			// return own actions
 
@@ -616,16 +617,16 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				}
 			}
 
-			yield return new CommandAction("Append Column", null, string.Empty, true,
+			yield return new CommandMenuItemDef("Append Column", null, string.Empty, true,
 				new AddColumnCommand(this, newColumnTxt));
 			
 			//yield return new CommandAction("Edit Column", new EditColumnCommand(this, i, columnCaptions[i].Text));
 			
 			bool isFeasible = captionIdx >= 0;
 			string description = "No caption clicked.";
-			yield return new CommandAction("Insert Column", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Insert Column", null, description, isFeasible,
 				isFeasible ? new InsertColumnCommand(this, captionIdx, newColumnTxt) : null);
-			yield return new CommandAction("Remove Column", null, description, isFeasible,
+			yield return new CommandMenuItemDef("Remove Column", null, description, isFeasible,
 				isFeasible ? new RemoveColumnCommand(this, captionIdx, columnCaptions[captionIdx].Text) : null);
 
 			//if (ContainsPoint(mouseX, mouseY)) {
@@ -703,7 +704,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 					case MiddleCenterControlPoint:
 						return (controlPointCapability & ControlPointCapabilities.Rotate) != 0;
 					default:
-						return false;
+						return base.HasControlPointCapability(controlPointId, controlPointCapability);
 				}
 			}
 			else
@@ -927,8 +928,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
-		private IEnumerator<nShapeAction> GetBaseActions(int mouseX, int mouseY, int range) {
-			return base.GetActions(mouseX, mouseY, range).GetEnumerator();
+		private IEnumerator<MenuItemDef> GetBaseActions(int mouseX, int mouseY, int range) {
+			return base.GetMenuItemDefs(mouseX, mouseY, range).GetEnumerator();
 		}
 
 
@@ -960,6 +961,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		#region Fields
+
+		protected const int PropertyIdColumnBackgroundColorStyle = 9;
+		protected const int PropertyIdColumnCharacterStyle = 10;
+		protected const int PropertyIdColumnParagraphStyle = 11;
 
 		// ControlPoint Id Constants
 		private const int TopLeftControlPoint = 1;
@@ -1022,7 +1027,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 					return (controlPointCapability & ControlPointCapabilities.Resize) != 0;
 				case MiddleCenterControlPoint:
 				case ControlPointId.Reference:
-					return ((controlPointCapability & ControlPointCapabilities.Rotate) != 0 || (controlPointCapability & ControlPointCapabilities.Reference) != 0);
+					return ((controlPointCapability & ControlPointCapabilities.Rotate) != 0 
+						|| (controlPointCapability & ControlPointCapabilities.Reference) != 0
+						|| ((controlPointCapability & ControlPointCapabilities.Connect) != 0
+							&& IsConnectionPointEnabled(controlPointId)));
 				default:
 					return false;
 			}
@@ -1032,8 +1040,16 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Point.Empty;
 			result.Offset(X, Y);
+
+			// Calculate shape
+			CalculateShapePoints();
+			Matrix.Reset();
+			Matrix.Translate(X, Y);
+			Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center);
+			Matrix.TransformPoints(shapePoints);
+
 			float currDist, dist = float.MaxValue;
-			foreach (Point p in Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true)) {
+			foreach (Point p in Geometry.IntersectPolygonLine(shapePoints, startX, startY, X, Y, true)) {
 				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 				if (currDist < dist) {
 					dist = currDist;
@@ -1064,30 +1080,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				Path.Reset();
-				int foldingSize = Math.Min(Width / 8, Height / 8);
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-
-				shapePoints[0].X = left;
-				shapePoints[0].Y = top;
-				shapePoints[1].X = right - foldingSize;
-				shapePoints[1].Y = top;
-				shapePoints[2].X = right;
-				shapePoints[2].Y = top + foldingSize;
-				shapePoints[3].X = right;
-				shapePoints[3].Y = bottom;
-				shapePoints[4].X = left;
-				shapePoints[4].Y = bottom;
-
-				foldingPoints[0].X = right - foldingSize;
-				foldingPoints[0].Y = top;
-				foldingPoints[1].X = right - foldingSize;
-				foldingPoints[1].Y = top + foldingSize;
-				foldingPoints[2].X = right;
-				foldingPoints[2].Y = top + foldingSize;
+				CalculateShapePoints();
 
 				Path.Reset();
 				Path.StartFigure();
@@ -1096,6 +1089,33 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				return true;
 			}
 			return false;
+		}
+
+
+		private void CalculateShapePoints() {
+			int foldingSize = Math.Min(Width / 8, Height / 8);
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+
+			shapePoints[0].X = left;
+			shapePoints[0].Y = top;
+			shapePoints[1].X = right - foldingSize;
+			shapePoints[1].Y = top;
+			shapePoints[2].X = right;
+			shapePoints[2].Y = top + foldingSize;
+			shapePoints[3].X = right;
+			shapePoints[3].Y = bottom;
+			shapePoints[4].X = left;
+			shapePoints[4].Y = bottom;
+
+			foldingPoints[0].X = right - foldingSize;
+			foldingPoints[0].Y = top;
+			foldingPoints[1].X = right - foldingSize;
+			foldingPoints[1].Y = top + foldingSize;
+			foldingPoints[2].X = right;
+			foldingPoints[2].Y = top + foldingSize;
 		}
 
 
@@ -1132,11 +1152,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			Shape result = new CloudSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
-		}
-
-
-		protected override int ControlPointCount {
-			get { return 15; }
 		}
 
 
@@ -1190,6 +1205,11 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		protected internal CloudSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
+		}
+
+
+		protected override int ControlPointCount {
+			get { return 15; }
 		}
 
 
@@ -1468,7 +1488,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 	}
 
 
-	public class ClassSymbol : RectangleBase {
+	public class ClassSymbol : EntitySymbol {
 		
 		protected internal ClassSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
@@ -1480,123 +1500,18 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			result.CopyFrom(this);
 			return result;
 		}
+
+
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
+			return base.GetMenuItemDefs(mouseX, mouseY, range);
+		}
+
+
+		protected override void InitializeToDefault(IStyleSet styleSet) {
+			base.InitializeToDefault(styleSet);
+			Text = "Class";
+		}
 	}
-
-
-	//public class ClassSymbol : RectangleBase {
-
-	//   public override Shape Clone() {
-	//      Shape result = new ClassSymbol(Type, (Template)null);
-	//      result.CopyFrom(this);
-	//      return result;
-	//   }
-
-
-	//   protected internal ClassSymbol(ShapeType shapeType, Template template)
-	//      : base(shapeType, template) {
-	//      Text = "";
-	//   }
-
-
-	//   [Category("Appearance")]
-	//   public string Description {
-	//      get { return clsName; }
-	//      set {
-	//         clsName = value;
-	//         InvalidateDrawCache();
-	//      }
-	//   }
-
-
-	//   //protected override void GraphicalObjectsTransform(int changeX, int changeY, int changeWidth, int changeHeight, int changeAngle, Point shapeCenter) {
-	//   //   base.GraphicalObjectsTransform(changeX, changeY, changeWidth, changeHeight, changeAngle, shapeCenter);
-	//   //   if (clsNamePath != null)
-	//   //      clsNamePath.Transform(PathTransformationMatrix);
-	//   //}
-
-
-	//   protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
-	//      if (index != 0) throw new IndexOutOfRangeException();
-	//      Font font = ToolCache.GetFont(CharacterStyle);
-	//      int lineHeight = TextMeasurer.MeasureText("A", font, Size.Empty, ParagraphStyle).Height * 2;
-	//      captionBounds = Rectangle.Empty;
-	//      captionBounds.X = X - Width / 2;
-	//      captionBounds.Y = Y - Height / 2;
-	//      captionBounds.Width = Width;
-	//      captionBounds.Height = lineHeight;
-	//      clsNameLayoutRectangle.X = captionBounds.X;
-	//      clsNameLayoutRectangle.Y = captionBounds.Bottom + lineHeight;
-	//      clsNameLayoutRectangle.Width = captionBounds.Width;
-	//      clsNameLayoutRectangle.Height = Height - captionBounds.Height - lineHeight;
-	//   }
-
-
-	//   protected override bool CalculatePath() {
-	//      if (base.CalculatePath()) {
-	//         Path.Reset();
-	//         Path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
-
-	//         int left = (int)Math.Round(-Width / 2f);
-	//         int top = (int)Math.Round(-Height / 2f);
-	//         int right = left + Width;
-	//         int bottom = top + Height;
-
-	//         shapeRectangle.X = left;
-	//         shapeRectangle.Y = top;
-	//         shapeRectangle.Width = Width;
-	//         shapeRectangle.Height = Height;
-
-	//         Path.StartFigure();
-	//         Path.AddRectangle(shapeRectangle);
-	//         Path.CloseFigure();
-
-	//         Font font = ToolCache.GetFont(CharacterStyle);
-	//         int lineHeight = TextMeasurer.MeasureText("A", font, Size.Empty, ParagraphStyle).Height * 2;
-	//         shapeRectangle.Y += lineHeight;
-	//         shapeRectangle.Height = lineHeight;
-	//         Path.AddRectangle(shapeRectangle);
-	//         Path.CloseFigure();
-
-	//         //if (TextPath != null) {
-	//         //   // heading alignment can be user defined
-	//         //   //Formatter.Alignment = StringAlignmentVertical;
-	//         //   //Formatter.LineAlignment = StringAlignmentHorizontal;
-	//         //}
-
-	//         if (clsName != "") {
-	//            //if (clsNamePath == null)
-	//            //   CreateTextObjects();
-	//            // methods are always aligned left
-	//            //Formatter.Alignment = StringAlignment.Near;
-	//            //Formatter.LineAlignment = StringAlignment.Near;
-
-	//            //FontFamily fontFamily = new FontFamily(FontName);
-	//            //clsNamePath.Reset();
-	//            //clsNamePath.StartFigure();
-	//            //clsNamePath.AddString(clsName, fontFamily, (int)this.FontStyle, this.PointToPixel, Rectangle.FromLTRB(shapeRectangle.left, shapeRectangle.bottom, shapeRectangle.right, Y + (Height / 2)), Formatter);
-	//            //clsNamePath.CloseFigure();
-	//            //fontFamily.Dispose();
-	//            //fontFamily = null;
-	//         }
-	//         return true;
-	//      }
-	//      return false;
-	//   }
-
-
-	//   public override void Draw(Graphics graphics) {
-	//      base.Draw(graphics);
-	//   }
-
-
-	//   #region Fields
-	//   private Rectangle shapeRectangle;
-	//   private Rectangle clsNameLayoutRectangle;
-	//   private string clsName = "";
-	//   private List<string> methods = new List<string>();
-	//   private List<string> properties = new List<string>();
-	//   #endregion
-	//}
 
 
 	public class ComponentSymbol : RectangleBase {
@@ -1814,7 +1729,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 	/// <summary>
 	/// Displays a symbol for a document.
 	/// </summary>
-	public class DocumentSymbol: RectangleBase, IPlanarShape {
+	public class DocumentSymbol: RectangleBase {
 
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
@@ -1916,12 +1831,12 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
 		[Description("Defines the line cap appearance of the line's beginning.")]
-		// ToDo: Rename Property to a more suitable projectName
+		[PropertyMappingId(PropertyIdStartCapStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICapStyle StartCapStyle {
 			get {
-				if (StartCapStyleInternal == null && Template == null) throw new nShapeException("Property StartCapStyle is not set.");
+				if (StartCapStyleInternal == null && Template == null) throw new NShapeException("Property StartCapStyle is not set.");
 				return StartCapStyleInternal == null ? ((DataFlowArrow)Template.Shape).StartCapStyle : StartCapStyleInternal;
 			}
 			set {
@@ -1931,12 +1846,12 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
 		[Description("Defines the line cap appearance of the line's ending.")]
-		// ToDo: Rename Property to a more suitable projectName
+		[PropertyMappingId(PropertyIdEndCapStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICapStyle EndCapStyle {
 			get {
-				if (EndCapStyleInternal == null && Template == null) throw new nShapeException("Property EndCapStyle is not set.");
+				if (EndCapStyleInternal == null && Template == null) throw new NShapeException("Property EndCapStyle is not set.");
 				return EndCapStyleInternal == null ? ((DataFlowArrow)Template.Shape).EndCapStyle : EndCapStyleInternal;
 			}
 			set {
@@ -1961,12 +1876,12 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
 		[Description("Defines the line cap appearance of the line's beginning.")]
-		// ToDo: Rename Property to a more suitable projectName
+		[PropertyMappingId(PropertyIdStartCapStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICapStyle StartCapStyle {
 			get {
-				if (StartCapStyleInternal == null && Template == null) throw new nShapeException("Property StartCapStyle is not set.");
+				if (StartCapStyleInternal == null && Template == null) throw new NShapeException("Property StartCapStyle is not set.");
 				return StartCapStyleInternal == null ? ((DependencyArrow)Template.Shape).StartCapStyle : StartCapStyleInternal;
 			}
 			set {
@@ -1976,12 +1891,12 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[RefreshProperties(RefreshProperties.All)]
 		[Description("Defines the line cap appearance of the line's ending.")]
-		// ToDo: Rename Property to a more suitable projectName
+		[PropertyMappingId(PropertyIdEndCapStyle)]
+		[RequiredPermission(Permission.Present)]
 		public ICapStyle EndCapStyle {
 			get {
-				if (EndCapStyleInternal == null && Template == null) throw new nShapeException("Property EndCapStyle is not set.");
+				if (EndCapStyleInternal == null && Template == null) throw new NShapeException("Property EndCapStyle is not set.");
 				return EndCapStyleInternal == null ? ((DependencyArrow)Template.Shape).EndCapStyle : EndCapStyleInternal;
 			}
 			set {
@@ -2026,6 +1941,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class InterfaceSymbol : PolylineBase {
 
+		public override Shape Clone() {
+			Shape result = new InterfaceSymbol(Type, (Template)null);
+			result.CopyFrom(this);
+			return result;
+		}
+
+
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			if (Template == null) {
@@ -2035,13 +1957,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				// man das Design um benötigte Styles erweitern kann (am Besten beim Registrieren der GeneralShapes)
 				EndCapStyleInternal = styleSet.CapStyles.Special1;
 			}
-		}
-
-
-		public override Shape Clone() {
-			Shape result = new InterfaceSymbol(Type, (Template)null);
-			result.CopyFrom(this);
-			return result;
 		}
 
 
@@ -2059,6 +1974,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		public override Shape Clone() {
+			Shape result = new VectorImage(Type, (Template)null, resourceName, resourceAssembly);
+			result.CopyFrom(this);
+			return result;
+		}
+
+
 		protected internal VectorImage(ShapeType shapeType, IStyleSet styleSet, string resourceBaseName, Assembly resourceAssembly)
 			: base(shapeType, styleSet, resourceBaseName, resourceAssembly) {
 		}
@@ -2067,17 +1989,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		protected internal VectorImage(ShapeType shapeType, Template template, string resourceBaseName, Assembly resourceAssembly)
 			: base(shapeType, template, resourceBaseName, resourceAssembly) {
 		}
-
-
-		public override Shape Clone() {
-			Shape result = new VectorImage(Type, (Template)null, resourceName, resourceAssembly);
-			result.CopyFrom(this);
-			return result;
-		}
 	}
 
 
-	public static class nShapeLibraryInitializer {
+	public static class NShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);
@@ -2117,42 +2032,42 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			registrar.RegisterShapeType(new ShapeType("Server", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.PC2.emf", Assembly.GetExecutingAssembly());
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.PC2.emf", Assembly.GetExecutingAssembly());
 				result.Text = "PC N";
 				return result;
 				}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("RTU", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.RTU.emf", Assembly.GetExecutingAssembly());
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.RTU.emf", Assembly.GetExecutingAssembly());
 				result.Text = "RTU N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Actor", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.Actor.emf", Assembly.GetExecutingAssembly());
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Actor.emf", Assembly.GetExecutingAssembly());
 				result.Text = "Actor";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Monitor", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.Monitor.emf", Assembly.GetExecutingAssembly());
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Monitor.emf", Assembly.GetExecutingAssembly());
 				result.Text = "Monitor N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("PC", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.PC.emf", Assembly.GetExecutingAssembly());
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.PC.emf", Assembly.GetExecutingAssembly());
 				result.Text = "PC N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Tower", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.nShape.SoftwareArchitectureShapes.Resources.Tower.emf", Assembly.GetExecutingAssembly());
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Tower.emf", Assembly.GetExecutingAssembly());
 				result.Text = "Tower N";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
@@ -2161,6 +2076,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		private const string namespaceName = "SoftwareArchitectureShapes";
-		private const int preferredRepositoryVersion = 4;
+		private const int preferredRepositoryVersion = 2;
 	}
 }

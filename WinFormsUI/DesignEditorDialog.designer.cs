@@ -16,7 +16,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DesignEditorDialog));
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
 			this.designPresenter = new Dataweb.NShape.WinFormsUI.DesignPresenter();
-			this.designController = new Dataweb.NShape.Controllers.DesignController();
 			this.toolStrip2 = new System.Windows.Forms.ToolStrip();
 			this.designsComboBox = new System.Windows.Forms.ToolStripComboBox();
 			this.activateButton = new System.Windows.Forms.ToolStripButton();
@@ -28,6 +27,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.deleteStyleButton = new System.Windows.Forms.ToolStripButton();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.closeButton = new System.Windows.Forms.Button();
+			this.designController = new Dataweb.NShape.Controllers.DesignController();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.SuspendLayout();
@@ -71,10 +71,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.designPresenter.SelectedItemTextColor = System.Drawing.SystemColors.ControlText;
 			this.designPresenter.Size = new System.Drawing.Size(602, 372);
 			this.designPresenter.TabIndex = 0;
-			// 
-			// designController
-			// 
-			this.designController.Project = null;
 			// 
 			// toolStrip2
 			// 
@@ -177,6 +173,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.closeButton.Text = "Close";
 			this.closeButton.UseVisualStyleBackColor = true;
 			this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
+			// 
+			// designController
+			// 
+			this.designController.Project = null;
 			// 
 			// DesignEditorDialog
 			// 

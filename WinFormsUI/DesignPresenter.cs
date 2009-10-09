@@ -1,21 +1,21 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Reflection;
 using System.Windows.Forms;
 
 using Dataweb.NShape.Advanced;
@@ -111,11 +111,13 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties: DesignPresenter
 
+		[Category("NShape")]
 		public Project Project {
 			get { return (designController == null) ? null : designController.Project; }
 		}
 
 
+		[Category("NShape")]
 		public DesignController DesignController {
 			get { return designController; }
 			set {
@@ -126,6 +128,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Browsable(false)]
 		public Design SelectedDesign {
 			get { return selectedDesign; }
 			set {
@@ -133,7 +136,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					SelectedStyle = null;
 					selectedDesign = value;
 					
-					nShapeStyleEditor.Design = selectedDesign;
+					StyleEditor.Design = selectedDesign;
 					InitializeStyleCollectionList();
 					if (DesignSelected != null) DesignSelected(this, eventArgs);
 				}
@@ -141,12 +144,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Browsable(false)]
 		public Style SelectedStyle {
 			get { return selectedStyle; }
 			private set {
 				if (selectedStyle != value) {
 					selectedStyle = value;
-					propertyGrid.SelectedObject = selectedStyle;
+					if (propertyController != null) propertyController.SetObject(0, selectedStyle);
 					if (StyleSelected != null) StyleSelected(this, eventArgs);
 				}
 			}
@@ -271,8 +275,10 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		public void DeleteSelectedDesign() {
-			designController.DeleteDesign(selectedDesign);
-			SelectedDesign = null;
+			if (selectedDesign != Project.Design) {
+				designController.DeleteDesign(selectedDesign);
+				SelectedDesign = Project.Design;
+			}
 		}
 
 
@@ -351,6 +357,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Private] Methods: DesignController event handler implementations
 
 		private void designController_Initialized(object sender, EventArgs e) {
+			propertyController.Project = Project;
 			InitializeStyleCollectionList();
 			SelectedDesign = designController.Project.Design;
 		}
@@ -360,6 +367,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			selectedStyle = null;
 			selectedDesign = null;
 			styleListBox.Items.Clear();
+			propertyController.Project = null;
 		}
 
 
@@ -383,7 +391,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				} else styleListBox.Invalidate();
 			}
 
-			nShapeStyleEditor.Design = e.Design;
+			StyleEditor.Design = e.Design;
 			if (propertyGrid.SelectedObject == e.Style)
 				propertyGrid.Refresh();
 		}
@@ -394,8 +402,10 @@ namespace Dataweb.NShape.WinFormsUI {
 				propertyGrid.SuspendLayout();
 				styleListBox.SuspendLayout();
 
-				if (propertyGrid.SelectedObject == e.Style)
-					propertyGrid.SelectedObject = null;
+				if (propertyController != null) {
+					if (propertyController.GetSelectedObject(0) == e.Style)
+						propertyController.SetObject(0, null);
+				}
 				// remove deleted item and select the previous one
 				int idx = styleListBox.Items.IndexOf(e.Style);
 				styleListBox.Items.RemoveAt(idx);
@@ -430,7 +440,8 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Private] Methods: Event handler implementations
 
 		private void styleCollectionListBox_SelectedIndexChanged(object sender, System.EventArgs e) {
-			propertyGrid.SelectedObject = null;
+			//propertyGrid.SelectedObject = null;
+			if (propertyController != null) propertyController.SetObject(0, null);
 			//
 			styleListBox.SuspendLayout();
 			styleListBox.SelectedItem = null;
@@ -448,7 +459,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				case lineStylesItemIdx: styleListBox.StyleCategory = StyleCategory.LineStyle; break;
 				case paragraphStylesItemIdx: styleListBox.StyleCategory = StyleCategory.ParagraphStyle; break;
 				//case shapeStylesItemIdx: styleListBox.StyleCategory = StyleCategory.ShapeStyle; break;
-				default: throw new nShapeException("Unexpected value.");
+				default: throw new NShapeException("Unexpected value.");
 			}
 			if (styleListBox.Items.Count > 0) styleListBox.SelectedIndex = 0;
 		}
@@ -460,35 +471,35 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	
 		private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e) {
-			styleListBox.SuspendLayout();
-			propertyGrid.SuspendLayout();
+		//   styleListBox.SuspendLayout();
+		//   propertyGrid.SuspendLayout();
 
-			object oldValue, newValue;
-			PropertyInfo propertyInfo;
-			// handle properties that can be unfolded so that the changed item is not the selected item 
-			// (e.g. if Font property is unfolded and Font.Size is changed)
-			if (e.ChangedItem.Parent != null && e.ChangedItem.Parent.PropertyDescriptor != null) {
-				Type selectedObjectsType = propertyGrid.SelectedObject.GetType();
-				propertyInfo = selectedObjectsType.GetProperty(e.ChangedItem.Parent.PropertyDescriptor.Name);
+		//   object oldValue, newValue;
+		//   PropertyInfo propertyInfo;
+		//   // handle properties that can be unfolded so that the changed item is not the selected item 
+		//   // (e.g. if Font property is unfolded and Font.Size is changed)
+		//   if (e.ChangedItem.Parent != null && e.ChangedItem.Parent.PropertyDescriptor != null) {
+		//      Type selectedObjectsType = propertyGrid.SelectedObject.GetType();
+		//      propertyInfo = selectedObjectsType.GetProperty(e.ChangedItem.Parent.PropertyDescriptor.Name);
 
-				oldValue = e.OldValue;
-				newValue = e.ChangedItem.Parent.Value;
-			}
-			else {
-				Type modifiedObjectsType = propertyGrid.SelectedObject.GetType();
-				propertyInfo = modifiedObjectsType.GetProperty(e.ChangedItem.PropertyDescriptor.Name);
+		//      oldValue = e.OldValue;
+		//      newValue = e.ChangedItem.Parent.Value;
+		//   }
+		//   else {
+		//      Type modifiedObjectsType = propertyGrid.SelectedObject.GetType();
+		//      propertyInfo = modifiedObjectsType.GetProperty(e.ChangedItem.PropertyDescriptor.Name);
 
-				// e.OldValue is null if more than one objects are selected and the modified 
-				// properties did not have the same value
-				oldValue = e.OldValue;
-				newValue = e.ChangedItem.Value;
-			}
+		//      // e.OldValue is null if more than one objects are selected and the modified 
+		//      // properties did not have the same value
+		//      oldValue = e.OldValue;
+		//      newValue = e.ChangedItem.Value;
+		//   }
 			
-			designController.ReplaceStyle(selectedDesign, selectedStyle, propertyInfo.Name, oldValue, newValue);
+		//   designController.ReplaceStyle(selectedDesign, selectedStyle, propertyInfo.Name, oldValue, newValue);
 
-			propertyGrid.ResumeLayout();
-			styleListBox.Refresh();
-			styleListBox.ResumeLayout();
+		//   propertyGrid.ResumeLayout();
+		//   styleListBox.Refresh();
+		//   styleListBox.ResumeLayout();
 		}
 
 

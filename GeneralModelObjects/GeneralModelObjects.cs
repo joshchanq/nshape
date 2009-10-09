@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -47,7 +47,7 @@ namespace Dataweb.NShape.GeneralModelObjects {
 		}
 
 
-		public override IEnumerable<nShapeAction> GetActions() {
+		public override IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			throw new NotImplementedException();
 		}
 
@@ -90,7 +90,7 @@ namespace Dataweb.NShape.GeneralModelObjects {
 		}
 
 
-		//public override IEnumerable<nShapeAction> GetActions() {
+		//public override IEnumerable<NShapeAction> GetActions() {
 		//   // "Set State", "Set Min Value", "Set Max Value", "SetFloat";
 		//}
 
@@ -102,7 +102,7 @@ namespace Dataweb.NShape.GeneralModelObjects {
 	}
 
 
-	public static class nShapeLibraryInitializer {
+	public static class NShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			registrar.RegisterLibrary(namespaceName, preferredRepositoryVersion);

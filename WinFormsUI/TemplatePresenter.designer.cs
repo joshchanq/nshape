@@ -42,12 +42,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.shapePropertyColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.label1 = new System.Windows.Forms.Label();
 			this.valueMappingGrid = new System.Windows.Forms.DataGridView();
+			this.modelValueColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
+			this.shapeValueColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
 			this.label2 = new System.Windows.Forms.Label();
 			this.previewPanel = new System.Windows.Forms.Panel();
 			this.previewSplitter = new System.Windows.Forms.Splitter();
-			this.propertyGridAdapter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
-			this.modelValueColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
-			this.shapeValueColumn = new System.Windows.Forms.DataGridViewComboBoxColumn();
+			this.propertyPresenter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
+			this.propertyController = new Dataweb.NShape.Controllers.PropertyController();
 			this.headerPanel.SuspendLayout();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
@@ -77,14 +78,14 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.headerPanel.Dock = System.Windows.Forms.DockStyle.Top;
 			this.headerPanel.Location = new System.Drawing.Point(0, 0);
 			this.headerPanel.Name = "headerPanel";
-			this.headerPanel.Size = new System.Drawing.Size(631, 101);
+			this.headerPanel.Size = new System.Drawing.Size(631, 95);
 			this.headerPanel.TabIndex = 7;
 			// 
 			// splitContainer1
 			// 
 			this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
 							| System.Windows.Forms.AnchorStyles.Right)));
-			this.splitContainer1.Location = new System.Drawing.Point(0, 7);
+			this.splitContainer1.Location = new System.Drawing.Point(0, 34);
 			this.splitContainer1.Name = "splitContainer1";
 			// 
 			// splitContainer1.Panel1
@@ -142,7 +143,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			this.descriptionTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
 							| System.Windows.Forms.AnchorStyles.Right)));
-			this.descriptionTextBox.Location = new System.Drawing.Point(72, 38);
+			this.descriptionTextBox.Location = new System.Drawing.Point(72, 68);
 			this.descriptionTextBox.Name = "descriptionTextBox";
 			this.descriptionTextBox.Size = new System.Drawing.Size(547, 20);
 			this.descriptionTextBox.TabIndex = 8;
@@ -151,7 +152,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// label5
 			// 
 			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(3, 41);
+			this.label5.Location = new System.Drawing.Point(3, 71);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(63, 13);
 			this.label5.TabIndex = 7;
@@ -161,7 +162,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			this.shapeAndModelObjectListContainer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
 							| System.Windows.Forms.AnchorStyles.Right)));
-			this.shapeAndModelObjectListContainer.Location = new System.Drawing.Point(0, 64);
+			this.shapeAndModelObjectListContainer.Location = new System.Drawing.Point(0, 3);
 			this.shapeAndModelObjectListContainer.Name = "shapeAndModelObjectListContainer";
 			// 
 			// shapeAndModelObjectListContainer.Panel1
@@ -226,10 +227,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.tabControl.Controls.Add(this.controlPointsTab);
 			this.tabControl.Controls.Add(this.propertyMappingTab);
 			this.tabControl.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.tabControl.Location = new System.Drawing.Point(215, 101);
+			this.tabControl.Location = new System.Drawing.Point(215, 95);
 			this.tabControl.Name = "tabControl";
 			this.tabControl.SelectedIndex = 0;
-			this.tabControl.Size = new System.Drawing.Size(416, 315);
+			this.tabControl.Size = new System.Drawing.Size(416, 321);
 			this.tabControl.TabIndex = 8;
 			this.tabControl.SelectedIndexChanged += new System.EventHandler(this.tabControl_SelectedIndexChanged);
 			// 
@@ -239,7 +240,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.shapePropertiesTab.Location = new System.Drawing.Point(4, 22);
 			this.shapePropertiesTab.Name = "shapePropertiesTab";
 			this.shapePropertiesTab.Padding = new System.Windows.Forms.Padding(3);
-			this.shapePropertiesTab.Size = new System.Drawing.Size(408, 289);
+			this.shapePropertiesTab.Size = new System.Drawing.Size(408, 295);
 			this.shapePropertiesTab.TabIndex = 0;
 			this.shapePropertiesTab.Text = "Presentation Properties";
 			this.shapePropertiesTab.UseVisualStyleBackColor = true;
@@ -249,7 +250,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.shapePropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.shapePropertyGrid.Location = new System.Drawing.Point(3, 3);
 			this.shapePropertyGrid.Name = "shapePropertyGrid";
-			this.shapePropertyGrid.Size = new System.Drawing.Size(402, 283);
+			this.shapePropertyGrid.Size = new System.Drawing.Size(402, 289);
 			this.shapePropertyGrid.TabIndex = 2;
 			// 
 			// modelPropertiesTab
@@ -258,7 +259,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.modelPropertiesTab.Location = new System.Drawing.Point(4, 22);
 			this.modelPropertiesTab.Name = "modelPropertiesTab";
 			this.modelPropertiesTab.Padding = new System.Windows.Forms.Padding(3);
-			this.modelPropertiesTab.Size = new System.Drawing.Size(408, 289);
+			this.modelPropertiesTab.Size = new System.Drawing.Size(408, 295);
 			this.modelPropertiesTab.TabIndex = 3;
 			this.modelPropertiesTab.Text = "Model Properties";
 			this.modelPropertiesTab.UseVisualStyleBackColor = true;
@@ -268,7 +269,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.modelPropertyGrid.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.modelPropertyGrid.Location = new System.Drawing.Point(3, 3);
 			this.modelPropertyGrid.Name = "modelPropertyGrid";
-			this.modelPropertyGrid.Size = new System.Drawing.Size(402, 283);
+			this.modelPropertyGrid.Size = new System.Drawing.Size(402, 289);
 			this.modelPropertyGrid.TabIndex = 0;
 			// 
 			// controlPointsTab
@@ -277,7 +278,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.controlPointsTab.Location = new System.Drawing.Point(4, 22);
 			this.controlPointsTab.Name = "controlPointsTab";
 			this.controlPointsTab.Padding = new System.Windows.Forms.Padding(3);
-			this.controlPointsTab.Size = new System.Drawing.Size(408, 289);
+			this.controlPointsTab.Size = new System.Drawing.Size(408, 295);
 			this.controlPointsTab.TabIndex = 1;
 			this.controlPointsTab.Text = "Connection Points";
 			this.controlPointsTab.UseVisualStyleBackColor = true;
@@ -296,7 +297,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.controlPointMappingGrid.Location = new System.Drawing.Point(3, 3);
 			this.controlPointMappingGrid.Name = "controlPointMappingGrid";
 			this.controlPointMappingGrid.RowHeadersVisible = false;
-			this.controlPointMappingGrid.Size = new System.Drawing.Size(402, 283);
+			this.controlPointMappingGrid.Size = new System.Drawing.Size(402, 289);
 			this.controlPointMappingGrid.TabIndex = 8;
 			this.controlPointMappingGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.controlPointMappingGrid_CellValueChanged);
 			// 
@@ -321,7 +322,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.propertyMappingTab.Location = new System.Drawing.Point(4, 22);
 			this.propertyMappingTab.Name = "propertyMappingTab";
 			this.propertyMappingTab.Padding = new System.Windows.Forms.Padding(3);
-			this.propertyMappingTab.Size = new System.Drawing.Size(408, 289);
+			this.propertyMappingTab.Size = new System.Drawing.Size(408, 295);
 			this.propertyMappingTab.TabIndex = 2;
 			this.propertyMappingTab.Text = "Model Visualization";
 			this.propertyMappingTab.UseVisualStyleBackColor = true;
@@ -343,8 +344,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			this.splitContainer2.Panel2.Controls.Add(this.valueMappingGrid);
 			this.splitContainer2.Panel2.Controls.Add(this.label2);
-			this.splitContainer2.Size = new System.Drawing.Size(402, 283);
-			this.splitContainer2.SplitterDistance = 138;
+			this.splitContainer2.Size = new System.Drawing.Size(402, 289);
+			this.splitContainer2.SplitterDistance = 140;
 			this.splitContainer2.TabIndex = 2;
 			// 
 			// propertyMappingGrid
@@ -361,7 +362,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.propertyMappingGrid.Name = "propertyMappingGrid";
 			this.propertyMappingGrid.RowHeadersVisible = false;
 			this.propertyMappingGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.propertyMappingGrid.Size = new System.Drawing.Size(400, 119);
+			this.propertyMappingGrid.Size = new System.Drawing.Size(400, 121);
 			this.propertyMappingGrid.TabIndex = 5;
 			this.propertyMappingGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.propertyMappingGrid_CellValueChanged);
 			this.propertyMappingGrid.SelectionChanged += new System.EventHandler(this.propertyMappingGrid_SelectionChanged);
@@ -408,44 +409,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.valueMappingGrid.Name = "valueMappingGrid";
 			this.valueMappingGrid.RowHeadersVisible = false;
 			this.valueMappingGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.valueMappingGrid.Size = new System.Drawing.Size(400, 122);
+			this.valueMappingGrid.Size = new System.Drawing.Size(400, 126);
 			this.valueMappingGrid.TabIndex = 1;
 			this.valueMappingGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.valueMappingGrid_CellValueChanged);
-			// 
-			// label2
-			// 
-			this.label2.Dock = System.Windows.Forms.DockStyle.Top;
-			this.label2.Location = new System.Drawing.Point(0, 0);
-			this.label2.Name = "label2";
-			this.label2.Size = new System.Drawing.Size(400, 17);
-			this.label2.TabIndex = 0;
-			this.label2.Text = "Value Mapping";
-			this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			// 
-			// previewPanel
-			// 
-			this.previewPanel.BackColor = System.Drawing.SystemColors.Control;
-			this.previewPanel.Dock = System.Windows.Forms.DockStyle.Left;
-			this.previewPanel.Location = new System.Drawing.Point(0, 101);
-			this.previewPanel.Name = "previewPanel";
-			this.previewPanel.Size = new System.Drawing.Size(212, 315);
-			this.previewPanel.TabIndex = 9;
-			this.previewPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.previewPanel_Paint);
-			this.previewPanel.Resize += new System.EventHandler(this.previewPanel_Resize);
-			// 
-			// previewSplitter
-			// 
-			this.previewSplitter.Location = new System.Drawing.Point(212, 101);
-			this.previewSplitter.Name = "previewSplitter";
-			this.previewSplitter.Size = new System.Drawing.Size(3, 315);
-			this.previewSplitter.TabIndex = 10;
-			this.previewSplitter.TabStop = false;
-			// 
-			// propertyGridAdapter
-			// 
-			this.propertyGridAdapter.Controller = null;
-			this.propertyGridAdapter.PrimaryPropertyGrid = this.shapePropertyGrid;
-			this.propertyGridAdapter.SecondaryPropertyGrid = this.modelPropertyGrid;
 			// 
 			// modelValueColumn
 			// 
@@ -462,6 +428,46 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.shapeValueColumn.Resizable = System.Windows.Forms.DataGridViewTriState.True;
 			this.shapeValueColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
 			this.shapeValueColumn.Width = 133;
+			// 
+			// label2
+			// 
+			this.label2.Dock = System.Windows.Forms.DockStyle.Top;
+			this.label2.Location = new System.Drawing.Point(0, 0);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(400, 17);
+			this.label2.TabIndex = 0;
+			this.label2.Text = "Value Mapping";
+			this.label2.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			// 
+			// previewPanel
+			// 
+			this.previewPanel.BackColor = System.Drawing.SystemColors.Control;
+			this.previewPanel.Dock = System.Windows.Forms.DockStyle.Left;
+			this.previewPanel.Location = new System.Drawing.Point(0, 95);
+			this.previewPanel.Name = "previewPanel";
+			this.previewPanel.Size = new System.Drawing.Size(212, 321);
+			this.previewPanel.TabIndex = 9;
+			this.previewPanel.Paint += new System.Windows.Forms.PaintEventHandler(this.previewPanel_Paint);
+			this.previewPanel.Resize += new System.EventHandler(this.previewPanel_Resize);
+			// 
+			// previewSplitter
+			// 
+			this.previewSplitter.Location = new System.Drawing.Point(212, 95);
+			this.previewSplitter.Name = "previewSplitter";
+			this.previewSplitter.Size = new System.Drawing.Size(3, 321);
+			this.previewSplitter.TabIndex = 10;
+			this.previewSplitter.TabStop = false;
+			// 
+			// propertyPresenter
+			// 
+			this.propertyPresenter.PrimaryPropertyGrid = this.shapePropertyGrid;
+			this.propertyPresenter.PropertyController = this.propertyController;
+			this.propertyPresenter.SecondaryPropertyGrid = this.modelPropertyGrid;
+			// 
+			// propertyController
+			// 
+			this.propertyController.Project = null;
+			this.propertyController.PropertyChanged += new System.EventHandler<Dataweb.NShape.Controllers.PropertyControllerPropertyChangedEventArgs>(this.propertyController_PropertyChanged);
 			// 
 			// TemplatePresenter
 			// 
@@ -520,7 +526,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private System.Windows.Forms.DataGridView valueMappingGrid;
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.PropertyGrid modelPropertyGrid;
-		private PropertyPresenter propertyGridAdapter;
+		private PropertyPresenter propertyPresenter;
 		private System.Windows.Forms.SplitContainer shapeAndModelObjectListContainer;
 		private System.Windows.Forms.ComboBox modelObjectComboBox;
 		private System.Windows.Forms.Label label3;
@@ -535,5 +541,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private System.Windows.Forms.DataGridViewComboBoxColumn shapePropertyColumn;
 		private System.Windows.Forms.DataGridViewComboBoxColumn modelValueColumn;
 		private System.Windows.Forms.DataGridViewComboBoxColumn shapeValueColumn;
+		private Dataweb.NShape.Controllers.PropertyController propertyController;
 	}
 }

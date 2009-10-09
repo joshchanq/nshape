@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -211,16 +211,6 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		protected internal RoundedBox(ShapeType shapeType, Template template)
-			: base(shapeType, template) {
-		}
-
-
-		protected internal RoundedBox(ShapeType shapeType, IStyleSet styleSet)
-			: base(shapeType, styleSet) {
-		}
-
-
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = base.CalculateConnectionFoot(startX, startY);
 			int radius = CalcCornerRadius();
@@ -285,6 +275,16 @@ namespace Dataweb.NShape.GeneralShapes {
 				}
 			}
 			return result;
+		}
+
+
+		protected internal RoundedBox(ShapeType shapeType, Template template)
+			: base(shapeType, template) {
+		}
+
+
+		protected internal RoundedBox(ShapeType shapeType, IStyleSet styleSet)
+			: base(shapeType, styleSet) {
 		}
 
 
@@ -428,8 +428,6 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		[Category("Layout")]
-		[Description("The width of the arrow's body.")]
 		public int BodyWidth {
 			get { return Width - headWidth; }
 		}
@@ -437,6 +435,8 @@ namespace Dataweb.NShape.GeneralShapes {
 
 		[Category("Layout")]
 		[Description("The height of the arrow's body.")]
+		[PropertyMappingId(PropertyIdBodyHeight)]
+		[RequiredPermission(Permission.Layout)]
 		public int BodyHeight {
 			get { return (int)Math.Round(Height * bodyHeightRatio); }
 			set {
@@ -452,6 +452,8 @@ namespace Dataweb.NShape.GeneralShapes {
 
 		[Category("Layout")]
 		[Description("The width of the arrow's tip.")]
+		[PropertyMappingId(PropertyIdHeadWidth)]
+		[RequiredPermission(Permission.Layout)]
 		public int HeadWidth {
 			get { return headWidth; }
 			set {
@@ -761,16 +763,20 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		#region Fields
+
+		protected const int PropertyIdBodyHeight = 9;
+		protected const int PropertyIdHeadWidth = 10;
+
 		private Point newTipPos = Point.Empty;
 		private Point oldTipPos = Point.Empty;
 
-		protected const int ArrowTipControlPoint = 1;
-		protected const int ArrowTopControlPoint = 2;
-		protected const int ArrowBottomControlPoint = 3;
-		protected const int BodyTopControlPoint = 4;
-		protected const int BodyBottomControlPoint = 5;
-		protected const int BodyEndControlPoint = 6;
-		protected const int RotateControlPoint = 7;
+		private const int ArrowTipControlPoint = 1;
+		private const int ArrowTopControlPoint = 2;
+		private const int ArrowBottomControlPoint = 3;
+		private const int BodyTopControlPoint = 4;
+		private const int BodyBottomControlPoint = 5;
+		private const int BodyEndControlPoint = 6;
+		private const int RotateControlPoint = 7;
 
 		private Point[] shapePoints = new Point[7];
 		private int headWidth;
@@ -841,7 +847,7 @@ namespace Dataweb.NShape.GeneralShapes {
 		public override int Width {
 			get { return base.Width; }
 			set {
-				if (Image != null && ImageLayout == nShapeImageLayout.Original)
+				if (Image != null && ImageLayout == ImageLayoutMode.Original)
 					base.Width = Image.Width;
 				else base.Width = value;
 			}
@@ -851,7 +857,7 @@ namespace Dataweb.NShape.GeneralShapes {
 		public override int Height {
 			get { return base.Height; }
 			set {
-				if (Image != null && ImageLayout == nShapeImageLayout.Original)
+				if (Image != null && ImageLayout == ImageLayoutMode.Original)
 					base.Height = Image.Height;
 				else
 					base.Height = value;
@@ -861,13 +867,15 @@ namespace Dataweb.NShape.GeneralShapes {
 
 		[Category("Appearance")]
 		[Description("The shape's image.")]
-		[Editor("Dataweb.nShape.WinFormsUI.nShapeNamedImageEditor, Dataweb.nShape.WinFormsUI", typeof(UITypeEditor))]
+		[PropertyMappingId(PropertyIdImage)]
+		[RequiredPermission(Permission.Present)]
+		[Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public NamedImage Image {
 			get { return image; }
 			set {
 				Invalidate();
 				image = value;
-				if (layout == nShapeImageLayout.Original && image != null) {
+				if (layout == ImageLayoutMode.Original && image != null) {
 					Width = image.Width;
 					Height = image.Height;
 				}
@@ -877,14 +885,16 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		[Category("Appearance"),
-		Description("Defines the layout of the displayed image.")]
-		public nShapeImageLayout ImageLayout {
+		[Category("Appearance")]
+		[Description("Defines the layout of the displayed image.")]
+		[PropertyMappingId(PropertyIdImageLayout)]
+		[RequiredPermission(Permission.Present)]
+		public ImageLayoutMode ImageLayout {
 			get { return layout; }
 			set {
 				layout = value;
 				ClearImageDrawCache();
-				if (layout == nShapeImageLayout.Original && image != null) {
+				if (layout == ImageLayoutMode.Original && image != null) {
 					Width = image.Width;
 					Height = image.Height;
 				} else Invalidate();
@@ -892,8 +902,10 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		[Category("Appearance"),
-		Description("Displays the image as grayscale image.")]
+		[Category("Appearance")]
+		[Description("Displays the image as grayscale image.")]
+		[PropertyMappingId(PropertyIdImageGrayScale)]
+		[RequiredPermission(Permission.Present)]
 		public bool GrayScale {
 			get { return grayScale; }
 			set {
@@ -904,8 +916,10 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		[Category("Appearance"),
-		Description("Gamma correction value for the image.")]
+		[Category("Appearance")]
+		[Description("Gamma correction value for the image.")]
+		[PropertyMappingId(PropertyIdImageGamma)]
+		[RequiredPermission(Permission.Present)]
 		public float GammaCorrection {
 			get { return gamma; }
 			set {
@@ -917,8 +931,10 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		[Category("Appearance"),
-		Description("Transparency of the image in percentage.")]
+		[Category("Appearance")]
+		[Description("Transparency of the image in percentage.")]
+		[PropertyMappingId(PropertyIdImageTransparency)]
+		[RequiredPermission(Permission.Present)]
 		public byte Transparency {
 			get { return transparency; }
 			set {
@@ -930,8 +946,10 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		[Category("Appearance"),
-		Description("Transparency of the image in percentage.")]
+		[Category("Appearance")]
+		[Description("Transparency of the image in percentage.")]
+		[PropertyMappingId(PropertyIdImageTransparentColor)]
+		[RequiredPermission(Permission.Present)]
 		public Color TransparentColor {
 			get { return transparentColor; }
 			set {
@@ -945,7 +963,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			if (ImageLayout == nShapeImageLayout.Original) {
+			if (ImageLayout == ImageLayoutMode.Original) {
 				if ((controlPointCapability & ControlPointCapabilities.Glue) != 0) {
 					// always false
 				}
@@ -997,7 +1015,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			base.LoadFieldsCore(reader, version);
-			layout = (nShapeImageLayout)reader.ReadByte();
+			layout = (ImageLayoutMode)reader.ReadByte();
 			transparency = reader.ReadByte();
 			gamma = reader.ReadFloat();
 			compressionQuality = reader.ReadByte();
@@ -1089,18 +1107,26 @@ namespace Dataweb.NShape.GeneralShapes {
 			grayScale = false;
 			compressionQuality = 100;
 			gamma = 1;
-			layout = nShapeImageLayout.Fit;
+			layout = ImageLayoutMode.Fit;
 			transparency = 0;
 		}
 
 
 		#region Fields
+
+		protected const int PropertyIdImage = 9;
+		protected const int PropertyIdImageLayout = 10;
+		protected const int PropertyIdImageGrayScale = 11;
+		protected const int PropertyIdImageGamma = 12;
+		protected const int PropertyIdImageTransparency = 13;
+		protected const int PropertyIdImageTransparentColor = 14;
+
 		private ImageAttributes imageAttribs = null;
 		private TextureBrush imageBrush = null;
 		private bool isPreview = false;
 
 		private NamedImage image;
-		private nShapeImageLayout layout = nShapeImageLayout.Fit;
+		private ImageLayoutMode layout = ImageLayoutMode.Fit;
 		private byte transparency = 0;
 		private float gamma = 1.0f;
 		private bool grayScale = false;
@@ -1346,7 +1372,7 @@ namespace Dataweb.NShape.GeneralShapes {
 	}
 
 
-	public static class nShapeLibraryInitializer {
+	public static class NShapeLibraryInitializer {
 
 		public static void Initialize(IRegistrar registrar) {
 			if (registrar == null) throw new ArgumentNullException("registrar");
@@ -1370,7 +1396,7 @@ namespace Dataweb.NShape.GeneralShapes {
 				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceQuadrangle));
 			// new Type("Triangle", lib, namespaceName, Triangle.CreateInstance, 
 			// Triangle.GetPropertyDefinitions(null), 
-			// Dataweb.nShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle).Register(registrar);
+			// Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle).Register(registrar);
 			registrar.RegisterShapeType(new ShapeType("IsoscelesTriangle", namespaceName, namespaceName,
 				IsoscelesTriangle.CreateInstance, IsoscelesTriangle.GetPropertyDefinitions,
 				Dataweb.NShape.GeneralShapes.Properties.Resources.ShaperReferenceTriangle));

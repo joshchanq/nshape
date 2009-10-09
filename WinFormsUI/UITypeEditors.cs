@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -31,7 +31,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	#region TypeConverters
 
-	public class nShapeTextConverter : TypeConverter {
+	public class TextConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
@@ -55,7 +55,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				//return ((string)value).Split(new string[] { "\n\r", "\r\n", "\n" }, StringSplitOptions.None) as IEnumerable<string>;
 				string result = "";
 				foreach (string line in ((IEnumerable<string>)value))
-					result += line + "\r\n";
+					result += line + Environment.NewLine;
 				return result;
 			} else if (destinationType == typeof(string[]) && value != null)
 				return value as IEnumerable<string>;
@@ -71,7 +71,7 @@ namespace Dataweb.NShape.WinFormsUI {
 	}
 
 
-	public class nShapeNamedImageConverter : TypeConverter {
+	public class NamedImageConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)) return true;
@@ -96,10 +96,11 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			return base.ConvertTo(context, culture, value, destinationType);
 		}
+
 	}
 
 
-	public class nShapeStyleConverter : TypeConverter {
+	public class StyleConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)) return true;
@@ -111,10 +112,11 @@ namespace Dataweb.NShape.WinFormsUI {
 			if (destinationType == typeof(string) && value is IStyle) return ((IStyle)value).Title;
 			return base.ConvertTo(context, culture, value, destinationType);
 		}
+
 	}
 
 
-	public class nShapeFontFamilyConverter : TypeConverter {
+	public class FontFamilyConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
@@ -132,7 +134,7 @@ namespace Dataweb.NShape.WinFormsUI {
 	}
 
 
-	public class nShapeTextPaddingConverter : TypeConverter {
+	public class TextPaddingConverter : TypeConverter {
 
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
@@ -195,6 +197,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				return base.ConvertFrom(context, culture, value);
 			return result;
 		}
+
 	}
 
 	#endregion
@@ -204,9 +207,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 	/// <summary>
-	/// nShape UI type editor for choosing a character style's font from a drop down list.
+	/// NShape UI type editor for choosing a character style's font from a drop down list.
 	/// </summary>
-	public class nShapeFontFamilyEditor : UITypeEditor {
+	public class FontFamilyEditor : UITypeEditor {
 		
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
@@ -283,13 +286,14 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		public override bool IsDropDownResizable { get { return true; } }
+
 	}
 
 
 	/// <summary>
-	/// nShape UI type editor for entering text.
+	/// NShape UI type editor for entering text.
 	/// </summary>
-	public class nShapeTextEditor : UITypeEditor {
+	public class TextEditor : UITypeEditor {
 
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
@@ -338,13 +342,14 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			return base.GetEditStyle(context);
 		}
+
 	}
 
 
 	/// <summary>
-	/// nShape UI type editor for choosing an image and assinging a name.
+	/// NShape UI type editor for choosing an image and assinging a name.
 	/// </summary>
-	public class nShapeNamedImageEditor : UITypeEditor {
+	public class NamedImageEditor : UITypeEditor {
 
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
@@ -402,22 +407,27 @@ namespace Dataweb.NShape.WinFormsUI {
 				}
 			}
 		}
+
 	}
 
 
 	/// <summary>
-	/// nShape UI type editor for choosing a style from a drop down list.
+	/// NShape UI type editor for choosing a style from a drop down list.
 	/// </summary>
-	public class nShapeStyleEditor : UITypeEditor {
+	public class StyleEditor : UITypeEditor {
 
-		public nShapeStyleEditor() {
-			if (designBuffer == null) throw new nShapeInternalException("Design is not set. Set the static property nShapeStyleEditor.Design to a reference of the current design before creating the UI type editor.");
+		public StyleEditor() {
+			if (designBuffer == null) throw new NShapeInternalException("Design is not set. Set the static property StyleEditor.Design to a reference of the current design before creating the UI type editor.");
 			this.design = designBuffer;
 		}
 
 
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (provider != null) {
+				if (!(context.PropertyDescriptor is PropertyDescriptorDg))
+					System.Diagnostics.Debug.Print("### The given PropertyDescriptor for {0} is not of type {1}.", value, typeof(PropertyDescriptorDg).Name);
+				else System.Diagnostics.Debug.Print("### PropertyDescriptor is of type {1}.", value, typeof(PropertyDescriptorDg).Name);
+
 				IWindowsFormsEditorService editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
 				if (editorService != null) {
 					// fetch current Design (if changed)
@@ -449,7 +459,7 @@ namespace Dataweb.NShape.WinFormsUI {
 							else if (context.PropertyDescriptor.PropertyType == typeof(IShapeStyle))
 								styleType = typeof(ShapeStyle);
 							else
-								throw new nShapeException(string.Format("Unsupported Style Type {0}.", context.PropertyDescriptor.PropertyType));
+								throw new NShapeException(string.Format("Unsupported Style Type {0}.", context.PropertyDescriptor.PropertyType));
 
 							styleListBox = new StyleListBox(editorService, design, styleType, showItemDefaultStyle);
 						} else
@@ -458,7 +468,7 @@ namespace Dataweb.NShape.WinFormsUI {
 						editorService.DropDownControl(styleListBox);
 						if (styleListBox.SelectedItem is IStyle)
 							value = styleListBox.SelectedItem;
-						else value = null;
+						 else value = null;
 					} finally {
 						if (styleListBox != null) styleListBox.Dispose();
 						styleListBox = null;
@@ -492,7 +502,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				Matrix origTransform = e.Graphics.Transform;
 
 				// Set new GraphicsModes
-				GdiHelpers.ApplyGraphicsSettings(e.Graphics, nShapeRenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.MaximumQuality);
 
 				Rectangle previewRect = Rectangle.Empty;
 				previewRect.X = e.Bounds.X + 1;
@@ -590,7 +600,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				((LinearGradientBrush)fillBrush).ScaleTransform(scale, scale);
 				((LinearGradientBrush)fillBrush).RotateTransform(fillStyle.GradientAngle);
 			} else if (fillBrush is TextureBrush) {
-				if (fillStyle.ImageLayout == nShapeImageLayout.Stretch) {
+				if (fillStyle.ImageLayout == ImageLayoutMode.Stretch) {
 					float scaleX = (float)previewBounds.Width / ((TextureBrush)fillBrush).Image.Width;
 					float scaleY = (float)previewBounds.Height / ((TextureBrush)fillBrush).Image.Height;
 					((TextureBrush)fillBrush).ScaleTransform(scaleX, scaleY);

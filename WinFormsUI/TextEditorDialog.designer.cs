@@ -26,7 +26,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditorDialog));
 			this.okButton = new System.Windows.Forms.Button();
 			this.cancelButton = new System.Windows.Forms.Button();
-			this.textBox = new Dataweb.NShape.WinFormsUI.nShapeTextBox();
+			this.textBox = new Dataweb.NShape.WinFormsUI.TextEditorTextBox();
 			this.SuspendLayout();
 			// 
 			// okButton
@@ -80,7 +80,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "nShape Text Editor";
+			this.Text = "NShape Text Editor";
 			this.TopMost = true;
 			this.FormClosed += this.TextEditor_FormClosed;
 			this.ResumeLayout(false);
@@ -91,6 +91,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private System.Windows.Forms.Button okButton;
 		private System.Windows.Forms.Button cancelButton;
-		private nShapeTextBox textBox;
+		private TextEditorTextBox textBox;
 	}
 }

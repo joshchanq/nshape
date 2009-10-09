@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -48,6 +48,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties
 
+		[Category("NShape")]
 		public ModelController ModelTreeController {
 			get { return modelTreeController; }
 			set {
@@ -55,6 +56,13 @@ namespace Dataweb.NShape.WinFormsUI {
 				modelTreeController = value;
 				RegisterModelTreeControllerEvents();
 			}
+		}
+
+
+		[Category("NShape")]
+		public PropertyController PropertyController {
+			get { return propertyController; }
+			set { propertyController = value; }
 		}
 		
 		
@@ -78,8 +86,16 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Browsable(false)]
 		public IReadOnlyCollection<IModelObject> SelectedModelObjects {
 			get { return selectedModelObjects; }
+		}
+
+
+		[Category("Behavior")]
+		public bool HideDeniedMenuItems {
+			get { return hideMenuItemsIfNotGranted; }
+			set { hideMenuItemsIfNotGranted = value; }
 		}
 
 		#endregion
@@ -96,9 +112,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				selectedModelObjects.Add(modelObject);
 
 			// Notify propertyPresenter (if attached) that a modelOject was selected
-			modelTreeController.SetObjects(1, selectedModelObjects);
-
-			// Raise notification event
+			if (propertyController != null) propertyController.SetObjects(1, selectedModelObjects);
 			if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
 		}
 
@@ -107,8 +121,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			if (selectedModelObjects.Contains(modelObject))
 				selectedModelObjects.Remove(modelObject);
+
 			// Notify propertyPresenter (if attached) that a modelOject was selected
-			modelTreeController.SetObjects(1, selectedModelObjects);
+			if (propertyController != null)propertyController.SetObjects(1, selectedModelObjects);
 			if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
 		}
 
@@ -116,7 +131,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		public void UnselectAllModelObjects() {
 			selectedModelObjects.Clear();
 			// Notify propertyPresenter (if attached) that all modelOjects were unselected
-			modelTreeController.SetObjects(1, selectedModelObjects);
+			if (propertyController != null) propertyController.SetObjects(1, selectedModelObjects);
 			if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
 		}
 
@@ -127,8 +142,8 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		public IEnumerable<nShapeAction> GetActions() {
-			foreach (nShapeAction action in modelTreeController.GetActions(selectedModelObjects))
+		public IEnumerable<MenuItemDef> GetMenuItemDefs() {
+			foreach (MenuItemDef action in modelTreeController.GetActions(selectedModelObjects))
 				yield return action;
 			// ToDo: Add presenter's actions
 		}
@@ -151,30 +166,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		//}
 
 
-		//// PropertyController callback implementation
-		//private void SelectedObjectsChanged(PropertyControllerPropertyChangedEventArgs e) {
-		//   // Create and execute ModelObjectPropertySetCommand
-		//   if (e.ModifiedObjects.Count > 0) {
-		//      Debug.Assert(e.ModifiedObjectsType == typeof(IModelObject));
-		//      List<IModelObject> modelObjects = new List<IModelObject>(e.ModifiedObjects.Count);
-		//      foreach (object obj in e.ModifiedObjects)
-		//         modelObjects.Add((IModelObject)obj);
-		//      ICommand cmd = new ModelObjectPropertySetCommand(modelObjects, e.PropertyInfo, e.OldValues, e.NewValue);
-		//      project.ExecuteCommand(cmd);
-		//   }
-		//}
-
-
 		//private ModelObjectSelectedEventArgs GetModelObjectSelectedEventArgs() {
 		//   selectedEventArgs.SelectedModelObjects = selectedModelObjects;
 		//   selectedEventArgs.EnsureVisibility = false;
 		//   return selectedEventArgs;
 		//}
-
-
-		private Project Project {
-			get { return (modelTreeController == null) ? null : modelTreeController.Project; }
-		}
 
 
 		#region [Private] Methods
@@ -205,8 +201,8 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void FillTree() {
-			if (treeView == null) throw new nShapePropertyNotSetException(this, "TreeView");
-			if (modelTreeController == null) throw new nShapePropertyNotSetException(this, "ModelTreeController");
+			if (treeView == null) throw new NShapePropertyNotSetException(this, "TreeView");
+			if (modelTreeController == null) throw new NShapePropertyNotSetException(this, "ModelTreeController");
 
 			Debug.Assert(modelTreeController.Project.Repository.IsOpen);
 			//AddModelObjectNodes(modelTreeController.Project.Repository.GetChildren(null));
@@ -611,12 +607,12 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Private] Methods: ContextMenu event handler implementation
 
 		private void contextMenuStrip_Opening(object sender, CancelEventArgs e) {
-			if (Project != null) {
+			if (modelTreeController != null && modelTreeController.Project != null) {
 				// Remove DummyItem
 				if (contextMenuStrip.Items.Contains(dummyItem))
 					contextMenuStrip.Items.Remove(dummyItem);
 				// Collect all actions provided by the display itself
-				WinFormHelpers.BuildContextMenu(contextMenuStrip, GetActions(), Project, hideMenuItemsIfNotGranted);
+				WinFormHelpers.BuildContextMenu(contextMenuStrip, GetMenuItemDefs(), modelTreeController.Project, hideMenuItemsIfNotGranted);
 			}
 		}
 
@@ -767,6 +763,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		#region Fields
+		// Constants
 		private const int imageSize = 16;
 		private const int imgMargin = 2;
 		private const string keyDummyNode = "DummyNode";
@@ -774,14 +771,16 @@ namespace Dataweb.NShape.WinFormsUI {
 		private const string imgKeyNoShape = "NoShape";
 		private const string imgKeyDifferentShapes = "DifferentShapes";
 
-		private bool hideMenuItemsIfNotGranted = true;
+		// NShape Controllers
 		private ModelController modelTreeController;
+		private PropertyController propertyController;
+
+		private bool hideMenuItemsIfNotGranted = false;
 		private System.Collections.Specialized.HybridDictionary dict = new System.Collections.Specialized.HybridDictionary();
 		private ReadOnlyList<IModelObject> selectedModelObjects = new ReadOnlyList<IModelObject>();
 
 		private List<IModelObject> modelObjectBuffer = new List<IModelObject>();
-
-		// ToDo: Remove this
+		// ToDo: Remove this as soon as all repository implementations return only non-template ModelObjects
 		private Dictionary<IModelObject, Template> templateModels = new Dictionary<IModelObject,Template>();
 		
 		private ImageList imageList;

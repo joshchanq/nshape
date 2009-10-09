@@ -1,15 +1,15 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -24,7 +24,7 @@ using Dataweb.NShape.Controllers;
 namespace Dataweb.NShape.WinFormsUI {
 
 	/// <summary>
-	/// Connects any ListView to a nShape toolbox.
+	/// Connects any ListView to a NShape toolbox.
 	/// </summary>
 	public partial class ToolSetListViewPresenter : Component {
 		
@@ -41,6 +41,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("NShape")]
 		public ToolSetController ToolSetController {
 			get { return toolSetController; }
 			set {
@@ -98,6 +99,30 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		//private void TemplateChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs) {
+		//   if (SelectedTool is TemplateTool) {
+		//      List<Template> templates = new List<Template>();
+		//      foreach (object obj in propertyChangedEventArgs.Objects) {
+		//         if (((TemplateTool)SelectedTool).Template.Shape == obj) {
+		//            templates.Add(((TemplateTool)SelectedTool).Template);
+		//         }
+		//      }
+
+		//      // SaveChanges tools
+		//      AggregatedCommand aggCmd = new AggregatedCommand();
+		//      int cnt = templates.Count;
+		//      for (int i = 0; i < cnt; ++i) {
+		//         ICommand cmd = new ShapePropertySetCommand(templates[i].Shape, propertyChangedEventArgs.PropertyInfo, propertyChangedEventArgs.OldValues, propertyChangedEventArgs.NewValue);
+		//         aggCmd.Add(cmd);
+		//      }
+		//      Project.ExecuteCommand(aggCmd);
+
+		//      for (int i = 0; i < cnt; ++i)
+		//         RefreshTool(templates[i]);
+		//   }
+		//}
+
+
 		private void RegisterToolBoxEventHandlers() {
 			toolSetController.Cleared += toolBoxController_Cleared;
 			toolSetController.ToolAdded += toolBoxController_ToolAdded;
@@ -145,7 +170,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		
 		private void AssertListViewAvailable() {
-			if (listView == null) throw new nShapeException("Toolbox requires a ListView.");
+			if (listView == null) throw new NShapeException("Toolbox requires a ListView.");
 		}
 
 
@@ -230,7 +255,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// SaveChanges the list view: Move this to ToolSetListViewPresenter
 			if (listView != null) {
 				if (FindItem(e.Tool) != null)
-					throw new nShapeException(string.Format("Tool {0} already exists.", e.Tool.Title));
+					throw new NShapeException(string.Format("Tool {0} already exists.", e.Tool.Title));
 				ListViewItem item = CreateItem(e.Tool);
 				// Put the tool into the right group
 				if (!string.IsNullOrEmpty(e.Tool.Category)) {
@@ -371,6 +396,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private const int largeImageSize = 32;
 
 		private ToolSetController toolSetController;
+		private PropertyController propertyController;
 		private ListView listView;
 
 		// Settings

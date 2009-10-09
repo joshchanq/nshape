@@ -1,19 +1,20 @@
 /******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -44,7 +45,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		public TemplatePresenter(Project project, Template template)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
-			Controller = new TemplateController(project, template);
+			TemplateController = new TemplateController(project, template);
 			disposeTemplateEditor = true;
 			Initialize();
 		}
@@ -56,7 +57,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		~TemplatePresenter() {
-			Controller = null;
+			TemplateController = null;
 			infoGraphics.Dispose();
 			infoGraphics = null;
 		}
@@ -76,7 +77,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		/// <override></override>
 		void IDisplayService.Invalidate(Rectangle rectangle) {
-			previewPanel.Invalidate(rectangle);
+			previewPanel.Invalidate();
 		}
 
 
@@ -116,20 +117,20 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties
 
-		public TemplateController Controller {
+		[Category("NShape")]
+		public TemplateController TemplateController {
 			get { return templateController; }
 			set {
 				if (templateController != null) {
 					UnregisterTemplateControllerEvents();
 					if (disposeTemplateEditor) {
-						propertyGridAdapter.Controller = null;
+						propertyPresenter.PropertyController = null;
 						templateController.Dispose();
 						templateController = null;
 					}
 					disposeTemplateEditor = false;
 				}
 				templateController = value;
-				propertyGridAdapter.Controller = templateController;
 				if (templateController != null) {
 					RegisterTemplateControllerEvents();
 					if (templateController.IsInitialized && !this.isInitialized)
@@ -166,10 +167,8 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing) {
 			if (disposing) {
-				if (disposePropertyController) {
-					propertyGridAdapter.Dispose();
-					propertyGridAdapter = null;
-				}
+				propertyPresenter.PropertyController = null;
+				propertyController.Project = null;
 				if (disposeTemplateEditor) {
 					templateController.Dispose();
 					templateController = null;
@@ -206,7 +205,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void Initialize() {
 			if (templateController == null) 
-				throw new nShapeException("Unable to initialize {0}: {1} is not set.", this.GetType().Name, typeof(TemplateController).Name);
+				throw new NShapeException("Unable to initialize {0}: {1} is not set.", this.GetType().Name, typeof(TemplateController).Name);
 			
 			// if the user has insufficient privileges, deactivate all controls
 			if (!templateController.Project.SecurityManager.IsGranted(Permission.Templates)) {
@@ -216,10 +215,11 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 
 			// Set current Design for the Style UITypeEditor
-			nShapeStyleEditor.Design = templateController.Project.Repository.GetDesign(null);
+			StyleEditor.Design = templateController.Project.Repository.GetDesign(null);
 			// Initialize the propertyGridAdapter
-			propertyGridAdapter.Controller = templateController;
-			propertyGridAdapter.PrimaryPropertyGrid = shapePropertyGrid;
+			propertyController.Project = Project;
+			propertyPresenter.PropertyController = propertyController;
+			propertyPresenter.PrimaryPropertyGrid = shapePropertyGrid;
 
 			// Initialize user interface
 			InitShapeComboBox();
@@ -230,7 +230,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			titleTextBox.Text = template.Title;
 			descriptionTextBox.Text = template.Description;
 			// assign template's shape to the PropertyGrid
-			templateController.SetObject(0, template.Shape);
+			propertyController.SetObject(0, template.Shape, false);
 			//
 			// Initialize ModelObject dependent TabPages
 			if (templateController.ModelObjects.Count != 0) {
@@ -249,15 +249,12 @@ namespace Dataweb.NShape.WinFormsUI {
 				templateController.ApplyingChanges += templateController_ApplyingChanges;
 				templateController.DiscardingChanges += templateController_DiscardingChanges;
 				templateController.Initializing += templateController_Initializing;
-				templateController.TemplateModelObjectReplaced += templateController_TemplateModelObjectExchanged;
-				templateController.TemplateNameChanged += templateController_TemplateNameChanged;
-				templateController.TemplateTitleChanged += templateController_TemplateTitleChanged;
-				templateController.TemplateDescriptionChanged += templateController_TemplateDescriptionChanged;
-				templateController.TemplatePropertyChanged += templateController_TemplatePropertyChanged;
+				templateController.TemplateModelObjectChanged += templateController_TemplateModelObjectChanged;
+				templateController.TemplateModified += templateController_TemplateModified;
 				templateController.TemplateShapeControlPointMappingChanged += templateController_PointMappingChanged;
 				templateController.TemplateShapePropertyMappingSet += templateController_PropertyMappingChanged;
 				templateController.TemplateShapePropertyMappingDeleted += templateController_PropertyMappingChanged;
-				templateController.TemplateShapeReplaced += templateController_TemplateShapeExchanged;
+				templateController.TemplateShapeChanged += templateController_TemplateShapeChanged;
 			}
 		}
 
@@ -267,15 +264,12 @@ namespace Dataweb.NShape.WinFormsUI {
 				templateController.ApplyingChanges -= templateController_ApplyingChanges;
 				templateController.DiscardingChanges -= templateController_DiscardingChanges;
 				templateController.Initializing -= templateController_Initializing;
-				templateController.TemplateModelObjectReplaced -= templateController_TemplateModelObjectExchanged;
-				templateController.TemplateNameChanged -= templateController_TemplateNameChanged;
-				templateController.TemplateTitleChanged -= templateController_TemplateTitleChanged;
-				templateController.TemplateDescriptionChanged -= templateController_TemplateDescriptionChanged;
-				templateController.TemplatePropertyChanged -= templateController_TemplatePropertyChanged;
+				templateController.TemplateModelObjectChanged -= templateController_TemplateModelObjectChanged;
+				templateController.TemplateModified -= templateController_TemplateModified;
 				templateController.TemplateShapeControlPointMappingChanged -= templateController_PointMappingChanged;
 				templateController.TemplateShapePropertyMappingSet -= templateController_PropertyMappingChanged;
 				templateController.TemplateShapePropertyMappingDeleted += templateController_PropertyMappingChanged;
-				templateController.TemplateShapeReplaced -= templateController_TemplateShapeExchanged;
+				templateController.TemplateShapeChanged -= templateController_TemplateShapeChanged;
 			}
 		}
 
@@ -556,14 +550,14 @@ namespace Dataweb.NShape.WinFormsUI {
 			if (IsModelPropertyMapped(rowIndex)) {
 				string errMsg = string.Format("'{0}' is already mapped to an other property.", propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value);
 				propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value = null;
-				//throw new nShapeException(errMsg);
+				//throw new NShapeException(errMsg);
 				MessageBox.Show(this, errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return result;
 			} 
 			if (IsShapePropertyMapped(rowIndex)) {
 				string errMsg = string.Format("'{0}' is already mapped to an other property.", propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value);
 				propertyMappingGrid.Rows[rowIndex].Cells[shapeColumnIdx].Value = null;
-				//throw new nShapeException(errMsg);
+				//throw new NShapeException(errMsg);
 				MessageBox.Show(this, errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return result;
 			}
@@ -707,7 +701,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				valueMappingGrid.Columns[mappingPropertyNameCol].ValueType = typeof(int);
 			else if (modelMapping.MappingType == StyleModelMappingType.FloatStyle)
 				valueMappingGrid.Columns[mappingPropertyNameCol].ValueType = typeof(float);
-			else throw new nShapeUnsupportedValueException(modelMapping.MappingType);
+			else throw new NShapeUnsupportedValueException(modelMapping.MappingType);
 			valueMappingGrid.Columns[mappingPropertyNameCol].ReadOnly = false;
 			valueMappingGrid.Columns[mappingPropertyNameCol].Width = valueMappingGrid.Width / 2;
 
@@ -722,7 +716,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			styleValueColumn.MaxDropDownItems = 10;
 			styleValueColumn.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
 			styleValueColumn.Items.Clear();
-			foreach (IStyle style in Controller.Project.Design.Styles) {
+			foreach (IStyle style in TemplateController.Project.Design.Styles) {
 				Type styleType = style.GetType();
 				if (!IsOfType(styleType, shapePropInfo.PropertyType)) continue;
 				else styleValueColumn.Items.Add(style.Title);
@@ -745,7 +739,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					IStyle style = modelMapping[(float)val];
 					valueMappingGrid.Rows.Add(new object[] { (float)val, style.Title });
 				}
-			} else throw new nShapeUnsupportedValueException(modelMapping.MappingType);
+			} else throw new NShapeUnsupportedValueException(modelMapping.MappingType);
 			// Add an empty row for creating new range/style mappings
 			valueMappingGrid.Rows.Add();
 		}
@@ -798,7 +792,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					tstString = string.Format(formatString, 0);
 				else if (formatMapping.MappingType == FormatModelMappingType.StringString)
 					tstString = string.Format(formatString, " ");
-				else throw new nShapeUnsupportedValueException(formatMapping.MappingType);
+				else throw new NShapeUnsupportedValueException(formatMapping.MappingType);
 				// Set ModelMapping
 				formatMapping.Format = formatString;
 				templateController.SetModelMapping(formatMapping);
@@ -827,7 +821,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					PropertyInfo shapePropInfo = FindPropertyInfo(shapePropertyInfos, styleMapping.ShapePropertyId);
 					// Get Style value
 					string styleTitle = valueMappingGrid.Rows[i].Cells[styleColIdx].Value.ToString();
-					foreach (IStyle s in Controller.Project.Design.Styles) {
+					foreach (IStyle s in TemplateController.Project.Design.Styles) {
 						Type styleType = s.GetType();
 						if (!IsOfType(styleType, shapePropInfo.PropertyType)) continue;
 						else if (s.Title.Equals(styleTitle, StringComparison.InvariantCultureIgnoreCase)) {
@@ -843,7 +837,7 @@ namespace Dataweb.NShape.WinFormsUI {
 						styleMapping.AddValueRange((int)rangeValue, style);
 					else if (styleMapping.MappingType == StyleModelMappingType.IntegerStyle)
 						styleMapping.AddValueRange((float)rangeValue, style);
-					else throw new nShapeUnsupportedValueException(styleMapping.MappingType);
+					else throw new NShapeUnsupportedValueException(styleMapping.MappingType);
 				}
 			}
 			// Set ModelMapping
@@ -895,7 +889,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		private void templateController_TemplatePropertyChanged(object sender, EventArgs e) {
+		private void templateController_TemplateModified(object sender, EventArgs e) {
 			if (!templateModified) templateModified = true;
 		}
 
@@ -905,7 +899,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		private void templateController_TemplateShapeExchanged(object sender, TemplateControllerTemplateShapeReplacedEventArgs e) {
+		private void templateController_TemplateShapeChanged(object sender, TemplateControllerTemplateShapeReplacedEventArgs e) {
 			Debug.Assert(templateController != null && templateController.IsInitialized);
 			if (templateController.WorkTemplate.Shape != null) {
 				// assign displayservice so that the shape can be painted onto the previewPanel
@@ -937,22 +931,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		private void templateController_TemplateNameChanged(object sender, TemplateControllerStringChangedEventArgs e) {
-			// nothing to do
-		}
-
-
-		private void templateController_TemplateTitleChanged(object sender, TemplateControllerStringChangedEventArgs e) {
-			// nothing to do
-		}
-
-
-		private void templateController_TemplateDescriptionChanged(object sender, TemplateControllerStringChangedEventArgs e) {
-			// nothing to do
-		}
-
-
-		private void templateController_TemplateModelObjectExchanged(object sender, TemplateControllerModelObjectReplacedEventArgs e) {
+		private void templateController_TemplateModelObjectChanged(object sender, TemplateControllerModelObjectReplacedEventArgs e) {
 			Debug.Assert(templateController != null && templateController.IsInitialized);
 			if (templateController.WorkTemplate.Shape != null && templateController.WorkTemplate.Shape.ModelObject != null) {
 				// Select appropiate Type in the newModelObject list
@@ -1084,15 +1063,17 @@ namespace Dataweb.NShape.WinFormsUI {
 				Debug.Assert(shapeComboBox.SelectedItem is ShapeItem);
 				// Assign the selected shape only if the shape type differs from the current shape's shape type
 				if (isInitialized && shapeComboBox.SelectedIndex >= 0
-					&& ((ShapeItem)shapeComboBox.SelectedItem).Shape.Type != Controller.WorkTemplate.Shape.Type) {
+					&& ((ShapeItem)shapeComboBox.SelectedItem).Shape.Type != TemplateController.WorkTemplate.Shape.Type) {
 					// Create and assign a clone of the selected shape
 					Shape newShape = ((ShapeItem)shapeComboBox.SelectedItem).Shape.Clone();
 					// Do not copy shape properties if a new shape is created because usually the first selected shape 
 					// is a TextBox and thus has transparent Fill- and LineStyles which should not be copied
 					if (templateController.EditMode == TemplateControllerEditMode.EditTemplate)
-						newShape.CopyFrom(Controller.WorkTemplate.Shape);
-					newShape.ModelObject = Controller.WorkTemplate.Shape.ModelObject;
+						newShape.CopyFrom(TemplateController.WorkTemplate.Shape);
+					newShape.ModelObject = TemplateController.WorkTemplate.Shape.ModelObject;
 					templateController.SetTemplateShape(newShape);
+					propertyController.SetObject(0, newShape, false);
+					
 					// Update user interface
 					InitializeUI();
 				}
@@ -1112,9 +1093,20 @@ namespace Dataweb.NShape.WinFormsUI {
 					}
 				}
 				templateController.SetTemplateModel(newModelObject);
+				if (newModelObject != null) {
+				   propertyController.SetObjects(0, newModelObject.Shapes, false);
+				   propertyController.SetObject(1, newModelObject, false);
+				} else propertyController.SetObject(0, templateController.WorkTemplate.Shape, false);
+
 
 				InitializeUI();
 			}
+		}
+
+
+		private void propertyController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
+			templateModified = true;
+			templateController.NotifyTemplateShapeChanged();
 		}
 
 
@@ -1189,7 +1181,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				Debug.Assert(idAttribs[0] is PropertyMappingIdAttribute);
 				return ((PropertyMappingIdAttribute)idAttribs[0]).Id;
 			} else if (idAttribs.Length == 0) return null;
-			else throw new nShapeException("Property {0} of {1} has more than 1 {2}.", propertyInfo.Name, propertyInfo.DeclaringType.Name, typeof(PropertyMappingIdAttribute).Name);
+			else throw new NShapeException("Property {0} of {1} has more than 1 {2}.", propertyInfo.Name, propertyInfo.DeclaringType.Name, typeof(PropertyMappingIdAttribute).Name);
 		}
 
 
@@ -1385,6 +1377,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		// Template editor dialog stuff
 		private TemplateController templateController;
+
 		private bool isInitialized = false;
 		private bool templateModified = false;
 		private bool shapesCreatedFromTemplate = false;
@@ -1393,7 +1386,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private bool propertyMappingGridPopulating = false;
 		private bool valueMappingGridPopulating = false;
 		private bool disposeTemplateEditor = false;
-		private bool disposePropertyController = false;
 
 		// ControlPoint mapping stuff
 		private const string activatedTag = "Activated";
