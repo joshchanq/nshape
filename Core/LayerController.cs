@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Reflection;
 
 using Dataweb.NShape.Advanced;
@@ -23,126 +24,8 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
-	#region EventArgs
-
-	public class LayerEventArgs : EventArgs {
-
-		public LayerEventArgs(Layer layer) {
-			this.layer = layer;
-		}
-
-		public Layer Layer {
-			get { return layer; }
-			internal set { layer = value; }
-		}
-
-		internal LayerEventArgs() { }
-
-		private Layer layer = null;
-	}
-
-
-	public class LayersEventArgs : EventArgs {
-
-		public LayersEventArgs(IEnumerable<Layer> layers) {
-			if (layers == null) throw new ArgumentNullException("layers");
-			this.layers = new ReadOnlyList<Layer>(layers);
-		}
-
-		
-		public IReadOnlyCollection<Layer> Layers { get { return layers; } }
-
-		
-		protected internal LayersEventArgs() {
-			layers = new ReadOnlyList<Layer>();
-		}
-
-
-		protected internal void SetLayers(ReadOnlyList<Layer> layers) {
-			this.layers.Clear();
-			this.layers.AddRange(layers);
-		}
-
-
-		protected internal void SetLayers(IEnumerable<Layer> layers) {
-			this.layers.Clear();
-			this.layers.AddRange(layers);
-		}
-
-
-		protected internal void SetLayers(Layer layer) {
-			this.layers.Clear();
-			this.layers.Add(layer);
-		}
-
-
-		private ReadOnlyList<Layer> layers = null;
-	}
-
-
-	public class LayerRenamedEventArgs : LayerEventArgs {
-
-		public LayerRenamedEventArgs(Layer layer, string oldName, string newName)
-			: base(layer) {
-
-			this.oldName = oldName;
-			this.newName = newName;
-		}
-
-
-		public string OldName {
-			get { return oldName; }
-			internal set { oldName = value; }
-		}
-
-
-		public string NewName {
-			get { return newName; }
-			internal set { newName = value; }
-		}
-
-
-		protected internal LayerRenamedEventArgs() {
-		}
-
-
-		private string oldName;
-		private string newName;
-	}
-
-
-	public class LayerZoomThresholdChangedEventArgs : LayerEventArgs {
-
-		public LayerZoomThresholdChangedEventArgs(Layer layer, int oldZoomThreshold, int newZoomThreshold)
-			: base(layer) {
-			this.oldZoomThreshold = oldZoomThreshold;
-			this.newZoomThreshold = newZoomThreshold;
-		}
-
-
-		public int OldZoomThreshold {
-			get { return oldZoomThreshold; }
-			internal set { oldZoomThreshold = value; }
-		}
-
-
-		public int NewZoomThreshold {
-			get { return newZoomThreshold; }
-			internal set { newZoomThreshold = value; }
-		}
-
-
-		protected internal LayerZoomThresholdChangedEventArgs() {
-		}
-
-
-		private int oldZoomThreshold;
-		private int newZoomThreshold;
-	}
-
-	#endregion
-
-
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(LayerController), "LayerController.bmp")]
 	public class LayerController : Component {
 
 		public LayerController() { }
@@ -171,6 +54,12 @@ namespace Dataweb.NShape.Controllers {
 
 
 		#region [Public] Properties
+
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
 
 		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
@@ -287,7 +176,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		public IEnumerable<MenuItemDef> GetActions(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
+		public IEnumerable<MenuItemDef> GetMenuItemDefs(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (selectedLayers == null) throw new ArgumentNullException("selectedLayers");
 			bool isFeasible;
@@ -460,6 +349,126 @@ namespace Dataweb.NShape.Controllers {
 		private EventArgs eventArgs = new EventArgs();
 		#endregion
 	}
+
+
+	#region EventArgs
+
+	public class LayerEventArgs : EventArgs {
+
+		public LayerEventArgs(Layer layer) {
+			this.layer = layer;
+		}
+
+		public Layer Layer {
+			get { return layer; }
+			internal set { layer = value; }
+		}
+
+		internal LayerEventArgs() { }
+
+		private Layer layer = null;
+	}
+
+
+	public class LayersEventArgs : EventArgs {
+
+		public LayersEventArgs(IEnumerable<Layer> layers) {
+			if (layers == null) throw new ArgumentNullException("layers");
+			this.layers = new ReadOnlyList<Layer>(layers);
+		}
+
+
+		public IReadOnlyCollection<Layer> Layers { get { return layers; } }
+
+
+		protected internal LayersEventArgs() {
+			layers = new ReadOnlyList<Layer>();
+		}
+
+
+		protected internal void SetLayers(ReadOnlyList<Layer> layers) {
+			this.layers.Clear();
+			this.layers.AddRange(layers);
+		}
+
+
+		protected internal void SetLayers(IEnumerable<Layer> layers) {
+			this.layers.Clear();
+			this.layers.AddRange(layers);
+		}
+
+
+		protected internal void SetLayers(Layer layer) {
+			this.layers.Clear();
+			this.layers.Add(layer);
+		}
+
+
+		private ReadOnlyList<Layer> layers = null;
+	}
+
+
+	public class LayerRenamedEventArgs : LayerEventArgs {
+
+		public LayerRenamedEventArgs(Layer layer, string oldName, string newName)
+			: base(layer) {
+
+			this.oldName = oldName;
+			this.newName = newName;
+		}
+
+
+		public string OldName {
+			get { return oldName; }
+			internal set { oldName = value; }
+		}
+
+
+		public string NewName {
+			get { return newName; }
+			internal set { newName = value; }
+		}
+
+
+		protected internal LayerRenamedEventArgs() {
+		}
+
+
+		private string oldName;
+		private string newName;
+	}
+
+
+	public class LayerZoomThresholdChangedEventArgs : LayerEventArgs {
+
+		public LayerZoomThresholdChangedEventArgs(Layer layer, int oldZoomThreshold, int newZoomThreshold)
+			: base(layer) {
+			this.oldZoomThreshold = oldZoomThreshold;
+			this.newZoomThreshold = newZoomThreshold;
+		}
+
+
+		public int OldZoomThreshold {
+			get { return oldZoomThreshold; }
+			internal set { oldZoomThreshold = value; }
+		}
+
+
+		public int NewZoomThreshold {
+			get { return newZoomThreshold; }
+			internal set { newZoomThreshold = value; }
+		}
+
+
+		protected internal LayerZoomThresholdChangedEventArgs() {
+		}
+
+
+		private int oldZoomThreshold;
+		private int newZoomThreshold;
+	}
+
+	#endregion
 
 
 	public class LayerHelper {

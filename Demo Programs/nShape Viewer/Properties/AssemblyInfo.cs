@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("nShapeViewer")]
-[assembly: AssemblyDescription("A simple MDI diagram viewer for nShape diagrams.")]
+[assembly: AssemblyTitle("NShapeViewer")]
+[assembly: AssemblyDescription("A simple MDI diagram viewer for NShape diagrams.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH")]
-[assembly: AssemblyProduct("nShapeViewer")]
+[assembly: AssemblyProduct("NShape Viewer")]
 [assembly: AssemblyCopyright("Copyright © dataweb GmbH 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

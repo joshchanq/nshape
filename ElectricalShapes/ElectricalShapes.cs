@@ -887,7 +887,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 		private const string libraryName = "ElectricalShapes";
-		private const int preferredRepositoryVersion = 2;
+		private const int preferredRepositoryVersion = 3;
 	}
 
 }

@@ -455,7 +455,7 @@ namespace Dataweb.NShape.Advanced {
 
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
-			return (command != null) ? command.IsAllowed(securityManager) : true;
+			return (command != null) ? command.IsAllowed(securityManager) : false;
 		}
 
 

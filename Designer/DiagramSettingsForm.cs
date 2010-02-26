@@ -25,9 +25,28 @@ namespace Dataweb.NShape.Designer {
 
 	public partial class DiagramSettingsForm : Form {
 
-		public DiagramSettingsForm(Diagram diagram) {
+		public DiagramSettingsForm() {
 			InitializeComponent();
+		}
+
+
+		public DiagramSettingsForm(Form owner)
+			: this() {
+			if (owner != null) {
+				Owner = owner;
+				Icon = Owner.Icon;
+			}
+		}
+
+
+		public DiagramSettingsForm(Form owner, Diagram diagram)
+			: this(owner) {
 			propertyGrid.SelectedObject = diagram;
+		}
+
+
+		public DiagramSettingsForm(Diagram diagram)
+			: this(null, diagram) {
 		}
 
 

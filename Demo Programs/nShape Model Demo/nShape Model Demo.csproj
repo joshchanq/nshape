@@ -8,8 +8,8 @@
     <ProjectGuid>{C11FF7A2-5B6D-46FD-BDDD-1C88CD7BD358}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>nShape_Model_Demo</RootNamespace>
-    <AssemblyName>nShape Model Demo</AssemblyName>
+    <RootNamespace>NShape_Model_Demo</RootNamespace>
+    <AssemblyName>NShape Model Demo</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -83,6 +83,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

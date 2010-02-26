@@ -23,7 +23,6 @@ using System.Drawing.Drawing2D;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Dataweb.NShape.Advanced;
-using Dataweb.Utilities;
 
 
 namespace Dataweb.NShape {
@@ -47,17 +46,17 @@ namespace Dataweb.NShape {
 
 		ICharacterStyle this[string name] { get; }
 
-		ICharacterStyle Normal { get; }
-
 		ICharacterStyle Caption { get; }
 
-		ICharacterStyle Subtitle { get; }
-
-		ICharacterStyle Heading3 { get; }
+		ICharacterStyle Heading1 { get; }
 
 		ICharacterStyle Heading2 { get; }
 
-		ICharacterStyle Heading1 { get; }
+		ICharacterStyle Heading3 { get; }
+
+		ICharacterStyle Normal { get; }
+
+		ICharacterStyle Subtitle { get; }
 
 	}
 
@@ -66,40 +65,39 @@ namespace Dataweb.NShape {
 
 		IColorStyle this[string name] { get; }
 
-		// Standard Style Properties
-		IColorStyle Transparent { get; }
-
 		IColorStyle Background { get; }
-
-		IColorStyle Highlight { get; }
-
-		IColorStyle Text { get; }
-
-		IColorStyle HighlightText { get; }
 
 		IColorStyle Black { get; }
 
-		IColorStyle White { get; }
+		IColorStyle Blue { get; }
 
 		IColorStyle Gray { get; }
 
-		IColorStyle LightGray { get; }
+		IColorStyle Green { get; }
 
-		IColorStyle Red { get; }
+		IColorStyle Highlight { get; }
 
-		IColorStyle LightRed { get; }
-
-		IColorStyle Blue { get; }
+		IColorStyle HighlightText { get; }
 
 		IColorStyle LightBlue { get; }
 
-		IColorStyle Green { get; }
+		IColorStyle LightGray { get; }
 
 		IColorStyle LightGreen { get; }
 
-		IColorStyle Yellow { get; }
+		IColorStyle LightRed { get; }
 
 		IColorStyle LightYellow { get; }
+
+		IColorStyle Red { get; }
+
+		IColorStyle Text { get; }
+
+		IColorStyle Transparent { get; }
+
+		IColorStyle White { get; }
+
+		IColorStyle Yellow { get; }
 
 	}
 
@@ -108,18 +106,17 @@ namespace Dataweb.NShape {
 
 		IFillStyle this[string name] { get; }
 
-		// Standard Style Properties
-		IFillStyle Transparent { get; }
-
 		IFillStyle Black { get; }
-
-		IFillStyle White { get; }
-
-		IFillStyle Red { get; }
 
 		IFillStyle Blue { get; }
 
 		IFillStyle Green { get; }
+
+		IFillStyle Red { get; }
+
+		IFillStyle Transparent { get; }
+
+		IFillStyle White { get; }
 
 		IFillStyle Yellow { get; }
 
@@ -130,36 +127,35 @@ namespace Dataweb.NShape {
 
 		ILineStyle this[string name] { get; }
 
-		// Standard Style Properties
+		ILineStyle Blue { get; }
+
+		ILineStyle Dashed { get; }
+
+		ILineStyle Dotted { get; }
+
+		ILineStyle Green { get; }
+
+		ILineStyle Highlight { get; }
+
+		ILineStyle HighlightDashed { get; }
+
+		ILineStyle HighlightDotted { get; }
+
+		ILineStyle HighlightThick { get; }
+
 		ILineStyle None { get; }
 
 		ILineStyle Normal { get; }
 
-		ILineStyle Thick { get; }
-
-		ILineStyle Dotted { get; }
-
-		ILineStyle Dashed { get; }
-
-		ILineStyle Highlight { get; }
-
-		ILineStyle HighlightThick { get; }
-
-		ILineStyle HighlightDotted { get; }
-
-		ILineStyle HighlightDashed { get; }
-
 		ILineStyle Red { get; }
-
-		ILineStyle Blue { get; }
-
-		ILineStyle Green { get; }
-
-		ILineStyle Yellow { get; }
 
 		ILineStyle Special1 { get; }
 
 		ILineStyle Special2 { get; }
+
+		ILineStyle Thick { get; }
+
+		ILineStyle Yellow { get; }
 
 	}
 
@@ -194,8 +190,6 @@ namespace Dataweb.NShape {
 		ILineStyles LineStyles { get; }
 
 		IParagraphStyles ParagraphStyles { get; }
-
-		//IStyle GetPreviewStyle(IStyle style);
 
 		ICapStyle GetPreviewStyle(ICapStyle colorStyle);
 
@@ -372,6 +366,8 @@ namespace Dataweb.NShape {
 		#endregion
 
 
+		#region [Public] Properties
+
 		public string Name {
 			get { return name; }
 			set { name = value; }
@@ -392,6 +388,40 @@ namespace Dataweb.NShape {
 			}
 		}
 
+
+		public CapStyleCollection CapStyles {
+			get { return capStyles; }
+		}
+
+
+		public CharacterStyleCollection CharacterStyles {
+			get { return characterStyles; }
+		}
+
+
+		public ColorStyleCollection ColorStyles {
+			get { return colorStyles; }
+		}
+
+
+		public FillStyleCollection FillStyles {
+			get { return fillStyles; }
+		}
+
+
+		public LineStyleCollection LineStyles {
+			get { return lineStyles; }
+		}
+
+
+		public ParagraphStyleCollection ParagraphStyles {
+			get { return paragraphStyles; }
+		}
+
+		#endregion
+
+
+		#region [Public] Methods
 
 		/// <summary>
 		/// Clears all style collections of the design
@@ -474,10 +504,10 @@ namespace Dataweb.NShape {
 				if (lineStyles.Contains(style.Name))
 					return lineStyles[style.Name];
 				else return null;
-			} else if (style is ShapeStyle) {
-				if (ShapeStyles.Contains(style.Name))
-					return ShapeStyles[style.Name];
-				else return null;
+			//} else if (style is ShapeStyle) {
+			//   if (ShapeStyles.Contains(style.Name))
+			//      return ShapeStyles[style.Name];
+			//   else return null;
 			} else if (style is ParagraphStyle) {
 				if (paragraphStyles.Contains(style.Name))
 					return paragraphStyles[style.Name];
@@ -490,41 +520,6 @@ namespace Dataweb.NShape {
 			if (name == null) throw new ArgumentNullException("name");
 			if (styleType == null) throw new ArgumentNullException("styleType");
 			return DoFindStyleByName(name, styleType);
-		}
-
-
-		public CapStyleCollection CapStyles {
-			get { return capStyles; }
-		}
-
-
-		public CharacterStyleCollection CharacterStyles {
-			get { return characterStyles; }
-		}
-
-
-		public ColorStyleCollection ColorStyles {
-			get { return colorStyles; }
-		}
-
-
-		public FillStyleCollection FillStyles {
-			get { return fillStyles; }
-		}
-
-
-		public LineStyleCollection LineStyles {
-			get { return lineStyles; }
-		}
-
-
-		public StyleCollection<ShapeStyle> ShapeStyles {
-			get { return shapeStyles; }
-		}
-
-
-		public ParagraphStyleCollection ParagraphStyles {
-			get { return paragraphStyles; }
 		}
 
 
@@ -613,8 +608,6 @@ namespace Dataweb.NShape {
 		}
 
 
-		#region CreatePreviewStyle methods
-
 		public CapStyle CreatePreviewStyle(ICapStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			CapStyle result = new CapStyle(baseStyle.Name + previewNameSuffix);
@@ -647,12 +640,13 @@ namespace Dataweb.NShape {
 			result.FillMode = baseStyle.FillMode;
 			result.FillPattern = baseStyle.FillPattern;
 
-			if (baseStyle.Image != null && (baseStyle.Image.Width > 500 || baseStyle.Image.Height > 500)) {
+			int newSize = 512;
+			if (baseStyle.Image != null && (baseStyle.Image.Width > 2 * newSize || baseStyle.Image.Height > newSize)) {
 				float scale = Geometry.CalcScaleFactor(
 					baseStyle.Image.Width,
 					baseStyle.Image.Height,
-					baseStyle.Image.Width / Math.Max(1, (baseStyle.Image.Width / 500)),
-					baseStyle.Image.Height / Math.Max(1, (baseStyle.Image.Height / 500)));
+					baseStyle.Image.Width / Math.Max(1, (baseStyle.Image.Width / newSize)),
+					baseStyle.Image.Height / Math.Max(1, (baseStyle.Image.Height / newSize)));
 				int width = (int)Math.Round(baseStyle.Image.Width * scale);
 				int height = (int)Math.Round(baseStyle.Image.Height * scale);
 				NamedImage namedImg = new NamedImage();
@@ -717,12 +711,12 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		protected internal static bool PreviewsAsGrayScale {
+		internal static bool PreviewsAsGrayScale {
 			get { return previewAsGrayScale; }
 		}
 
 
-		protected internal static Byte GetPreviewTransparency(byte baseTransparency) {
+		internal static Byte GetPreviewTransparency(byte baseTransparency) {
 			int result = baseTransparency + (int)Math.Round((100 - baseTransparency) * previewTransparencyFactor);
 			if (result < 0) result = 0;
 			else if (result > 100) result = 100;
@@ -1132,8 +1126,8 @@ namespace Dataweb.NShape {
 		private static float previewTransparencyFactor = 0.66f;
 
 		private object id = null;
-		private string name = "";
-		private string description = "";
+		private string name = string.Empty;
+		private string description = string.Empty;
 
 		// Style collections
 		private CapStyleCollection capStyles = new CapStyleCollection();
@@ -1143,7 +1137,7 @@ namespace Dataweb.NShape {
 		private LineStyleCollection lineStyles = new LineStyleCollection();
 		private ParagraphStyleCollection paragraphStyles = new ParagraphStyleCollection();
 		private ShapeStyleCollection shapeStyles = new ShapeStyleCollection();
-		private const string previewNameSuffix = ""; //" Preview Style";
+		private const string previewNameSuffix = "";
 
 		#endregion
 	}

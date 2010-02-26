@@ -23,7 +23,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LibraryManagementDialog));
 			this.listBox1 = new System.Windows.Forms.ListBox();
 			this.addLibraryButton = new System.Windows.Forms.Button();
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
@@ -56,6 +55,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// openFileDialog
 			// 
 			this.openFileDialog.FileName = "openFileDialog";
+			this.openFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.openFileDialog_FileOk);
 			// 
 			// closeButton
 			// 
@@ -76,11 +76,12 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.Controls.Add(this.closeButton);
 			this.Controls.Add(this.addLibraryButton);
 			this.Controls.Add(this.listBox1);
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "LibraryManagementDialog";
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
 			this.Text = "Loaded Libraries";
 			this.Load += new System.EventHandler(this.LibraryManagementDialog_Load);
+			this.Shown += new System.EventHandler(this.LibraryManagementDialog_Shown);
 			this.ResumeLayout(false);
 
 		}

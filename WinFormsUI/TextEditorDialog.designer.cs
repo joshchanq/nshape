@@ -23,7 +23,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TextEditorDialog));
 			this.okButton = new System.Windows.Forms.Button();
 			this.cancelButton = new System.Windows.Forms.Button();
 			this.textBox = new Dataweb.NShape.WinFormsUI.TextEditorTextBox();
@@ -38,7 +37,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.okButton.TabIndex = 1;
 			this.okButton.Text = "OK";
 			this.okButton.UseVisualStyleBackColor = true;
-			this.okButton.Click += this.okButton_Click;
+			this.okButton.Click += new System.EventHandler(this.okButton_Click);
 			// 
 			// cancelButton
 			// 
@@ -49,7 +48,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.cancelButton.TabIndex = 2;
 			this.cancelButton.Text = "Cancel";
 			this.cancelButton.UseVisualStyleBackColor = true;
-			this.cancelButton.Click += this.cancelButton_Click;
+			this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
 			// 
 			// textBox
 			// 
@@ -73,16 +72,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.Controls.Add(this.cancelButton);
 			this.Controls.Add(this.okButton);
 			this.Controls.Add(this.textBox);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MinimumSize = new System.Drawing.Size(187, 100);
 			this.Name = "TextEditorDialog";
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "NShape Text Editor";
+			this.Text = "Text Editor";
 			this.TopMost = true;
-			this.FormClosed += this.TextEditor_FormClosed;
 			this.ResumeLayout(false);
 
 		}

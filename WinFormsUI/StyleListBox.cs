@@ -32,54 +32,87 @@ namespace Dataweb.NShape.WinFormsUI {
 	internal partial class StyleListBox : ListBox {
 
 		public StyleListBox() {
-			Construct();
+			// Initialize Components
+			InitializeComponent();
+			DoubleBuffered = true;
+
+			this.matrix = new Matrix();
+			this.formatterFlags = 0 | StringFormatFlags.NoWrap;
+			this.formatter = new StringFormat(formatterFlags);
+			this.formatter.Trimming = StringTrimming.Character;
+			this.formatter.Alignment = StringAlignment.Near;
+			this.formatter.LineAlignment = StringAlignment.Center;
 		}
 
 
-		public StyleListBox(IWindowsFormsEditorService editorService, Design design, Style style, bool showItemDefaultStyle) {
+		public StyleListBox(IWindowsFormsEditorService editorService)
+			: this() {
 			if (editorService == null) throw new ArgumentNullException("editorService");
-			if (design == null) throw new ArgumentNullException("design");
-			if (style == null) throw new ArgumentNullException("style");			
-			Construct();
-			Initialize(editorService, design, showItemDefaultStyle, style.GetType(), style);
+			this.editorService = editorService;
 		}
 
 
-		public StyleListBox(IWindowsFormsEditorService editorService, Design design, Type selectedStyleType, bool showItemDefaultStyle) {
+		public StyleListBox(Design design, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem) :
+			this() {
+			if (design == null) throw new ArgumentNullException("design");
+			if (style == null) throw new ArgumentNullException("style");
+			Initialize(design, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
+		}
+
+
+		public StyleListBox(IWindowsFormsEditorService editorService, Design design, Style style, bool showDefaultStyleItem) :
+			this(editorService, design, style, showDefaultStyleItem, false) {
+		}
+
+
+		public StyleListBox(IWindowsFormsEditorService editorService, Design design, Type selectedStyleType, bool showDefaultStyleItem) :
+			this(editorService, design, selectedStyleType, showDefaultStyleItem, false) {
+		}
+
+
+		// Deactivated at the moment
+		private StyleListBox(IWindowsFormsEditorService editorService, Design design, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem)
+			: this(editorService) {
+			if (design == null) throw new ArgumentNullException("design");
+			if (style == null) throw new ArgumentNullException("style");
+			Initialize(design, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
+		}
+
+
+		// Deactivated at the moment
+		private StyleListBox(IWindowsFormsEditorService editorService, Design design, Type selectedStyleType, bool showDefaultStyleItem, bool showOpenDesignerItem)
+			: this(editorService) {
 			if (editorService == null) throw new ArgumentNullException("editorService");
 			if (design == null) throw new ArgumentNullException("design");
 			if (selectedStyleType == null) throw new ArgumentNullException("selectedStyleType");
-			Construct();
-			Initialize(editorService, design, showItemDefaultStyle, selectedStyleType, null);
-		}
-
-
-		public StyleListBox(Design design, Style style, bool showItemDefaultStyle) {
-			if (design == null) throw new ArgumentNullException("design");
-			if (style == null) throw new ArgumentNullException("style");
-			Construct();
-			Initialize(null, design, showItemDefaultStyle, style.GetType(), style);
-		}
-
-
-		public StyleListBox(IWindowsFormsEditorService editorService) {
-			if (editorService == null) throw new ArgumentNullException("editorService");
-			Construct();
-			this.editorService = editorService;
+			Initialize(design, showDefaultStyleItem, showOpenDesignerItem, selectedStyleType, null);
 		}
 
 
 		#region [Public] Properties and Events
 
+		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
+		[Browsable(false)]
 		public Style SelectedStyle {
 			get {
-				if (base.SelectedItem == null || string.Empty.Equals(base.SelectedItem)) return null;
-				else return (Style)base.SelectedItem; 
+				if (base.SelectedItem == null) return null;
+				if (object.Equals(base.SelectedItem, defaultStyleItemText))
+					return null;
+				if (object.Equals(base.SelectedItem, openDesignerItemText))
+					return null;
+				return base.SelectedItem as Style;
 			}
 			set { base.SelectedItem = value; }
 		}
 
 
+		[Browsable(false)]
 		public StyleCategory StyleCategory {
 			get { return styleCategory; }
 			set {
@@ -111,12 +144,14 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Behavior")]
 		public bool HighlightItems {
 			get { return highlightItems; }
 			set { highlightItems = value; }
 		}
 
 
+		[Category("Appearance")]
 		public Color ItemBackgroundColor {
 			get { return itemBackgroundColor; }
 			set {
@@ -129,6 +164,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color ItemHighlightedColor {
 			get { return itemHighlightedColor; }
 			set {
@@ -141,6 +177,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color ItemSelectedColor {
 			get { return itemSelectedColor; }
 			set {
@@ -153,6 +190,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color ItemFocusedColor {
 			get { return itemFocusedColor; }
 			set {
@@ -165,6 +203,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 		
 		
+		[Category("Appearance")]
 		public Color FocusBorderColor {
 			get { return focusBorderColor; }
 			set {
@@ -177,6 +216,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color ItemBorderColor {
 			get { return itemBorderColor; }
 			set {
@@ -189,6 +229,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color TextColor {
 			get { return textColor; }
 			set {
@@ -235,7 +276,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			if (e.Button == MouseButtons.Left) {
 				for (int i = 0; i < Items.Count; ++i) {
-					if (GetItemRectangle(i).Contains(e.Location)) {
+					if (Geometry.RectangleContainsPoint(GetItemRectangle(i), e.Location)) {
 						ExecuteSelection();
 						break;
 					}
@@ -264,7 +305,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		protected override void OnMeasureItem(MeasureItemEventArgs e) {
 			if (Items.Count > 0) {
 				e.ItemWidth = Width;
-				if (!object.Equals(Items[e.Index], string.Empty)) {
+				if (object.Equals(Items[e.Index], defaultStyleItemText))
+					base.OnMeasureItem(e);
+				else if (object.Equals(Items[e.Index], openDesignerItemText))
+					base.OnMeasureItem(e);
+				else {
 					switch (styleCategory) {
 						// Line Cap Styles
 						case StyleCategory.CapStyle:
@@ -300,8 +345,6 @@ namespace Dataweb.NShape.WinFormsUI {
 							throw new NShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
 					}
 				}
-				else
-					base.OnMeasureItem(e);
 				
 				// correct calculated Height by the Height of the label's font
 				float fontSizeInPixels = Font.GetHeight(e.Graphics);
@@ -352,10 +395,11 @@ namespace Dataweb.NShape.WinFormsUI {
 			e.Graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
 			if (Items.Count > 0 && e.Index >= 0) {
-				if (object.Equals(Items[e.Index], string.Empty)) {
-					e.Graphics.DrawString("Default Style", e.Font, TextBrush, lableLayoutRect, formatter);
-				}
-				else {
+				if (object.Equals(Items[e.Index], defaultStyleItemText)) {
+					e.Graphics.DrawString(defaultStyleItemText, e.Font, TextBrush, lableLayoutRect, formatter);
+				} else if (object.Equals(Items[e.Index], openDesignerItemText)) {
+					e.Graphics.DrawString(openDesignerItemText, e.Font, TextBrush, lableLayoutRect, formatter);
+				} else {
 					switch (StyleCategory) {
 						case StyleCategory.CapStyle:
 							DrawCapStyleItem((CapStyle)Items[e.Index], e);
@@ -408,26 +452,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Private] Methods
 
-		private void Construct() {
-			// Initialize Components
-			InitializeComponent();
-			DoubleBuffered = true;
-
-			this.matrix = new Matrix();
-			this.formatterFlags = 0 | StringFormatFlags.NoWrap;
-			this.formatter = new StringFormat(formatterFlags);
-			this.formatter.Trimming = StringTrimming.Character;
-			this.formatter.Alignment = StringAlignment.Near;
-			this.formatter.LineAlignment = StringAlignment.Center;
-		}
-
-
-		private void Initialize(IWindowsFormsEditorService editorService, Design design, 
-			bool showItemDefaultStyle, Type styleType, IStyle style) {
+		private void Initialize(Design design, 
+			bool showDefaultStyleItem, bool showOpenDesignerItem, Type styleType, IStyle style) {
 			
-			this.editorService = editorService;
 			this.design = design;
-			this.showItemDefaultStyle = showItemDefaultStyle;
+			this.showDefaultStyleItem = showDefaultStyleItem;
+			this.showOpenDesignerItem = showOpenDesignerItem;
 
 			StyleCategoryFromType(styleType);
 			if (style != null) SelectedItem = style;
@@ -460,8 +490,8 @@ namespace Dataweb.NShape.WinFormsUI {
 				Items.Clear();
 
 			if (design != null) {
-				if (showItemDefaultStyle)
-					Items.Add(string.Empty);
+				if (showDefaultStyleItem)
+					Items.Add(defaultStyleItemText);
 				int cnt;
 				switch (styleCategory) {
 					// Line Cap Styles
@@ -520,6 +550,8 @@ namespace Dataweb.NShape.WinFormsUI {
 					default:
 						throw new NShapeException(string.Format("Unexpected enum value '{0}'.", StyleCategory));
 				}
+				if (showOpenDesignerItem)
+					Items.Add(openDesignerItemText);
 			}
 			ResumeLayout();
 			Invalidate();
@@ -681,11 +713,28 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
+		static StyleListBox() {
+			previewText = "This is the first line of the sample text."
+				+ Environment.NewLine + "This is line 2 of the text."
+				+ Environment.NewLine + "Line 3 of the text.";
+		}
+
+
 		#region Fields
+
+		private const int margin = 2;
+		private const int stdItemHeight = 20;
+		private const int dblItemHeight = 40;
+
+		private static readonly string previewText;
+
 		private StyleCategory styleCategory;
 		private Design design;
 		private IWindowsFormsEditorService editorService;
-		private bool showItemDefaultStyle = false;
+		private bool showDefaultStyleItem = false;
+		private const string defaultStyleItemText = "Default Style";
+		private bool showOpenDesignerItem = false;
+		private const string openDesignerItemText = "More...";
 
 		// Graphical stuff
 		private bool highlightItems = false;
@@ -713,10 +762,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private Rectangle previewRect = Rectangle.Empty;
 		private Rectangle lableLayoutRect = Rectangle.Empty;
 
-		const string previewText = "This is the first line of the sample text.\r\nThis is line 2 of the text.\r\nLine 3 of the text.";
-		const int margin = 2;
-		const int stdItemHeight = 20;
-		const int dblItemHeight = 40;
 		#endregion
 	}
 }

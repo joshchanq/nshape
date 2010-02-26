@@ -40,32 +40,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		#region IPersistable Members
-
-		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
-			base.LoadFieldsCore(reader, version);
-			Width = reader.ReadInt32();
-			Height = reader.ReadInt32();
-		}
-
-
-		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
-			base.SaveFieldsCore(writer, version);
-			writer.WriteInt32(Width);
-			writer.WriteInt32(Height);
-		}
-
-
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in CaptionedShapeBase.GetPropertyDefinitions(version))
-				yield return pi;
-			yield return new EntityFieldDefinition("Width", typeof(int));
-			yield return new EntityFieldDefinition("Height", typeof(int));
-		}
-
-		#endregion
-
-
 		#region Properties
 
 		[Category("Layout")]
@@ -75,6 +49,7 @@ namespace Dataweb.NShape.Advanced {
 		public virtual int Width {
 			get { return size.Width; }
 			set {
+				if (value < 0) throw new ArgumentOutOfRangeException("Width");
 				if (value != size.Width) {
 					Invalidate();
 					if (Owner != null) Owner.NotifyChildResizing(this);
@@ -99,6 +74,7 @@ namespace Dataweb.NShape.Advanced {
 		public virtual int Height {
 			get { return size.Height; }
 			set {
+				if (value < 0) throw new ArgumentOutOfRangeException("Height");
 				if (value != size.Height) {
 					Invalidate();
 					if (Owner != null) Owner.NotifyChildResizing(this);
@@ -196,7 +172,7 @@ namespace Dataweb.NShape.Advanced {
 			Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
 			Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
 			p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-			if (p != Geometry.InvalidPoint) {
+			if (Geometry.IsValid(p)) {
 				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 				if (currDist < dist) {
 					dist = currDist;
@@ -209,7 +185,7 @@ namespace Dataweb.NShape.Advanced {
 			Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
 			Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
 			p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-			if (p != Geometry.InvalidPoint) {
+			if (Geometry.IsValid(p)) {
 				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 				if (currDist < dist) {
 					dist = currDist;
@@ -222,7 +198,7 @@ namespace Dataweb.NShape.Advanced {
 			Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
 			Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
 			p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-			if (p != Geometry.InvalidPoint) {
+			if (Geometry.IsValid(p)) {
 				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 				if (currDist < dist) {
 					dist = currDist;
@@ -235,7 +211,7 @@ namespace Dataweb.NShape.Advanced {
 			Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
 			Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
 			p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-			if (p != Geometry.InvalidPoint) {
+			if (Geometry.IsValid(p)) {
 				currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
 				if (currDist < dist) {
 					dist = currDist;
@@ -383,7 +359,7 @@ namespace Dataweb.NShape.Advanced {
 						result = false;
 					break;
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newHeight))
+					if (!Geometry.MoveRectangleTop(newWidth, newHeight, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newHeight))
 						result = false;
 					break;
 				case TopRightControlPoint:
@@ -391,11 +367,11 @@ namespace Dataweb.NShape.Advanced {
 						result = false;
 					break;
 				case MiddleLeftControlPoint:
-					if (!Geometry.MoveRectangleLeft(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth))
+					if (!Geometry.MoveRectangleLeft(newWidth, newHeight, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out newWidth))
 						result = false;
 					break;
 				case MiddleRightControlPoint:
-					if (!Geometry.MoveRectangleRight(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth))
+					if (!Geometry.MoveRectangleRight(newWidth, newHeight, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out newWidth))
 						result = false;
 					break;
 				case BottomLeftControlPoint:
@@ -403,7 +379,7 @@ namespace Dataweb.NShape.Advanced {
 						result = false;
 					break;
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newHeight))
+					if (!Geometry.MoveRectangleBottom(newWidth, newHeight, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newHeight))
 						result = false;
 					break;
 				case BottomRightControlPoint:
@@ -416,8 +392,6 @@ namespace Dataweb.NShape.Advanced {
 			size.Width = newWidth;
 			size.Height = newHeight;
 			MoveByCore(dx, dy);
-			//ControlPointsHaveMoved();
-			//SignalControlPointsHaveMoved(connectionPointId, modifiers);
 
 			return result;
 		}
@@ -464,180 +438,33 @@ namespace Dataweb.NShape.Advanced {
 			captionBounds.Y = (int)Math.Round(-Height / 2f);
 			captionBounds.Width = Width;
 			captionBounds.Height = Height;
-			//if (ParagraphStyle != null) {
-			//   captionBounds.X += ParagraphStyle.Padding.Left;
-			//   captionBounds.Y += ParagraphStyle.Padding.Top;
-			//   captionBounds.Width -= ParagraphStyle.Padding.Horizontal;
-			//   captionBounds.Height -= ParagraphStyle.Padding.Vertical;
-			//   return true;
-			//} else return false;
 		}
 
 
-		//protected virtual PointF CalcOutLineIntersection(float startX, float startY) {
-		//   PointF result = PointF.Empty;
-		//   result.X = X; result.Y = Y;
-		//   float currDist, dist = float.MaxValue;
-		//   float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
-		//   int x1, y1, x2, y2;
-		//   PointF? p;
+		#region IEntity Members
 
-		//   x1 = left; y1 = top;
-		//   x2 = right; y2 = top;
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
-		//   p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-		//   if (p.HasValue) {
-		//      currDist = Geometry.DistancePointPoint(p.Value.X, p.Value.Y, startX, startY);
-		//      if (currDist < dist) {
-		//         dist = currDist;
-		//         result = p.Value;
-		//      }
-		//   }
-
-		//   x1 = right; y1 = top;
-		//   x2 = right; y2 = bottom;
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
-		//   p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-		//   if (p.HasValue) {
-		//      currDist = Geometry.DistancePointPoint(p.Value.X, p.Value.Y, startX, startY);
-		//      if (currDist < dist) {
-		//         dist = currDist;
-		//         result = p.Value;
-		//      }
-		//   }
-
-		//   x1 = right; y1 = bottom;
-		//   x2 = left; y2 = bottom;
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
-		//   p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-		//   if (p.HasValue) {
-		//      currDist = Geometry.DistancePointPoint(p.Value.X, p.Value.Y, startX, startY);
-		//      if (currDist < dist) {
-		//         dist = currDist;
-		//         result = p.Value;
-		//      }
-		//   }
-
-		//   x1 = left; y1 = bottom;
-		//   x2 = left; y2 = top;
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
-		//   Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
-		//   p = Geometry.IntersectLineWithLineSegment(startX, startY, X, Y, x1, y1, x2, y2);
-		//   if (p.HasValue) {
-		//      currDist = Geometry.DistancePointPoint(p.Value.X, p.Value.Y, startX, startY);
-		//      if (currDist < dist) {
-		//         dist = currDist;
-		//         result = p.Value;
-		//      }
-		//   }
-
-		//   return result;
-		//}
+		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+			foreach (EntityPropertyDefinition pi in CaptionedShapeBase.GetPropertyDefinitions(version))
+				yield return pi;
+			yield return new EntityFieldDefinition("Width", typeof(int));
+			yield return new EntityFieldDefinition("Height", typeof(int));
+		}
 
 
-		///// <summary>
-		///// Calls ControlPointHasMoved for the appropriate ControlPoints, depending on the given ControlPoint and ResizeModifiers
-		///// </summary>
-		//protected void SignalControlPointsHaveMoved(ControlPointId pointId, ResizeModifiers modifiers) {
-		//   int ctrlPtId = pointId;
-		//   switch (modifiers) {
-		//      #region Handle movement on Shift
-		//      case ResizeModifiers.MirroredResize:
-		//         switch (pointId) {
-		//            case TopLeftControlPoint:
-		//            case TopRightControlPoint:
-		//            case BottomLeftControlPoint:
-		//            case BottomRightControlPoint:
-		//               // move all but BalancePointControlPoint
-		//               AllControlPointsHaveMovedExcept(MiddleCenterControlPoint);
-		//               break;
-		//            case TopCenterControlPoint:
-		//            case BottomCenterControlPoint:
-		//               // move top and bottom handle row
-		//               ControlPointHasMoved(TopLeftControlPoint);
-		//               ControlPointHasMoved(TopCenterControlPoint);
-		//               ControlPointHasMoved(TopRightControlPoint);
-		//               ControlPointHasMoved(BottomLeftControlPoint);
-		//               ControlPointHasMoved(BottomCenterControlPoint);
-		//               ControlPointHasMoved(BottomRightControlPoint);
-		//               break;
-		//            case MiddleLeftControlPoint:
-		//            case MiddleRightControlPoint:
-		//               // move left side and right side handles
-		//               ControlPointHasMoved(TopLeftControlPoint);
-		//               ControlPointHasMoved(MiddleLeftControlPoint);
-		//               ControlPointHasMoved(BottomLeftControlPoint);
-		//               ControlPointHasMoved(TopRightControlPoint);
-		//               ControlPointHasMoved(MiddleRightControlPoint);
-		//               ControlPointHasMoved(BottomRightControlPoint);
-		//               break;
-		//         }
-		//         break;
-		//      #endregion
+		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+			base.LoadFieldsCore(reader, version);
+			Width = reader.ReadInt32();
+			Height = reader.ReadInt32();
+		}
 
-		//      #region Standard Handle Movement
-		//      default:
-		//         switch (pointId) {
-		//            case TopLeftControlPoint:
-		//               // move all but BottomRightControlPoint
-		//               AllControlPointsHaveMovedExcept(BottomRightControlPoint);
-		//               break;
-		//            case TopCenterControlPoint:
-		//               // move all but bottom row
-		//               ControlPointHasMoved(TopLeftControlPoint);
-		//               ControlPointHasMoved(TopCenterControlPoint);
-		//               ControlPointHasMoved(TopRightControlPoint);
-		//               ControlPointHasMoved(MiddleLeftControlPoint);
-		//               ControlPointHasMoved(MiddleRightControlPoint);
-		//               ControlPointHasMoved(MiddleCenterControlPoint);
-		//               break;
-		//            case TopRightControlPoint:
-		//               // move all but BottomLeftControlPoint
-		//               AllControlPointsHaveMovedExcept(BottomLeftControlPoint);
-		//               break;
-		//            case MiddleLeftControlPoint:
-		//               // Move all but right row
-		//               ControlPointHasMoved(TopLeftControlPoint);
-		//               ControlPointHasMoved(TopCenterControlPoint);
-		//               ControlPointHasMoved(MiddleLeftControlPoint);
-		//               ControlPointHasMoved(BottomLeftControlPoint);
-		//               ControlPointHasMoved(BottomCenterControlPoint);
-		//               ControlPointHasMoved(MiddleCenterControlPoint);
-		//               break;
-		//            case MiddleRightControlPoint:
-		//               // move all but left row
-		//               ControlPointHasMoved(TopCenterControlPoint);
-		//               ControlPointHasMoved(TopRightControlPoint);
-		//               ControlPointHasMoved(MiddleRightControlPoint);
-		//               ControlPointHasMoved(BottomCenterControlPoint);
-		//               ControlPointHasMoved(BottomRightControlPoint);
-		//               ControlPointHasMoved(MiddleCenterControlPoint);
-		//               break;
-		//            case BottomLeftControlPoint:
-		//               // move all but TopRightControlPoint
-		//               AllControlPointsHaveMovedExcept(TopRightControlPoint);
-		//               break;
-		//            case BottomCenterControlPoint:
-		//               // move all but top row
-		//               ControlPointHasMoved(MiddleLeftControlPoint);
-		//               ControlPointHasMoved(MiddleRightControlPoint);
-		//               ControlPointHasMoved(BottomLeftControlPoint);
-		//               ControlPointHasMoved(BottomCenterControlPoint);
-		//               ControlPointHasMoved(BottomRightControlPoint);
-		//               ControlPointHasMoved(MiddleCenterControlPoint);
-		//               break;
-		//            case BottomRightControlPoint:
-		//               // move all but TopLeftControlPoint
-		//               AllControlPointsHaveMovedExcept(TopLeftControlPoint);
-		//               break;
-		//         }
-		//         break;
-		//      #endregion
-		//   }
-		//}
+
+		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			base.SaveFieldsCore(writer, version);
+			writer.WriteInt32(Width);
+			writer.WriteInt32(Height);
+		}
+
+		#endregion
 
 
 		#region Fields
@@ -688,7 +515,7 @@ namespace Dataweb.NShape.Advanced {
 
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectEllipseLine(X, Y, Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), startX, startY, X, Y, false));
-			if (result == Geometry.InvalidPoint) return Center;
+			if (!Geometry.IsValid(result)) return Center;
 			else return result;
 		}
 
@@ -709,13 +536,16 @@ namespace Dataweb.NShape.Advanced {
 			rectangle.Width = width;
 			rectangle.Height = height;
 			Rectangle boundingRect = GetBoundingRectangle(false);
-			if (rectangle.Contains(boundingRect) || boundingRect.Contains(rectangle) || boundingRect.IntersectsWith(rectangle))
+			if (Geometry.RectangleContainsRectangle(rectangle, boundingRect) 
+				|| Geometry.RectangleContainsRectangle(boundingRect, rectangle) 
+				|| Geometry.RectangleIntersectsWithRectangle(boundingRect, rectangle))
 				return Geometry.EllipseIntersectsWithRectangle(X, Y, Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), rectangle);
 			else return false;
 		}
 
 
 		protected override bool ContainsPointCore(int x, int y) {
+			if (!Geometry.IsValid(x, y)) return false;
 			return Geometry.EllipseContainsPoint(X, Y, Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), x, y);
 		}
 
@@ -872,7 +702,7 @@ namespace Dataweb.NShape.Advanced {
 			}
 			// Calculate intersection points and return the nearest (or the shape's Center if there is no intersection point)
 			result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(pointBuffer, startX, startY, X, Y, true));
-			if (result == Geometry.InvalidPoint) return Center;
+			if (!Geometry.IsValid(result)) return Center;
 			else return result;
 		}
 
@@ -1112,7 +942,7 @@ namespace Dataweb.NShape.Advanced {
 			Point result = Geometry.InvalidPoint;
 			CalculateTranslatedShapePoints();
 			result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(shapePoints, startX, startY, x, y, true));
-			if (result == Geometry.InvalidPoint) result = Center;
+			if (!Geometry.IsValid(result)) result = Center;
 			return result;
 		}
 

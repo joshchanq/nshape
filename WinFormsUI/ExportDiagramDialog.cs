@@ -28,6 +28,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		public ExportDiagramDialog(IDiagramPresenter diagramPresenter) {
 			InitializeComponent();
+			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			this.diagramPresenter = diagramPresenter;
@@ -37,14 +38,24 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void InitializeDialog() {
 			dpiComboBox.Items.Clear();
-			using(Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
-				dpiComboBox.Items.Add((int)gfx.DpiY);
-				dpiComboBox.Items.Add(150);
-				dpiComboBox.Items.Add(300);
-				dpiComboBox.Items.Add(600);
-			}
-			dpiComboBox.SelectedIndex = 0;
+			dpiComboBox.Items.Add(72);
+			dpiComboBox.Items.Add(150);
+			dpiComboBox.Items.Add(300);
+			dpiComboBox.Items.Add(600);
 
+			Graphics infoGfx = diagramPresenter.Diagram.DisplayService.InfoGraphics;
+			for (int i = dpiComboBox.Items.Count - 1; i >= 0; --i) {
+				System.Diagnostics.Debug.Assert(dpiComboBox.Items[i] is int);
+				if ((int)dpiComboBox.Items[i] < infoGfx.DpiY) {
+					dpiComboBox.Items.Insert(i + 1, (int)infoGfx.DpiY);
+					dpiComboBox.SelectedIndex = i + 1;
+					break;
+				} else if (i == 0) {
+					dpiComboBox.Items.Insert(i, (int)infoGfx.DpiY);
+					dpiComboBox.SelectedIndex = i;
+				}
+			}
+			 
 			colorLabel.BackColor = Color.White;
 
 			backColorCheckBox.Checked = false;
@@ -177,20 +188,18 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void dpiComboBox_SelectedIndexChanged(object sender, EventArgs e) {
 		}
 
-		
+
 		private void dpiComboBox_TextChanged(object sender, EventArgs e) {
-			//if (!string.IsNullOrEmpty(dpiComboBox.Text)) {
-				int value;
-				if (!int.TryParse(dpiComboBox.Text, out value)) {
-					if (!string.IsNullOrEmpty(dpiComboBox.Text))
-						dpiComboBox.Text = string.Empty;
-					value = -1;
-				}
-				if (value != dpi) {
-					dpi = value;
-					RefreshPreview();
-				}
-			//}
+			int value;
+			if (!int.TryParse(dpiComboBox.Text, out value)) {
+				if (!string.IsNullOrEmpty(dpiComboBox.Text))
+					dpiComboBox.Text = string.Empty;
+				value = -1;
+			}
+			if (value > 0 && value != dpi) {
+				dpi = value;
+				RefreshPreview();
+			}
 		}
 
 
@@ -263,14 +272,23 @@ namespace Dataweb.NShape.WinFormsUI {
 	
 		private void previewPanel_Paint(object sender, PaintEventArgs e) {
 			if (previewCheckBox.Checked) {
-				// Apply graphics settings
-				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.MaximumQuality);
-				// Create image
-				if (image == null) CreateImage();
-				if (imgAttribs == null) imgAttribs = GdiHelpers.GetImageAttributes(imageLayout);
-				// Draw image
-				Rectangle bounds = previewPanel.ClientRectangle;
-				GdiHelpers.DrawImage(e.Graphics, image, imgAttribs, imageLayout, bounds, bounds);
+				try {
+					// Apply graphics settings
+					GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.MaximumQuality);
+					// Create image
+					if (image == null) CreateImage();
+					if (image != null) {
+						if (imgAttribs == null) imgAttribs = GdiHelpers.GetImageAttributes(imageLayout);
+						// Draw image
+						Rectangle bounds = previewPanel.ClientRectangle;
+						GdiHelpers.DrawImage(e.Graphics, image, imgAttribs, imageLayout, bounds, bounds);
+					}
+				} catch (Exception exc) {
+					string errMsg = string.Format("Error while drawing preview image: {0}{1}Preview option checkbox will be disabled.", 
+						exc.Message, Environment.NewLine);
+					MessageBox.Show(this, errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					previewCheckBox.Checked = false;
+				}
 			}
 		}
 
@@ -315,14 +333,37 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		private void CreateImage() {
 			if (image != null) image.Dispose();
-			image = diagramPresenter.Diagram.CreateImage(imageFormat,
-				shapes,
-				margin,
-				withBackgroundCheckBox.Checked,
-				backgroundColor,
-				dpi);
-			GraphicsUnit unit = GraphicsUnit.Display;
-			imageBounds = Rectangle.Round(image.GetBounds(ref unit));
+			try {
+				// Check if image dimensions are valid
+				Graphics infoGfx = diagramPresenter.Diagram.DisplayService.InfoGraphics;
+				int imgWidth = (int)Math.Round((dpi / infoGfx.DpiX) * diagramPresenter.Diagram.Width);
+				int imgHeight = (int)Math.Round((dpi / infoGfx.DpiY) * diagramPresenter.Diagram.Height);
+				if (Math.Min(imgWidth, imgHeight) <= 0 || Math.Max(imgWidth, imgHeight) > 16000) {
+					string msgTxt = string.Format("The selected resolution would result in a {0}x{1} pixels bitmap which is not supported.", imgWidth, imgHeight);
+					MessageBox.Show(this, msgTxt, "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				} else {
+					Cursor = Cursors.WaitCursor;
+					try {
+						image = diagramPresenter.Diagram.CreateImage(imageFormat,
+							shapes,
+							margin,
+							withBackgroundCheckBox.Checked,
+							backgroundColor,
+							dpi);
+						if (image != null) {
+							GraphicsUnit unit = GraphicsUnit.Display;
+							imageBounds = Rectangle.Round(image.GetBounds(ref unit));
+						}
+					} catch (Exception exc) {
+						MessageBox.Show(this, exc.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					} finally {
+						Cursor = Cursors.Default;
+					}
+				}
+			} catch (Exception exc) {
+				MessageBox.Show(this, string.Format("Error while creating image: {0}", exc.Message), "Error while creating image", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				image = new Bitmap(1, 1);
+			}
 		}
 
 
@@ -343,25 +384,27 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		private void ExportImage() {
 			if (image == null) CreateImage();
-			switch (imageFormat) {
-				case ImageFileFormat.Emf:
-				case ImageFileFormat.EmfPlus:
-					if (exportToClipboard)
-						EmfHelper.PutEnhMetafileOnClipboard(this.Handle, (Metafile)image.Clone());
-					else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
-					break;
-				case ImageFileFormat.Bmp:
-				case ImageFileFormat.Gif:
-				case ImageFileFormat.Jpeg:
-				case ImageFileFormat.Png:
-				case ImageFileFormat.Tiff:
-					if (exportToClipboard)
-						Clipboard.SetImage((Image)image.Clone());
-					else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
-					break;
-				case ImageFileFormat.Svg:
-					throw new NotImplementedException();
-				default: throw new NShapeUnsupportedValueException(imageFormat);
+			if (image != null) {
+				switch (imageFormat) {
+					case ImageFileFormat.Emf:
+					case ImageFileFormat.EmfPlus:
+						if (exportToClipboard)
+							EmfHelper.PutEnhMetafileOnClipboard(this.Handle, (Metafile)image.Clone());
+						else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
+						break;
+					case ImageFileFormat.Bmp:
+					case ImageFileFormat.Gif:
+					case ImageFileFormat.Jpeg:
+					case ImageFileFormat.Png:
+					case ImageFileFormat.Tiff:
+						if (exportToClipboard)
+							Clipboard.SetImage((Image)image.Clone());
+						else GdiHelpers.SaveImageToFile(image, filePath, imageFormat, compressionQuality);
+						break;
+					case ImageFileFormat.Svg:
+						throw new NotImplementedException();
+					default: throw new NShapeUnsupportedValueException(imageFormat);
+				}
 			}
 		}
 		
@@ -424,13 +467,27 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		static ExportDiagramDialog() {
+			emfPlusDescription = "Windows Enhanced Metafile Plus (*.emf)" + Environment.NewLine
+				+ "Creates a high quality vector image file supporting transparency and translucency. The Emf Plus file format is backwards compatible with the classic Emf format.";
+			emfDescription = "Windows Enhanced Metafile (*.emf)" + Environment.NewLine
+				+ "Creates a low quality vector image file supporting transparency and (emulated) translucency.";
+			pngDescription = "Portable Network graphics (*.png)" + Environment.NewLine
+				+ "Creates a bitmap image file supporting transparency. The Png file format provides medium but lossless compression.";
+			jpgDescription = "Joint Photographic Experts Group (*.jpeg)" + Environment.NewLine
+				+ "Creates a compressed bitmap image file. The Jpg file format does not support transparency. It provides an adjustable (lossy) compression.";
+			bmpDescription = "Bitmap (*.png)" + Environment.NewLine
+				+ "Creates an uncompressed bitmap image file. The Bmp file format does not support transparency.";
+		}
+
+
 		#region Fields
 
-		private const string emfPlusDescription = "Windows Enhanced Metafile Plus (*.emf)\nCreates a high quality vector image file supporting transparency and translucency. The Emf Plus file format is backwards compatible with the classic Emf format.";
-		private const string emfDescription = "Windows Enhanced Metafile (*.emf)\nCreates a low quality vector image file supporting transparency and (emulated) translucency.";
-		private const string pngDescription = "Portable Network graphics (*.png)\nCreates a bitmap image file supporting transparency. The Png file format provides medium but lossless compression.";
-		private const string jpgDescription = "Joint Photographic Experts Group (*.jpeg)\nCreates a compressed bitmap image file. The Jpg file format does not support transparency. It provides an adjustable (lossy) compression.";
-		private const string bmpDescription = "Bitmap (*.png)\nCreates an uncompressed bitmap image file. The Bmp file format does not support transparency.";
+		private static readonly string emfPlusDescription;
+		private static readonly string emfDescription;
+		private static readonly string pngDescription;
+		private static readonly string jpgDescription;
+		private static readonly string bmpDescription;
 
 		// Rendering stuff
 		private const ImageLayoutMode imageLayout = ImageLayoutMode.Fit;

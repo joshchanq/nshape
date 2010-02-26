@@ -224,19 +224,19 @@ namespace Dataweb.NShape.GeneralShapes {
 				if (left <= result.X && result.X <= left + radius && top <= result.Y && result.Y <= top + radius) {
 					// Check TopLeft corner
 					p = Geometry.IntersectCircleWithLine(left + radius, top + radius, radius, startX, startY, X, Y, false);
-					if (p != Geometry.InvalidPoint) result = p;
+					if (Geometry.IsValid(p)) result = p;
 				} else if (right - radius <= result.X && result.X <= right && top <= result.Y && result.Y <= top + radius) {
 					// Check TopRight corner
 					p = Geometry.IntersectCircleWithLine(right - radius, top + radius, radius, startX, startY, X, Y, false);
-					if (p != Geometry.InvalidPoint) result = p;
+					if (Geometry.IsValid(p)) result = p;
 				} else if (left <= result.X && result.X <= left + radius && bottom - radius <= result.Y && result.Y <= bottom) {
 					// Check BottomLeft corner
 					p = Geometry.IntersectCircleWithLine(left + radius, bottom - radius, radius, startX, startY, X, Y, false);
-					if (p != Geometry.InvalidPoint) result = p;
+					if (Geometry.IsValid(p)) result = p;
 				} else if (right - radius <= result.X && result.X <= right && bottom - radius <= result.Y && result.Y <= bottom) {
 					// Check BottomRight corner
 					p = Geometry.IntersectCircleWithLine(right - radius, bottom - radius, radius, startX, startY, X, Y, false);
-					if (p != Geometry.InvalidPoint) result = p;
+					if (Geometry.IsValid(p)) result = p;
 				}
 			} else {
 				// Check the top and bottom side (between the rounded corners:
@@ -261,16 +261,16 @@ namespace Dataweb.NShape.GeneralShapes {
 					PointF p = Geometry.InvalidPointF;
 					if (Geometry.CircleIntersectsWithLine(topLeft.X, topLeft.Y, cornerRadius, startX, startY, X, Y, false)) {
 						p = Geometry.IntersectCircleWithLine(topLeft.X, topLeft.Y, cornerRadius, startX, startY, X, Y, false);
-						if (p != Geometry.InvalidPointF) result = Point.Round(p);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
 					} else if (Geometry.CircleIntersectsWithLine(topRight.X, topRight.Y, cornerRadius, startX, startY, X, Y, false)) {
 						p = Geometry.IntersectCircleWithLine(topRight.X, topRight.Y, cornerRadius, startX, startY, X, Y, false);
-						if (p != Geometry.InvalidPointF) result = Point.Round(p);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
 					} else if (Geometry.CircleIntersectsWithLine(bottomRight.X, bottomRight.Y, cornerRadius, startX, startY, X, Y, false)) {
 						p = Geometry.IntersectCircleWithLine(bottomRight.X, bottomRight.Y, cornerRadius, startX, startY, X, Y, false);
-						if (p != Geometry.InvalidPointF) result = Point.Round(p);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
 					} else if (Geometry.CircleIntersectsWithLine(bottomLeft.X, bottomLeft.Y, cornerRadius, startX, startY, X, Y, false)) {
 						p = Geometry.IntersectCircleWithLine(bottomLeft.X, bottomLeft.Y, cornerRadius, startX, startY, X, Y, false);
-						if (p != Geometry.InvalidPointF) result = Point.Round(p);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
 					}
 				}
 			}
@@ -518,7 +518,7 @@ namespace Dataweb.NShape.GeneralShapes {
 			startPoint.X = startX;
 			startPoint.Y = startY;
 			Point result = Geometry.GetNearestPoint(startPoint, Geometry.IntersectPolygonLine(shapePoints, startX, startY, X, Y, true));
-			if (result == Geometry.InvalidPoint) result = Center;
+			if (!Geometry.IsValid(result)) result = Center;
 			return result;
 		}
 
@@ -592,8 +592,7 @@ namespace Dataweb.NShape.GeneralShapes {
 			if (Width >= 0 && Height >= 0) {
 				CalcShapePoints();
 				Geometry.CalcBoundingRectangle(shapePoints, 0, 0, Geometry.TenthsOfDegreeToDegrees(Angle), out result);
-				if (result != Geometry.InvalidRectangle)
-					result.Offset(X, Y);
+				if (Geometry.IsValid(result)) result.Offset(X, Y);
 			}
 			return result;
 		}
@@ -785,11 +784,8 @@ namespace Dataweb.NShape.GeneralShapes {
 	}
 
 
-	/// <summary>
-	/// Displays a bitmap in the diagram.
-	/// </summary>
-	public class Picture : RectangleBase {
-
+	public class Picture : PictureBase {
+		
 		internal static Shape CreateInstance(ShapeType shapeType, Template template) {
 			return new Picture(shapeType, template);
 		}
@@ -800,262 +796,6 @@ namespace Dataweb.NShape.GeneralShapes {
 			result.CopyFrom(this);
 			return result;
 		}
-
-
-		protected override void InitializeToDefault(IStyleSet styleSet) {
-			base.InitializeToDefault(styleSet);
-		}
-
-
-		public override void CopyFrom(Shape source) {
-			base.CopyFrom(source);
-			if (source is Picture) {
-				Picture src = (Picture)source;
-				image = src.Image.Clone();
-				grayScale = src.GrayScale;
-				layout = src.ImageLayout;
-				gamma = src.GammaCorrection;
-				transparency = src.Transparency;
-				transparentColor = src.TransparentColor;
-				compressionQuality = src.compressionQuality;
-			}
-		}
-
-
-		public override void MakePreview(IStyleSet styleSet) {
-			base.MakePreview(styleSet);
-			isPreview = true;
-			if (imageAttribs != null) {
-				imageAttribs.Dispose();
-				imageAttribs = null;
-			}
-		}
-
-
-		#region Properties
-
-		protected override bool ContainsPointCore(int x, int y) {
-			return base.ContainsPointCore(x, y);
-		}
-
-
-		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
-			return base.HitTest(x, y, controlPointCapability, range);
-		}
-
-
-		public override int Width {
-			get { return base.Width; }
-			set {
-				if (Image != null && ImageLayout == ImageLayoutMode.Original)
-					base.Width = Image.Width;
-				else base.Width = value;
-			}
-		}
-
-
-		public override int Height {
-			get { return base.Height; }
-			set {
-				if (Image != null && ImageLayout == ImageLayoutMode.Original)
-					base.Height = Image.Height;
-				else
-					base.Height = value;
-			}
-		}
-
-
-		[Category("Appearance")]
-		[Description("The shape's image.")]
-		[PropertyMappingId(PropertyIdImage)]
-		[RequiredPermission(Permission.Present)]
-		[Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
-		public NamedImage Image {
-			get { return image; }
-			set {
-				Invalidate();
-				image = value;
-				if (layout == ImageLayoutMode.Original && image != null) {
-					Width = image.Width;
-					Height = image.Height;
-				}
-				ClearImageDrawCache();
-				Invalidate();
-			}
-		}
-
-
-		[Category("Appearance")]
-		[Description("Defines the layout of the displayed image.")]
-		[PropertyMappingId(PropertyIdImageLayout)]
-		[RequiredPermission(Permission.Present)]
-		public ImageLayoutMode ImageLayout {
-			get { return layout; }
-			set {
-				layout = value;
-				ClearImageDrawCache();
-				if (layout == ImageLayoutMode.Original && image != null) {
-					Width = image.Width;
-					Height = image.Height;
-				} else Invalidate();
-			}
-		}
-
-
-		[Category("Appearance")]
-		[Description("Displays the image as grayscale image.")]
-		[PropertyMappingId(PropertyIdImageGrayScale)]
-		[RequiredPermission(Permission.Present)]
-		public bool GrayScale {
-			get { return grayScale; }
-			set {
-				grayScale = value;
-				ClearImageDrawCache();
-				Invalidate();
-			}
-		}
-
-
-		[Category("Appearance")]
-		[Description("Gamma correction value for the image.")]
-		[PropertyMappingId(PropertyIdImageGamma)]
-		[RequiredPermission(Permission.Present)]
-		public float GammaCorrection {
-			get { return gamma; }
-			set {
-				if (gamma <= 0) throw new ArgumentOutOfRangeException("Value has to be greater 0.");
-				gamma = value;
-				ClearImageDrawCache();
-				Invalidate();
-			}
-		}
-
-
-		[Category("Appearance")]
-		[Description("Transparency of the image in percentage.")]
-		[PropertyMappingId(PropertyIdImageTransparency)]
-		[RequiredPermission(Permission.Present)]
-		public byte Transparency {
-			get { return transparency; }
-			set {
-				if (value < 0 || value > 100) throw new ArgumentOutOfRangeException("Value has to be between 0 and 100.");
-				transparency = value;
-				ClearImageDrawCache();
-				Invalidate();
-			}
-		}
-
-
-		[Category("Appearance")]
-		[Description("Transparency of the image in percentage.")]
-		[PropertyMappingId(PropertyIdImageTransparentColor)]
-		[RequiredPermission(Permission.Present)]
-		public Color TransparentColor {
-			get { return transparentColor; }
-			set {
-				transparentColor = value;
-				ClearImageDrawCache();
-				Invalidate();
-			}
-		}
-
-		#endregion
-
-
-		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			if (ImageLayout == ImageLayoutMode.Original) {
-				if ((controlPointCapability & ControlPointCapabilities.Glue) != 0) {
-					// always false
-				}
-				if ((controlPointCapability & ControlPointCapabilities.Resize) != 0) {
-					// always false when ImageLayout is set to "Original"
-				}
-				if ((controlPointCapability & ControlPointCapabilities.Connect) != 0) {
-					//if (IsConnectionPointEnabled(connectionPointId))
-					return true;
-				}
-				if ((controlPointCapability & ControlPointCapabilities.Reference) != 0) {
-					if (controlPointId == ControlPointCount || controlPointId == ControlPointId.Reference)
-						return true;
-				}
-				if ((controlPointCapability & ControlPointCapabilities.Rotate) != 0) {
-					if (controlPointId == ControlPointCount)
-						return true;
-				}
-				return false;
-			}
-			return base.HasControlPointCapability(controlPointId, controlPointCapability);
-		}
-
-
-		public override void Draw(Graphics graphics) {
-			if (graphics == null) throw new ArgumentNullException("graphics");
-			UpdateDrawCache();
-			Pen pen = ToolCache.GetPen(LineStyle, null, null);
-			Brush fillBrush = ToolCache.GetTransformedBrush(FillStyle, boundingRectangleUnrotated, Center, Angle);
-			graphics.FillPath(fillBrush, Path);
-
-			if (image != null && image.Image != null) {
-				if (imageAttribs == null) imageAttribs = GdiHelpers.GetImageAttributes(layout, gamma, transparency, grayScale, isPreview, transparentColor);
-				if (image.Image is Metafile)
-					GdiHelpers.DrawImage(graphics, image.Image, imageAttribs, layout, boundingRectangleUnrotated, boundingRectangleUnrotated, Geometry.TenthsOfDegreeToDegrees(Angle));
-				else {
-					if (imageBrush == null) imageBrush = GdiHelpers.CreateTextureBrush(image.Image, imageAttribs);
-					GdiHelpers.TransformTextureBrush(imageBrush, layout, boundingRectangleUnrotated, Center, Geometry.TenthsOfDegreeToDegrees(Angle));
-					graphics.FillPath(imageBrush, Path);
-				}
-			}
-			DrawCaption(graphics);
-			graphics.DrawPath(pen, Path);
-			if (Children.Count > 0) foreach (Shape s in Children) s.Draw(graphics);
-		}
-
-
-		#region IEntity Members
-
-		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
-			base.LoadFieldsCore(reader, version);
-			layout = (ImageLayoutMode)reader.ReadByte();
-			transparency = reader.ReadByte();
-			gamma = reader.ReadFloat();
-			compressionQuality = reader.ReadByte();
-			grayScale = reader.ReadBool();
-			string name = reader.ReadString();
-			Image img = reader.ReadImage();
-			image = new NamedImage(img, name);
-			transparentColor = Color.FromArgb(reader.ReadInt32());
-		}
-
-
-		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
-			base.SaveFieldsCore(writer, version);
-			writer.WriteByte((byte)layout);
-			writer.WriteByte(transparency);
-			writer.WriteFloat(gamma);
-			writer.WriteByte(compressionQuality);
-			writer.WriteBool(grayScale);
-			writer.WriteString(image.Name);
-			if (image.Image != global::Dataweb.NShape.GeneralShapes.Properties.Resources.BitmapShapeIconLarge)
-				writer.WriteImage(image.Image);
-			else writer.WriteImage(null);
-			writer.WriteInt32(transparentColor.ToArgb());
-		}
-
-
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
-				yield return pi;
-			yield return new EntityFieldDefinition("ImageLayout", typeof(byte));
-			yield return new EntityFieldDefinition("ImageTransparency", typeof(byte));
-			yield return new EntityFieldDefinition("ImageGammaCorrection", typeof(float));
-			yield return new EntityFieldDefinition("ImageCompressionQuality", typeof(byte));
-			yield return new EntityFieldDefinition("ConvertToGrayScale", typeof(bool));
-			yield return new EntityFieldDefinition("ImageFileName", typeof(string));
-			yield return new EntityFieldDefinition("Image", typeof(Image));
-			yield return new EntityFieldDefinition("ImageTransparentColor", typeof(int));
-		}
-
-		#endregion
 
 
 		protected internal Picture(ShapeType shapeType, Template template)
@@ -1070,70 +810,362 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
-		protected virtual void ClearImageDrawCache() {
-			if (imageAttribs != null) {
-				imageAttribs.Dispose();
-				imageAttribs = null;
-			}
-			if (imageBrush != null) {
-				imageBrush.Dispose();
-				imageBrush = null;
-			}
-		}
-
-
-		protected override bool CalculatePath() {
-			if (base.CalculatePath()) {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-
-				Rectangle shapeRect = Rectangle.Empty;
-				shapeRect.Offset(left, top);
-				shapeRect.Width = Width;
-				shapeRect.Height = Height;
-
-				Path.Reset();
-				Path.StartFigure();
-				Path.AddRectangle(shapeRect);
-				Path.CloseFigure();
-				return true;
-			} else return false;
-		}
-
-
 		private void Construct() {
-			// this fillStyle holds the image of the shape
-			image = new NamedImage(GeneralShapes.Properties.Resources.BitmapShapeIconLarge, string.Empty);
-			grayScale = false;
-			compressionQuality = 100;
-			gamma = 1;
-			layout = ImageLayoutMode.Fit;
-			transparency = 0;
+			//Image = new NamedImage();
 		}
 
-
-		#region Fields
-
-		protected const int PropertyIdImage = 9;
-		protected const int PropertyIdImageLayout = 10;
-		protected const int PropertyIdImageGrayScale = 11;
-		protected const int PropertyIdImageGamma = 12;
-		protected const int PropertyIdImageTransparency = 13;
-		protected const int PropertyIdImageTransparentColor = 14;
-
-		private ImageAttributes imageAttribs = null;
-		private TextureBrush imageBrush = null;
-		private bool isPreview = false;
-
-		private NamedImage image;
-		private ImageLayoutMode layout = ImageLayoutMode.Fit;
-		private byte transparency = 0;
-		private float gamma = 1.0f;
-		private bool grayScale = false;
-		private byte compressionQuality = 100;
-		private Color transparentColor = Color.Empty;
-		#endregion
 	}
+
+
+	///// <summary>
+	///// Displays a bitmap in the diagram.
+	///// </summary>
+	//public class Picture : RectangleBase {
+
+	//   internal static Shape CreateInstance(ShapeType shapeType, Template template) {
+	//      return new Picture(shapeType, template);
+	//   }
+
+
+	//   public override Shape Clone() {
+	//      Shape result = new Picture(Type, (Template)null);
+	//      result.CopyFrom(this);
+	//      return result;
+	//   }
+
+
+	//   protected override void InitializeToDefault(IStyleSet styleSet) {
+	//      base.InitializeToDefault(styleSet);
+	//   }
+
+
+	//   public override void CopyFrom(Shape source) {
+	//      base.CopyFrom(source);
+	//      if (source is Picture) {
+	//         Picture src = (Picture)source;
+	//         image = src.Image.Clone();
+	//         grayScale = src.GrayScale;
+	//         layout = src.ImageLayout;
+	//         gamma = src.GammaCorrection;
+	//         transparency = src.Transparency;
+	//         transparentColor = src.TransparentColor;
+	//         compressionQuality = src.compressionQuality;
+	//      }
+	//   }
+
+
+	//   public override void MakePreview(IStyleSet styleSet) {
+	//      base.MakePreview(styleSet);
+	//      isPreview = true;
+	//      if (imageAttribs != null) {
+	//         imageAttribs.Dispose();
+	//         imageAttribs = null;
+	//      }
+	//   }
+
+
+	//   #region Properties
+
+	//   protected override bool ContainsPointCore(int x, int y) {
+	//      return base.ContainsPointCore(x, y);
+	//   }
+
+
+	//   public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
+	//      return base.HitTest(x, y, controlPointCapability, range);
+	//   }
+
+
+	//   public override int Width {
+	//      get { return base.Width; }
+	//      set {
+	//         if (Image != null && ImageLayout == ImageLayoutMode.Original)
+	//            base.Width = Image.Width;
+	//         else base.Width = value;
+	//      }
+	//   }
+
+
+	//   public override int Height {
+	//      get { return base.Height; }
+	//      set {
+	//         if (Image != null && ImageLayout == ImageLayoutMode.Original)
+	//            base.Height = Image.Height;
+	//         else
+	//            base.Height = value;
+	//      }
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   [Description("The shape's image.")]
+	//   [PropertyMappingId(PropertyIdImage)]
+	//   [RequiredPermission(Permission.Present)]
+	//   [Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+	//   public NamedImage Image {
+	//      get { return image; }
+	//      set {
+	//         Invalidate();
+	//         image = value;
+	//         if (layout == ImageLayoutMode.Original && image != null) {
+	//            Width = image.Width;
+	//            Height = image.Height;
+	//         }
+	//         ClearImageDrawCache();
+	//         Invalidate();
+	//      }
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   [Description("Defines the layout of the displayed image.")]
+	//   [PropertyMappingId(PropertyIdImageLayout)]
+	//   [RequiredPermission(Permission.Present)]
+	//   public ImageLayoutMode ImageLayout {
+	//      get { return layout; }
+	//      set {
+	//         layout = value;
+	//         ClearImageDrawCache();
+	//         if (layout == ImageLayoutMode.Original && image != null) {
+	//            Width = image.Width;
+	//            Height = image.Height;
+	//         } else Invalidate();
+	//      }
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   [Description("Displays the image as grayscale image.")]
+	//   [PropertyMappingId(PropertyIdImageGrayScale)]
+	//   [RequiredPermission(Permission.Present)]
+	//   public bool GrayScale {
+	//      get { return grayScale; }
+	//      set {
+	//         grayScale = value;
+	//         ClearImageDrawCache();
+	//         Invalidate();
+	//      }
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   [Description("Gamma correction value for the image.")]
+	//   [PropertyMappingId(PropertyIdImageGamma)]
+	//   [RequiredPermission(Permission.Present)]
+	//   public float GammaCorrection {
+	//      get { return gamma; }
+	//      set {
+	//         if (gamma <= 0) throw new ArgumentOutOfRangeException("Value has to be greater 0.");
+	//         gamma = value;
+	//         ClearImageDrawCache();
+	//         Invalidate();
+	//      }
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   [Description("Transparency of the image in percentage.")]
+	//   [PropertyMappingId(PropertyIdImageTransparency)]
+	//   [RequiredPermission(Permission.Present)]
+	//   public byte Transparency {
+	//      get { return transparency; }
+	//      set {
+	//         if (value < 0 || value > 100) throw new ArgumentOutOfRangeException("Value has to be between 0 and 100.");
+	//         transparency = value;
+	//         ClearImageDrawCache();
+	//         Invalidate();
+	//      }
+	//   }
+
+
+	//   [Category("Appearance")]
+	//   [Description("Transparency of the image in percentage.")]
+	//   [PropertyMappingId(PropertyIdImageTransparentColor)]
+	//   [RequiredPermission(Permission.Present)]
+	//   public Color TransparentColor {
+	//      get { return transparentColor; }
+	//      set {
+	//         transparentColor = value;
+	//         ClearImageDrawCache();
+	//         Invalidate();
+	//      }
+	//   }
+
+	//   #endregion
+
+
+	//   public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
+	//      if (ImageLayout == ImageLayoutMode.Original) {
+	//         if ((controlPointCapability & ControlPointCapabilities.Glue) != 0) {
+	//            // always false
+	//         }
+	//         if ((controlPointCapability & ControlPointCapabilities.Resize) != 0) {
+	//            // always false when ImageLayout is set to "Original"
+	//         }
+	//         if ((controlPointCapability & ControlPointCapabilities.Connect) != 0) {
+	//            //if (IsConnectionPointEnabled(connectionPointId))
+	//            return true;
+	//         }
+	//         if ((controlPointCapability & ControlPointCapabilities.Reference) != 0) {
+	//            if (controlPointId == ControlPointCount || controlPointId == ControlPointId.Reference)
+	//               return true;
+	//         }
+	//         if ((controlPointCapability & ControlPointCapabilities.Rotate) != 0) {
+	//            if (controlPointId == ControlPointCount)
+	//               return true;
+	//         }
+	//         return false;
+	//      }
+	//      return base.HasControlPointCapability(controlPointId, controlPointCapability);
+	//   }
+
+
+	//   public override void Draw(Graphics graphics) {
+	//      if (graphics == null) throw new ArgumentNullException("graphics");
+	//      UpdateDrawCache();
+	//      Pen pen = ToolCache.GetPen(LineStyle, null, null);
+	//      Brush fillBrush = ToolCache.GetTransformedBrush(FillStyle, boundingRectangleUnrotated, Center, Angle);
+	//      graphics.FillPath(fillBrush, Path);
+
+	//      if (image != null && image.Image != null) {
+	//         if (imageAttribs == null) imageAttribs = GdiHelpers.GetImageAttributes(layout, gamma, transparency, grayScale, isPreview, transparentColor);
+	//         if (image.Image is Metafile)
+	//            GdiHelpers.DrawImage(graphics, image.Image, imageAttribs, layout, boundingRectangleUnrotated, boundingRectangleUnrotated, Geometry.TenthsOfDegreeToDegrees(Angle));
+	//         else {
+	//            if (imageBrush == null) imageBrush = GdiHelpers.CreateTextureBrush(image.Image, imageAttribs);
+	//            GdiHelpers.TransformTextureBrush(imageBrush, layout, boundingRectangleUnrotated, Center, Geometry.TenthsOfDegreeToDegrees(Angle));
+	//            graphics.FillPath(imageBrush, Path);
+	//         }
+	//      }
+	//      DrawCaption(graphics);
+	//      graphics.DrawPath(pen, Path);
+	//      if (Children.Count > 0) foreach (Shape s in Children) s.Draw(graphics);
+	//   }
+
+
+	//   #region IEntity Members
+
+	//   protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+	//      base.LoadFieldsCore(reader, version);
+	//      layout = (ImageLayoutMode)reader.ReadByte();
+	//      transparency = reader.ReadByte();
+	//      gamma = reader.ReadFloat();
+	//      compressionQuality = reader.ReadByte();
+	//      grayScale = reader.ReadBool();
+	//      string name = reader.ReadString();
+	//      Image img = reader.ReadImage();
+	//      image = new NamedImage(img, name);
+	//      transparentColor = Color.FromArgb(reader.ReadInt32());
+	//   }
+
+
+	//   protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+	//      base.SaveFieldsCore(writer, version);
+	//      writer.WriteByte((byte)layout);
+	//      writer.WriteByte(transparency);
+	//      writer.WriteFloat(gamma);
+	//      writer.WriteByte(compressionQuality);
+	//      writer.WriteBool(grayScale);
+	//      writer.WriteString(image.Name);
+	//      if (image.Image != global::Dataweb.NShape.GeneralShapes.Properties.Resources.BitmapShapeIconLarge)
+	//         writer.WriteImage(image.Image);
+	//      else writer.WriteImage(null);
+	//      writer.WriteInt32(transparentColor.ToArgb());
+	//   }
+
+
+	//   public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+	//      foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
+	//         yield return pi;
+	//      yield return new EntityFieldDefinition("ImageLayout", typeof(byte));
+	//      yield return new EntityFieldDefinition("ImageTransparency", typeof(byte));
+	//      yield return new EntityFieldDefinition("ImageGammaCorrection", typeof(float));
+	//      yield return new EntityFieldDefinition("ImageCompressionQuality", typeof(byte));
+	//      yield return new EntityFieldDefinition("ConvertToGrayScale", typeof(bool));
+	//      yield return new EntityFieldDefinition("ImageFileName", typeof(string));
+	//      yield return new EntityFieldDefinition("Image", typeof(Image));
+	//      yield return new EntityFieldDefinition("ImageTransparentColor", typeof(int));
+	//   }
+
+	//   #endregion
+
+
+	//   protected internal Picture(ShapeType shapeType, Template template)
+	//      : base(shapeType, template) {
+	//      Construct();
+	//   }
+
+
+	//   protected internal Picture(ShapeType shapeType, IStyleSet styleSet)
+	//      : base(shapeType, styleSet) {
+	//      Construct();
+	//   }
+
+
+	//   protected virtual void ClearImageDrawCache() {
+	//      if (imageAttribs != null) {
+	//         imageAttribs.Dispose();
+	//         imageAttribs = null;
+	//      }
+	//      if (imageBrush != null) {
+	//         imageBrush.Dispose();
+	//         imageBrush = null;
+	//      }
+	//   }
+
+
+	//   protected override bool CalculatePath() {
+	//      if (base.CalculatePath()) {
+	//         int left = (int)Math.Round(-Width / 2f);
+	//         int top = (int)Math.Round(-Height / 2f);
+
+	//         Rectangle shapeRect = Rectangle.Empty;
+	//         shapeRect.Offset(left, top);
+	//         shapeRect.Width = Width;
+	//         shapeRect.Height = Height;
+
+	//         Path.Reset();
+	//         Path.StartFigure();
+	//         Path.AddRectangle(shapeRect);
+	//         Path.CloseFigure();
+	//         return true;
+	//      } else return false;
+	//   }
+
+
+	//   private void Construct() {
+	//      // this fillStyle holds the image of the shape
+	//      image = new NamedImage(GeneralShapes.Properties.Resources.BitmapShapeIconLarge, string.Empty);
+	//      grayScale = false;
+	//      compressionQuality = 100;
+	//      gamma = 1;
+	//      layout = ImageLayoutMode.Fit;
+	//      transparency = 0;
+	//   }
+
+
+	//   #region Fields
+
+	//   protected const int PropertyIdImage = 9;
+	//   protected const int PropertyIdImageLayout = 10;
+	//   protected const int PropertyIdImageGrayScale = 11;
+	//   protected const int PropertyIdImageGamma = 12;
+	//   protected const int PropertyIdImageTransparency = 13;
+	//   protected const int PropertyIdImageTransparentColor = 14;
+
+	//   private ImageAttributes imageAttribs = null;
+	//   private TextureBrush imageBrush = null;
+	//   private bool isPreview = false;
+
+	//   private NamedImage image;
+	//   private ImageLayoutMode layout = ImageLayoutMode.Fit;
+	//   private byte transparency = 0;
+	//   private float gamma = 1.0f;
+	//   private bool grayScale = false;
+	//   private byte compressionQuality = 100;
+	//   private Color transparentColor = Color.Empty;
+	//   #endregion
+	//}
 
 
 	// FreeTriangle as base for the FreePolygon
@@ -1274,7 +1306,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
-			Rectangle result = Geometry.InvalidRectangle;
+			Rectangle result;
 			Geometry.CalcBoundingRectangle(shapePoints, out result);
 			result.Offset(X, Y);
 			if (X < result.X) {
@@ -1434,7 +1466,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 		private const string namespaceName = "GeneralShapes";
 
-		private const int preferredRepositoryVersion = 2;
+		private const int preferredRepositoryVersion = 3;
 
 		#endregion
 	}

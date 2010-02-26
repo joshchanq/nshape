@@ -39,8 +39,16 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
 		#region Colors
 
+		[Category("Appearance")]
 		public Color InactiveItemBackgroundColor {
 			get { return BackColor; }
 			set {
@@ -53,6 +61,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color HighlightedItemColor {
 			get { return highlightedItemColor; }
 			set {
@@ -65,6 +74,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color SelectedItemColor {
 			get { return selectedItemColor; }
 			set {
@@ -77,6 +87,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color InactiveItemBorderColor {
 			get { return itemBorderColor; }
 			set {
@@ -89,6 +100,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color FocusedItemColor {
 			get { return focusBackgroundColor; }
 			set {
@@ -101,6 +113,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color FocusBorderColor {
 			get { return focusBorderColor; }
 			set {
@@ -113,6 +126,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color SelectedItemTextColor {
 			get { return selectedTextColor; }
 			set {
@@ -125,6 +139,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("Appearance")]
 		public Color InactiveItemTextColor {
 			get { return itemTextColor; }
 			set {

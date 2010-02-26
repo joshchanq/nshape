@@ -20,798 +20,32 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Text;
-using Dataweb.Utilities;
 
 
 namespace Dataweb.NShape.Advanced {
-
-	#region Class EntityBucket<TObject>
-
-	public enum ItemState { Original, Modified, OwnerChanged, Deleted, New };
-
-	/// <summary>
-	/// Stores a reference to a loaded object together with its state.
-	/// </summary>
-	/// <typeparam projectName="Type">Type of the object to store</typeparam>
-	// EntityBucket is a reference type, because it is entered into dictionaries.
-	// Modifying a field of a value type in a dictionary is not possible during
-	// an enumeration, but we have to modify at least the State.
-	public class EntityBucket<TObject> {
-
-		public EntityBucket(TObject obj, IEntity owner, ItemState state) {
-			this.ObjectRef = obj;
-			this.Owner = owner;
-			this.State = state;
-		}
-
-		public TObject ObjectRef;
-		public IEntity Owner;
-		public ItemState State;
-	}
-
-	#endregion
-
-
-	#region Struct ShapeConnection
-
-	public struct ShapeConnection {
-
-		public static bool operator ==(ShapeConnection x, ShapeConnection y) {
-			return (
-				x.ConnectorShape == y.ConnectorShape
-				&& x.TargetShape == y.TargetShape
-				&& x.GluePointId == y.GluePointId
-				&& x.TargetPointId == y.TargetPointId);
-		}
-
-
-		public static bool operator !=(ShapeConnection x, ShapeConnection y) { return !(x == y); }
-
-
-		public ShapeConnection(Diagram diagram, Shape connectorShape, ControlPointId gluePointId, Shape targetShape, ControlPointId targetPointId) {
-			this.ConnectorShape = connectorShape;
-			this.GluePointId = gluePointId;
-			this.TargetShape = targetShape;
-			this.TargetPointId = targetPointId;
-		}
-
-
-		public override bool Equals(object obj) {
-			return obj is ShapeConnection && this == (ShapeConnection)obj;
-		}
-
-
-		public override int GetHashCode() {
-			int result = GluePointId.GetHashCode() ^ TargetPointId.GetHashCode();
-			if (ConnectorShape != null) result ^= ConnectorShape.GetHashCode();
-			if (TargetShape != null) result ^= TargetShape.GetHashCode();
-			return result;
-		}
-
-
-		public static readonly ShapeConnection Empty;
-
-		public Shape ConnectorShape;
-		public ControlPointId GluePointId;
-		public Shape TargetShape;
-		public ControlPointId TargetPointId;
-
-
-		static ShapeConnection() {
-			Empty.ConnectorShape = null;
-			Empty.GluePointId = ControlPointId.None;
-			Empty.TargetShape = null;
-			Empty.TargetPointId = ControlPointId.None;
-		}
-	}
-
-	#endregion
-
-
-	/// <summary>
-	/// Defines a filter function for the loading methods.
-	/// </summary>
-	/// <typeparam projectName="TEntity"></typeparam>
-	/// <param name="entity"></param>
-	/// <param name="owner"></param>
-	/// <returns></returns>
-	public delegate bool FilterDelegate<TEntity>(TEntity entity, IEntity owner);
-
-
-	/// <summary>
-	/// Retrieves the entity with the given id.
-	/// </summary>
-	/// <param name="pid"></param>
-	/// <returns></returns>
-	public delegate IEntity Resolver(object pid);
-
-
-	#region RepositoryReader Class
-
-	/// <summary>
-	/// Cache reader for the cached cache.
-	/// </summary>
-	public abstract class RepositoryReader : IRepositoryReader, IDisposable {
-
-		protected RepositoryReader(IStoreCache cache) {
-			if (cache == null) throw new ArgumentNullException("cache");
-			this.cache = cache;
-		}
-
-
-		#region IRepositoryReader Members
-
-		public abstract void BeginReadInnerObjects();
-
-		public abstract void EndReadInnerObjects();
-
-		public bool BeginReadInnerObject() {
-			if (innerObjectsReader == null)
-				return DoBeginObject();
-			else return innerObjectsReader.BeginReadInnerObject();
-		}
-
-
-		public abstract void EndReadInnerObject();
-
-		public bool ReadBool() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadBool();
-			} else return innerObjectsReader.ReadBool();
-		}
-
-
-		public byte ReadByte() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadByte();
-			} else return innerObjectsReader.ReadByte();
-		}
-
-
-		public short ReadInt16() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadInt16();
-			} else return innerObjectsReader.ReadInt16();
-		}
-
-
-		public int ReadInt32() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadInt32();
-			} else return innerObjectsReader.ReadInt32();
-		}
-
-
-		public long ReadInt64() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadInt64();
-			} else return innerObjectsReader.ReadInt64();
-		}
-
-
-		public float ReadFloat() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadFloat();
-			} else return innerObjectsReader.ReadFloat();
-		}
-
-
-		public double ReadDouble() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadDouble();
-			} else return innerObjectsReader.ReadDouble();
-		}
-
-
-		public char ReadChar() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadChar();
-			} else return innerObjectsReader.ReadChar();
-		}
-
-
-		public string ReadString() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadString();
-			} else return innerObjectsReader.ReadString();
-		}
-
-
-		public DateTime ReadDate() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadDate();
-			} else return innerObjectsReader.ReadDate();
-		}
-
-
-		public System.Drawing.Image ReadImage() {
-			if (innerObjectsReader == null) {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				return DoReadImage();
-			} else return innerObjectsReader.ReadImage();
-		}
-
-
-		public Template ReadTemplate() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetTemplate(id);
-		}
-
-
-		public Shape ReadShape() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetShape(id);
-		}
-
-
-		public IModelObject ReadModelObject() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetModelObject(id);
-		}
-
-
-		public Design ReadDesign() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetDesign(id);
-		}
-
-
-		public ICapStyle ReadCapStyle() {
-			if (innerObjectsReader == null) {
-				object id = ReadId();
-				if (id == null) return null;
-				return (ICapStyle)cache.GetProjectStyle(id);
-			} else return innerObjectsReader.ReadCapStyle();
-		}
-
-
-		public ICharacterStyle ReadCharacterStyle() {
-			if (innerObjectsReader == null) {
-			object id = ReadId();
-			if (id == null) return null;
-			return (ICharacterStyle)cache.GetProjectStyle(id);
-			} else return innerObjectsReader.ReadCharacterStyle();
-		}
-
-
-		public IColorStyle ReadColorStyle() {
-			if (innerObjectsReader == null) {
-			object id = ReadId();
-			if (id == null) return null;
-			return (IColorStyle)cache.GetProjectStyle(id);
-			} else return innerObjectsReader.ReadColorStyle();
-		}
-
-
-		public IFillStyle ReadFillStyle() {
-			if (innerObjectsReader == null) {
-			object id = ReadId();
-			if (id == null) return null;
-			return (IFillStyle)cache.GetProjectStyle(id);
-			} else return innerObjectsReader.ReadFillStyle();
-		}
-
-
-		public ILineStyle ReadLineStyle() {
-			if (innerObjectsReader == null) {
-			object id = ReadId();
-			if (id == null) return null;
-			IStyle style = cache.GetProjectStyle(id);
-			Diagnostics.RuntimeCheck(style is ILineStyle, string.Format("Style {0} is not a line style.", id));
-			return (ILineStyle)style;
-			} else return innerObjectsReader.ReadLineStyle();
-		}
-
-
-		public IParagraphStyle ReadParagraphStyle() {
-			if (innerObjectsReader == null) {
-			object id = ReadId();
-			if (id == null) return null;
-			return (IParagraphStyle)cache.GetProjectStyle(id);
-			} else return innerObjectsReader.ReadParagraphStyle();
-		}
-
-
-		public IShapeStyle ReadShapeStyle() {
-			if (innerObjectsReader == null) {
-				object id = ReadId();
-				if (id == null) return null;
-				return (IShapeStyle)cache.GetProjectStyle(id);
-			} else return innerObjectsReader.ReadShapeStyle();
-		}
-
-		#endregion
-
-
-		#region IDisposable Members
-
-		public void Dispose() {
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		#endregion
-
-
-		#region Implementation
-
-		// Resets the repositoryReader for a sequence of reads of entities of the same type.
-		internal virtual void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos) {
-			if (propertyInfos == null) throw new ArgumentNullException("propertyInfos");
-			this.propertyInfos.Clear();
-			this.propertyInfos.AddRange(propertyInfos);
-			propertyIndex = int.MinValue;
-		}
-
-
-		/// <summary>
-		/// Advances to the next object and prepares reading it.
-		/// </summary>
-		protected internal abstract bool DoBeginObject();
-
-		/// <summary>
-		/// Finishes reading an object.
-		/// </summary>
-		protected internal abstract void DoEndObject();
-
-
-		// Reads an id or null, if no id exists.
-		protected internal abstract object ReadId();
-
-		/// <summary>
-		/// Indicates the current index in the list of property infos of the entity type.
-		/// </summary>
-		protected internal int PropertyIndex {
-			get { return propertyIndex; }
-			set { propertyIndex = value; }
-		}
-
-
-		protected IStoreCache Cache {
-			get { return cache; }
-		}
-
-
-		protected IEnumerable<EntityPropertyDefinition> PropertyInfos {
-			get { return propertyInfos; }
-		}
-
-
-		protected IEntity Object {
-			get { return entity; }
-			set { entity = value; }
-		}
-
-
-		protected abstract bool DoReadBool();
-
-		protected abstract byte DoReadByte();
-
-		protected abstract short DoReadInt16();
-
-		protected abstract int DoReadInt32();
-
-		protected abstract long DoReadInt64();
-
-		protected abstract float DoReadFloat();
-
-		protected abstract double DoReadDouble();
-
-		protected abstract char DoReadChar();
-
-		protected abstract string DoReadString();
-
-		protected abstract DateTime DoReadDate();
-
-		protected abstract System.Drawing.Image DoReadImage();
-
-
-		protected Template DoReadTemplate() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetTemplate(id);
-		}
-
-
-		protected Shape DoReadShape() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetShape(id);
-		}
-
-
-		protected IModelObject DoReadModelObject() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetModelObject(id);
-		}
-
-
-		protected Design DoReadDesign() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return Cache.GetDesign(id);
-		}
-
-
-		protected ICapStyle DoReadCapStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (ICapStyle)cache.GetProjectStyle(id);
-		}
-
-
-		protected ICharacterStyle DoReadCharacterStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (ICharacterStyle)cache.GetProjectStyle(id);
-		}
-
-
-		protected IColorStyle DoReadColorStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (IColorStyle)cache.GetProjectStyle(id);
-		}
-
-
-		protected IFillStyle DoReadFillStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (IFillStyle)cache.GetProjectStyle(id);
-		}
-
-
-		protected ILineStyle DoReadLineStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (ILineStyle)cache.GetProjectStyle(id);
-		}
-
-
-		protected IParagraphStyle DoReadParagraphStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (IParagraphStyle)cache.GetProjectStyle(id);
-		}
-
-
-		protected IShapeStyle DoReadShapeStyle() {
-			object id = ReadId();
-			if (id == null) return null;
-			else return (IShapeStyle)cache.GetProjectStyle(id);
-		}
-
-
-		/// <summary>
-		/// Checks whether the current property index refers to a valid entity field.
-		/// </summary>
-		protected virtual void ValidatePropertyIndex() {
-			// We cannot check propertyIndex < 0 because some readers use PropertyIndex == -1 for the id.
-			if (propertyIndex >= propertyInfos.Count)
-				throw new NShapeException("An entity tries to read more properties from the repository than there are defined.");
-		}
-
-
-		protected virtual void Dispose(bool disposing) {
-			// Nothing to do
-		}
-
-		#endregion
-
-
-		#region Fields
-
-		private IStoreCache cache;
-		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
-		private int propertyIndex;
-		protected RepositoryReader innerObjectsReader;
-		// used for loading innerObjects
-		private IEntity entity;
-
-		#endregion
-	}
-
-	#endregion
-
-
-	#region RepositoryWriter
-
-	/// <summary>
-	/// Offline RepositoryWriter
-	/// </summary>
-	public abstract class RepositoryWriter : IRepositoryWriter {
-
-		protected RepositoryWriter(IStoreCache cache) {
-			if (cache == null) throw new ArgumentNullException("cache");
-			this.cache = cache;
-		}
-
-
-		#region IRepositoryWriter Members
-
-		public void WriteId(object id) {
-			if (innerObjectsWriter == null) DoWriteId(id);
-			else innerObjectsWriter.WriteId(id);
-		}
-
-
-		public void WriteBool(bool value) {
-			if (innerObjectsWriter == null) DoWriteBool(value);
-			else innerObjectsWriter.WriteBool(value);
-		}
-
-
-		public void WriteByte(byte value) {
-			if (innerObjectsWriter == null) DoWriteByte(value);
-			else innerObjectsWriter.WriteByte(value);
-		}
-
-
-		public void WriteInt16(short value) {
-			if (innerObjectsWriter == null) DoWriteInt16(value);
-			else innerObjectsWriter.WriteInt16(value);
-		}
-
-
-		public void WriteInt32(int value) {
-			if (innerObjectsWriter == null) DoWriteInt32(value);
-			else innerObjectsWriter.WriteInt32(value);
-		}
-
-
-		public void WriteInt64(long value) {
-			if (innerObjectsWriter == null) DoWriteInt64(value);
-			else innerObjectsWriter.WriteInt64(value);
-		}
-
-
-		public void WriteFloat(float value) {
-			if (innerObjectsWriter == null) DoWriteFloat(value);
-			else innerObjectsWriter.WriteFloat(value);
-		}
-
-
-		public void WriteDouble(double value) {
-			if (innerObjectsWriter == null) DoWriteDouble(value);
-			else innerObjectsWriter.WriteDouble(value);
-		}
-
-
-		public void WriteChar(char value) {
-			if (innerObjectsWriter == null) DoWriteChar(value);
-			else innerObjectsWriter.WriteChar(value);
-		}
-
-
-		public void WriteString(string value) {
-			if (innerObjectsWriter == null) DoWriteString(value);
-			else innerObjectsWriter.WriteString(value);
-		}
-
-
-		public void WriteDate(DateTime value) {
-			if (innerObjectsWriter == null) DoWriteDate(value);
-			else innerObjectsWriter.WriteDate(value);
-		}
-
-
-		public void WriteImage(System.Drawing.Image image) {
-			if (innerObjectsWriter == null) DoWriteImage(image);
-			else innerObjectsWriter.WriteImage(image);
-		}
-
-
-		public void WriteTemplate(Template template) {
-			if (template != null && template.Id == null) throw new InvalidOperationException(
-				string.Format("Template '{0}' is not registered with repository.", template.Name));
-			if (innerObjectsWriter == null) {
-				if (template == null) WriteId(null);
-				else WriteId(template.Id);
-			} else innerObjectsWriter.WriteTemplate(template);
-		}
-
-
-		public void WriteStyle(IStyle style) {
-			if (style != null && style.Id == null) throw new InvalidOperationException(
-				 string.Format("{0} '{1}' is not registered with the repository.", style.GetType().Name, style.Name));
-			if (innerObjectsWriter == null) {
-				if (style == null) WriteId(null);
-				else WriteId(style.Id);
-			} else innerObjectsWriter.WriteStyle(style);
-		}
-
-
-		public void WriteModelObject(IModelObject modelObject) {
-			if (modelObject != null && modelObject.Id == null) throw new InvalidOperationException(
-				 string.Format("{0} '{1}' is not registered with the repository.", modelObject.Type.FullName, modelObject.Name));
-			if (innerObjectsWriter == null) {
-				Debug.Assert(modelObject == null || modelObject.Id != null);
-				if (modelObject == null) WriteId(null);
-				else WriteId(modelObject.Id);
-			} else innerObjectsWriter.WriteModelObject(modelObject);
-		}
-
-
-		public void BeginWriteInnerObjects() {
-			if (innerObjectsWriter != null)
-				throw new InvalidOperationException("Call EndWriteInnerObjects before a new call to BeginWriteInnerObjects.");
-			DoBeginWriteInnerObjects();
-		}
-
-
-		public void EndWriteInnerObjects() {
-			if (innerObjectsWriter == null)
-				throw new InvalidOperationException("BeginWriteInnerObjects has not been called.");
-			DoEndWriteInnerObjects();
-			innerObjectsWriter = null;
-		}
-
-
-		public void BeginWriteInnerObject() {
-			// Must be executed by the outer writer. Currently there is only one inner 
-			// and one outer.
-			DoBeginWriteInnerObject();
-		}
-
-
-		public void EndWriteInnerObject() {
-			// Must be executed by the outer writer. Currently there is only one inner 
-			// and one outer.
-			DoEndWriteInnerObject();
-		}
-
-
-		public void DeleteInnerObjects() {
-			if (innerObjectsWriter == null) {
-				++PropertyIndex;
-				DoDeleteInnerObjects();
-			} else innerObjectsWriter.DeleteInnerObjects();
-		}
-
-		#endregion
-
-
-		protected IStoreCache Cache {
-			get { return cache; }
-		}
-
-
-		protected abstract void DoWriteId(object id);
-
-		protected abstract void DoWriteBool(bool value);
-
-		protected abstract void DoWriteByte(byte value);
-
-		protected abstract void DoWriteInt16(short value);
-
-		protected abstract void DoWriteInt32(int value);
-
-		protected abstract void DoWriteInt64(long value);
-
-		protected abstract void DoWriteFloat(float value);
-
-		protected abstract void DoWriteDouble(double value);
-
-		protected abstract void DoWriteChar(char value);
-
-		protected abstract void DoWriteString(string value);
-
-		protected abstract void DoWriteDate(DateTime date);
-
-		protected abstract void DoWriteImage(System.Drawing.Image image);
-
-		protected abstract void DoBeginWriteInnerObjects();
-
-		protected abstract void DoEndWriteInnerObjects();
-
-		// Must be called upon the outer cache writer.
-		protected abstract void DoBeginWriteInnerObject();
-
-		// Must be called upon the outer cache writer.
-		protected abstract void DoEndWriteInnerObject();
-
-		protected abstract void DoDeleteInnerObjects();
-
-
-		/// <summary>
-		/// Reinitializes the writer to work with given property infos.
-		/// </summary>
-		protected internal virtual void Reset(IEnumerable<EntityPropertyDefinition> propertyInfos) {
-			if (propertyInfos == null) throw new ArgumentNullException("propertyInfos");
-			this.propertyInfos.Clear();
-			this.propertyInfos.AddRange(propertyInfos);
-		}
-
-
-		/// <summary>
-		/// Specifies the entity to write next. Is null when going to write an inner object.
-		/// </summary>
-		/// <param name="entity"></param>
-		protected internal virtual void Prepare(IEntity entity) {
-			this.entity = entity;
-			// The first property is the internally written id.
-			PropertyIndex = -2;
-		}
-
-
-		protected internal virtual void Finish() {
-			// Nothing to do
-		}
-
-
-		protected internal int PropertyIndex {
-			get { return propertyIndex; }
-			set { propertyIndex = value; }
-		}
-
-
-		protected IEntity Entity {
-			get { return entity; }
-		}
-
-
-		#region Fields
-
-		private IStoreCache cache;
-
-		// Current entity to write. Null when writing an inner object
-		private IEntity entity;
-
-		// Description of the entity type currently writting
-		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
-
-		// Index of property currently being written
-		private int propertyIndex;
-
-		// When writing inner objects, reference to the responsible writer
-		protected RepositoryWriter innerObjectsWriter;
-
-		#endregion
-	}
-
-	#endregion
-
 
 	/// <summary>
 	/// Caches modifications to the cache and commits them to the data store
 	/// during SaveChanges.
 	/// </summary>
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(CachedRepository), "CachedRepository.bmp")]
 	public class CachedRepository : Component, IRepository, IStoreCache {
 
 		public Store Store {
-			get { return this.store; }
+			get { return store; }
 			set {
 				AssertClosed();
-				this.store = value;
-				if (this.store != null && !string.IsNullOrEmpty(this.projectName)) 
-					this.store.ProjectName = projectName;
+				if (store != null) store.ProjectName = string.Empty;
+				store = value;
+				if (store != null) store.ProjectName = projectName;
 			}
+		}
+
+
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
@@ -844,18 +78,35 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+#if DEBUG
+		public IEntity FindOwner(Shape shape) {
+			foreach (Diagram d in GetCachedEntities<Diagram>(diagrams, newDiagrams))
+				if (d.Shapes.Contains(shape)) return d;
+			foreach (Template t in GetCachedEntities<Template>(templates, newTemplates))
+				if (t.Shape == shape) return t;
+			foreach (Shape s in GetCachedEntities<Shape>(shapes, newShapes))
+				if (s.Children.Contains(shape)) return s;
+			return null;
+		}
+#endif
+
+
 		#region IRepository Members
 
 		public int Version {
 			get { return version; }
-			set { version = value; }
+			set {
+				// ToDo: Check on first/last supported save/load version
+				version = value;
+				if (store != null) store.Version = version;
+			}
 		}
 
 
 		/// <override></override>
 		public string ProjectName {
 			get { return projectName; }
-			set { 
+			set {
 				projectName = value;
 				if (store != null) store.ProjectName = projectName;
 			}
@@ -904,7 +155,15 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <overrice></overrice>
+		/// <override></override>
+		public void ReadVersion() {
+			if (store == null) throw new Exception("Property Store is not set.");
+			else if (!store.Exists()) throw new Exception("Store does not exist.");
+			else store.ReadVersion(this);
+		}
+		
+		
+		/// <override></override>
 		public bool Exists() {
 			return store != null && store.Exists();
 		}
@@ -1001,7 +260,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		#region Project
-		
+
 		/// <override></override>
 		public ProjectSettings GetProject() {
 			AssertOpen();
@@ -1113,9 +372,10 @@ namespace Dataweb.NShape.Advanced {
 			if (template == null) throw new ArgumentNullException("template");
 			AssertOpen();
 			InsertEntity<Template>(newTemplates, template, GetProject());
-			InsertEntity<Shape>(newShapes, template.Shape, template);
+			DoInsertShape(template.Shape, template);	// insert with children
 			if (template.Shape.ModelObject != null)
-				InsertEntity<IModelObject>(newModelObjects, template.Shape.ModelObject, template);
+			   InsertEntity<IModelObject>(newModelObjects, template.Shape.ModelObject, template);
+			
 			if (TemplateInserted != null) TemplateInserted(this, GetTemplateEventArgs(template));
 		}
 
@@ -1153,6 +413,29 @@ namespace Dataweb.NShape.Advanced {
 			if (template == null) throw new ArgumentNullException("template");
 			AssertOpen();
 			UpdateEntity<Template>(templates, newTemplates, template);
+			
+			// Insert / undelete / update shape
+			IEntity shapeEntity = template.Shape;
+			if (shapeEntity.Id == null && !newShapes.ContainsKey((Shape)shapeEntity))
+				DoInsertShape((Shape)shapeEntity, template);
+			else {
+				if (CanUndelete<Shape>(template.Shape, shapes))
+					DoUndeleteShape((Shape)shapeEntity, template);
+				DoUpdateShape(template.Shape);
+			}
+			
+			// Insert / undelete / update model object
+			if (template.Shape.ModelObject != null) {
+				IModelObject modelObject = template.Shape.ModelObject;
+				if (modelObject.Id == null && !newModelObjects.ContainsKey(modelObject))
+					DoInsertModelObject(template.Shape.ModelObject, template);
+				else {
+					if (CanUndelete<IModelObject>(modelObject, modelObjects))
+						DoUndeleteModelObject(modelObject);
+					DoUpdateModelObject(template.Shape.ModelObject);
+				}
+			}
+			
 			if (TemplateUpdated != null) TemplateUpdated(this, GetTemplateEventArgs(template));
 		}
 
@@ -1215,6 +498,7 @@ namespace Dataweb.NShape.Advanced {
 			if (ModelMappingsInserted != null) ModelMappingsInserted(this, GetTemplateEventArgs(template));
 		}
 
+
 		public void InsertModelMappings(IEnumerable<IModelMapping> modelMappings, Template template) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMappings");
 			if (template == null) throw new ArgumentNullException("template");
@@ -1223,24 +507,27 @@ namespace Dataweb.NShape.Advanced {
 			if (ModelMappingsInserted != null) ModelMappingsInserted(this, GetTemplateEventArgs(template));
 		}
 
+
 		public void UpdateModelMapping(IModelMapping modelMapping) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
 			DoUpdateModelMapping(modelMapping);
-			if (ModelMappingsUpdated != null) ModelMappingsUpdated(this, 
+			if (ModelMappingsUpdated != null) ModelMappingsUpdated(this,
 				GetTemplateEventArgs(GetModelMappingOwner(modelMapping)));
 		}
 
-		public void UpdateModelMapping(IEnumerable<IModelMapping> modelMappings) {
+
+		public void UpdateModelMappings(IEnumerable<IModelMapping> modelMappings) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
 			Template owner = null;
 			foreach (IModelMapping modelMapping in modelMappings) {
 				DoUpdateModelMapping(modelMapping);
 				if (owner == null) owner = GetModelMappingOwner(modelMapping);
-				else if (owner != GetModelMappingOwner(modelMapping)) 
+				else if (owner != GetModelMappingOwner(modelMapping))
 					throw new NShapeException("Invalid model mapping owner.");
 			}
 			if (ModelMappingsUpdated != null) ModelMappingsUpdated(this, GetTemplateEventArgs(owner));
 		}
+
 
 		public void DeleteModelMapping(IModelMapping modelMapping) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
@@ -1249,26 +536,27 @@ namespace Dataweb.NShape.Advanced {
 			if (ModelMappingsDeleted != null) ModelMappingsDeleted(this, GetTemplateEventArgs(owner));
 		}
 
+
 		public void DeleteModelMappings(IEnumerable<IModelMapping> modelMappings) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
 			Template owner = null;
 			foreach (IModelMapping modelMapping in modelMappings) {
-				DoDeleteModelMapping(modelMapping);
 				if (owner == null) owner = GetModelMappingOwner(modelMapping);
 				else if (owner != GetModelMappingOwner(modelMapping))
 					throw new NShapeException("Invalid model mapping owner.");
+				DoDeleteModelMapping(modelMapping);
 			}
 			if (ModelMappingsDeleted != null) ModelMappingsDeleted(this, GetTemplateEventArgs(owner));
 		}
 
 
-		public void UndeleteModelMappings(IModelMapping modelMapping, Template template) {
+		public void UndeleteModelMapping(IModelMapping modelMapping, Template template) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
 			DoUndeleteModelMapping(modelMapping, template);
 			if (ModelMappingsInserted != null) ModelMappingsInserted(this, GetTemplateEventArgs(template));
 		}
-		
-		
+
+
 		public void UndeleteModelMappings(IEnumerable<IModelMapping> modelMappings, Template template) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
 			foreach (IModelMapping modelMapping in modelMappings)
@@ -1359,7 +647,8 @@ namespace Dataweb.NShape.Advanced {
 			AssertOpen();
 			// First, delete all shapes with their connections
 			foreach (Shape s in diagram.Shapes)
-				DeleteShape(s);
+				DoDeleteShape(s);
+			if (ShapesDeleted != null) ShapesDeleted(this, GetShapesEventArgs(diagram.Shapes, diagram));
 			// Now we can delete the actual diagram
 			DeleteEntity<Diagram>(diagrams, newDiagrams, diagram);
 			//
@@ -1414,8 +703,6 @@ namespace Dataweb.NShape.Advanced {
 				|| ((IEntity)diagram).Id == null && !newDiagrams.ContainsKey(diagram))
 				throw new InvalidOperationException("Diagram not found in repository.");
 			DoInsertShape(shape, diagram);
-			foreach (Shape childShape in shape.Children.BottomUp)
-				DoInsertShape(childShape, shape);
 			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shape, diagram));
 		}
 
@@ -1444,7 +731,7 @@ namespace Dataweb.NShape.Advanced {
 			DoInsertShape(shape, owningTemplate);
 			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shape, null));
 		}
-		
+
 
 		/// <override></override>
 		public void InsertShapes(IEnumerable<Shape> shapes, Diagram diagram) {
@@ -1509,20 +796,13 @@ namespace Dataweb.NShape.Advanced {
 			DoUpdateShapeOwner(shape, parent);
 			if (ShapesUpdated != null) ShapesUpdated(this, GetShapesEventArgs(shape, null));
 		}
-		
+
 
 		/// <override></override>
 		public void DeleteShape(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			AssertOpen();
 			RepositoryShapesEventArgs e = GetShapesEventArgs(shape);
-			// --------------------------------------
-			// @@Kurt: Löschen der Kinder
-			if (shape.Children.Count > 0) {
-				foreach (Shape childShape in shape.Children)
-					DoDeleteShape(childShape);
-			}
-			// --------------------------------------
 			DoDeleteShape(shape);
 			if (ShapesDeleted != null) ShapesDeleted(this, e);
 		}
@@ -1552,6 +832,18 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
+		private void UndeleteShape(Shape shape, Template template) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			AssertOpen();
+			DoUndeleteShape(shape, template);
+			if (shape.Children.Count > 0) {
+				foreach (Shape childShape in shape.Children)
+					DoUndeleteShape(childShape, shape);
+			}
+		}
+
+
+		/// <override></override>
 		public void UndeleteShape(Shape shape, Shape parent) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			if (parent == null) throw new ArgumentNullException("parentShape");
@@ -1562,22 +854,22 @@ namespace Dataweb.NShape.Advanced {
 			DoUndeleteShape(shape, parent);
 			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shape, null));
 		}
-		
+
 
 		/// <override></override>
-		public void UndeleteShapes(IEnumerable<Shape> shapes, Diagram diagram){
+		public void UndeleteShapes(IEnumerable<Shape> shapes, Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			AssertOpen();
 			// ToDo: find a smarter way of inserting multiple objects
-			foreach (Shape shape in shapes) 
+			foreach (Shape shape in shapes)
 				DoUndeleteShape(shape, diagram);
 			if (ShapesInserted != null) ShapesInserted(this, GetShapesEventArgs(shapes, diagram));
 		}
 
 
 		/// <override></override>
-		public void UndeleteShapes(IEnumerable<Shape> shapes, Shape parent){
+		public void UndeleteShapes(IEnumerable<Shape> shapes, Shape parent) {
 			if (parent == null) throw new ArgumentNullException("parent");
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			AssertOpen();
@@ -1634,8 +926,9 @@ namespace Dataweb.NShape.Advanced {
 			connection.GluePointId = gluePointId;
 			connection.TargetShape = passiveShape;
 			connection.TargetPointId = connectionPointId;
-			newShapeConnections.Remove(connection);
-			deletedShapeConnections.Add(connection);
+			// If the deleted connection is not a new connection, add it to the list of deleted connections
+			if (!newShapeConnections.Remove(connection))
+				deletedShapeConnections.Add(connection);
 			isModified = true;
 		}
 
@@ -1678,17 +971,23 @@ namespace Dataweb.NShape.Advanced {
 			AssertOpen();
 			if (store != null && ((IEntity)settings).Id != null) {
 				if (parent == null) {
-					if (GetModel() != null && modelObjects.Count == 0)
+					if (models.Count == 0)
 						store.LoadModelModelObjects(this, GetModel().Id);
-				} else if (parent.Id != null) {
+				} else if (parent.Id != null)
 					store.LoadChildModelObjects(this, ((IEntity)parent).Id);
-				}
 			}
 			foreach (EntityBucket<IModelObject> mob in modelObjects) {
-				if (mob.ObjectRef.Parent == parent) yield return mob.ObjectRef;
+				if (mob.ObjectRef.Parent == parent) {
+					if ((parent != null) || (parent == null && mob.Owner is Model))
+						yield return mob.ObjectRef;
+				}
 			}
-			foreach (KeyValuePair<IModelObject, IEntity> item in newModelObjects)
-				if (item.Key.Parent == parent) yield return item.Key;
+			foreach (KeyValuePair<IModelObject, IEntity> item in newModelObjects) {
+				if (item.Key.Parent == parent) {
+					if ((parent != null) || (parent == null && item.Value is Model))
+						yield return item.Key;
+				}
+			}
 		}
 
 
@@ -1717,8 +1016,8 @@ namespace Dataweb.NShape.Advanced {
 			DoUpdateModelObjectParent(modelObject, parent);
 			if (ModelObjectsUpdated != null) ModelObjectsUpdated(this, GetModelObjectsEventArgs(modelObject));
 		}
-		
-		
+
+
 		public void UpdateModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			AssertOpen();
@@ -2013,8 +1312,8 @@ namespace Dataweb.NShape.Advanced {
 		IEnumerable<KeyValuePair<Model, IEntity>> IStoreCache.NewModels {
 			get { return newModels; }
 		}
-		
-		
+
+
 		ICacheCollection<Design> IStoreCache.LoadedDesigns {
 			get { return designs; }
 		}
@@ -2128,11 +1427,11 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Calculates an XML tag projectName for the given entity projectName.
+		/// Calculates an XML tag name for the given entity name.
 		/// </summary>
 		/// <param name="elementTag"></param>
 		/// <returns></returns>
-		static protected string CalcElementName(string entityName) {
+		static private string CalcElementName(string entityName) {
 			string result;
 			// We remove the prefixes Core. and GeneralShapes.
 			if (entityName.StartsWith("Core.")) result = entityName.Substring(5);
@@ -2166,7 +1465,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="id"></param>
 		/// <returns></returns>
-		protected IStyle GetProjectStyle(object id) {
+		private IStyle GetProjectStyle(object id) {
 			EntityBucket<IStyle> styleItem;
 			if (!styles.TryGetValue(id, out styleItem))
 				throw new NShapeException("Style with id '{0}' does not exist.", id);
@@ -2182,14 +1481,14 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="newEntities"></param>
 		/// <param name="entity"></param>
 		/// <param name="owner"></param>
-		protected void InsertEntity<TEntity>(Dictionary<TEntity, IEntity> newEntities, 
+		private void InsertEntity<TEntity>(Dictionary<TEntity, IEntity> newEntities,
 			TEntity entity, IEntity owner) where TEntity : IEntity {
 			if (entity.Id != null)
 				throw new ArgumentException("Entities with an id cannot be inserted into the repository.");
 			newEntities.Add(entity, owner);
 			isModified = true;
 		}
-		
+
 
 		/// <summary>
 		/// Updates an entity in the internal cache and marks it as modified.
@@ -2198,7 +1497,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="loadedEntities"></param>
 		/// <param name="newEntities"></param>
 		/// <param name="entity"></param>
-		protected void UpdateEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
+		private void UpdateEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
 				if (!newEntities.ContainsKey(entity))
@@ -2207,6 +1506,7 @@ namespace Dataweb.NShape.Advanced {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
 					throw new NShapeException("Entity not found in repository.");
+				if (item.State == ItemState.Deleted) throw new NShapeException("Entity was deleted before. Undelete the entity before modifying it.");
 				item.State = ItemState.Modified;
 			}
 			isModified = true;
@@ -2221,7 +1521,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="loadedEntities"></param>
 		/// <param name="newEntities"></param>
 		/// <param name="entity"></param>
-		protected void DeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
+		private void DeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
 				if (!newEntities.ContainsKey(entity))
@@ -2231,26 +1531,28 @@ namespace Dataweb.NShape.Advanced {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
 					throw new NShapeException("Entity not found in repository.");
+				if (item.State == ItemState.Deleted) throw new NShapeException("Entity is already deleted.");
 				item.State = ItemState.Deleted;
 			}
 			isModified = true;
 		}
 
 
-		protected void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
+		private void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) throw new NShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
 			else {
 				EntityBucket<TEntity> item;
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
 					throw new NShapeException("Entity not found in repository.");
+				if (item.State != ItemState.Deleted) throw new NShapeException("Entity was not deleted before. Onlydeleted entities can be undeleted.");
 				item.State = ItemState.Modified;
 			}
 			isModified = true;
 		}
 
 
-		protected void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
+		private void UndeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			TEntity entity, IEntity owner) where TEntity : IEntity {
 			if (entity.Id == null) throw new NShapeException(string.Format("An entity without id cannot be undeleted.", entity.Id));
 			else {
@@ -2258,6 +1560,7 @@ namespace Dataweb.NShape.Advanced {
 				if (!loadedEntities.TryGetValue(entity.Id, out item))
 					loadedEntities.Add(entity.Id, new EntityBucket<TEntity>(entity, owner, ItemState.New));
 				else {
+					if (item.State != ItemState.Deleted) throw new NShapeException("Entity was not deleted before. Onlydeleted entities can be undeleted.");
 					item.State = ItemState.Modified;
 					Debug.Assert(item.Owner == owner);
 				}
@@ -2266,7 +1569,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected void AcceptEntities<EntityType>(Dictionary<object, EntityBucket<EntityType>> loadedEntities,
+		private void AcceptEntities<EntityType>(Dictionary<object, EntityBucket<EntityType>> loadedEntities,
 			Dictionary<EntityType, IEntity> newEntities) where EntityType : IEntity {
 			// Remove deleted entities from loaded Entities
 			List<object> deletedEntities = new List<object>(100);
@@ -2277,11 +1580,13 @@ namespace Dataweb.NShape.Advanced {
 				loadedEntities.Remove(id);
 			deletedEntities.Clear();
 			deletedEntities = null;
-			
+
 			// Mark modified entities as original
 			foreach (KeyValuePair<object, EntityBucket<EntityType>> item in loadedEntities) {
-				if (item.Value.State != ItemState.Original)
+				if (item.Value.State != ItemState.Original) {
+					Debug.Assert(loadedEntities[item.Key].State != ItemState.Deleted);
 					loadedEntities[item.Key].State = ItemState.Original;
+				}
 			}
 
 			// Move new entities from newEntities to loadedEntities
@@ -2293,7 +1598,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected void AcceptAll() {
+		private void AcceptAll() {
 			AcceptEntities<ProjectSettings>(projects, newProjects);
 			AcceptEntities<Design>(designs, newDesigns);
 			AcceptEntities<IStyle>(styles, newStyles);
@@ -2313,8 +1618,8 @@ namespace Dataweb.NShape.Advanced {
 		/// Defines a dictionary for loaded entity types.
 		/// </summary>
 		/// <typeparam projectName="TEntity"></typeparam>
-		protected class LoadedEntities<TEntity> : Dictionary<object, EntityBucket<TEntity>>, 
-			ICacheCollection<TEntity> where TEntity: IEntity {
+		private class LoadedEntities<TEntity> : Dictionary<object, EntityBucket<TEntity>>,
+			ICacheCollection<TEntity> where TEntity : IEntity {
 
 			#region ICacheCollection<TEntity> Members
 
@@ -2348,7 +1653,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected void DoInsertDesign(Design design, ProjectSettings projectData) {
+		private void DoInsertDesign(Design design, ProjectSettings projectData) {
 			InsertEntity<Design>(newDesigns, design, projectData);
 			IStyleSet styleSet = (IStyleSet)design;
 			foreach (IStyle style in styleSet.ColorStyles)
@@ -2369,7 +1674,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		#region ProjectOwner 
+		#region ProjectOwner
 
 		/// <summary>
 		/// Serves as a parent entity for the project info.
@@ -2413,11 +1718,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 		#endregion
-		
+
 
 		#region Implementation
 
-		protected void ClearBuffers() {
+		private void ClearBuffers() {
 			projectDesign = null;
 
 			newProjects.Clear();
@@ -2442,7 +1747,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected IEntityType FindEntityType(string entityTypeName, bool mustExist) {
+		private IEntityType FindEntityType(string entityTypeName, bool mustExist) {
 			IEntityType result;
 			entityTypes.TryGetValue(CalcElementName(entityTypeName), out result);
 			if (mustExist && result == null)
@@ -2451,8 +1756,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected IEnumerable<TEntity> GetCachedEntities<TEntity>(LoadedEntities<TEntity> loadedEntities, 
-			IDictionary<TEntity, IEntity> newEntities) where TEntity: IEntity {
+		private IEnumerable<TEntity> GetCachedEntities<TEntity>(LoadedEntities<TEntity> loadedEntities,
+			IDictionary<TEntity, IEntity> newEntities) where TEntity : IEntity {
 			foreach (EntityBucket<TEntity> eb in loadedEntities)
 				yield return eb.ObjectRef;
 			foreach (KeyValuePair<TEntity, IEntity> item in newEntities)
@@ -2460,18 +1765,18 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected void AssertOpen() {
+		private void AssertOpen() {
 			if (!isOpen) throw new NShapeException("Repository is not open.");
 			Debug.Assert(settings != null && projectDesign != null);
 		}
 
 
-		protected void AssertClosed() {
+		private void AssertClosed() {
 			if (isOpen) throw new NShapeException("Repository is already open.");
 		}
 
 
-		protected void AssertStoreExists() {
+		private void AssertStoreExists() {
 			if (store == null) throw new NShapeException("There is no store component connected to the repository.");
 		}
 
@@ -2479,9 +1784,19 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Tests the invariants of the offline cache object.
 		/// </summary>
-		protected void AssertValid() {
+		private void AssertValid() {
 			// project projectData are defined for an open project.
 			Debug.Assert(!isOpen || GetProject() != null);
+		}
+
+
+		private bool CanUndelete<TEntity>(TEntity entity, LoadedEntities<TEntity> loadedEntities) where TEntity : IEntity {
+			if (entity == null) throw new ArgumentNullException("entity");
+			if (loadedEntities == null) throw new ArgumentNullException("loadedEntities");
+			EntityBucket<TEntity> item = null;
+			if (entity.Id != null && loadedEntities.TryGetValue(entity.Id, out item)) {
+				return (item.State == ItemState.Deleted);
+			} else return false;
 		}
 
 
@@ -2512,20 +1827,30 @@ namespace Dataweb.NShape.Advanced {
 				Debug.Assert(newModelMappings[modelMapping] is Template);
 				owner = (Template)newModelMappings[modelMapping];
 			} else {
-				Debug.Assert(newModelMappings[modelMapping] is Template);
+				Debug.Assert(modelMappings[modelMapping.Id].Owner is Template);
 				owner = (Template)modelMappings[modelMapping.Id].Owner;
 			}
 			return owner;
 		}
-		
-		
+
+
 		private void DoInsertShape(Shape shape, IEntity parentEntity) {
 			InsertEntity<Shape>(newShapes, shape, parentEntity);
+			foreach (Shape childShape in shape.Children.BottomUp)
+				DoInsertShape(childShape, shape);
 		}
 
 
 		private void DoUpdateShape(Shape shape) {
 			UpdateEntity<Shape>(shapes, newShapes, shape);
+			if (shape.Children.Count > 0) {
+				foreach (Shape childShape in shape.Children) {
+					if ((((IEntity)childShape).Id != null && shapes.Contains(((IEntity)childShape).Id)) 
+						|| newShapes.ContainsKey(childShape))
+						DoUpdateShape(childShape);
+					else DoInsertShape(childShape, shape);
+				}
+			}
 		}
 
 
@@ -2541,10 +1866,18 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private void DoDeleteShape(Shape shape) {
-			// We must delete the shape's connections first
-			foreach (ShapeConnectionInfo sci in shape.GetConnectionInfos(ControlPointId.Any, null))
+			// Delete the shape's children
+			if (shape.Children.Count > 0) {
+				foreach (Shape childShape in shape.Children)
+					DoDeleteShape(childShape);
+			}
+			// Delete the shape's connections
+			foreach (ShapeConnectionInfo sci in shape.GetConnectionInfos(ControlPointId.Any, null)) {
 				if (shape.HasControlPointCapability(sci.OwnPointId, ControlPointCapabilities.Glue))
 					DeleteShapeConnection(shape, sci.OwnPointId, sci.OtherShape, sci.OtherPointId);
+				else DeleteShapeConnection(sci.OtherShape, sci.OtherPointId, shape, sci.OwnPointId);
+			}
+			// Delete the shape itself
 			DeleteEntity<Shape>(shapes, newShapes, shape);
 		}
 
@@ -2558,6 +1891,21 @@ namespace Dataweb.NShape.Advanced {
 			IEntity owner;
 			if (modelObject.Parent != null) owner = modelObject.Parent;
 			else owner = GetModel();
+			DoInsertModelObject(modelObject, owner);
+		}
+
+
+		private void InsertModelObject(IModelObject modelObject, Template template) {
+			if (modelObject == null) throw new ArgumentNullException("modelObject");
+			if (template == null) throw new ArgumentNullException("template");
+			AssertOpen();
+			RepositoryModelObjectsEventArgs e = GetModelObjectsEventArgs(modelObject);
+			DoInsertModelObject(modelObject, template);
+			if (ModelObjectsInserted != null) ModelObjectsInserted(this, e);
+		}
+
+
+		private void DoInsertModelObject(IModelObject modelObject, IEntity owner) {
 			InsertEntity<IModelObject>(newModelObjects, modelObject, owner);
 		}
 
@@ -2565,7 +1913,7 @@ namespace Dataweb.NShape.Advanced {
 		private void DoUpdateModelObjectParent(IModelObject modelObject, IModelObject parent) {
 			if (((IEntity)modelObject).Id == null) {
 				newModelObjects.Remove(modelObject);
-				if (parent == null) 
+				if (parent == null)
 					newModelObjects.Add(modelObject, GetModel());
 				else newModelObjects.Add(modelObject, parent);
 			} else {
@@ -2576,8 +1924,8 @@ namespace Dataweb.NShape.Advanced {
 				modelObjects[((IEntity)modelObject).Id].State = ItemState.OwnerChanged;
 			}
 		}
-		
-		
+
+
 		private void DoUpdateModelObject(IModelObject modelObject) {
 			UpdateEntity<IModelObject>(modelObjects, newModelObjects, modelObject);
 		}
@@ -2610,43 +1958,43 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Methods for retrieving EventArgs
 
-		protected RepositoryProjectEventArgs GetProjectEventArgs(ProjectSettings projectData) {
+		private RepositoryProjectEventArgs GetProjectEventArgs(ProjectSettings projectData) {
 			projectEventArgs.Project = projectData;
 			return projectEventArgs;
 		}
 
 
-		protected RepositoryModelEventArgs GetModelEventArgs(Model model) {
+		private RepositoryModelEventArgs GetModelEventArgs(Model model) {
 			modelEventArgs.Model = model;
 			return modelEventArgs;
 		}
-		
-		
-		protected RepositoryDesignEventArgs GetDesignEventArgs(Design design) {
+
+
+		private RepositoryDesignEventArgs GetDesignEventArgs(Design design) {
 			designEventArgs.Design = design;
 			return designEventArgs;
 		}
 
 
-		protected RepositoryStyleEventArgs GetStyleEventArgs(IStyle style) {
+		private RepositoryStyleEventArgs GetStyleEventArgs(IStyle style) {
 			styleEventArgs.Style = style;
 			return styleEventArgs;
 		}
-		
-		
-		protected RepositoryDiagramEventArgs GetDiagramEventArgs(Diagram diagram) {
+
+
+		private RepositoryDiagramEventArgs GetDiagramEventArgs(Diagram diagram) {
 			diagramEventArgs.Diagram = diagram;
 			return diagramEventArgs;
 		}
 
 
-		protected RepositoryTemplateEventArgs GetTemplateEventArgs(Template template) {
+		private RepositoryTemplateEventArgs GetTemplateEventArgs(Template template) {
 			templateEventArgs.Template = template;
 			return templateEventArgs;
 		}
 
 
-		protected RepositoryTemplateShapeReplacedEventArgs GetTemplateShapeExchangedEventArgs(Template template, Shape oldTemplateShape, Shape newTemplateShape) {
+		private RepositoryTemplateShapeReplacedEventArgs GetTemplateShapeExchangedEventArgs(Template template, Shape oldTemplateShape, Shape newTemplateShape) {
 			templateShapeExchangedEventArgs.Template = template;
 			templateShapeExchangedEventArgs.OldTemplateShape = oldTemplateShape;
 			templateShapeExchangedEventArgs.NewTemplateShape = newTemplateShape;
@@ -2654,7 +2002,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected RepositoryShapesEventArgs GetShapesEventArgs(Shape shape) {
+		private RepositoryShapesEventArgs GetShapesEventArgs(Shape shape) {
 			Diagram diagram;
 			if (((IEntity)shape).Id == null)
 				diagram = newShapes[shape] as Diagram;
@@ -2662,21 +2010,21 @@ namespace Dataweb.NShape.Advanced {
 			shapeEventArgs.SetShape(shape, diagram);
 			return shapeEventArgs;
 		}
-		
-		
-		protected RepositoryShapesEventArgs GetShapesEventArgs(Shape shape, Diagram diagram) {
+
+
+		private RepositoryShapesEventArgs GetShapesEventArgs(Shape shape, Diagram diagram) {
 			shapeEventArgs.SetShape(shape, diagram);
 			return shapeEventArgs;
 		}
 
 
-		protected RepositoryShapesEventArgs GetShapesEventArgs(IEnumerable<Shape> shapes, Diagram diagram) {
+		private RepositoryShapesEventArgs GetShapesEventArgs(IEnumerable<Shape> shapes, Diagram diagram) {
 			shapeEventArgs.SetShapes(shapes, diagram);
 			return shapeEventArgs;
 		}
 
 
-		protected RepositoryShapesEventArgs GetShapesEventArgs(IEnumerable<Shape> shapes) {
+		private RepositoryShapesEventArgs GetShapesEventArgs(IEnumerable<Shape> shapes) {
 			shapeEventArgs.Clear();
 			foreach (Shape shape in shapes) {
 				Diagram diagram = null;
@@ -2691,13 +2039,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected RepositoryModelObjectsEventArgs GetModelObjectsEventArgs(IModelObject modelObject) {
+		private RepositoryModelObjectsEventArgs GetModelObjectsEventArgs(IModelObject modelObject) {
 			modelObjectEventArgs.SetModelObject(modelObject);
 			return modelObjectEventArgs;
 		}
 
 
-		protected RepositoryModelObjectsEventArgs GetModelObjectsEventArgs(IEnumerable<IModelObject> modelObjects) {
+		private RepositoryModelObjectsEventArgs GetModelObjectsEventArgs(IEnumerable<IModelObject> modelObjects) {
 			modelObjectEventArgs.SetModelObjects(modelObjects);
 			return modelObjectEventArgs;
 		}
@@ -2708,90 +2056,876 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
-		// project info is an internal entity type
-		protected const string projectInfoEntityTypeName = "ProjectInfo";
-
 		// Used to calculate the element entityTypeName
 		static private StringBuilder stringBuilder = new StringBuilder();
+
+		// project info is an internal entity type
+		private const string projectInfoEntityTypeName = "ProjectInfo";
+
+		/// <summary>
+		/// True, when modfications have been done to any part of the projects since
+		/// Open or SaveChanges. 
+		/// </summary>
+		private bool isModified;
 
 		// True, when Open was successfully called. Is identical to store.IsOpen if store 
 		// is defined.
 		private bool isOpen;
 
 		/// <summary>
-		/// True, when modfications have been done to any part of the projects since
-		/// Open or SaveChanges. 
-		/// </summary>
-		protected bool isModified;
-
-		/// <summary>
 		/// Reference to the open project for easier access.
 		/// </summary>
-		protected ProjectSettings settings;
+		private ProjectSettings settings;
 
 		/// <summary>
 		/// Indicates the pseudo design used to manage the styles of the project.
 		/// This design is not entered in the designs or newDesigns dictionaries.
 		/// </summary>
-		protected Design projectDesign;
+		private Design projectDesign;
 
 		private int version;
 
 		// Name of the project
-		private string projectName = null;
+		private string projectName = string.Empty;
 
 		// Store for cache data. Is null, if no store is assigned to open
 		// cache, i.e. the cache is in-memory.
 		private Store store;
 
+		// project needs an owner for the newProjects dictionary
+		private ProjectOwner projectOwner = new ProjectOwner();
+
 		// DirectoryName of registered entities
-		protected Dictionary<string, IEntityType> entityTypes = new Dictionary<string, IEntityType>();
+		private Dictionary<string, IEntityType> entityTypes = new Dictionary<string, IEntityType>();
 
 		// Containers for loaded objects
-		// TODO 2: Try to make private
-		protected LoadedEntities<ProjectSettings> projects = new LoadedEntities<ProjectSettings>();
-		protected LoadedEntities<Model> models = new LoadedEntities<Model>();
-		protected LoadedEntities<Design> designs = new LoadedEntities<Design>();
-		protected LoadedEntities<IStyle> styles = new LoadedEntities<IStyle>();
-		protected LoadedEntities<Diagram> diagrams = new LoadedEntities<Diagram>();
-		protected LoadedEntities<Template> templates = new LoadedEntities<Template>();
-		protected LoadedEntities<IModelMapping> modelMappings = new LoadedEntities<IModelMapping>();
-		protected LoadedEntities<Shape> shapes = new LoadedEntities<Shape>();
-		protected LoadedEntities<IModelObject> modelObjects = new LoadedEntities<IModelObject>();
-
-		// TODO 2: Try to make private
-		protected List<ShapeConnection> newShapeConnections = new List<ShapeConnection>();
-		protected List<ShapeConnection> deletedShapeConnections = new List<ShapeConnection>();
+		private LoadedEntities<ProjectSettings> projects = new LoadedEntities<ProjectSettings>();
+		private LoadedEntities<Model> models = new LoadedEntities<Model>();
+		private LoadedEntities<Design> designs = new LoadedEntities<Design>();
+		private LoadedEntities<IStyle> styles = new LoadedEntities<IStyle>();
+		private LoadedEntities<Diagram> diagrams = new LoadedEntities<Diagram>();
+		private LoadedEntities<Template> templates = new LoadedEntities<Template>();
+		private LoadedEntities<IModelMapping> modelMappings = new LoadedEntities<IModelMapping>();
+		private LoadedEntities<Shape> shapes = new LoadedEntities<Shape>();
+		private LoadedEntities<IModelObject> modelObjects = new LoadedEntities<IModelObject>();
+		private List<ShapeConnection> newShapeConnections = new List<ShapeConnection>();
+		private List<ShapeConnection> deletedShapeConnections = new List<ShapeConnection>();
 
 		// Containers for new entities
 		// Stores the new entity as the key and its parent as the value.
 		// (New objects do not yet have an id and are therefore not addressable in the dictionary.)
-		// TODO 2: Try to make private
-		protected Dictionary<ProjectSettings, IEntity> newProjects = new Dictionary<ProjectSettings, IEntity>();
-		protected Dictionary<Model, IEntity> newModels = new Dictionary<Model, IEntity>();
-		protected Dictionary<Design, IEntity> newDesigns = new Dictionary<Design, IEntity>();
-		protected Dictionary<IStyle, IEntity> newStyles = new Dictionary<IStyle, IEntity>();
-		protected Dictionary<Diagram, IEntity> newDiagrams = new Dictionary<Diagram, IEntity>();
-		protected Dictionary<Template, IEntity> newTemplates = new Dictionary<Template, IEntity>();
-		protected Dictionary<IModelMapping, IEntity> newModelMappings = new Dictionary<IModelMapping, IEntity>();
-		protected Dictionary<Shape, IEntity> newShapes = new Dictionary<Shape, IEntity>();
-		protected Dictionary<IModelObject, IEntity> newModelObjects = new Dictionary<IModelObject, IEntity>();
+		private Dictionary<ProjectSettings, IEntity> newProjects = new Dictionary<ProjectSettings, IEntity>();
+		private Dictionary<Model, IEntity> newModels = new Dictionary<Model, IEntity>();
+		private Dictionary<Design, IEntity> newDesigns = new Dictionary<Design, IEntity>();
+		private Dictionary<IStyle, IEntity> newStyles = new Dictionary<IStyle, IEntity>();
+		private Dictionary<Diagram, IEntity> newDiagrams = new Dictionary<Diagram, IEntity>();
+		private Dictionary<Template, IEntity> newTemplates = new Dictionary<Template, IEntity>();
+		private Dictionary<IModelMapping, IEntity> newModelMappings = new Dictionary<IModelMapping, IEntity>();
+		private Dictionary<Shape, IEntity> newShapes = new Dictionary<Shape, IEntity>();
+		private Dictionary<IModelObject, IEntity> newModelObjects = new Dictionary<IModelObject, IEntity>();
 
 		// EventArg Buffers
-		protected RepositoryProjectEventArgs projectEventArgs = new RepositoryProjectEventArgs();
-		protected RepositoryModelEventArgs modelEventArgs = new RepositoryModelEventArgs();
-		protected RepositoryDesignEventArgs designEventArgs = new RepositoryDesignEventArgs();
-		protected RepositoryStyleEventArgs styleEventArgs = new RepositoryStyleEventArgs();
-		protected RepositoryDiagramEventArgs diagramEventArgs = new RepositoryDiagramEventArgs();
-		protected RepositoryTemplateEventArgs templateEventArgs = new RepositoryTemplateEventArgs();
-		protected RepositoryTemplateShapeReplacedEventArgs templateShapeExchangedEventArgs = new RepositoryTemplateShapeReplacedEventArgs();
-		protected RepositoryShapesEventArgs shapeEventArgs = new RepositoryShapesEventArgs();
-		protected RepositoryModelObjectsEventArgs modelObjectEventArgs = new RepositoryModelObjectsEventArgs();
-
-		// project needs an owner for the newProjects dictionary
-		protected ProjectOwner projectOwner = new ProjectOwner();
+		private RepositoryProjectEventArgs projectEventArgs = new RepositoryProjectEventArgs();
+		private RepositoryModelEventArgs modelEventArgs = new RepositoryModelEventArgs();
+		private RepositoryDesignEventArgs designEventArgs = new RepositoryDesignEventArgs();
+		private RepositoryStyleEventArgs styleEventArgs = new RepositoryStyleEventArgs();
+		private RepositoryDiagramEventArgs diagramEventArgs = new RepositoryDiagramEventArgs();
+		private RepositoryTemplateEventArgs templateEventArgs = new RepositoryTemplateEventArgs();
+		private RepositoryTemplateShapeReplacedEventArgs templateShapeExchangedEventArgs = new RepositoryTemplateShapeReplacedEventArgs();
+		private RepositoryShapesEventArgs shapeEventArgs = new RepositoryShapesEventArgs();
+		private RepositoryModelObjectsEventArgs modelObjectEventArgs = new RepositoryModelObjectsEventArgs();
 
 		#endregion
 	}
+
+
+	#region EntityBucket<TObject> Class
+
+	public enum ItemState { Original, Modified, OwnerChanged, Deleted, New };
+
+	/// <summary>
+	/// Stores a reference to a loaded object together with its state.
+	/// </summary>
+	/// <typeparam projectName="Type">Type of the object to store</typeparam>
+	// EntityBucket is a reference type, because it is entered into dictionaries.
+	// Modifying a field of a value type in a dictionary is not possible during
+	// an enumeration, but we have to modify at least the State.
+	public class EntityBucket<TObject> {
+
+		public EntityBucket(TObject obj, IEntity owner, ItemState state) {
+			this.ObjectRef = obj;
+			this.Owner = owner;
+			this.State = state;
+		}
+
+		public TObject ObjectRef;
+		public IEntity Owner;
+		public ItemState State;
+	}
+
+	#endregion
+
+
+	#region ShapeConnection Struct
+
+	public struct ShapeConnection {
+
+		public static bool operator ==(ShapeConnection x, ShapeConnection y) {
+			return (
+				x.ConnectorShape == y.ConnectorShape
+				&& x.TargetShape == y.TargetShape
+				&& x.GluePointId == y.GluePointId
+				&& x.TargetPointId == y.TargetPointId);
+		}
+
+
+		public static bool operator !=(ShapeConnection x, ShapeConnection y) { return !(x == y); }
+
+
+		public ShapeConnection(Diagram diagram, Shape connectorShape, ControlPointId gluePointId, Shape targetShape, ControlPointId targetPointId) {
+			this.ConnectorShape = connectorShape;
+			this.GluePointId = gluePointId;
+			this.TargetShape = targetShape;
+			this.TargetPointId = targetPointId;
+		}
+
+
+		public override bool Equals(object obj) {
+			return obj is ShapeConnection && this == (ShapeConnection)obj;
+		}
+
+
+		public override int GetHashCode() {
+			int result = GluePointId.GetHashCode() ^ TargetPointId.GetHashCode();
+			if (ConnectorShape != null) result ^= ConnectorShape.GetHashCode();
+			if (TargetShape != null) result ^= TargetShape.GetHashCode();
+			return result;
+		}
+
+
+		public static readonly ShapeConnection Empty;
+
+		public Shape ConnectorShape;
+		public ControlPointId GluePointId;
+		public Shape TargetShape;
+		public ControlPointId TargetPointId;
+
+
+		static ShapeConnection() {
+			Empty.ConnectorShape = null;
+			Empty.GluePointId = ControlPointId.None;
+			Empty.TargetShape = null;
+			Empty.TargetPointId = ControlPointId.None;
+		}
+	}
+
+	#endregion
+
+
+	#region Delegates
+
+	/// <summary>
+	/// Defines a filter function for the loading methods.
+	/// </summary>
+	/// <typeparam projectName="TEntity"></typeparam>
+	/// <param name="entity"></param>
+	/// <param name="owner"></param>
+	/// <returns></returns>
+	public delegate bool FilterDelegate<TEntity>(TEntity entity, IEntity owner);
+
+
+	/// <summary>
+	/// Retrieves the entity with the given id.
+	/// </summary>
+	/// <param name="pid"></param>
+	/// <returns></returns>
+	public delegate IEntity Resolver(object pid);
+
+	#endregion
+
+
+	#region RepositoryReader Class
+
+	/// <summary>
+	/// Cache reader for the cached cache.
+	/// </summary>
+	public abstract class RepositoryReader : IRepositoryReader, IDisposable {
+
+		protected RepositoryReader(IStoreCache cache) {
+			if (cache == null) throw new ArgumentNullException("cache");
+			this.cache = cache;
+		}
+
+
+		#region IRepositoryReader Members
+
+		public abstract void BeginReadInnerObjects();
+
+
+		public abstract void EndReadInnerObjects();
+
+
+		public bool BeginReadInnerObject() {
+			if (innerObjectsReader == null)
+				return DoBeginObject();
+			else return innerObjectsReader.BeginReadInnerObject();
+		}
+
+
+		public abstract void EndReadInnerObject();
+
+
+		public bool ReadBool() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadBool();
+			} else return innerObjectsReader.ReadBool();
+		}
+
+
+		public byte ReadByte() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadByte();
+			} else return innerObjectsReader.ReadByte();
+		}
+
+
+		public short ReadInt16() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadInt16();
+			} else return innerObjectsReader.ReadInt16();
+		}
+
+
+		public int ReadInt32() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadInt32();
+			} else return innerObjectsReader.ReadInt32();
+		}
+
+
+		public long ReadInt64() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadInt64();
+			} else return innerObjectsReader.ReadInt64();
+		}
+
+
+		public float ReadFloat() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadFloat();
+			} else return innerObjectsReader.ReadFloat();
+		}
+
+
+		public double ReadDouble() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadDouble();
+			} else return innerObjectsReader.ReadDouble();
+		}
+
+
+		public char ReadChar() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadChar();
+			} else return innerObjectsReader.ReadChar();
+		}
+
+
+		public string ReadString() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadString();
+			} else return innerObjectsReader.ReadString();
+		}
+
+
+		public DateTime ReadDate() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadDate();
+			} else return innerObjectsReader.ReadDate();
+		}
+
+
+		public System.Drawing.Image ReadImage() {
+			if (innerObjectsReader == null) {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				return DoReadImage();
+			} else return innerObjectsReader.ReadImage();
+		}
+
+
+		public Template ReadTemplate() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetTemplate(id);
+		}
+
+
+		public Shape ReadShape() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetShape(id);
+		}
+
+
+		public IModelObject ReadModelObject() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetModelObject(id);
+		}
+
+
+		public Design ReadDesign() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetDesign(id);
+		}
+
+
+		public ICapStyle ReadCapStyle() {
+			if (innerObjectsReader == null) {
+				object id = ReadId();
+				if (id == null) return null;
+				return (ICapStyle)cache.GetProjectStyle(id);
+			} else return innerObjectsReader.ReadCapStyle();
+		}
+
+
+		public ICharacterStyle ReadCharacterStyle() {
+			if (innerObjectsReader == null) {
+			object id = ReadId();
+			if (id == null) return null;
+			return (ICharacterStyle)cache.GetProjectStyle(id);
+			} else return innerObjectsReader.ReadCharacterStyle();
+		}
+
+
+		public IColorStyle ReadColorStyle() {
+			if (innerObjectsReader == null) {
+			object id = ReadId();
+			if (id == null) return null;
+			return (IColorStyle)cache.GetProjectStyle(id);
+			} else return innerObjectsReader.ReadColorStyle();
+		}
+
+
+		public IFillStyle ReadFillStyle() {
+			if (innerObjectsReader == null) {
+			object id = ReadId();
+			if (id == null) return null;
+			return (IFillStyle)cache.GetProjectStyle(id);
+			} else return innerObjectsReader.ReadFillStyle();
+		}
+
+
+		public ILineStyle ReadLineStyle() {
+			if (innerObjectsReader == null) {
+			object id = ReadId();
+			if (id == null) return null;
+			IStyle style = cache.GetProjectStyle(id);
+			Debug.Assert(style is ILineStyle, string.Format("Style {0} is not a line style.", id));
+			return (ILineStyle)style;
+			} else return innerObjectsReader.ReadLineStyle();
+		}
+
+
+		public IParagraphStyle ReadParagraphStyle() {
+			if (innerObjectsReader == null) {
+			object id = ReadId();
+			if (id == null) return null;
+			return (IParagraphStyle)cache.GetProjectStyle(id);
+			} else return innerObjectsReader.ReadParagraphStyle();
+		}
+
+
+		//public IShapeStyle ReadShapeStyle() {
+		//   if (innerObjectsReader == null) {
+		//      object id = ReadId();
+		//      if (id == null) return null;
+		//      return (IShapeStyle)cache.GetProjectStyle(id);
+		//   } else return innerObjectsReader.ReadShapeStyle();
+		//}
+
+		#endregion
+
+
+		#region IDisposable Members
+
+		public void Dispose() {
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		#endregion
+
+
+		#region Implementation
+
+		// Resets the repositoryReader for a sequence of reads of entities of the same type.
+		internal virtual void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos) {
+			if (propertyInfos == null) throw new ArgumentNullException("propertyInfos");
+			this.propertyInfos.Clear();
+			this.propertyInfos.AddRange(propertyInfos);
+			propertyIndex = int.MinValue;
+		}
+
+
+		/// <summary>
+		/// Advances to the next object and prepares reading it.
+		/// </summary>
+		protected internal abstract bool DoBeginObject();
+
+		/// <summary>
+		/// Finishes reading an object.
+		/// </summary>
+		protected internal abstract void DoEndObject();
+
+
+		// Reads an id or null, if no id exists.
+		protected internal abstract object ReadId();
+
+		/// <summary>
+		/// Indicates the current index in the list of property infos of the entity type.
+		/// </summary>
+		protected internal int PropertyIndex {
+			get { return propertyIndex; }
+			set { propertyIndex = value; }
+		}
+
+
+		protected IStoreCache Cache {
+			get { return cache; }
+		}
+
+
+		protected IEnumerable<EntityPropertyDefinition> PropertyInfos {
+			get { return propertyInfos; }
+		}
+
+
+		protected IEntity Object {
+			get { return entity; }
+			set { entity = value; }
+		}
+
+
+		protected abstract bool DoReadBool();
+
+
+		protected abstract byte DoReadByte();
+
+
+		protected abstract short DoReadInt16();
+
+
+		protected abstract int DoReadInt32();
+
+
+		protected abstract long DoReadInt64();
+
+
+		protected abstract float DoReadFloat();
+
+
+		protected abstract double DoReadDouble();
+
+
+		protected abstract char DoReadChar();
+
+
+		protected abstract string DoReadString();
+
+
+		protected abstract DateTime DoReadDate();
+
+
+		protected abstract System.Drawing.Image DoReadImage();
+
+
+		protected Template DoReadTemplate() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetTemplate(id);
+		}
+
+
+		protected Shape DoReadShape() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetShape(id);
+		}
+
+
+		protected IModelObject DoReadModelObject() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetModelObject(id);
+		}
+
+
+		protected Design DoReadDesign() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return Cache.GetDesign(id);
+		}
+
+
+		protected ICapStyle DoReadCapStyle() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return (ICapStyle)cache.GetProjectStyle(id);
+		}
+
+
+		protected ICharacterStyle DoReadCharacterStyle() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return (ICharacterStyle)cache.GetProjectStyle(id);
+		}
+
+
+		protected IColorStyle DoReadColorStyle() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return (IColorStyle)cache.GetProjectStyle(id);
+		}
+
+
+		protected IFillStyle DoReadFillStyle() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return (IFillStyle)cache.GetProjectStyle(id);
+		}
+
+
+		protected ILineStyle DoReadLineStyle() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return (ILineStyle)cache.GetProjectStyle(id);
+		}
+
+
+		protected IParagraphStyle DoReadParagraphStyle() {
+			object id = ReadId();
+			if (id == null) return null;
+			else return (IParagraphStyle)cache.GetProjectStyle(id);
+		}
+
+
+		//protected IShapeStyle DoReadShapeStyle() {
+		//   object id = ReadId();
+		//   if (id == null) return null;
+		//   else return (IShapeStyle)cache.GetProjectStyle(id);
+		//}
+
+
+		/// <summary>
+		/// Checks whether the current property index refers to a valid entity field.
+		/// </summary>
+		protected virtual void ValidatePropertyIndex() {
+			// We cannot check propertyIndex < 0 because some readers use PropertyIndex == -1 for the id.
+			if (propertyIndex >= propertyInfos.Count)
+				throw new NShapeException("An entity tries to read more properties from the repository than there are defined.");
+		}
+
+
+		protected virtual void Dispose(bool disposing) {
+			// Nothing to do
+		}
+
+		#endregion
+
+
+		#region Fields
+
+		private IStoreCache cache;
+		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
+		private int propertyIndex;
+		protected RepositoryReader innerObjectsReader;
+		// used for loading innerObjects
+		private IEntity entity;
+
+		#endregion
+	}
+
+	#endregion
+
+
+	#region RepositoryWriter Class
+
+	/// <summary>
+	/// Offline RepositoryWriter
+	/// </summary>
+	public abstract class RepositoryWriter : IRepositoryWriter {
+
+		protected RepositoryWriter(IStoreCache cache) {
+			if (cache == null) throw new ArgumentNullException("cache");
+			this.cache = cache;
+		}
+
+
+		#region IRepositoryWriter Members
+
+		public void WriteId(object id) {
+			if (innerObjectsWriter == null) DoWriteId(id);
+			else innerObjectsWriter.WriteId(id);
+		}
+
+
+		public void WriteBool(bool value) {
+			if (innerObjectsWriter == null) DoWriteBool(value);
+			else innerObjectsWriter.WriteBool(value);
+		}
+
+
+		public void WriteByte(byte value) {
+			if (innerObjectsWriter == null) DoWriteByte(value);
+			else innerObjectsWriter.WriteByte(value);
+		}
+
+
+		public void WriteInt16(short value) {
+			if (innerObjectsWriter == null) DoWriteInt16(value);
+			else innerObjectsWriter.WriteInt16(value);
+		}
+
+
+		public void WriteInt32(int value) {
+			if (innerObjectsWriter == null) DoWriteInt32(value);
+			else innerObjectsWriter.WriteInt32(value);
+		}
+
+
+		public void WriteInt64(long value) {
+			if (innerObjectsWriter == null) DoWriteInt64(value);
+			else innerObjectsWriter.WriteInt64(value);
+		}
+
+
+		public void WriteFloat(float value) {
+			if (innerObjectsWriter == null) DoWriteFloat(value);
+			else innerObjectsWriter.WriteFloat(value);
+		}
+
+
+		public void WriteDouble(double value) {
+			if (innerObjectsWriter == null) DoWriteDouble(value);
+			else innerObjectsWriter.WriteDouble(value);
+		}
+
+
+		public void WriteChar(char value) {
+			if (innerObjectsWriter == null) DoWriteChar(value);
+			else innerObjectsWriter.WriteChar(value);
+		}
+
+
+		public void WriteString(string value) {
+			if (innerObjectsWriter == null) DoWriteString(value);
+			else innerObjectsWriter.WriteString(value);
+		}
+
+
+		public void WriteDate(DateTime value) {
+			if (innerObjectsWriter == null) DoWriteDate(value);
+			else innerObjectsWriter.WriteDate(value);
+		}
+
+
+		public void WriteImage(System.Drawing.Image image) {
+			if (innerObjectsWriter == null) DoWriteImage(image);
+			else innerObjectsWriter.WriteImage(image);
+		}
+
+
+		public void WriteTemplate(Template template) {
+			if (template != null && template.Id == null) throw new InvalidOperationException(
+				string.Format("Template '{0}' is not registered with repository.", template.Name));
+			if (innerObjectsWriter == null) {
+				if (template == null) WriteId(null);
+				else WriteId(template.Id);
+			} else innerObjectsWriter.WriteTemplate(template);
+		}
+
+
+		public void WriteStyle(IStyle style) {
+			if (style != null && style.Id == null) throw new InvalidOperationException(
+				 string.Format("{0} '{1}' is not registered with the repository.", style.GetType().Name, style.Name));
+			if (innerObjectsWriter == null) {
+				if (style == null) WriteId(null);
+				else WriteId(style.Id);
+			} else innerObjectsWriter.WriteStyle(style);
+		}
+
+
+		public void WriteModelObject(IModelObject modelObject) {
+			if (modelObject != null && modelObject.Id == null) 
+				throw new InvalidOperationException(
+				 string.Format("{0} '{1}' is not registered with the repository.", 
+				 modelObject.Type.FullName, modelObject.Name));
+			if (innerObjectsWriter == null) {
+				Debug.Assert(modelObject == null || modelObject.Id != null);
+				if (modelObject == null) WriteId(null);
+				else WriteId(modelObject.Id);
+			} else innerObjectsWriter.WriteModelObject(modelObject);
+		}
+
+
+		public void BeginWriteInnerObjects() {
+			if (innerObjectsWriter != null)
+				throw new InvalidOperationException("Call EndWriteInnerObjects before a new call to BeginWriteInnerObjects.");
+			DoBeginWriteInnerObjects();
+		}
+
+
+		public void EndWriteInnerObjects() {
+			if (innerObjectsWriter == null)
+				throw new InvalidOperationException("BeginWriteInnerObjects has not been called.");
+			DoEndWriteInnerObjects();
+			innerObjectsWriter = null;
+		}
+
+
+		public void BeginWriteInnerObject() {
+			// Must be executed by the outer writer. Currently there is only one inner 
+			// and one outer.
+			DoBeginWriteInnerObject();
+		}
+
+
+		public void EndWriteInnerObject() {
+			// Must be executed by the outer writer. Currently there is only one inner 
+			// and one outer.
+			DoEndWriteInnerObject();
+		}
+
+
+		public void DeleteInnerObjects() {
+			BeginWriteInnerObjects();
+			EndWriteInnerObjects();
+		}
+
+		#endregion
+
+
+		protected IStoreCache Cache {
+			get { return cache; }
+		}
+
+
+		protected abstract void DoWriteId(object id);
+
+		protected abstract void DoWriteBool(bool value);
+
+		protected abstract void DoWriteByte(byte value);
+
+		protected abstract void DoWriteInt16(short value);
+
+		protected abstract void DoWriteInt32(int value);
+
+		protected abstract void DoWriteInt64(long value);
+
+		protected abstract void DoWriteFloat(float value);
+
+		protected abstract void DoWriteDouble(double value);
+
+		protected abstract void DoWriteChar(char value);
+
+		protected abstract void DoWriteString(string value);
+
+		protected abstract void DoWriteDate(DateTime date);
+
+		protected abstract void DoWriteImage(System.Drawing.Image image);
+
+		protected abstract void DoBeginWriteInnerObjects();
+
+		protected abstract void DoEndWriteInnerObjects();
+
+		// Must be called upon the outer cache writer.
+		protected abstract void DoBeginWriteInnerObject();
+
+		// Must be called upon the outer cache writer.
+		protected abstract void DoEndWriteInnerObject();
+
+		protected abstract void DoDeleteInnerObjects();
+
+
+		/// <summary>
+		/// Reinitializes the writer to work with given property infos.
+		/// </summary>
+		protected internal virtual void Reset(IEnumerable<EntityPropertyDefinition> propertyInfos) {
+			if (propertyInfos == null) throw new ArgumentNullException("propertyInfos");
+			this.propertyInfos.Clear();
+			this.propertyInfos.AddRange(propertyInfos);
+		}
+
+
+		/// <summary>
+		/// Specifies the entity to write next. Is null when going to write an inner object.
+		/// </summary>
+		/// <param name="entity"></param>
+		protected internal virtual void Prepare(IEntity entity) {
+			this.entity = entity;
+			// The first property is the internally written id.
+			PropertyIndex = -2;
+		}
+
+
+		protected internal virtual void Finish() {
+			// Nothing to do
+		}
+
+
+		protected internal int PropertyIndex {
+			get { return propertyIndex; }
+			set { propertyIndex = value; }
+		}
+
+
+		protected IEntity Entity {
+			get { return entity; }
+		}
+
+
+		#region Fields
+
+		private IStoreCache cache;
+
+		// Current entity to write. Null when writing an inner object
+		private IEntity entity;
+
+		// Description of the entity type currently writting
+		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
+
+		// Index of property currently being written
+		private int propertyIndex;
+
+		// When writing inner objects, reference to the responsible writer
+		protected RepositoryWriter innerObjectsWriter;
+
+		#endregion
+	}
+
+	#endregion
 
 }

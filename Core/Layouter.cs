@@ -24,8 +24,14 @@ namespace Dataweb.NShape.Layouters {
 
 	public interface ILayouter {
 
+		/// <summary>
+		/// Version and language independent name of the layouter.
+		/// </summary>
 		string InvariantName { get; }
 
+		/// <summary>
+		/// Describes the effect of the layouter.
+		/// </summary>
 		string Description { get; }
 
 		/// <summary>
@@ -38,22 +44,41 @@ namespace Dataweb.NShape.Layouters {
 		/// </summary>
 		IEnumerable<Shape> Shapes { get; set; }
 
+		/// <summary>
+		/// Internally saves the state of the layouting process.
+		/// </summary>
 		void SaveState();
 
+		/// <summary>
+		/// Restores the state of the layouting process.
+		/// </summary>
 		void RestoreState();
 
+		/// <summary>
+		/// Prepares for layouting.
+		/// </summary>
 		void Prepare();
 
+		/// <summary>
+		/// Resets the layouter to the state before the preparation.
+		/// </summary>
 		void Unprepare();
 
+		/// <summary>
+		/// Executes the layouting operation.
+		/// </summary>
+		/// <param name="maxSeconds"></param>
 		void Execute(int maxSeconds);
 
 		/// <summary>
-		/// 
+		/// Executes one step of the layouting operation.
 		/// </summary>
 		/// <returns>False, if layouting is finished.</returns>
 		bool ExecuteStep();
 
+		/// <summary>
+		/// Fits all layouted shapes within the given rectangle without destroying the layout.
+		/// </summary>
 		void Fit(int x, int y, int w, int h);
 	}
 
@@ -212,6 +237,11 @@ namespace Dataweb.NShape.Layouters {
 
 		public RepulsionLayouter(Project project)
 			: base(project) {
+			springRate = 8;
+			repulsion = 3;
+			repulsionRange = 500;
+			friction = 0;
+			mass = 500;
 		}
 
 

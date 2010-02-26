@@ -24,7 +24,6 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
 using Dataweb.NShape.Advanced;
-using Dataweb.Utilities;
 
 
 namespace Dataweb.NShape.WinFormsUI {
@@ -51,23 +50,87 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
-			if (destinationType == typeof(string) && value != null) {
-				//return ((string)value).Split(new string[] { "\n\r", "\r\n", "\n" }, StringSplitOptions.None) as IEnumerable<string>;
-				string result = "";
-				foreach (string line in ((IEnumerable<string>)value))
-					result += line + Environment.NewLine;
-				return result;
-			} else if (destinationType == typeof(string[]) && value != null)
+			if (destinationType == typeof(string)) {
+				if (value != null) {
+					if (culture == null) culture = CultureInfo.CurrentCulture;
+					string separator = culture.TextInfo.ListSeparator + " ";
+
+					string result = string.Empty;
+					foreach (string line in ((IEnumerable<string>)value)) {
+						if (result.Length > 0) result += separator;
+						result += line;
+					}
+					return result;
+				}
+			} else if (destinationType == typeof(string[]))
 				return value as IEnumerable<string>;
-			else if (destinationType == typeof(IEnumerable<string>) && value != null)
+			else if (destinationType == typeof(IEnumerable<string>))
 				return value as IEnumerable<string>;
-			else if (destinationType == typeof(IList<string>) && value != null)
+			else if (destinationType == typeof(IList<string>))
 				return value as IEnumerable<string>;
-			else if (destinationType == typeof(ICollection<string>) && value != null)
+			else if (destinationType == typeof(ICollection<string>))
 				return value as IEnumerable<string>;
-			else return base.ConvertTo(context, culture, value, destinationType);
+			return base.ConvertTo(context, culture, value, destinationType);
 		}
 
+
+		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) {
+			if (sourceType == typeof(string))
+				return true;
+			if (sourceType == typeof(string[]))
+				return true;
+			if (sourceType == typeof(IEnumerable<string>))
+				return true;
+			if (sourceType == typeof(IList<string>))
+				return true;
+			if (sourceType == typeof(IReadOnlyCollection<string>))
+				return true;
+			if (sourceType == typeof(ICollection<string>))
+				return true;
+			return base.CanConvertFrom(context, sourceType);
+		}
+
+
+		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
+			if (value == null) return null;
+			List<string> lines = new List<string>();
+			if (value is string) {
+				if (culture == null) culture = CultureInfo.CurrentCulture;
+				string separator = culture.TextInfo.ListSeparator + " ";
+				lines.AddRange(((string)value).Split(new string[] { separator }, StringSplitOptions.None));
+			} else if (value is string[]
+				|| value is IEnumerable<string>)
+				lines.AddRange((IEnumerable<string>)value);
+
+			if (context.Instance is string)
+				return ConvertTo(context, culture, lines, typeof(string));
+			else if (context.Instance is string[])
+				return lines.ToArray();
+			else return lines;
+		}
+
+
+		//public override object CreateInstance(ITypeDescriptorContext context, System.Collections.IDictionary propertyValues) {
+		//   if (context == null) throw new ArgumentNullException("context");
+		//   if (propertyValues == null) throw new ArgumentNullException("propertyValues");
+		//   return null;
+		//}
+
+
+		//public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
+		//   return true;
+		//}
+
+
+		//public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
+		//   return base.GetProperties(context, value, attributes);
+		//}
+
+
+		//public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
+		//   return true;
+		//}
+	
 	}
 
 
@@ -136,40 +199,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	public class TextPaddingConverter : TypeConverter {
 
-		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
-			if (destinationType == typeof(string))
-				return true;
-			else {
-				if (destinationType == typeof(Padding))
-					return true;
-				else return base.CanConvertTo(context, destinationType);
-			}
-		}
-
-
-		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
-			if (destinationType == typeof(string)) {
-				string stringResult = string.Empty;
-				if (value != null) {
-					TextPadding val = (TextPadding)value;
-					stringResult = string.Format("{0}; {1}; {2}; {3}", val.Left, val.Top, val.Right, val.Bottom);
-				}
-				return stringResult;
-			} else if (destinationType == typeof(Padding)) {
-				Padding paddingResult = Padding.Empty;
-				if (value != null) {
-					TextPadding val = (TextPadding)value;
-					paddingResult.Left = val.Left;
-					paddingResult.Top = val.Top;
-					paddingResult.Right = val.Right;
-					paddingResult.Bottom = val.Bottom;
-				}
-				return paddingResult;
-			} else
-				return base.ConvertTo(context, culture, value, destinationType);
-		}
-
-
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) {
 			return ((sourceType == typeof(string))
 					|| (sourceType == typeof(Padding))
@@ -177,25 +206,124 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
+			if (destinationType == typeof(string)
+				|| destinationType == typeof(Padding)
+				|| destinationType == typeof(System.ComponentModel.Design.Serialization.InstanceDescriptor))
+				return true;
+			else return base.CanConvertTo(context, destinationType);
+		}
+
+
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
 			TextPadding result = TextPadding.Empty;
-			Padding padding = Padding.Empty;
 			if (value is string) {
-				PaddingConverter paddingConverter = (PaddingConverter)TypeDescriptor.GetConverter(typeof(Padding));
-				padding = (Padding)paddingConverter.ConvertFrom(context, culture, value);
-				result.Left = padding.Left;
-				result.Top = padding.Top;
-				result.Right = padding.Right;
-				result.Bottom = padding.Bottom;
+				string valueStr = value as string;
+				if (valueStr == null) return base.ConvertFrom(context, culture, value);
+
+				valueStr = valueStr.Trim();
+				if (valueStr.Length == 0) return null;
+
+				if (culture == null) culture = CultureInfo.CurrentCulture;
+				char ch = culture.TextInfo.ListSeparator[0];
+				string[] strArray = valueStr.Split(new char[] { ch });
+				int[] numArray = new int[strArray.Length];
+				TypeConverter converter = TypeDescriptor.GetConverter(typeof(int));
+				for (int i = 0; i < numArray.Length; i++)
+					numArray[i] = (int)converter.ConvertFromString(context, culture, strArray[i]);
+				if (numArray.Length != 4) throw new ArgumentException();
+
+				result.Left = numArray[0];
+				result.Top = numArray[1];
+				result.Right = numArray[2];
+				result.Bottom = numArray[3];
 			} else if (value is Padding) {
-				padding = (Padding)value;
+				Padding padding = (Padding)value;
 				result.Left = padding.Left;
 				result.Top = padding.Top;
 				result.Right = padding.Right;
 				result.Bottom = padding.Bottom;
-			} else
-				return base.ConvertFrom(context, culture, value);
+			} else return base.ConvertFrom(context, culture, value);
 			return result;
+		}
+
+
+		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
+			if (destinationType == null) throw new ArgumentNullException("destinationType");
+			if (value is TextPadding) {
+				if (destinationType == typeof(string)) {
+					TextPadding txtPadding = (TextPadding)value;
+					if (destinationType == typeof(string)) {
+						if (culture == null) culture = CultureInfo.CurrentCulture;
+
+						string separator = culture.TextInfo.ListSeparator + " ";
+						TypeConverter converter = TypeDescriptor.GetConverter(typeof(int));
+						string[] strArray = new string[4];
+						strArray[0] = converter.ConvertToString(context, culture, txtPadding.Left);
+						strArray[1] = converter.ConvertToString(context, culture, txtPadding.Top);
+						strArray[2] = converter.ConvertToString(context, culture, txtPadding.Right);
+						strArray[3] = converter.ConvertToString(context, culture, txtPadding.Bottom);
+						return string.Join(separator, strArray);
+					}
+					if (destinationType == typeof(System.ComponentModel.Design.Serialization.InstanceDescriptor)) {
+						if (txtPadding.All < 0) {
+							return new System.ComponentModel.Design.Serialization.InstanceDescriptor(
+								typeof(TextPadding).GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int) }),
+									new object[] { txtPadding.Left, txtPadding.Top, txtPadding.Right, txtPadding.Bottom });
+						} else {
+							return new System.ComponentModel.Design.Serialization.InstanceDescriptor(
+								typeof(TextPadding).GetConstructor(new Type[] { typeof(int) }), new object[] { txtPadding.All }
+							);
+						}
+					}
+				} else if (destinationType == typeof(Padding)) {
+					Padding paddingResult = Padding.Empty;
+					if (value != null) {
+						TextPadding val = (TextPadding)value;
+						paddingResult.Left = val.Left;
+						paddingResult.Top = val.Top;
+						paddingResult.Right = val.Right;
+						paddingResult.Bottom = val.Bottom;
+					}
+					return paddingResult;
+				}
+			}
+			return base.ConvertTo(context, culture, value, destinationType);
+		}
+
+
+		public override object CreateInstance(ITypeDescriptorContext context, System.Collections.IDictionary propertyValues) {
+			if (context == null) throw new ArgumentNullException("context");
+			if (propertyValues == null) throw new ArgumentNullException("propertyValues");
+
+			TextPadding txtPadding = (TextPadding)context.PropertyDescriptor.GetValue(context.Instance);
+			TextPadding result = TextPadding.Empty;
+			int all = (int)propertyValues["All"];
+			if (txtPadding.All != all) result.All = all;
+			else {
+				result.Left = (int)propertyValues["Left"];
+				result.Top = (int)propertyValues["Top"];
+				result.Right = (int)propertyValues["Right"];
+				result.Bottom = (int)propertyValues["Bottom"];
+			}
+			return result;
+		}
+
+
+		public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
+			return true;
+		}
+
+
+		public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
+			return TypeDescriptor.GetProperties(typeof(TextPadding), attributes).Sort(
+				new string[] { "All", "Left", "Top", "Right", "Bottom" }
+			);
+		}
+
+
+		public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
+			return true;
 		}
 
 	}
@@ -285,7 +413,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		public override bool IsDropDownResizable { get { return true; } }
+		public override bool IsDropDownResizable {
+			get { return true; }
+		}
 
 	}
 
@@ -297,38 +427,26 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
-				IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
-				if (edSvc != null) {
-					TextEditorDialog stringEditor = null;
-					try {
-						if (value is string && !string.IsNullOrEmpty(value as string)) {
-							if (value is string && context.Instance is ICaptionedShape) {
-								ICaptionedShape labeledShape = (ICaptionedShape)context.Instance;
-								for (int i = 0; i < labeledShape.CaptionCount; ++i) {
-									if (labeledShape.GetCaptionText(i).Equals(value)) {
-										ICharacterStyle characterStyle = labeledShape.GetCaptionCharacterStyle(i);
-										stringEditor = new TextEditorDialog(value as string, characterStyle.FontName, characterStyle.SizeInPoints, characterStyle.Style);
-									}
-								}
-							}
-							if (stringEditor == null) stringEditor = new TextEditorDialog(value as string);
-							if (stringEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-								value = stringEditor.ResultText;
-							}
-						} else if (value is IEnumerable<string> && value != null) {
-							stringEditor = new TextEditorDialog((IEnumerable<string>)value);
-							if (stringEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-								value = stringEditor.ResultLines;
-							}
-						} else {
-							stringEditor = new TextEditorDialog();
-							if (stringEditor.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-								value = stringEditor.ResultText;
-							}
-						}
-					} finally {
-						if (stringEditor != null) stringEditor.Dispose();
-						stringEditor = null;
+				if (context.PropertyDescriptor.PropertyType == typeof(string)) {
+					string valueStr = string.IsNullOrEmpty((string)value) ? string.Empty : (string)value;
+					using (TextEditorDialog stringEditor = new TextEditorDialog(valueStr)) {
+						if (stringEditor.ShowDialog() == DialogResult.OK)
+							value = stringEditor.ResultText;
+					}
+				} else if (context.PropertyDescriptor.PropertyType == typeof(string[])) {
+					string[] valueArr = (value != null) ? (string[])value : new string[0];
+					using (TextEditorDialog stringEditor = new TextEditorDialog(valueArr)) {
+						if (stringEditor.ShowDialog() == DialogResult.OK)
+							value = stringEditor.ResultText;
+					}
+				} else if (context.PropertyDescriptor.PropertyType == typeof(IEnumerable<string>)
+					|| context.PropertyDescriptor.PropertyType == typeof(IList<string>)
+					|| context.PropertyDescriptor.PropertyType == typeof(ICollection<string>)
+					|| context.PropertyDescriptor.PropertyType == typeof(List<string>)) {
+					IEnumerable<string> values = (value != null) ? (IEnumerable<string>)value : new string[0];
+					using (TextEditorDialog stringEditor = new TextEditorDialog(values)) {
+						if (stringEditor.ShowDialog() == DialogResult.OK)
+							value = new List<string>(stringEditor.Lines);
 					}
 				}
 			}
@@ -337,10 +455,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) {
-			if (context != null && context.Instance != null) {
+			if (context != null && context.Instance != null)
 				return UITypeEditorEditStyle.Modal;
-			}
-			return base.GetEditStyle(context);
+			else return base.GetEditStyle(context);
 		}
 
 	}
@@ -434,12 +551,23 @@ namespace Dataweb.NShape.WinFormsUI {
 					if (designBuffer != null && designBuffer != design)
 						design = designBuffer;
 
-					// fetch edited object (Shape)
-					Shape shape = null;
+					// Examine edited instances and determine wether the list item "Default Style" should be displayed.
+					bool showItemDefaultStyle = false;
 					if (context.Instance is Shape)
-						shape = (Shape)context.Instance;
+						showItemDefaultStyle = ((Shape)context.Instance).Template != null;
+					// Does not work - SetValue will never be called for a null-value
+					//else if (context.Instance is object[]) {
+					//   object[] objArr = (object[])context.Instance;
+					//   int cnt = objArr.Length;
+					//   showItemDefaultStyle = true;
+					//   for (int i = 0; i < cnt; ++i) {
+					//      if (!(objArr[i] is Shape) || ((Shape)objArr[i]).Template == null) {
+					//         showItemDefaultStyle = false;
+					//         break;
+					//      }
+					//   }
+					//}
 
-					bool showItemDefaultStyle = (shape != null && shape.Template != null);
 					StyleListBox styleListBox = null;
 					try {
 						Type styleType = null;
@@ -639,14 +767,21 @@ namespace Dataweb.NShape.WinFormsUI {
 			gfx.ScaleTransform(scale, scale);
 
 			// Draw
-			const string previewText = "This is the first line of the sample text.\r\nThis is line 2 of the text.\r\nLine 3 of the text.\r\nLine four of this text is a little longer for demonstrating the WordWrap property setting.";
 			gfx.DrawString(previewText, Control.DefaultFont, Brushes.Black, r, stringFormat);
+		}
+
+
+		static StyleEditor() {
+			previewText = "This is the first line of the sample text."
+				+ Environment.NewLine + "This is line 2 of the text."
+				+ Environment.NewLine + "Line 3 of the text.";
 		}
 
 
 		#region Fields
 
 		private static Design designBuffer;
+		private static readonly string previewText;
 		private Design design;
 		private StringFormat formatter = new StringFormat(StringFormatFlags.NoWrap);
 

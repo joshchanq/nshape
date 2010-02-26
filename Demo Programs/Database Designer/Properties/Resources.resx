@@ -122,7 +122,7 @@
     <value>..\Resources\DiagramBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DiagramPropertiesBtn3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DiagramPropertiesBtn3.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+    <value>..\Resources\DiagramPropertiesBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ToggleGridBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ToggleGridBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -177,11 +177,5 @@
   </data>
   <data name="SaveBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SaveBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NewDiagramBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NewDiagramBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="DiagramBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DiagramBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

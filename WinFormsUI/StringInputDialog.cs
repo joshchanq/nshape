@@ -21,11 +21,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		public StringInputDialog() {
 			InitializeComponent();
+			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		}
 
 
-		public StringInputDialog(string caption, string prompt) {
-			InitializeComponent();
+		public StringInputDialog(string caption, string prompt)
+			: this() {
 			Caption = caption;
 			Prompt = prompt;
 		}

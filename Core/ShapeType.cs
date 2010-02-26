@@ -189,7 +189,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		public Shape CreatePreviewInstance(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
-			Shape result = shape.Clone();
+			Shape result = ShapeDuplicator.CloneShapeAndModelObject(shape);
 			result.MakePreview(styleSetProvider.StyleSet);
 			return result;
 		}

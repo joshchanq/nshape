@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 // General Information about an library is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an library.
-[assembly: AssemblyTitle("NShape.Core")]
+[assembly: AssemblyTitle("NShape Core Components")]
 [assembly: AssemblyDescription("NShape Core Components for .NET 2.0")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH - www.dataweb.de")]
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.4.0")]
+[assembly: AssemblyFileVersion("1.0.4.0")]

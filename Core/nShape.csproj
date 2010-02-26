@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Dataweb.NShape</RootNamespace>
     <AssemblyName>Dataweb.NShape</AssemblyName>
-    <ApplicationIcon>..\Dataweb.NShape.ico</ApplicationIcon>
+    <ApplicationIcon>Dataweb.NShape.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <OldToolsVersion>2.0</OldToolsVersion>
@@ -46,7 +46,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DocumentationFile>
     </DocumentationFile>
-    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -93,6 +93,8 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Buffers.cs" />
+    <Compile Include="FreeHandTool.cs" />
     <Compile Include="MenuItemDef.cs" />
     <Compile Include="AdoNetStore.cs">
       <SubType>Component</SubType>
@@ -105,11 +107,11 @@
     </Compile>
     <Compile Include="MultiHashList.cs" />
     <Compile Include="Polygone.cs" />
+    <Compile Include="ShapeDuplicator.cs" />
     <Compile Include="ShapeGroup.cs" />
     <Compile Include="DiameterShape.cs" />
     <Compile Include="ImageBasedShape.cs" />
     <Compile Include="RectangleShape.cs" />
-    <Compile Include="Buffers.cs" />
     <Compile Include="Caption.cs" />
     <Compile Include="Collections.cs" />
     <Compile Include="Command.cs" />
@@ -188,7 +190,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -207,18 +209,19 @@
     <EmbeddedResource Include="Resources\Visible.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AdoNetStore.bmp" />
-    <EmbeddedResource Include="CachedRepository.bmp" />
-    <EmbeddedResource Include="DesignController.bmp" />
-    <EmbeddedResource Include="DiagramSetController.bmp" />
-    <EmbeddedResource Include="LayerController.bmp" />
-    <EmbeddedResource Include="LayerPresenter.bmp" />
-    <EmbeddedResource Include="ModelController.bmp" />
     <EmbeddedResource Include="Project.bmp" />
-    <EmbeddedResource Include="PropertyController.bmp" />
     <Content Include="..\Dataweb.NShape.ico">
       <Link>Resources\Dataweb.NShape.ico</Link>
     </Content>
+    <EmbeddedResource Include="AdoNetStore.bmp" />
+    <EmbeddedResource Include="Advanced.CachedRepository.bmp" />
+    <EmbeddedResource Include="Controllers.DesignController.bmp" />
+    <EmbeddedResource Include="Controllers.DiagramSetController.bmp" />
+    <EmbeddedResource Include="Controllers.LayerController.bmp" />
+    <EmbeddedResource Include="Controllers.LayerPresenter.bmp" />
+    <EmbeddedResource Include="Controllers.ModelController.bmp" />
+    <EmbeddedResource Include="Controllers.PropertyController.bmp" />
+    <Content Include="Dataweb.NShape.ico" />
     <Content Include="Resources\ActionDeniedCursor.cur" />
     <Content Include="Resources\AggregateShapeBtn.bmp" />
     <None Include="..\Dataweb.NShape.snk">
@@ -229,6 +232,8 @@
     <Content Include="Resources\CopyBtn.bmp" />
     <Content Include="Resources\CrossCursor.cur" />
     <Content Include="Resources\CutBtn.bmp" />
+    <EmbeddedResource Include="Resources\DefaultBitmapSmall.bmp" />
+    <EmbeddedResource Include="Resources\DefaultBitmapLarge.bmp" />
     <Content Include="Resources\DiagramPropertiesBtn.bmp" />
     <Content Include="Resources\EditTextCursor.cur" />
     <Content Include="Resources\GroupBtn.bmp" />
@@ -246,9 +251,9 @@
     <Content Include="Resources\ToForeground.bmp" />
     <Content Include="Resources\UndoBtn.bmp" />
     <Content Include="Resources\UngroupBtn.bmp" />
+    <EmbeddedResource Include="Controllers.TemplateController.bmp" />
+    <EmbeddedResource Include="Controllers.ToolSetController.bmp" />
     <EmbeddedResource Include="SqlStore.bmp" />
-    <EmbeddedResource Include="TemplateController.bmp" />
-    <EmbeddedResource Include="ToolSetController.bmp" />
     <EmbeddedResource Include="XmlStore.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

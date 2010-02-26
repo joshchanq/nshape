@@ -1,4 +1,5 @@
-﻿namespace nShape_Model_Demo {
+﻿namespace NShape_Model_Demo {
+
 	partial class ControlForm {
 		/// <summary>
 		/// Required designer variable.

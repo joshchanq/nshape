@@ -16,7 +16,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-using Dataweb.Utilities;
+using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.WinFormsUI {
@@ -25,30 +25,28 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		public ImageEditor() {
 			InitializeComponent();
+			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		}
 
 
-		public ImageEditor(string fileName) {
-			InitializeComponent();
+		public ImageEditor(string fileName)
+			: this() {
 			if (fileName == null) throw new ArgumentNullException("fileName");
 			resultImage.Load(fileName);
 		}
 
 
-		public ImageEditor(Image image) {
-			InitializeComponent();
+		public ImageEditor(Image image, string path)
+			: this() {
 			if (image == null) throw new ArgumentNullException("image");
+			if (path == null) throw new ArgumentNullException("name");
 			resultImage.Image = (Image)image.Clone();
-			resultImage.Name = string.Empty;
+			resultImage.Name = path;
 		}
 
 
-		public ImageEditor(Image image, string name) {
-			InitializeComponent();
-			if (image == null) throw new ArgumentNullException("image");
-			if (name == null) throw new ArgumentNullException("name");
-			resultImage.Image = (Image)image.Clone();
-			resultImage.Name = name;
+		public ImageEditor(Image image)
+			: this(image, string.Empty) {
 		}
 
 
@@ -61,9 +59,23 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		public NamedImage Result { get { return resultImage; } }
+		public NamedImage Result {
+			get { return resultImage; }
+		}
 		
 		
+		protected override void OnShown(EventArgs e) {
+			base.OnShown(e);
+			DisplayResult();
+		}
+
+
+		protected override void OnFormClosed(FormClosedEventArgs e) {
+			base.OnFormClosed(e);
+			pictureBox.Image = null;
+		}
+
+
 		private Image Image {
 			get { return resultImage.Image; }
 			set {
@@ -72,7 +84,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
-		
+
 		private void okButton_Click(object sender, EventArgs e) {
 			if (Modal) DialogResult = DialogResult.OK;
 			else Close();
@@ -114,18 +126,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void nameTextBox_TextChanged(object sender, EventArgs e) {
 			resultImage.Name = nameTextBox.Text;
-		}
-
-
-		protected override void OnShown(EventArgs e) {
-			base.OnShown(e);
-			DisplayResult();
-		}
-
-
-		protected override void OnFormClosed(FormClosedEventArgs e) {
-			base.OnFormClosed(e);
-			pictureBox.Image = null;
 		}
 
 

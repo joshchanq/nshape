@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -25,22 +26,31 @@ namespace Dataweb.NShape.WinFormsUI {
 	public partial class TextEditorDialog : Form {
 
 		public TextEditorDialog() {
-			Construct();
+			SetStyle(ControlStyles.ContainerControl
+						| ControlStyles.OptimizedDoubleBuffer
+						| ControlStyles.ResizeRedraw
+						| ControlStyles.SupportsTransparentBackColor
+						, true);
+			UpdateStyles();
+			InitializeComponent();
+			Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+
+			textBox.PreviewKeyDown += textBox_PreviewKeyDown;
 		}
 
 
-		public TextEditorDialog(string text) {
-			Construct();
+		public TextEditorDialog(string text)
+			: this() {
 			textBox.Text = text;
 			wantReturn = false;
 		}
 
 
-		public TextEditorDialog(IEnumerable<string> lines) {
+		public TextEditorDialog(IEnumerable<string> lines)
+			: this() {
 			if (lines == null) throw new ArgumentNullException("lines");
-			Construct();
 			foreach (string line in lines)
-				textBox.Text += line + "\r\n";
+				textBox.Text += line + Environment.NewLine;
 			wantReturn = true;
 		}
 
@@ -100,25 +110,17 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[TypeConverter(typeof(TextConverter))]
 		public string ResultText {
 			get { return textBox.Text; }
+			set { textBox.Text = value; }
 		}
 
 
-		public string[] ResultLines {
+		[TypeConverter(typeof(TextConverter))]
+		public string[] Lines {
 			get { return textBox.Lines; }
-		}
-
-
-		private void Construct() {
-			SetStyle(ControlStyles.ContainerControl
-						| ControlStyles.OptimizedDoubleBuffer
-						| ControlStyles.ResizeRedraw
-						| ControlStyles.SupportsTransparentBackColor
-						, true);
-			UpdateStyles();
-			InitializeComponent();
-			textBox.PreviewKeyDown += textBox_PreviewKeyDown;
+			set { textBox.Lines = value; }
 		}
 
 

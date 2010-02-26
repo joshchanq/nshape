@@ -22,7 +22,6 @@ using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using Dataweb.NShape.Advanced;
-using Dataweb.Utilities;
 
 
 namespace Dataweb.NShape {
@@ -147,8 +146,8 @@ namespace Dataweb.NShape {
 		#region Fields
 
 		private LayerIds id = LayerIds.None;
-		private string name = "";
-		private string title = "";
+		private string name = string.Empty;
+		private string title = string.Empty;
 		private int lowerZoomThreshold = 0;
 		private int upperZoomThreshold = 5000;
 
@@ -169,6 +168,7 @@ namespace Dataweb.NShape {
 		Layer FindLayer(string name);
 
 		bool RenameLayer(string previousName, string newName);
+
 	}
 
 
@@ -204,7 +204,7 @@ namespace Dataweb.NShape {
 			int layerBit = GetLowestLayerBit(layerId);
 			if (layerBit == -1)
 				throw new NShapeException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
-			return layers[layerBit];
+			return layers[layerBit - 1];
 		}
 
 
@@ -273,7 +273,7 @@ namespace Dataweb.NShape {
 			if (item == null) throw new ArgumentNullException("item");
 			int layerBit = GetLowestLayerBit(item.Id);
 			if (layerBit == -1) return false;
-			layers[layerBit] = null;
+			layers[layerBit - 1] = null;
 			return true;
 		}
 
@@ -604,9 +604,13 @@ namespace Dataweb.NShape {
 			this.name = name;
 			diagramShapes = new DiagramShapeCollection(this, expectedShapes);
 			layers = new LayerCollection(this);
-			Width = 800;
-			Height = 600;
 			// A new diagram has no layers.
+
+			// Set size to DIN A4
+			using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
+				Width = (int)Math.Round((gfx.DpiX * (1/25.4f)) * 210);
+				Height = (int)Math.Round((gfx.DpiY * (1/25.4f)) * 297);
+			}
 		}
 
 
@@ -631,8 +635,12 @@ namespace Dataweb.NShape {
 		[Description("The displayed text of the diagram.")]
 		[RequiredPermission(Permission.Present)]
 		public string Title {
-			get { return title; }
-			set { title = value; }
+			get { return string.IsNullOrEmpty(title) ? name : title; }
+			set {
+				if (string.IsNullOrEmpty(value))
+					title = null;
+				else title = value; 
+			}
 		}
 
 
@@ -763,6 +771,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Gamma correction factor for the background image.
+		/// </summary>
 		[Category("Appearance")]
 		[Description("Gamma correction for the diagram's background image.")]
 		[RequiredPermission(Permission.Present)]
@@ -777,10 +788,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Specifies if the background image should be displayed as gray scale image.
+		/// </summary>
 		[Category("Appearance")]
 		[Description("Specifies if the diagram's background image is drawn as gray scale image instead.")]
 		[RequiredPermission(Permission.Present)]
-		public bool BackgroundImageGrayScale {
+		public bool BackgroundImageGrayscale {
 			get { return imageGrayScale; }
 			set {
 				imageGrayScale = value;
@@ -790,6 +804,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Transparency of the background image in percentage.
+		/// </summary>
 		[Category("Appearance")]
 		[Description("Specifies the transparency in percentage for the diagram's background image.")]
 		[RequiredPermission(Permission.Present)]
@@ -804,8 +821,11 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// The specified color of the background image will be transparent.
+		/// </summary>
 		[Category("Appearance")]
-		[Description("Specifies the transparent color for the diagram's background image.")]
+		[Description("Specifies a color that will be transparent in the diagram's background image.")]
 		[RequiredPermission(Permission.Present)]
 		public Color BackgroundImageTransparentColor {
 			get { return imageTransparentColor; }
@@ -970,7 +990,8 @@ namespace Dataweb.NShape {
 					if (boundingRect.Right > right) right = boundingRect.Right;
 					if (boundingRect.Bottom > bottom) bottom = boundingRect.Bottom;
 				}
-				imageBounds = Rectangle.FromLTRB(left, top, right, bottom);
+				if (Geometry.IsValid(left, top, right, bottom))
+					imageBounds = Rectangle.FromLTRB(left, top, right, bottom);
 			}
 			imageBounds.Inflate(margin, margin);
 			imageBounds.Width += 1;
@@ -1008,13 +1029,8 @@ namespace Dataweb.NShape {
 					if (dpi > 0 && dpi != DisplayService.InfoGraphics.DpiX && dpi != DisplayService.InfoGraphics.DpiY) {
 						scaleX = dpi / DisplayService.InfoGraphics.DpiX;
 						scaleY = dpi / DisplayService.InfoGraphics.DpiY;
-						//imageBounds.X = (int)Math.Round(scaleX * imageBounds.X);
-						//imageBounds.Y = (int)Math.Round(scaleY * imageBounds.Y);
-						//imageBounds.Width = (int)Math.Round(scaleX * imageBounds.Width);
-						//imageBounds.Height = (int)Math.Round(scaleY * imageBounds.Height);
-						//result = new Bitmap(imageBounds.Width, imageBounds.Height);
-						result = new Bitmap((int)Math.Round(scaleX * imageBounds.Width), 
-							(int)Math.Round(scaleY * imageBounds.Height));
+						result = new Bitmap(Math.Max(1, (int)Math.Round(scaleX * imageBounds.Width)),
+													Math.Max(1, (int)Math.Round(scaleY * imageBounds.Height)));
 						((Bitmap)result).SetResolution(dpi, dpi);
 					} else result = new Bitmap(imageBounds.Width, imageBounds.Height);
 					break;
@@ -1119,29 +1135,10 @@ namespace Dataweb.NShape {
 			int height = clipRectangle.Height;
 			
 			foreach (Shape shape in diagramShapes.BottomUp) {
-				// paint shape if it intersects with the clipping area
-				if ((shape.Layers == LayerIds.None || (shape.Layers & layers) > 0)
-					&& Geometry.RectangleIntersectsWithRectangle(shape.GetBoundingRectangle(false), x, y, width, height)) {
+				// Paint shape if it intersects with the clipping area
+				if (shape.Layers != LayerIds.None && (shape.Layers & layers) == 0) continue;
+				if (Geometry.RectangleIntersectsWithRectangle(shape.GetBoundingRectangle(false), x, y, width, height))
 					shape.Draw(graphics);
-					
-					//               foreach (ShapeConnectionInfo ci in shape.GetConnectionInfos(null, ControlPointId.NotSupported)) {
-					//                  if (ci.ConnectionPointId == ControlPointId.Reference && ci.PassiveShape is ILinearShape) {
-					//                     Point p = Point.Empty;
-					//                     int ptSize = 2;
-					//                     p = shape.GetControlPointPosition(ci.GluePointId);
-					//                     graphics.FillEllipse(Brushes.Black, p.X - ptSize, p.Y - ptSize, ptSize + ptSize, ptSize + ptSize);
-					//                  }
-					//#if DEBUG
-					//                  else if (ci.GluePointId != ControlPointId.Reference) {
-					//                     Point p = Point.Empty;
-					//                     int ptSize = 2;
-					//                     p = shape.GetControlPointPosition(ci.GluePointId);
-					//                     graphics.FillEllipse(Brushes.White, p.X - ptSize, p.Y - ptSize, ptSize + ptSize, ptSize + ptSize);
-					//                     graphics.DrawEllipse(Pens.Black, p.X - ptSize, p.Y - ptSize, ptSize + ptSize, ptSize + ptSize);
-					//                  }
-					//#endif
-					//               }
-				} //else graphics.DrawRectangle(Pens.Red, shape.GetBoundingRectangle(false));
 			}
 		}
 		
@@ -1149,8 +1146,10 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Specifies whether the diagram is to render in high quality.
+		/// Specifies whether the diagram is rendered with high visual quality. 
+		/// This property is typically set by the diagram presenter.
 		/// </summary>
+		[Browsable(false)]
 		public bool HighQualityRendering {
 			get { return highQualityRendering; }
 			set {
@@ -1168,7 +1167,7 @@ namespace Dataweb.NShape {
 		}
 		
 		
-		#region IEntity Members
+		#region IEntity Members (Explicit implementation)
 
 		public static string EntityTypeName {
 			get { return entityTypeName; }
@@ -1177,6 +1176,7 @@ namespace Dataweb.NShape {
 
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("Name", typeof(string));
+			if (version > 2) yield return new EntityFieldDefinition("Title", typeof(string));
 			yield return new EntityFieldDefinition("Width", typeof(int));
 			yield return new EntityFieldDefinition("Height", typeof(int));
 			yield return new EntityFieldDefinition("BackgroundColor", typeof(Color));
@@ -1212,6 +1212,7 @@ namespace Dataweb.NShape {
 
 		void IEntity.LoadFields(IRepositoryReader reader, int version) {
 			name = reader.ReadString();
+			if (version > 2) title = reader.ReadString();
 			size.Width = reader.ReadInt32();
 			size.Height = reader.ReadInt32();
 			backColor = Color.FromArgb(reader.ReadInt32());
@@ -1247,6 +1248,7 @@ namespace Dataweb.NShape {
 
 		void IEntity.SaveFields(IRepositoryWriter writer, int version) {
 			writer.WriteString(name);
+			if (version > 2) writer.WriteString(title);
 			writer.WriteInt32(size.Width);
 			writer.WriteInt32(size.Height);
 			writer.WriteInt32(BackgroundColor.ToArgb());

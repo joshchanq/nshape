@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -21,7 +21,7 @@ using Dataweb.NShape.Controllers;
 using Dataweb.NShape.GeneralShapes;
 
 
-namespace nShape_Model_Demo {
+namespace NShape_Model_Demo {
 
 	public partial class MainForm : Form {
 		
@@ -32,10 +32,10 @@ namespace nShape_Model_Demo {
 		
 		private void MainForm_Load(object sender, EventArgs e) {
 			// Create a new Project
-			project.Name = " nShape Model Demo";
+			project.Name = "NShape Model Demo";
 			project.AutoGenerateTemplates = false;
 			project.Create();
-			project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
+			project.AddLibraryByName("Dataweb.NShape.GeneralShapes");
 			project.AddLibrary(this.GetType().Assembly);
 
 			CreateTemplates();
@@ -59,7 +59,7 @@ namespace nShape_Model_Demo {
 			Template batteryTemplate = new Template(BatteryTemplateName, batteryShape);
 			batteryTemplate.MapTerminal(Battery.OutputTerminal, ControlPointId.Reference);
 			// 4 == PropertyIdText
-			FormatModelMapping batteryMapping = new FormatModelMapping(4, Conductor.CurrencyPropertyId, FormatModelMappingType.IntegerString, "{0} mA");
+			FormatModelMapping batteryMapping = new FormatModelMapping(4, Conductor.CurrencyPropertyId, FormatModelMapping.MappingType.IntegerString, "{0} mA");
 			batteryTemplate.MapProperties(batteryMapping);
 			toolSetController.CreateTemplateTool(batteryTemplate, null);
 
@@ -71,7 +71,7 @@ namespace nShape_Model_Demo {
 			wireTemplate.MapTerminal(Wire.ConnectionTerminal1, ControlPointId.FirstVertex);
 			wireTemplate.MapTerminal(Wire.ConnectionTerminal2, ControlPointId.LastVertex);
 			// 1 = PropertyIdLineStyle
-			StyleModelMapping wireMapping = new StyleModelMapping(1, Conductor.CurrencyPropertyId, StyleModelMappingType.IntegerStyle);
+			StyleModelMapping wireMapping = new StyleModelMapping(1, Conductor.CurrencyPropertyId, StyleModelMapping.MappingType.IntegerStyle);
 			wireMapping.AddValueRange(int.MinValue, project.Design.LineStyles.Normal);
 			wireMapping.AddValueRange(1, project.Design.LineStyles.Green);
 			wireMapping.AddValueRange(500, project.Design.LineStyles.Yellow);
@@ -88,11 +88,11 @@ namespace nShape_Model_Demo {
 			Template switchTemplate = new Template(SwitchTemplateName, switchShape);
 			switchTemplate.MapTerminal(Switch.ConnectionTerminal1, 4);
 			switchTemplate.MapTerminal(Switch.ConnectionTerminal2, 5);
-			FormatModelMapping switchStateMapping = new FormatModelMapping(4, Switch.StatePropertyId, FormatModelMappingType.IntegerString, "{0}");
-			StyleModelMapping switchColorMapping = new StyleModelMapping(3, Switch.StatePropertyId, StyleModelMappingType.IntegerStyle);
+			FormatModelMapping switchStateMapping = new FormatModelMapping(4, Switch.StatePropertyId, FormatModelMapping.MappingType.IntegerString, "{0}");
+			StyleModelMapping switchColorMapping = new StyleModelMapping(3, Switch.StatePropertyId, StyleModelMapping.MappingType.IntegerStyle);
 			switchColorMapping.AddValueRange(int.MinValue, project.Design.FillStyles.Red);
 			switchColorMapping.AddValueRange(1, project.Design.FillStyles.Green);
-			StyleModelMapping switchLineMapping = new StyleModelMapping(1, Switch.StatePropertyId, StyleModelMappingType.IntegerStyle);
+			StyleModelMapping switchLineMapping = new StyleModelMapping(1, Switch.StatePropertyId, StyleModelMapping.MappingType.IntegerStyle);
 			switchLineMapping.AddValueRange(int.MinValue, project.Design.LineStyles.Dotted);
 			switchLineMapping.AddValueRange(1, project.Design.LineStyles.Normal);
 			switchTemplate.MapProperties(switchStateMapping);
@@ -108,13 +108,13 @@ namespace nShape_Model_Demo {
 			consumerShape.FillStyle = project.Design.FillStyles.Black;
 			Template consumerTemplate = new Template(ConsumerTemplateName, consumerShape);
 			consumerTemplate.MapTerminal(Consumer.InputTerminal, 7);
-			StyleModelMapping consumerColorMapping = new StyleModelMapping(3, Conductor.CurrencyPropertyId, StyleModelMappingType.IntegerStyle);
+			StyleModelMapping consumerColorMapping = new StyleModelMapping(3, Conductor.CurrencyPropertyId, StyleModelMapping.MappingType.IntegerStyle);
 			consumerColorMapping.AddValueRange(int.MinValue, project.Design.FillStyles.Black);
 			consumerColorMapping.AddValueRange(100, project.Design.FillStyles.Red);
 			consumerColorMapping.AddValueRange(200, project.Design.FillStyles.Yellow);
 			consumerColorMapping.AddValueRange(300, project.Design.FillStyles.White);
 			consumerColorMapping.AddValueRange(1000, project.Design.FillStyles.Transparent);
-			StyleModelMapping consumerLineMapping = new StyleModelMapping(1, Conductor.CurrencyPropertyId, StyleModelMappingType.IntegerStyle);
+			StyleModelMapping consumerLineMapping = new StyleModelMapping(1, Conductor.CurrencyPropertyId, StyleModelMapping.MappingType.IntegerStyle);
 			consumerLineMapping.AddValueRange(int.MinValue, project.Design.LineStyles.Normal);
 			consumerLineMapping.AddValueRange(100, project.Design.LineStyles.Red);
 			consumerLineMapping.AddValueRange(200, project.Design.LineStyles.Highlight);

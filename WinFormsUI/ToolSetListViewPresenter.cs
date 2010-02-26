@@ -42,6 +42,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
+
+		[Category("NShape")]
 		public ToolSetController ToolSetController {
 			get { return toolSetController; }
 			set {
@@ -59,6 +65,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("NShape")]
 		public ListView ListView {
 			get { return listView; }
 			set {
@@ -90,6 +97,27 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
+		[Category("Behavior")]
+		public bool HideDeniedMenuItems {
+			get { return hideMenuItemsIfNotGranted; }
+			set { hideMenuItemsIfNotGranted = value; }
+		}
+
+
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
+		[Category("Behavior")]
+		public bool ShowDefaultContextMenu {
+			get { return showDefaultContextMenu; }
+			set { showDefaultContextMenu = value; }
+		}
+
+
 		/// <summary>
 		/// Dynamically built standard context menu. Will be used automatically if 
 		/// the assigned listView has no ContextMenuStrip of its own.
@@ -97,30 +125,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		public ContextMenuStrip ContextMenuStrip {
 			get { return adapterContextMenu; }
 		}
-
-
-		//private void TemplateChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs) {
-		//   if (SelectedTool is TemplateTool) {
-		//      List<Template> templates = new List<Template>();
-		//      foreach (object obj in propertyChangedEventArgs.Objects) {
-		//         if (((TemplateTool)SelectedTool).Template.Shape == obj) {
-		//            templates.Add(((TemplateTool)SelectedTool).Template);
-		//         }
-		//      }
-
-		//      // SaveChanges tools
-		//      AggregatedCommand aggCmd = new AggregatedCommand();
-		//      int cnt = templates.Count;
-		//      for (int i = 0; i < cnt; ++i) {
-		//         ICommand cmd = new ShapePropertySetCommand(templates[i].Shape, propertyChangedEventArgs.PropertyInfo, propertyChangedEventArgs.OldValues, propertyChangedEventArgs.NewValue);
-		//         aggCmd.Add(cmd);
-		//      }
-		//      Project.ExecuteCommand(aggCmd);
-
-		//      for (int i = 0; i < cnt; ++i)
-		//         RefreshTool(templates[i]);
-		//   }
-		//}
 
 
 		private void RegisterToolBoxEventHandlers() {
@@ -353,26 +357,26 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void listView_MouseDown(object sender, MouseEventArgs e) {
 			ListViewHitTestInfo hitTestInfo = ListView.HitTest(e.Location);
-			if ((e.Button & MouseButtons.Left) == MouseButtons.Left) {
+			//if ((e.Button & MouseButtons.Left) == MouseButtons.Left) {
 				if (hitTestInfo.Item != null && !listView.SelectedItems.Contains(hitTestInfo.Item))
 					toolSetController.SelectTool((Tool)hitTestInfo.Item.Tag, false);
-			} else if ((e.Button & MouseButtons.Right) == MouseButtons.Right) {
-				keepLastSelectedItem = true;
-				if (listView.SelectedItems.Count > 0)
-					lastSelectedItem = listView.SelectedItems[0];
-			}
+			//} else if ((e.Button & MouseButtons.Right) == MouseButtons.Right) {
+			//   keepLastSelectedItem = true;
+			//   if (listView.SelectedItems.Count > 0)
+			//      lastSelectedItem = FindItem(ToolSetController.DefaultTool);
+			//}
 		}
 
 
 		private void ContextMenuStrip_Opening(object sender, CancelEventArgs e) {
-			if (sender == adapterContextMenu) {
+			if (showDefaultContextMenu && listView != null && listView.ContextMenu == null) {
 				Point mousePos = listView.PointToClient(Control.MousePosition);
 				ListViewHitTestInfo hitTestInfo = ListView.HitTest(mousePos);
 				Tool clickedTool = null;
 				if (hitTestInfo.Item != null) clickedTool = hitTestInfo.Item.Tag as Tool;
 				
 				if (toolSetController == null) throw new ArgumentNullException("ToolSetController");
-				WinFormHelpers.BuildContextMenu(adapterContextMenu, toolSetController.GetActions(clickedTool), toolSetController.Project, hideMenuItemsIfNotGranted);
+				WinFormHelpers.BuildContextMenu(adapterContextMenu, toolSetController.GetMenuItemDefs(clickedTool), toolSetController.Project, hideMenuItemsIfNotGranted);
 			}
 			e.Cancel = adapterContextMenu.Items.Count == 0;
 		}
@@ -381,6 +385,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void ContextMenuStrip_Closing(object sender, ToolStripDropDownClosingEventArgs e) {
 			if (sender == adapterContextMenu)
 				WinFormHelpers.CleanUpContextMenu(adapterContextMenu);
+			ToolSetController.SelectedTool = ToolSetController.DefaultTool;
 			e.Cancel = false;
 		}
 
@@ -401,7 +406,8 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		// Settings
 		private Color transparentColor = Color.White;
-		private bool hideMenuItemsIfNotGranted = true;
+		private bool hideMenuItemsIfNotGranted = false;
+		private bool showDefaultContextMenu = true;
 		
 		// buffers for preventing listview to select listview items on right click
 		private bool keepLastSelectedItem = false;

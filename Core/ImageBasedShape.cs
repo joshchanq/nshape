@@ -29,6 +29,431 @@ using System.Drawing.Design;
 namespace Dataweb.NShape.Advanced {
 
 	/// <summary>
+	/// Displays a bitmap in the diagram.
+	/// </summary>
+	public class PictureBase : RectangleBase {
+
+		#region [Public] Properties
+
+		[Category("Appearance")]
+		[Description("The shape's image.")]
+		[PropertyMappingId(PropertyIdImage)]
+		[RequiredPermission(Permission.Present)]
+		[Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+		public NamedImage Image {
+			get { return image; }
+			set {
+				GdiHelpers.DisposeObject(ref brushImage);
+				if (NamedImage.IsNullOrEmpty(value))
+					image = null;
+				else image = value;
+				InvalidateImageBrush();
+				Invalidate();
+			}
+		}
+
+
+		[Category("Appearance")]
+		[Description("Defines the layout of the displayed image.")]
+		[PropertyMappingId(PropertyIdImageLayout)]
+		[RequiredPermission(Permission.Present)]
+		public ImageLayoutMode ImageLayout {
+			get { return imageLayout; }
+			set {
+				imageLayout = value;
+				GdiHelpers.DisposeObject(ref imageAttribs);
+				InvalidateImageAttribs();
+				Invalidate();
+			}
+		}
+
+
+		[Category("Appearance")]
+		[Description("Displays the image as grayscale image.")]
+		[PropertyMappingId(PropertyIdImageGrayScale)]
+		[RequiredPermission(Permission.Present)]
+		public bool GrayScale {
+			get { return imageGrayScale; }
+			set {
+				imageGrayScale = value;
+				GdiHelpers.DisposeObject(ref imageAttribs);
+				InvalidateImageAttribs();
+				Invalidate();
+			}
+		}
+
+
+		[Category("Appearance")]
+		[Description("Gamma correction value for the image.")]
+		[PropertyMappingId(PropertyIdImageGamma)]
+		[RequiredPermission(Permission.Present)]
+		public float GammaCorrection {
+			get { return imageGamma; }
+			set {
+				if (imageGamma <= 0) throw new ArgumentOutOfRangeException("Value has to be greater 0.");
+				imageGamma = value;
+				GdiHelpers.DisposeObject(ref imageAttribs);
+				InvalidateImageAttribs();
+				Invalidate();
+			}
+		}
+
+
+		[Category("Appearance")]
+		[Description("Transparency of the image in percentage.")]
+		[PropertyMappingId(PropertyIdImageTransparency)]
+		[RequiredPermission(Permission.Present)]
+		public byte Transparency {
+			get { return imageTransparency; }
+			set {
+				if (value < 0 || value > 100) throw new ArgumentOutOfRangeException("Value has to be between 0 and 100.");
+				imageTransparency = value;
+				GdiHelpers.DisposeObject(ref imageAttribs);
+				InvalidateImageAttribs();
+				Invalidate();
+			}
+		}
+
+
+		[Category("Appearance")]
+		[Description("Transparency of the image in percentage.")]
+		[PropertyMappingId(PropertyIdImageTransparentColor)]
+		[RequiredPermission(Permission.Present)]
+		public Color TransparentColor {
+			get { return transparentColor; }
+			set {
+				transparentColor = value;
+				GdiHelpers.DisposeObject(ref imageAttribs);
+				InvalidateImageAttribs();
+				Invalidate();
+			}
+		}
+
+		#endregion
+
+
+		#region [Public] Methods
+
+		public void FitShapeToImageSize() {
+			if (image != null) {
+				Width = image.Width + (Width - imageBounds.Width);
+				Height = image.Height + (Height - imageBounds.Height);
+			}
+		}
+
+
+		public override Shape Clone() {
+			Shape result = new PictureBase(Type, (Template)null);
+			result.CopyFrom(this);
+			return result;
+		}
+
+
+		public override void CopyFrom(Shape source) {
+			base.CopyFrom(source);
+			if (source is PictureBase) {
+				PictureBase src = (PictureBase)source;
+				if (!NamedImage.IsNullOrEmpty(src.Image))
+					Image = src.Image.Clone();
+				imageGrayScale = src.GrayScale;
+				imageLayout = src.ImageLayout;
+				imageGamma = src.GammaCorrection;
+				imageTransparency = src.Transparency;
+				transparentColor = src.TransparentColor;
+				compressionQuality = src.compressionQuality;
+			}
+		}
+
+
+		public override void MakePreview(IStyleSet styleSet) {
+			base.MakePreview(styleSet);
+			isPreview = true;
+			GdiHelpers.DisposeObject(ref imageAttribs);
+			GdiHelpers.DisposeObject(ref imageBrush);
+			//if (!NamedImage.IsNullOrEmpty(image) && BrushImage != null)
+			//   image.Image = BrushImage;
+		}
+
+
+		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
+			return base.HitTest(x, y, controlPointCapability, range);
+		}
+
+
+		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
+			if (ImageLayout == ImageLayoutMode.Original) {
+				if ((controlPointCapability & ControlPointCapabilities.Glue) != 0) {
+					// always false
+				}
+				if ((controlPointCapability & ControlPointCapabilities.Resize) != 0) {
+					// always false when ImageLayout is set to "Original"
+				}
+				if ((controlPointCapability & ControlPointCapabilities.Connect) != 0) {
+					//if (IsConnectionPointEnabled(connectionPointId))
+					return true;
+				}
+				if ((controlPointCapability & ControlPointCapabilities.Reference) != 0) {
+					if (controlPointId == ControlPointCount || controlPointId == ControlPointId.Reference)
+						return true;
+				}
+				if ((controlPointCapability & ControlPointCapabilities.Rotate) != 0) {
+					if (controlPointId == ControlPointCount)
+						return true;
+				}
+				return false;
+			}
+			return base.HasControlPointCapability(controlPointId, controlPointCapability);
+		}
+
+
+		public override void Draw(Graphics graphics) {
+			if (graphics == null) throw new ArgumentNullException("graphics");
+			UpdateDrawCache();
+			Pen pen = ToolCache.GetPen(LineStyle, null, null);
+			Brush fillBrush = ToolCache.GetTransformedBrush(FillStyle, boundingRectangleUnrotated, Center, Angle);
+			graphics.FillPath(fillBrush, Path);
+
+			Debug.Assert(imageAttribs != null);
+			Debug.Assert(Geometry.IsValid(imageBounds));
+			if (image != null && image.Image is Metafile) {
+				GdiHelpers.DrawImage(graphics, image.Image, imageAttribs, imageLayout, imageBounds, imageBounds, Geometry.TenthsOfDegreeToDegrees(Angle), Center);
+			} else {
+				Debug.Assert(imageBrush != null);
+				graphics.FillPolygon(imageBrush, imageDrawBounds);
+			}
+			DrawCaption(graphics);
+			graphics.DrawPath(pen, Path);
+			if (Children.Count > 0) foreach (Shape s in Children) s.Draw(graphics);
+		}
+
+		#endregion
+
+
+		#region IEntity Members
+
+		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+			base.LoadFieldsCore(reader, version);
+			imageLayout = (ImageLayoutMode)reader.ReadByte();
+			imageTransparency = reader.ReadByte();
+			imageGamma = reader.ReadFloat();
+			compressionQuality = reader.ReadByte();
+			imageGrayScale = reader.ReadBool();
+			string name = reader.ReadString();
+			Image img = reader.ReadImage();
+			if (name != null && img != null)
+				image = new NamedImage(img, name);
+			transparentColor = Color.FromArgb(reader.ReadInt32());
+		}
+
+
+		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			base.SaveFieldsCore(writer, version);
+			writer.WriteByte((byte)imageLayout);
+			writer.WriteByte(imageTransparency);
+			writer.WriteFloat(imageGamma);
+			writer.WriteByte(compressionQuality);
+			writer.WriteBool(imageGrayScale);
+			string imgName = null;
+			Image img = null;
+			if (image != null) {
+				imgName = image.Name;
+				img = image.Image;
+			}
+			writer.WriteString(imgName);
+			writer.WriteImage(img);
+			writer.WriteInt32(transparentColor.ToArgb());
+		}
+
+
+		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+			foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
+				yield return pi;
+			yield return new EntityFieldDefinition("ImageLayout", typeof(byte));
+			yield return new EntityFieldDefinition("ImageTransparency", typeof(byte));
+			yield return new EntityFieldDefinition("ImageGammaCorrection", typeof(float));
+			yield return new EntityFieldDefinition("ImageCompressionQuality", typeof(byte));
+			yield return new EntityFieldDefinition("ConvertToGrayScale", typeof(bool));
+			yield return new EntityFieldDefinition("ImageFileName", typeof(string));
+			yield return new EntityFieldDefinition("Image", typeof(Image));
+			yield return new EntityFieldDefinition("ImageTransparentColor", typeof(int));
+		}
+
+		#endregion
+
+
+		protected internal PictureBase(ShapeType shapeType, Template template)
+			: base(shapeType, template) {
+			Construct();
+		}
+
+
+		protected internal PictureBase(ShapeType shapeType, IStyleSet styleSet)
+			: base(shapeType, styleSet) {
+			Construct();
+		}
+
+
+		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
+			if (index != 0) throw new IndexOutOfRangeException();
+			Size txtSize = Size.Empty;
+			txtSize.Width = Width;
+			txtSize.Height = Height;
+			string txt = string.IsNullOrEmpty(Text) ? "Ip" : Text;
+			if (DisplayService != null)
+				txtSize = TextMeasurer.MeasureText(DisplayService.InfoGraphics, txt, CharacterStyle, txtSize, ParagraphStyle);
+			else txtSize = TextMeasurer.MeasureText(txt, CharacterStyle, txtSize, ParagraphStyle);
+
+			captionBounds = Rectangle.Empty;
+			captionBounds.Width = Width;
+			captionBounds.Height = Math.Min(Height, txtSize.Height);
+			captionBounds.X = (int)Math.Round(-(Width / 2f));
+			captionBounds.Y = (int)Math.Round((Height / 2f) - captionBounds.Height);
+		}
+
+
+		protected override void InvalidateDrawCache() {
+			base.InvalidateDrawCache();
+			imageBounds = Geometry.InvalidRectangle;
+		}
+
+
+		protected override void RecalcDrawCache() {
+			base.RecalcDrawCache();
+			imageBounds.Width = Width;
+			imageBounds.Height = Height;
+			imageBounds.X = (int)Math.Round(-Width / 2f);
+			imageBounds.Y = (int)Math.Round(-Height / 2f);
+			if (!string.IsNullOrEmpty(Text)) {
+				Rectangle r;
+				CalcCaptionBounds(0, out r);
+				imageBounds.Height -= r.Height;
+			}
+			imageDrawBounds[0].X = imageBounds.Left; imageDrawBounds[0].Y = imageBounds.Top;
+			imageDrawBounds[1].X = imageBounds.Right; imageDrawBounds[1].Y = imageBounds.Top;
+			imageDrawBounds[2].X = imageBounds.Right; imageDrawBounds[2].Y = imageBounds.Bottom;
+			imageDrawBounds[3].X = imageBounds.Left; imageDrawBounds[3].Y = imageBounds.Bottom;
+
+			if (imageAttribs == null)
+				imageAttribs = GdiHelpers.GetImageAttributes(imageLayout, imageGamma, imageTransparency, imageGrayScale, isPreview, transparentColor);
+
+			Image bitmapImg = null;
+			if (image == null)
+				bitmapImg = Properties.Resources.DefaultBitmapLarge;
+			else if (image.Image is Bitmap)
+				bitmapImg = Image.Image;
+			if (bitmapImg is Bitmap && imageBrush == null) {
+				if (isPreview)
+					imageBrush = GdiHelpers.CreateTextureBrush(bitmapImg, Width, Height, imageAttribs);
+				else imageBrush = GdiHelpers.CreateTextureBrush(bitmapImg, imageAttribs);
+				// Transform texture Brush
+				Point imageCenter = Point.Empty;
+				imageCenter.Offset((int)Math.Round(imageBounds.Width / 2f), (int)Math.Round(imageBounds.Height / 2f));
+				if (Angle != 0) imageCenter = Geometry.RotatePoint(Point.Empty, Geometry.TenthsOfDegreeToDegrees(Angle), imageCenter);
+				GdiHelpers.TransformTextureBrush(imageBrush, imageLayout, imageBounds, imageCenter, Geometry.TenthsOfDegreeToDegrees(Angle));
+			}
+		}
+
+
+		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {
+			base.TransformDrawCache(deltaX, deltaY, deltaAngle, rotationCenterX, rotationCenterY);
+			if (Geometry.IsValid(imageBounds)) {
+				imageBounds.Offset(deltaX, deltaY);
+				Matrix.TransformPoints(imageDrawBounds);
+				if (imageBrush != null) {
+					float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
+					Point p = Point.Empty;
+					p.X = (int)Math.Round(imageBounds.X + (imageBounds.Width / 2f));
+					p.Y = (int)Math.Round(imageBounds.Y + (imageBounds.Height / 2f));
+					p = Geometry.RotatePoint(Center, angleDeg, p);
+					GdiHelpers.TransformTextureBrush(imageBrush, imageLayout, imageBounds, p, angleDeg);
+				}
+			}
+		}
+
+
+		protected override bool CalculatePath() {
+			if (base.CalculatePath()) {
+				int left = (int)Math.Round(-Width / 2f);
+				int top = (int)Math.Round(-Height / 2f);
+
+				Rectangle shapeRect = Rectangle.Empty;
+				shapeRect.Offset(left, top);
+				shapeRect.Width = Width;
+				shapeRect.Height = Height;
+
+				Path.Reset();
+				Path.StartFigure();
+				Path.AddRectangle(shapeRect);
+				Path.CloseFigure();
+				return true;
+			} else return false;
+		}
+
+
+		protected void InvalidateImageAttribs() {
+			GdiHelpers.DisposeObject(ref imageAttribs);
+			InvalidateDrawCache();
+		}
+
+
+		protected void InvalidateImageBrush() {
+			GdiHelpers.DisposeObject(ref imageBrush);
+			InvalidateDrawCache();
+		}
+
+
+		//private Image BrushImage {
+		//   get {
+		//      if (brushImage == null
+		//         && !NamedImage.IsNullOrEmpty(image)
+		//         && (image.Width >= 2 * Width || image.Height >= 2 * Height))
+		//            brushImage = GdiHelpers.GetBrushImage(image.Image, Width, Height);
+		//      return brushImage;
+		//   }
+		//}
+
+
+		private void Construct() {
+			// this fillStyle holds the image of the shape
+			image = null;
+			imageGrayScale = false;
+			compressionQuality = 100;
+			imageGamma = 1;
+			imageLayout = ImageLayoutMode.Fit;
+			imageTransparency = 0;
+		}
+
+
+		#region Fields
+
+		protected const int PropertyIdImage = 9;
+		protected const int PropertyIdImageLayout = 10;
+		protected const int PropertyIdImageGrayScale = 11;
+		protected const int PropertyIdImageGamma = 12;
+		protected const int PropertyIdImageTransparency = 13;
+		protected const int PropertyIdImageTransparentColor = 14;
+
+		private ImageAttributes imageAttribs = null;
+		private TextureBrush imageBrush = null;
+		private Rectangle imageBounds = Geometry.InvalidRectangle;
+		private Point[] imageDrawBounds = new Point[4];
+		private bool isPreview = false;
+		private Size fullImageSize = Size.Empty;
+		private Size currentImageSize = Size.Empty;
+		private Image brushImage;
+
+		private NamedImage image;
+		private ImageLayoutMode imageLayout = ImageLayoutMode.Fit;
+		private byte imageTransparency = 0;
+		private float imageGamma = 1.0f;
+		private bool imageGrayScale = false;
+		private byte compressionQuality = 100;
+		private Color transparentColor = Color.Empty;
+		#endregion
+	}
+
+
+	/// <summary>
 	/// Abstract base class for shapes that draw themselves using a bitmap or
 	/// meta file.
 	/// </summary>
@@ -68,7 +493,7 @@ namespace Dataweb.NShape.Advanced {
 				// Copy regular properties
 				this.angle = src.Angle;
 				// Copy templated properties
-				this.fillStyle = (Template != null && src.FillStyle == ((ImageBasedShape)Template.Shape).FillStyle) ? null : src.FillStyle;
+				this.fillStyle = (Template != null && src.FillStyle == ((IPlanarShape)Template.Shape).FillStyle) ? null : src.FillStyle;
 			}
 			if (source is ICaptionedShape) {
 				// Copy as many captions as possible. Leave the rest untouched.
@@ -103,7 +528,7 @@ namespace Dataweb.NShape.Advanced {
 		[Category("Text")]
 		[Description("Text displayed inside the shape")]
 		[PropertyMappingId(PropertyIdText)]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.ModifyData)]
 		[Editor("Dataweb.NShape.WinFormsUI.TextEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public string Text {
 			get { return caption.Text; }
@@ -116,9 +541,9 @@ namespace Dataweb.NShape.Advanced {
 		[PropertyMappingId(PropertyIdCharacterStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICharacterStyle CharacterStyle {
-			get { return charStyle ?? ((ImageBasedShape)Template.Shape).CharacterStyle; }
+			get { return charStyle ?? ((ICaptionedShape)Template.Shape).GetCaptionCharacterStyle(0); }
 			set {
-				charStyle = (Template != null && value == ((ImageBasedShape)Template.Shape).CharacterStyle) ? null : value;
+				charStyle = (Template != null && value == ((ICaptionedShape)Template.Shape).GetCaptionCharacterStyle(0)) ? null : value;
 				caption.InvalidatePath();
 				Invalidate();
 			}
@@ -130,9 +555,9 @@ namespace Dataweb.NShape.Advanced {
 		[RequiredPermission(Permission.Present)]
 		[PropertyMappingId(PropertyIdParagraphStyle)]
 		public IParagraphStyle ParagraphStyle {
-			get { return paragraphStyle ?? ((ImageBasedShape)Template.Shape).ParagraphStyle; }
+			get { return paragraphStyle ?? ((ICaptionedShape)Template.Shape).GetCaptionParagraphStyle(0); }
 			set {
-				paragraphStyle = (Template != null && value == ((ImageBasedShape)Template.Shape).ParagraphStyle) ? null : value;
+				paragraphStyle = (Template != null && value == ((ICaptionedShape)Template.Shape).GetCaptionParagraphStyle(0)) ? null : value;
 				caption.InvalidatePath();
 				Invalidate();
 			}
@@ -345,13 +770,13 @@ namespace Dataweb.NShape.Advanced {
 
 
 		[Category("Appearance")]
-		[Description("Defines the appearence of the shape's interior.")]
+		[Description("Defines the appearence of the shape's interior. \nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdFillStyle)]
 		[RequiredPermission(Permission.Present)]
 		public virtual IFillStyle FillStyle {
-			get { return fillStyle ?? ((ImageBasedShape)Template.Shape).FillStyle; }
+			get { return fillStyle ?? ((IPlanarShape)Template.Shape).FillStyle; }
 			set {
-				fillStyle = (Template != null && value == ((ImageBasedShape)Template.Shape).FillStyle) ? null : value;
+				fillStyle = (Template != null && value == ((IPlanarShape)Template.Shape).FillStyle) ? null : value;
 				caption.InvalidatePath();
 				Invalidate();
 			}
@@ -474,7 +899,7 @@ namespace Dataweb.NShape.Advanced {
 			fillStyle = reader.ReadFillStyle();
 			charStyle = reader.ReadCharacterStyle();
 			paragraphStyle = reader.ReadParagraphStyle();
-			
+
 			string txt = reader.ReadString();
 			if (caption == null) caption = new Caption(txt);
 			else caption.Text = txt;
@@ -622,7 +1047,9 @@ namespace Dataweb.NShape.Advanced {
 		private void Construct(string resourceBaseName, Assembly resourceAssembly) {
 			if (resourceBaseName == null) throw new ArgumentNullException("resourceBaseName");
 			System.IO.Stream stream = resourceAssembly.GetManifestResourceStream(resourceBaseName);
+			if (stream == null) throw new ArgumentException(string.Format("'{0}' is not a valid resource in '{1}'.", resourceBaseName, resourceAssembly), "resourceBaseName");
 			image = Image.FromStream(stream);
+			if (image == null) throw new ArgumentException(string.Format("'{0}' is not a valid image resource.", resourceBaseName), "resourceBaseName");
 			this.resourceName = resourceBaseName;
 			this.resourceAssembly = resourceAssembly;
 		}
@@ -690,7 +1117,11 @@ namespace Dataweb.NShape.Advanced {
 			if (bufferImage == null) bufferImage = CreateImage();
 			MetafileHeader header = bufferImage.GetMetafileHeader();
 			graphics.DrawImage(bufferImage, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
-
+			
+			// Draw original image
+			// ToDo: Define a BrushRemapTable instead of exchanging brushes
+			//MetafileHeader header = ((Metafile)image).GetMetafileHeader();
+			//graphics.DrawImage(image, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
 #if DEBUG
 			//graphics.DrawRectangle(Pens.Red, dstBounds);
 #endif
@@ -759,67 +1190,97 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private bool MetafileProc(EmfPlusRecordType recordType, int flags, int dataSize,
-						IntPtr data, PlayRecordCallback callbackData) {
-			if (data != IntPtr.Zero) {
-			   if (dataSize > metafileDataSize) {
-			      metafileDataSize = dataSize;
-			      metafileData = new byte[metafileDataSize];
-			   }
-			   // Copy the unmanaged record to a managed byte buffer that can be used by PlayRecord.
-			   Marshal.Copy(data, metafileData, 0, dataSize);
-			   // Adjust the color
-				switch (recordType) {
-					case EmfPlusRecordType.EmfSetWindowExtEx:
-						// An Position 0 steht die Größe in Bild-Einheiten
-						int boundsWidth = Buffers.GetInt32(metafileData, 0);
-						if (boundsWidth > 0) scaling = boundsWidth / w;
-						break;
-					case EmfPlusRecordType.EmfSetViewportExtEx:
-						// An Position 0 steht die Größe als SIZEL
-						// Buffers.SetInt32(metafileData, 0, w);
-						// Buffers.SetInt32(metafileData, 4, h - caption.Bounds.Height);
-						break;
-					case EmfPlusRecordType.EmfCreateBrushIndirect:
-						// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
-						if (!brushReplaced) {
-							Buffers.SetByte(metafileData, 8, FillStyle.BaseColorStyle.Color.R);
-							Buffers.SetByte(metafileData, 9, FillStyle.BaseColorStyle.Color.G);
-							Buffers.SetByte(metafileData, 10, FillStyle.BaseColorStyle.Color.B);
-							Buffers.SetByte(metafileData, 11, FillStyle.BaseColorStyle.Color.A);
-							brushReplaced = true;
-						}
-						break;
-					case EmfPlusRecordType.EmfCreatePen:
-						// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
-						Buffers.SetInt32(metafileData, 4, (int)LineStyle.DashType);
-						Buffers.SetInt32(metafileData, 8, (int)(LineStyle.LineWidth * scaling));
-						// y-Komponente wird angeblich nicht benutzt.
-						Buffers.SetInt32(metafileData, 12, LineStyle.LineWidth);
-						Buffers.SetByte(metafileData, 16, LineStyle.ColorStyle.Color.R);
-						Buffers.SetByte(metafileData, 17, LineStyle.ColorStyle.Color.G);
-						Buffers.SetByte(metafileData, 18, LineStyle.ColorStyle.Color.B);
-						Buffers.SetByte(metafileData, 19, LineStyle.ColorStyle.Color.A);
-						break;
-					case EmfPlusRecordType.FillPath:
-						// This type of record only appears in EMF+ files, not in WMF and 'classic' EMF files.
-						// Content of metafileData:
-						// Status FillPath(
-						//		const Brush *brush,
-						//		const GraphicsPath *path);
-						//
-						// ToDo: Find a way how to replace the pointer to the brush with a pointer to fillstyle's brush
-						break;
-					default:
-						// nothing to do
-						break;
+		private bool MetafileProc(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
+#if DEBUG
+			++emfRecordsPlayed;
+#endif
+			try {
+				if (data == IntPtr.Zero)
+					((Metafile)image).PlayRecord(recordType, flags, 0, null);
+				else {
+					if (dataSize > metafileDataSize) {
+						metafileDataSize = dataSize;
+						metafileData = new byte[metafileDataSize];
+					}
+					// Copy the unmanaged record to a managed byte buffer that can be used by PlayRecord.
+					Marshal.Copy(data, metafileData, 0, dataSize);
+					// Adjust the color
+					switch (recordType) {
+						case EmfPlusRecordType.EmfSetWindowExtEx:
+							// An Position 0 steht die Größe in Bild-Einheiten
+							//int boundsWidth = Buffers.GetInt32(metafileData, 0);
+							//if (boundsWidth > 0) scaling = boundsWidth / w;
+							break;
+						case EmfPlusRecordType.EmfSetViewportExtEx:
+							// An Position 0 steht die Größe als SIZEL
+							// Buffers.SetInt32(metafileData, 0, w);
+							// Buffers.SetInt32(metafileData, 4, h - caption.Bounds.Height);
+							break;
+						case EmfPlusRecordType.EmfCreateBrushIndirect:
+							// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
+							// Get color of current brush
+							int idx = 8;
+							byte r = Buffers.GetByte(metafileData, 0, ref idx);
+							byte g = Buffers.GetByte(metafileData, 0, ref idx);
+							byte b = Buffers.GetByte(metafileData, 0, ref idx);
+							byte a = 255;// Buffers.GetByte(metafileData, 0, ref idx);
+							Color color = Color.FromArgb(a, r, g, b);
+							if (replaceColor == Color.Empty) replaceColor = Color.FromArgb(a, r, g, b);
+							// If the brush's color matches the color to replace, replace it.
+							if (color.ToArgb() == replaceColor.ToArgb()) {
+								Buffers.SetByte(metafileData, 8, FillStyle.BaseColorStyle.Color.R);
+								Buffers.SetByte(metafileData, 9, FillStyle.BaseColorStyle.Color.G);
+								Buffers.SetByte(metafileData, 10, FillStyle.BaseColorStyle.Color.B);
+								//Buffers.SetByte(metafileData, 11, FillStyle.BaseColorStyle.Color.A);
+#if DEBUG
+								++brushesReplaced;
+#endif
+							}
+							break;
+						case EmfPlusRecordType.EmfCreatePen:
+						//// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
+						//Buffers.SetInt32(metafileData, 4, (int)LineStyle.DashType);
+						//Buffers.SetInt32(metafileData, 8, (int)(LineStyle.LineWidth * scaling));
+						//// y-Komponente wird angeblich nicht benutzt.
+						//Buffers.SetInt32(metafileData, 12, LineStyle.LineWidth);
+						//Buffers.SetByte(metafileData, 16, LineStyle.ColorStyle.Color.R);
+						//Buffers.SetByte(metafileData, 17, LineStyle.ColorStyle.Color.G);
+						//Buffers.SetByte(metafileData, 18, LineStyle.ColorStyle.Color.B);
+						//Buffers.SetByte(metafileData, 19, LineStyle.ColorStyle.Color.A);
+						//break;
+						case EmfPlusRecordType.FillPath:
+						default:
+							// nothing to do
+							break;
+					}
+					((Metafile)image).PlayRecord(recordType, flags, dataSize, metafileData);
 				}
+			} catch (Exception exc) {
+				Console.WriteLine("Error while playing metafile record: {0}", exc.Message);
 			}
-			((Metafile)image).PlayRecord(recordType, flags, dataSize, metafileData);
 			return true;
 		}
 
 
+		private bool MetafileProc2(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
+			try {
+				if (data == IntPtr.Zero) ((Metafile)image).PlayRecord(recordType, flags, 0, null);
+				else {
+					if (dataSize > metafileDataSize) {
+						metafileDataSize = dataSize;
+						metafileData = new byte[metafileDataSize];
+					}
+					// Copy the unmanaged record to a managed byte buffer that can be used by PlayRecord.
+					Marshal.Copy(data, metafileData, 0, dataSize);
+					((Metafile)image).PlayRecord(recordType, flags, dataSize, metafileData);
+				}
+			} catch (Exception exc) {
+				Console.WriteLine("Error while playing metafile record: {0}", exc.Message);
+			}
+			return true;
+		}
+
+	
 		private Metafile CreateImage() {
 			// Create MetaFile and graphics context
 			Metafile metaFile = null;
@@ -829,7 +1290,7 @@ namespace Dataweb.NShape.Advanced {
 				try {
 					MetafileHeader header = ((Metafile)image).GetMetafileHeader();
 					EmfType emfType;
-					switch(header.Type) {
+					switch (header.Type) {
 						case MetafileType.EmfPlusDual: emfType = EmfType.EmfPlusDual; break;
 						case MetafileType.EmfPlusOnly: emfType = EmfType.EmfPlusOnly; break;
 						default: emfType = EmfType.EmfOnly; break;
@@ -840,16 +1301,26 @@ namespace Dataweb.NShape.Advanced {
 					gfx.ReleaseHdc(hdc);
 				}
 			}
+#if DEBUG
+			emfRecordsPlayed = 0;
+			brushesReplaced = 0;
+#endif
+			imageAttribs = GdiHelpers.GetImageAttributes(FillStyle);
 			using (Graphics gfx = Graphics.FromImage(metaFile)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
+				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.HighQuality);
 				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
-				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds,
-					GraphicsUnit.Pixel, metafileDelegate, IntPtr.Zero, imageAttribs);
+				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, metafileDelegate, IntPtr.Zero, imageAttribs);
+				//gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, new Graphics.EnumerateMetafileProc(MetafileProc2), IntPtr.Zero, imageAttribs);
 			}
 			if (stream != null) {
 				stream.Dispose();
 				stream = null;
 			}
+#if DEBUG
+			Console.WriteLine("Image created: {0} metafile records played and {1} brushes replaced.", emfRecordsPlayed, brushesReplaced);
+			emfRecordsPlayed = 0;
+			brushesReplaced = 0;
+#endif
 			return metaFile;
 		}
 
@@ -857,11 +1328,17 @@ namespace Dataweb.NShape.Advanced {
 		private Graphics.EnumerateMetafileProc metafileDelegate;
 		private byte[] metafileData = null; // Date for meta file drawing
 		private int metafileDataSize = 0; // Allocated size for meta file data
+		private Color replaceColor = Color.Empty;
 		private bool brushReplaced;
 		private float scaling;
 
 		private ImageAttributes imageAttribs;
 		private Metafile bufferImage;
+
+#if DEBUG
+		private int emfRecordsPlayed = 0;
+		private int brushesReplaced = 0;
+#endif
 	}
 
 }

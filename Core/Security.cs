@@ -120,9 +120,6 @@ namespace Dataweb.NShape {
 	}
 
 
-	#region DefaultSecurity
-
-
 	public enum StandardRole {
 		Administrator,
 		SuperUser,
@@ -131,24 +128,24 @@ namespace Dataweb.NShape {
 		Guest,
 		Custom
 	}
-
-
+	
+	
 	/// <summary>
 	/// SecurityManager implementation based on a fixed set of user roles.
 	/// </summary>
-	public class DefaultSecurity : ISecurityManager {
+	public class RoleBasedSecurityManager : ISecurityManager {
 
 		/// <summary>
 		/// Creates a default security object with standard roles and domains.
 		/// </summary>
-		public DefaultSecurity() {
+		public RoleBasedSecurityManager() {
 			AddRole(roleNameAdministrator, "May do anything.");
 			AddRole(roleNameSuperUser, "May do almost anything.");
 			AddRole(roleNameDesigner, "Creates and edits diagrams.");
 			AddRole(roleNameOperator, "Works with prepared diagrams.");
 			AddRole(roleNameGuest, "Views diagrams.");
-			currentRole = roles[0];
-			currentStdRole = StandardRole.Administrator;
+			currentSecManRole = roles[0];
+			currentRole = StandardRole.Administrator;
 			//
 			char domain;
 			domain = 'A';
@@ -168,7 +165,9 @@ namespace Dataweb.NShape {
 				| Permission.Layout
 				| Permission.ModifyData
 				| Permission.Present);
-			AddPermissions(domain, roleNameOperator, Permission.Layout | Permission.ModifyData);
+			AddPermissions(domain, roleNameOperator, 
+				Permission.Layout 
+				| Permission.ModifyData);
 			AddPermissions(domain, roleNameGuest, Permission.None);
 
 
@@ -197,6 +196,67 @@ namespace Dataweb.NShape {
 				| Permission.ModifyData);
 			AddPermissions(domain, roleNameGuest, Permission.None);
 			//
+		}
+
+
+		/// <summary>
+		/// Defines the role of the current user.
+		/// </summary>
+		public string CurrentRoleName {
+			get { return currentSecManRole.name; }
+			set {
+				switch (value) {
+						case roleNameAdministrator:
+							currentRole = StandardRole.Administrator;
+							break;
+						case roleNameSuperUser:
+							currentRole = StandardRole.SuperUser;
+							break;
+						case roleNameDesigner:
+							currentRole = StandardRole.Designer;
+							break;
+						case roleNameOperator:
+							currentRole = StandardRole.Operator;
+							break;
+						case roleNameGuest:
+							currentRole = StandardRole.Guest;
+							break;
+						default:
+							currentRole = StandardRole.Custom;
+							break;
+				}
+				currentSecManRole = GetRole(value, true);
+			}
+		}
+
+
+		/// <summary>
+		/// Defines the role of the current user.
+		/// </summary>
+		public StandardRole CurrentRole {
+			get { return currentRole; }
+			set {
+				switch (value) {
+					case StandardRole.Administrator:
+						currentSecManRole = GetRole(roleNameAdministrator, true);
+						break;
+					case StandardRole.SuperUser:
+						currentSecManRole = GetRole(roleNameSuperUser, true);
+						break;
+					case StandardRole.Designer:
+						currentSecManRole = GetRole(roleNameDesigner, true);
+						break;
+					case StandardRole.Operator:
+						currentSecManRole = GetRole(roleNameOperator, true);
+						break;
+					case StandardRole.Guest:
+						currentSecManRole = GetRole(roleNameGuest, true);
+						break;
+					case StandardRole.Custom:
+						throw new ArgumentException("Custom roles are set by setting the CurrentRoleName property.");
+				}
+				currentRole = value;
+			}
 		}
 
 
@@ -231,7 +291,7 @@ namespace Dataweb.NShape {
 		/// <param name="description"></param>
 		public void AddRole(string name, string description) {
 			if (name == null) throw new ArgumentNullException("name");
-			roles.Add(new Role(name, description));
+			roles.Add(new SecurityManagerRole(name, description));
 		}
 
 
@@ -247,15 +307,30 @@ namespace Dataweb.NShape {
 		}
 
 
+		public void AddPermissions(char domain, StandardRole role, Permission permissions) {
+			string roleName = GetRoleName(role);
+			AddPermissions(domain, role, permissions);
+		}
+
+
 		/// <summary>
 		/// Adds permissions for the given domain and role.
 		/// </summary>
 		/// <param name="domain"></param>
-		/// <param name="role"></param>
+		/// <param name="roleName"></param>
 		/// <param name="permissions"></param>
-		public void AddPermissions(char domain, string role, Permission permissions) {
-			if (role == null) throw new ArgumentNullException("role");
-			GetRole(role, true).AddPermissions(domain, permissions);
+		public void AddPermissions(char domain, string roleName, Permission permissions) {
+			if (roleName == null) throw new ArgumentNullException("role");
+			GetRole(roleName, true).AddPermissions(domain, permissions);
+		}
+
+
+		/// <summary>
+		/// Redefines the permissions of the given domain and role.
+		/// </summary>
+		public void SetPermissions(char domain, StandardRole role, Permission permissions) {
+			string roleName = GetRoleName(role);
+			SetPermissions(domain, roleName, permissions);
 		}
 
 
@@ -263,11 +338,20 @@ namespace Dataweb.NShape {
 		/// Redefines the permissions of the given domain and role.
 		/// </summary>
 		/// <param name="domain"></param>
-		/// <param name="role"></param>
+		/// <param name="roleName"></param>
 		/// <param name="permissions"></param>
-		public void SetPermissions(char domain, string role, Permission permissions) {
-			if (role == null) throw new ArgumentNullException("role");
-			GetRole(role, true).SetPermissions(domain, permissions);
+		public void SetPermissions(char domain, string roleName, Permission permissions) {
+			if (roleName == null) throw new ArgumentNullException("role");
+			GetRole(roleName, true).SetPermissions(domain, permissions);
+		}
+
+
+		/// <summary>
+		/// Removes permissions from the given domain and role.
+		/// </summary>
+		public void RemovePermissions(char domain, StandardRole role, Permission permissions) {
+			string roleName = GetRoleName(role);
+			RemovePermissions(domain, roleName, permissions);
 		}
 
 
@@ -275,72 +359,26 @@ namespace Dataweb.NShape {
 		/// Removes permissions from the given domain and role.
 		/// </summary>
 		/// <param name="domain"></param>
-		/// <param name="role"></param>
+		/// <param name="roleName"></param>
 		/// <param name="permissions"></param>
-		public void RemovePermissions(char domain, string role, Permission permissions) {
-			if (role == null) throw new ArgumentNullException("role");
-			GetRole(role, true).RemovePermissions(domain, permissions);
+		public void RemovePermissions(char domain, string roleName, Permission permissions) {
+			if (roleName == null) throw new ArgumentNullException("role");
+			GetRole(roleName, true).RemovePermissions(domain, permissions);
 		}
 
 
 		/// <summary>
-		/// Defines the role of the current user.
+		/// Returns the name of the given role.
 		/// </summary>
-		public string CurrentRoleName {
-			get { return currentRole.name; }
-			set {
-				switch (value) {
-						case roleNameAdministrator:
-							currentStdRole = StandardRole.Administrator;
-							break;
-						case roleNameSuperUser:
-							currentStdRole = StandardRole.SuperUser;
-							break;
-						case roleNameDesigner:
-							currentStdRole = StandardRole.Designer;
-							break;
-						case roleNameOperator:
-							currentStdRole = StandardRole.Operator;
-							break;
-						case roleNameGuest:
-							currentStdRole = StandardRole.Guest;
-							break;
-						default:
-							currentStdRole = StandardRole.Custom;
-							break;
-				}
-				currentRole = GetRole(value, true);
-			}
-		}
-
-
-
-		/// <summary>
-		/// Defines the role of the current user.
-		/// </summary>
-		public StandardRole CurrentRole {
-			get { return currentStdRole; }
-			set {
-				switch (value) {
-					case StandardRole.Administrator:
-						currentRole = GetRole(roleNameAdministrator, true);
-						break;
-					case StandardRole.SuperUser:
-						currentRole = GetRole(roleNameSuperUser, true);
-						break;
-					case StandardRole.Designer:
-						currentRole = GetRole(roleNameDesigner, true);
-						break;
-					case StandardRole.Operator:
-						currentRole = GetRole(roleNameOperator, true);
-						break;
-					case StandardRole.Guest:
-						currentRole = GetRole(roleNameGuest, true);
-						break;
-					case StandardRole.Custom:
-						throw new ArgumentException("Custom roles are set by setting the CurrentRoleName property.");
-				}
-				currentStdRole = value;
+		public string GetRoleName(StandardRole role) {
+			switch (role) {
+				case StandardRole.Administrator: return roleNameAdministrator;
+				case StandardRole.Designer: return roleNameDesigner;
+				case StandardRole.Guest: return roleNameGuest;
+				case StandardRole.Operator: return roleNameOperator;
+				case StandardRole.SuperUser: return roleNameSuperUser;
+				default: 
+					throw new InvalidOperationException(string.Format("{0} is not a valid role for this operation.", role));
 			}
 		}
 
@@ -355,7 +393,7 @@ namespace Dataweb.NShape {
 
 		/// <override></override>
 		public bool IsGranted(Permission permission, char domainName) {
-			return currentRole.IsGranted(permission, domainName);
+			return currentSecManRole.IsGranted(permission, domainName);
 		}
 
 
@@ -384,16 +422,16 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		private class Role {
+		private class SecurityManagerRole {
 
-			public Role(string name, string description) {
+			public SecurityManagerRole(string name, string description) {
 				this.name = name;
 				this.description = description;
 			}
 
 
-			public Role Clone() {
-				Role result = new Role(name, description);
+			public SecurityManagerRole Clone() {
+				SecurityManagerRole result = new SecurityManagerRole(name, description);
 				permissions.CopyTo(result.permissions, 0);
 				return result;
 			}
@@ -425,9 +463,9 @@ namespace Dataweb.NShape {
 		}
 
 
-		private Role GetRole(string name, bool throwOnNotFound) {
-			Role result = null;
-			foreach (Role r in roles) {
+		private SecurityManagerRole GetRole(string name, bool throwOnNotFound) {
+			SecurityManagerRole result = null;
+			foreach (SecurityManagerRole r in roles) {
 				if (r.name.Equals(name, StringComparison.InvariantCultureIgnoreCase)) {
 					result = r;
 					break;
@@ -448,11 +486,11 @@ namespace Dataweb.NShape {
 		private string[] domains = new string[26];
 
 		// List of known roles.
-		private List<Role> roles = new List<Role>(10);
+		private List<SecurityManagerRole> roles = new List<SecurityManagerRole>(10);
 
 		// Reference of current Role.
-		private Role currentRole;
-		private StandardRole currentStdRole;
+		private SecurityManagerRole currentSecManRole;
+		private StandardRole currentRole;
 
 		private const string roleNameAdministrator = "Administrator";
 		private const string roleNameSuperUser = "Super User";
@@ -461,6 +499,12 @@ namespace Dataweb.NShape {
 		private const string roleNameGuest = "Guest";
 	}
 
-	#endregion
+
+	/// <summary>
+	/// This class was renamed to RoleBasedSecurityManager. 
+	/// This wrapper maintains compatibility with previous versions.
+	/// </summary>
+	public class DefaultSecurity : RoleBasedSecurityManager {
+	}
 
 }

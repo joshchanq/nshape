@@ -25,8 +25,9 @@ namespace Dataweb.NShape.WinFormsUI {
 	public partial class TemplateEditorDialog : Form {
 
 		public TemplateEditorDialog() {
-			DoubleBuffered = true;
 			InitializeComponent();
+			DoubleBuffered = true;
+			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		}
 
 

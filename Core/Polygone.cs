@@ -21,63 +21,63 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape {
 
-	public abstract class PolygonBase : CaptionedShapeBase {
+	//public abstract class PolygonBase : CaptionedShapeBase {
 
-		protected PolygonBase(ShapeType shapeType, IStyleSet styleSet)
-			: base(shapeType, styleSet) {
-			throw new NotImplementedException();
-		}
-
-
-		protected PolygonBase(ShapeType shapeType, Template template) : base(shapeType, template) {
-			throw new NotImplementedException();
-		}
+	//   protected PolygonBase(ShapeType shapeType, IStyleSet styleSet)
+	//      : base(shapeType, styleSet) {
+	//      throw new NotImplementedException();
+	//   }
 
 
-		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
-			throw new NotImplementedException();
-		}
+	//   protected PolygonBase(ShapeType shapeType, Template template) : base(shapeType, template) {
+	//      throw new NotImplementedException();
+	//   }
 
-		protected override int DivFactorX {
-			get { throw new NotImplementedException(); }
-		}
 
-		protected override int DivFactorY {
-			get { throw new NotImplementedException(); }
-		}
+	//   protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
+	//      throw new NotImplementedException();
+	//   }
 
-		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
-			throw new NotImplementedException();
-		}
+	//   protected override int DivFactorX {
+	//      get { throw new NotImplementedException(); }
+	//   }
 
-		protected override void CalcControlPoints() {
-			throw new NotImplementedException();
-		}
+	//   protected override int DivFactorY {
+	//      get { throw new NotImplementedException(); }
+	//   }
 
-		protected internal override int ControlPointCount {
-			get { throw new NotImplementedException(); }
-		}
+	//   protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
+	//      throw new NotImplementedException();
+	//   }
 
-		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
-			throw new NotImplementedException();
-		}
+	//   protected override void CalcControlPoints() {
+	//      throw new NotImplementedException();
+	//   }
 
-		public override Shape Clone() {
-			throw new NotImplementedException();
-		}
+	//   protected internal override int ControlPointCount {
+	//      get { throw new NotImplementedException(); }
+	//   }
 
-		public override void Fit(int x, int y, int width, int height) {
-			throw new NotImplementedException();
-		}
+	//   protected override bool IntersectsWithCore(int x, int y, int width, int height) {
+	//      throw new NotImplementedException();
+	//   }
 
-		public override RelativePosition CalculateRelativePosition(int x, int y) {
-			throw new NotImplementedException();
-		}
+	//   public override Shape Clone() {
+	//      throw new NotImplementedException();
+	//   }
 
-		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
-			throw new NotImplementedException();
-		}
-	}
+	//   public override void Fit(int x, int y, int width, int height) {
+	//      throw new NotImplementedException();
+	//   }
+
+	//   public override RelativePosition CalculateRelativePosition(int x, int y) {
+	//      throw new NotImplementedException();
+	//   }
+
+	//   public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
+	//      throw new NotImplementedException();
+	//   }
+	//}
 
 
 		//public override void CopyFrom(Shape source) {

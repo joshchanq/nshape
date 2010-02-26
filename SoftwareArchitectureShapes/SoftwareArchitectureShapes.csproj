@@ -69,12 +69,6 @@
   <ItemGroup>
     <EmbeddedResource Include="Resources\Actor.emf" />
     <EmbeddedResource Include="Resources\Monitor.emf" />
-    <EmbeddedResource Include="Resources\Monitor_new1.emf" />
-    <EmbeddedResource Include="Resources\Monitor_old.emf" />
-    <EmbeddedResource Include="Resources\PC.emf" />
-    <EmbeddedResource Include="Resources\PC2.emf" />
-    <EmbeddedResource Include="Resources\PC2.wmf" />
-    <EmbeddedResource Include="Resources\PC3.emf" />
     <EmbeddedResource Include="Resources\RTU.emf" />
     <EmbeddedResource Include="Resources\Tower.emf" />
   </ItemGroup>
@@ -89,14 +83,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Dataweb.NShape.ico">
+    <EmbeddedResource Include="..\Dataweb.NShape.ico">
       <Link>Resources\Dataweb.NShape.ico</Link>
-    </Content>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Dataweb.NShape.snk">
       <Link>Dataweb.NShape.snk</Link>
     </None>
+    <EmbeddedResource Include="Resources\Desktop.emf" />
+    <EmbeddedResource Include="Resources\Laptop.emf" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

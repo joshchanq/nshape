@@ -16,50 +16,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Reflection;
+
 using Dataweb.NShape.Advanced;
-using System.Collections;
 
 
 namespace Dataweb.NShape.Controllers {
 
-	public class DesignEventArgs : EventArgs {
-
-		public DesignEventArgs(Design design) {
-			if (design == null) throw new ArgumentNullException("design");
-			this.design = design;
-		}
-
-		public Design Design {
-			get { return design; }
-			internal set { design = value; }
-		}
-
-		internal DesignEventArgs() { }
-
-		private Design design;
-	}
-
-
-	public class StyleEventArgs : DesignEventArgs {
-
-		public StyleEventArgs(Design design, IStyle style)
-			: base(design) {
-			if (style == null) throw new ArgumentNullException("style");
-			this.style = style;
-		}
-
-		public IStyle Style {
-			get { return style; }
-			internal set { style = value; }
-		}
-
-		internal StyleEventArgs() { }
-
-		private IStyle style;
-	}
-
-
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(DesignController), "DesignController.bmp")]
 	public partial class DesignController : Component {
 
 		public DesignController() { }
@@ -114,6 +80,15 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		[Browsable(false)]
+		public IEnumerable<Design> Designs {
+			get {
+				if (project == null) return EmptyEnumerator<Design>.Empty;
+				else return project.Repository.GetDesigns();
+			}
+		}
+
+
 		[Category("NShape")]
 		public Project Project {
 			get { return project; }
@@ -125,12 +100,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		[Browsable(false)]
-		public IEnumerable<Design> Designs {
-			get {
-				if (project == null) return EmptyEnumerator<Design>.Empty;
-				else return project.Repository.GetDesigns();
-			}
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 		#endregion
@@ -195,22 +167,40 @@ namespace Dataweb.NShape.Controllers {
 			Style style;
 			switch (category) {
 				case StyleCategory.CapStyle:
-					style  = new CapStyle(GetNewStyleName(design.CapStyles));
+					style = new CapStyle(GetNewStyleName(design.CapStyles));
+					((CapStyle)style).CapShape = CapShape.None;
+					((CapStyle)style).ColorStyle = design.ColorStyles.Black;
 					break;
 				case StyleCategory.CharacterStyle: 
 					style = new CharacterStyle(GetNewStyleName(design.CharacterStyles));
+					((CharacterStyle)style).ColorStyle = design.ColorStyles.Black;
 					break;
 				case StyleCategory.ColorStyle: 
 					style = new ColorStyle(GetNewStyleName(design.ColorStyles));
+					((ColorStyle)style).Color = Color.Black;
+					((ColorStyle)style).Transparency = 0;
 					break;
 				case StyleCategory.FillStyle: 
 					style = new FillStyle(GetNewStyleName(design.FillStyles));
+					((FillStyle)style).AdditionalColorStyle = design.ColorStyles.White;
+					((FillStyle)style).BaseColorStyle = design.ColorStyles.Black;
+					((FillStyle)style).FillMode = FillMode.Gradient;
+					((FillStyle)style).ImageLayout = ImageLayoutMode.Fit;
 					break;
 				case StyleCategory.LineStyle: 
 					style = new LineStyle(GetNewStyleName(design.LineStyles));
+					((LineStyle)style).ColorStyle = design.ColorStyles.Black;
+					((LineStyle)style).DashCap = System.Drawing.Drawing2D.DashCap.Round;
+					((LineStyle)style).DashType = DashType.Solid;
+					((LineStyle)style).LineJoin = System.Drawing.Drawing2D.LineJoin.Round;
+					((LineStyle)style).LineWidth = 1;
 					break;
 				case StyleCategory.ParagraphStyle: 
 					style = new ParagraphStyle(GetNewStyleName(design.ParagraphStyles));
+					((ParagraphStyle)style).Alignment = ContentAlignment.MiddleCenter;
+					((ParagraphStyle)style).Padding = new TextPadding(3);
+					((ParagraphStyle)style).Trimming = StringTrimming.EllipsisCharacter;
+					((ParagraphStyle)style).WordWrap = false;
 					break;
 				//case StyleCategory.ShapeStyle: style = new ShapeStyle(GetNewStyleName(design.ShapeStyles)); break;
 				default: throw new NShapeUnsupportedValueException(typeof(StyleCategory), category);
@@ -413,4 +403,46 @@ namespace Dataweb.NShape.Controllers {
 
 		#endregion
 	}
+
+
+	#region EventArgs
+
+	public class DesignEventArgs : EventArgs {
+
+		public DesignEventArgs(Design design) {
+			if (design == null) throw new ArgumentNullException("design");
+			this.design = design;
+		}
+
+		public Design Design {
+			get { return design; }
+			internal set { design = value; }
+		}
+
+		internal DesignEventArgs() { }
+
+		private Design design;
+	}
+
+
+	public class StyleEventArgs : DesignEventArgs {
+
+		public StyleEventArgs(Design design, IStyle style)
+			: base(design) {
+			if (style == null) throw new ArgumentNullException("style");
+			this.style = style;
+		}
+
+		public IStyle Style {
+			get { return style; }
+			internal set { style = value; }
+		}
+
+		internal StyleEventArgs() { }
+
+		private IStyle style;
+	}
+
+	#endregion
+
 }

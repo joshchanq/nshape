@@ -65,6 +65,11 @@ namespace Dataweb.NShape {
 		bool Exists();
 
 		/// <summary>
+		/// Reads the version number of the project from the persistent store.
+		/// </summary>
+		void ReadVersion();
+		
+		/// <summary>
 		/// Creates and opens a new project in the cache.
 		/// </summary>
 		/// <remarks>Create does not actually create the cache. We want to give the client 
@@ -332,13 +337,13 @@ namespace Dataweb.NShape {
 
 		void UpdateModelMapping(IModelMapping modelMapping);
 
-		void UpdateModelMapping(IEnumerable<IModelMapping> modelMappings);
+		void UpdateModelMappings(IEnumerable<IModelMapping> modelMappings);
 
 		void DeleteModelMapping(IModelMapping modelMapping);
 
 		void DeleteModelMappings(IEnumerable<IModelMapping> modelMappings);
 
-		void UndeleteModelMappings(IModelMapping modelMapping, Template template);
+		void UndeleteModelMapping(IModelMapping modelMapping, Template template);
 
 		void UndeleteModelMappings(IEnumerable<IModelMapping> modelMappings, Template template);
 

@@ -19,6 +19,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using System.Windows.Forms.Design;
+using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.WinFormsUI {
@@ -39,6 +40,17 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { 
+				//return this.GetType().Assembly.GetName().Version.ToString();
+				return base.ProductVersion;
+			}
+		}
+
+
+		[Category("Behavior")]
 		public bool HighlightItems {
 			get { return highlightItems; }
 			set { highlightItems = value; }
@@ -167,7 +179,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			base.OnMouseUp(e);
 			if (e.Button == MouseButtons.Left) {
 				for (int i = 0; i < Items.Count; ++i) {
-					if (GetItemRectangle(i).Contains(e.Location)) {
+					if (Geometry.RectangleContainsPoint(GetItemRectangle(i), e.Location)) {
 						ExecuteSelection();
 						break;
 					}

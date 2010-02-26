@@ -25,7 +25,7 @@ namespace WebVisists {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager2 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadWebStatisticsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadDiagramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -33,14 +33,15 @@ namespace WebVisists {
 			this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
 			this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.selectAllToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.showLayoutWindowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
 			this.diagramSetController = new Dataweb.NShape.Controllers.DiagramSetController();
 			this.project = new Dataweb.NShape.Project(this.components);
 			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
 			this.xmlStore = new Dataweb.NShape.XmlStore();
-			this.toolBoxAdapter = new Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter(this.components);
 			this.toolbox = new System.Windows.Forms.ListView();
+			this.toolBoxAdapter = new Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter(this.components);
 			this.toolSetController = new Dataweb.NShape.Controllers.ToolSetController();
 			this.mainMenuStrip.SuspendLayout();
 			this.SuspendLayout();
@@ -89,7 +90,8 @@ namespace WebVisists {
 			// editToolStripMenuItem
 			// 
 			this.editToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.selectAllToolStripMenuItem});
+            this.selectAllToolStripMenuItem,
+            this.showLayoutWindowToolStripMenuItem});
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
 			this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.editToolStripMenuItem.Text = "Edit";
@@ -97,9 +99,16 @@ namespace WebVisists {
 			// selectAllToolStripMenuItem
 			// 
 			this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
-			this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(128, 22);
+			this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
 			this.selectAllToolStripMenuItem.Text = "Select All";
 			this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
+			// 
+			// showLayoutWindowToolStripMenuItem
+			// 
+			this.showLayoutWindowToolStripMenuItem.Name = "showLayoutWindowToolStripMenuItem";
+			this.showLayoutWindowToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+			this.showLayoutWindowToolStripMenuItem.Text = "Show Layout Window";
+			this.showLayoutWindowToolStripMenuItem.Click += new System.EventHandler(this.showLayoutWindowToolStripMenuItem_Click);
 			// 
 			// openFileDialog
 			// 
@@ -113,29 +122,31 @@ namespace WebVisists {
 			this.display.BackgroundGradientAngle = 45;
 			this.display.ConnectionPointShape = Dataweb.NShape.Controllers.ControlPointShape.Circle;
 			this.display.ControlPointAlpha = ((byte)(255));
-			this.display.CurrentTool = null;
 			this.display.DiagramSetController = this.diagramSetController;
 			this.display.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.display.GridAlpha = ((byte)(255));
 			this.display.GridColor = System.Drawing.Color.White;
 			this.display.GridSize = 20;
 			this.display.GripSize = 3;
+			this.display.HideDeniedMenuItems = false;
 			this.display.HighQualityBackground = true;
 			this.display.HighQualityRendering = true;
 			this.display.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-			this.display.Location = new System.Drawing.Point(0, 24);
+			this.display.Location = new System.Drawing.Point(0, 0);
 			this.display.MinRotateRange = 30;
 			this.display.Name = "display";
-			this.display.RenderingQualityHighQuality = Dataweb.NShape.Advanced.RenderingQuality.HighQuality;
+			this.display.PropertyController = null;
+			this.display.RenderingQualityHighQuality = Dataweb.NShape.Advanced.RenderingQuality.MaximumQuality;
 			this.display.RenderingQualityLowQuality = Dataweb.NShape.Advanced.RenderingQuality.DefaultQuality;
 			this.display.ResizeGripShape = Dataweb.NShape.Controllers.ControlPointShape.Square;
 			this.display.SelectionHilightColor = System.Drawing.Color.Firebrick;
 			this.display.SelectionInactiveColor = System.Drawing.Color.Gray;
 			this.display.SelectionInteriorColor = System.Drawing.Color.WhiteSmoke;
 			this.display.SelectionNormalColor = System.Drawing.Color.DarkGreen;
+			this.display.ShowCellOccupation = false;
 			this.display.ShowGrid = true;
 			this.display.ShowScrollBars = true;
-			this.display.Size = new System.Drawing.Size(996, 684);
+			this.display.Size = new System.Drawing.Size(996, 708);
 			this.display.SnapDistance = 5;
 			this.display.SnapToGrid = true;
 			this.display.TabIndex = 0;
@@ -143,7 +154,6 @@ namespace WebVisists {
 			this.display.ToolPreviewColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(70)))), ((int)(((byte)(130)))), ((int)(((byte)(180)))));
 			this.display.ZoomLevel = 100;
 			this.display.ZoomWithMouseWheel = true;
-			this.display.Load += new System.EventHandler(this.display_Load);
 			// 
 			// diagramSetController
 			// 
@@ -156,9 +166,9 @@ namespace WebVisists {
 			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = null;
 			this.project.Repository = this.cachedRepository;
-			defaultSecurity1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			defaultSecurity1.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = defaultSecurity1;
+			roleBasedSecurityManager2.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager2.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager2;
 			// 
 			// cachedRepository
 			// 
@@ -172,12 +182,6 @@ namespace WebVisists {
 			this.xmlStore.DirectoryName = "";
 			this.xmlStore.FileExtension = ".xml";
 			this.xmlStore.ProjectName = "";
-			this.xmlStore.Version = 0;
-			// 
-			// toolBoxAdapter
-			// 
-			this.toolBoxAdapter.ListView = this.toolbox;
-			this.toolBoxAdapter.ToolSetController = this.toolSetController;
 			// 
 			// toolbox
 			// 
@@ -186,7 +190,7 @@ namespace WebVisists {
 			this.toolbox.FullRowSelect = true;
 			this.toolbox.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
 			this.toolbox.HideSelection = false;
-			this.toolbox.Location = new System.Drawing.Point(0, 633);
+			this.toolbox.Location = new System.Drawing.Point(14, 600);
 			this.toolbox.MultiSelect = false;
 			this.toolbox.Name = "toolbox";
 			this.toolbox.ShowItemToolTips = true;
@@ -195,6 +199,13 @@ namespace WebVisists {
 			this.toolbox.UseCompatibleStateImageBehavior = false;
 			this.toolbox.View = System.Windows.Forms.View.Details;
 			this.toolbox.SelectedIndexChanged += new System.EventHandler(this.toolbox_SelectedIndexChanged);
+			// 
+			// toolBoxAdapter
+			// 
+			this.toolBoxAdapter.HideDeniedMenuItems = false;
+			this.toolBoxAdapter.ListView = this.toolbox;
+			this.toolBoxAdapter.ShowDefaultContextMenu = true;
+			this.toolBoxAdapter.ToolSetController = this.toolSetController;
 			// 
 			// toolSetController
 			// 
@@ -206,11 +217,12 @@ namespace WebVisists {
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(996, 708);
 			this.Controls.Add(this.toolbox);
-			this.Controls.Add(this.display);
 			this.Controls.Add(this.mainMenuStrip);
+			this.Controls.Add(this.display);
 			this.Name = "MainForm";
 			this.Text = "WebVisits";
-			this.Load += new System.EventHandler(this.Form1_Load);
+			this.Load += new System.EventHandler(this.MainForm_Load);
+			this.Shown += new System.EventHandler(this.MainForm_Shown);
 			this.mainMenuStrip.ResumeLayout(false);
 			this.mainMenuStrip.PerformLayout();
 			this.ResumeLayout(false);
@@ -236,6 +248,7 @@ namespace WebVisists {
 		private Dataweb.NShape.Controllers.ToolSetController toolSetController;
 		private Dataweb.NShape.Advanced.CachedRepository cachedRepository;
 		private Dataweb.NShape.Project project;
+		private System.Windows.Forms.ToolStripMenuItem showLayoutWindowToolStripMenuItem;
 	}
 }
 

@@ -43,6 +43,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		[Category("NShape")]
+		public new string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
+
+		[Category("NShape")]
 		public IPropertyController PropertyController {
 			get { return propertyController; }
 			set {
@@ -53,6 +59,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		[Browsable(false)]
 		public int PageCount {
 			get {
 				int result = 0;
@@ -246,10 +253,12 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void propertyGrid_SelectedGridItemChanged(object sender, SelectedGridItemChangedEventArgs e) {
 			if (propertyController != null
 				&& e.NewSelection != null
-				&& e.OldSelection != null
-				&& e.NewSelection != e.OldSelection) {
-				propertyController.CancelSetProperty();
-				TypeDescriptionProviderDg.PropertyController = propertyController;
+				&& e.OldSelection != null) {
+				if (e.OldSelection.Equals(e.NewSelection)) return;
+				else {
+					propertyController.CancelSetProperty();
+					TypeDescriptionProviderDg.PropertyController = propertyController;
+				}
 			}
 		}
 

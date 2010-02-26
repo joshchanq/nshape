@@ -13,11 +13,13 @@
 ******************************************************************************/
 
 using System;
+using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Drawing;
 using System.Text;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -26,6 +28,8 @@ namespace Dataweb.NShape {
 	/// <summary>
 	/// Cache implementation for MS SQL Server
 	/// </summary>
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(SqlStore), "SqlStore.bmp")]
 	public class SqlStore : AdoNetStore {
 
 		public SqlStore()
@@ -100,66 +104,66 @@ namespace Dataweb.NShape {
 		protected IDbCommand CreateCreateTablesCommand(IStoreCache storeCache) {
 			StringBuilder cmdText = new StringBuilder();
 			//
-			cmdText.Append("CREATE TABLE ProjectInfo (Id INT IDENTITY PRIMARY KEY, Name VARCHAR(40), Version INT);\r\n");
+			cmdText.Append("CREATE TABLE ProjectInfo (Id INT IDENTITY PRIMARY KEY, Name VARCHAR(40), Version INT);" + Environment.NewLine);
 			cmdText.Append("CREATE TABLE Project ("
 				+ "ProjectInfo INT REFERENCES ProjectInfo (Id) ON DELETE CASCADE ON UPDATE CASCADE,"
-				+ "Id INT IDENTITY PRIMARY KEY, LastSavedUtc DATETIME);\r\n");
+				+ "Id INT IDENTITY PRIMARY KEY, LastSavedUtc DATETIME);" + Environment.NewLine);
 			cmdText.Append("CREATE TABLE Library ("
 				+ "Project INT REFERENCES Project (Id) ON DELETE CASCADE ON UPDATE CASCADE,"
-				+ "Name VARCHAR(40), AssemblyName VARCHAR(128), Version INT);\r\n");
-			cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(Design.EntityTypeName), "Project", "Project") + ";\r\n");
-			cmdText.Append("CREATE TABLE Style (Design INT REFERENCES Design (Id) ON DELETE CASCADE ON UPDATE CASCADE, Id INT IDENTITY PRIMARY KEY);\r\n");
+				+ "Name VARCHAR(40), AssemblyName VARCHAR(128), Version INT);" + Environment.NewLine);
+			cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(Design.EntityTypeName), "Project", "Project") + ";" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE Style (Design INT REFERENCES Design (Id) ON DELETE CASCADE ON UPDATE CASCADE, Id INT IDENTITY PRIMARY KEY);" + Environment.NewLine);
 			foreach (IEntityType et in storeCache.EntityTypes)
 				if (et.Category == EntityCategory.Style)
-					cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(et.FullName), "Style", null) + ";\r\n");
+					cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(et.FullName), "Style", null) + ";" + Environment.NewLine);
 			//
-			cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(Diagram.EntityTypeName), "Project", "Project") + ";\r\n");
+			cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(Diagram.EntityTypeName), "Project", "Project") + ";" + Environment.NewLine);
 			cmdText.Append("CREATE TABLE Layer ("
 				+ "Diagram INT REFERENCES Diagram (Id) ON DELETE CASCADE ON UPDATE CASCADE,"
-				+ "Id INT, Name VARCHAR(40), Title VARCHAR(40), UpperZoomBound INT, LowerZoomBound INT);\r\n");
-			cmdText.Append("CREATE TABLE Shape (Id INT IDENTITY PRIMARY KEY);\r\n");
+				+ "Id INT, Name VARCHAR(40), Title VARCHAR(40), UpperZoomBound INT, LowerZoomBound INT);" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE Shape (Id INT IDENTITY PRIMARY KEY);" + Environment.NewLine);
 			foreach (IEntityType et in storeCache.EntityTypes)
 				if (et.Category == EntityCategory.Shape)
-					cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(et.FullName), "Shape", null) + ";\r\n");
-			cmdText.Append("CREATE TABLE DiagramShape(Diagram INT, Shape INT PRIMARY KEY);\r\n");
-			cmdText.Append("CREATE TABLE TemplateShape(Template INT, Shape INT PRIMARY KEY);\r\n");
-			cmdText.Append("CREATE TABLE ChildShape(Parent INT, Shape INT PRIMARY KEY);\r\n");
-			cmdText.Append("CREATE TABLE ShapeConnection (ActiveShape INT, ActivePoint INT, PassiveShape INT, PassivePoint INT);\r\n");
+					cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(et.FullName), "Shape", null) + ";" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE DiagramShape(Diagram INT, Shape INT PRIMARY KEY);" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE TemplateShape(Template INT, Shape INT PRIMARY KEY);" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE ChildShape(Parent INT, Shape INT PRIMARY KEY);" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE ShapeConnection (ActiveShape INT, ActivePoint INT, PassiveShape INT, PassivePoint INT);" + Environment.NewLine);
 			//
-			cmdText.Append("CREATE TABLE Point (Owner INT, SeqNo INT, Id INT, X INT, Y INT);\r\n");
+			cmdText.Append("CREATE TABLE Point (Owner INT, SeqNo INT, Id INT, X INT, Y INT);" + Environment.NewLine);
 			//
-			cmdText.Append("CREATE TABLE Model (Project INT REFERENCES Project (Id) ON DELETE CASCADE ON UPDATE CASCADE, Id INT IDENTITY PRIMARY KEY);\r\n");
+			cmdText.Append("CREATE TABLE Model (Project INT REFERENCES Project (Id) ON DELETE CASCADE ON UPDATE CASCADE, Id INT IDENTITY PRIMARY KEY);" + Environment.NewLine);
 			//
-			cmdText.Append("CREATE TABLE ModelObject (Id INT IDENTITY PRIMARY KEY);\r\n");
+			cmdText.Append("CREATE TABLE ModelObject (Id INT IDENTITY PRIMARY KEY);" + Environment.NewLine);
 			foreach (IEntityType et in storeCache.EntityTypes)
 				if (et.Category == EntityCategory.ModelObject)
-					cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(et.FullName), "ModelObject", null) + ";\r\n");
-			cmdText.Append("CREATE TABLE TemplateModelObject (Template INT, ModelObject INT PRIMARY KEY);\r\n");
-			cmdText.Append("CREATE TABLE ModelModelObject (Model INT, ModelObject INT PRIMARY KEY);\r\n");
-			cmdText.Append("CREATE TABLE ChildModelObject (PARENT INT, ModelObject INT PRIMARY KEY);\r\n");
+					cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(et.FullName), "ModelObject", null) + ";" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE TemplateModelObject (Template INT, ModelObject INT PRIMARY KEY);" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE ModelModelObject (Model INT, ModelObject INT PRIMARY KEY);" + Environment.NewLine);
+			cmdText.Append("CREATE TABLE ChildModelObject (PARENT INT, ModelObject INT PRIMARY KEY);" + Environment.NewLine);
 			//
 			cmdText.Append("CREATE TABLE Template ("
 				+ "Project INT REFERENCES Project (Id) ON DELETE CASCADE ON UPDATE CASCADE, "
 				+ "Id INT IDENTITY PRIMARY KEY, [Name] VARCHAR(40), Title VARCHAR(40), Description VARCHAR(40), "
-				+ "ConnectionPointMappings VARCHAR(1000));\r\n");
+				+ "ConnectionPointMappings VARCHAR(1000));" + Environment.NewLine);
 			//
 			cmdText.Append("CREATE TABLE ModelMapping ("
 				+ "Template INT REFERENCES TEMPLATE (id) ON DELETE CASCADE ON UPDATE CASCADE, "
-				+ "Id INT IDENTITY PRIMARY KEY);\n\r");
+				+ "Id INT IDENTITY PRIMARY KEY);" + Environment.NewLine);
 			cmdText.Append(string.Format("CREATE TABLE [{0}] ("
 				+ "ModelMapping INT REFERENCES ModelMapping (Id) ON DELETE CASCADE ON UPDATE CASCADE, "
 				+ "ShapePropertyId INT, ModelPropertyId INT, "
-				+ "MappingType INT, Intercept REAL, Slope REAL);\n\r", 
+				+ "MappingType INT, Intercept REAL, Slope REAL);" + Environment.NewLine, 
 				SqlTableNameForEntityName(NumericModelMapping.EntityTypeName)));
 			cmdText.Append(string.Format("CREATE TABLE [{0}] ("
 				+ "ModelMapping INT REFERENCES ModelMapping (Id) ON DELETE CASCADE ON UPDATE CASCADE, "
-				+ "ShapePropertyId INT, ModelPropertyId INT, MappingType INT, Format VARCHAR(20));\n\r", 
+				+ "ShapePropertyId INT, ModelPropertyId INT, MappingType INT, Format VARCHAR(20));" + Environment.NewLine, 
 				SqlTableNameForEntityName(FormatModelMapping.EntityTypeName)));
 			cmdText.Append(string.Format("CREATE TABLE [{0}] ("
 				+ "ModelMapping INT REFERENCES ModelMapping (Id) ON DELETE CASCADE ON UPDATE CASCADE, "
 				+ "ShapePropertyId INT, ModelPropertyId INT, MappingType INT, DefaultStyleType INT, "
 				+ "DefaultStyle INT REFERENCES Style (Id) ON DELETE NO ACTION ON UPDATE NO ACTION, "
-				+ "ValueRanges NVARCHAR(1000));\n\r", SqlTableNameForEntityName(StyleModelMapping.EntityTypeName)));
+				+ "ValueRanges NVARCHAR(1000));" + Environment.NewLine, SqlTableNameForEntityName(StyleModelMapping.EntityTypeName)));
 			//
 			cmdText.Append("CREATE TABLE SysCommand (Id INT IDENTITY PRIMARY KEY, Kind VARCHAR(40), EntityType VARCHAR(60), Text VARCHAR(4000))");
 			cmdText.Append("CREATE TABLE SysParameter (Command INT REFERENCES SysCommand (Id) ON DELETE CASCADE ON UPDATE CASCADE, No INT, Name VARCHAR(40), Type VARCHAR(10))");
@@ -202,7 +206,7 @@ namespace Dataweb.NShape {
 
 
 		protected IDbCommand CreateDropTablesCommand(IStoreCache storeCache) {
-			const string dropCommand = "IF OBJECT_ID('{0}') IS NOT NULL DROP TABLE [{0}];\r\n";
+			string dropCommand = "IF OBJECT_ID('[{0}]') IS NOT NULL DROP TABLE [{0}];" + Environment.NewLine;
 			StringBuilder cmdText = new StringBuilder();
 			// Drop inner objects
 			cmdText.AppendFormat(dropCommand, "Point");
@@ -249,7 +253,7 @@ namespace Dataweb.NShape {
 		}
 
 
-		protected override IDbCommand GetInsertSysCommandCommand() {
+		public override IDbCommand GetInsertSysCommandCommand() {
 			IDbCommand result = base.GetInsertSysCommandCommand();
 			((SqlParameter)result.Parameters[0]).Size = 40;
 			((SqlParameter)result.Parameters[1]).Size = 60;
@@ -258,7 +262,7 @@ namespace Dataweb.NShape {
 		}
 
 
-		protected override IDbCommand GetInsertSysParameterCommand() {
+		public override IDbCommand GetInsertSysParameterCommand() {
 			IDbCommand result = base.GetInsertSysParameterCommand();
 			((SqlParameter)result.Parameters[2]).Size = 40;
 			((SqlParameter)result.Parameters[3]).Size = 10;
@@ -347,19 +351,19 @@ namespace Dataweb.NShape {
 		private void CreateProjectInfoCommands() {
 			SetCommand(projectInfoEntityTypeName, RepositoryCommandType.SelectByName,
 				CreateCommand("SELECT Name, Version FROM ProjectInfo WHERE Name = @Name",
-					CreateParameter("Name", DbType.AnsiString)));
+					CreateParameter("Name", DbType.String)));
 			SetCommand(projectInfoEntityTypeName, RepositoryCommandType.Insert,
 				CreateCommand("INSERT INTO ProjectInfo (Name, Version) VALUES (@Name, @Version); SELECT CAST(IDENT_CURRENT('ProjectInfo') AS INT)",
-					CreateParameter("Name", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
 					CreateParameter("Version", DbType.Int32)));
 			SetCommand(projectInfoEntityTypeName, RepositoryCommandType.Update,
 				CreateCommand("UPDATE ProjectInfo SET Name = @Name, Version = @Version WHERE Id = @Id",
 					CreateParameter("Id", DbType.Int32),
-					CreateParameter("Name", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
 					CreateParameter("Version", DbType.Int32)));
 			SetCommand(projectInfoEntityTypeName, RepositoryCommandType.Delete,
 				CreateCommand("DELETE FROM ProjectInfo WHERE Name = @Name",
-					CreateParameter("Name", DbType.AnsiString)));
+					CreateParameter("Name", DbType.String)));
 		}
 
 
@@ -367,7 +371,7 @@ namespace Dataweb.NShape {
 			SetCommand(ProjectSettings.EntityTypeName, RepositoryCommandType.SelectByName,
 				// DesignId must be the first column because the value is read by the cache
 				CreateCommand("SELECT P.Id, ProjectInfo, LastSavedUTC FROM Project P JOIN ProjectInfo PI ON P.ProjectInfo = PI.Id WHERE PI.Name = @Name",
-					CreateParameter("Name", DbType.AnsiString)));
+					CreateParameter("Name", DbType.String)));
 			SetCommand(ProjectSettings.EntityTypeName, RepositoryCommandType.Insert,
 				CreateCommand("INSERT INTO Project (ProjectInfo, LastSavedUTC) "
 					+ "VALUES (@ProjectInfo, @LastSavedUTC); "
@@ -395,8 +399,8 @@ namespace Dataweb.NShape {
 			SetCommand("Core.Library", RepositoryCommandType.Insert,
 				CreateCommand("INSERT INTO Library (Project, Name, AssemblyName, Version) VALUES (@Project, @Name, @AssemblyName, @Version)",
 					CreateParameter("Project", DbType.Int32),
-					CreateParameter("Name", DbType.AnsiString),
-					CreateParameter("AssemblyName", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
+					CreateParameter("AssemblyName", DbType.String),
 					CreateParameter("Version", DbType.Int32)));
 			SetCommand("Core.Library", RepositoryCommandType.Delete,
 				CreateCommand("DELETE FROM Library WHERE Project = @Project",
@@ -417,15 +421,15 @@ namespace Dataweb.NShape {
 				CreateCommand("INSERT INTO Design (Project, Name, Description) VALUES (@Project, @Name, @Description); "
 					+ "SELECT CAST(IDENT_CURRENT('Design') AS INT)",
 					CreateParameter("Project", DbType.Int32), // Not used, always null, needed for generic statement handling
-					CreateParameter("Name", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
 					CreateParameter("Description", DbType.String)));
 			SetCommand(Design.EntityTypeName, RepositoryCommandType.Update,
 				CreateCommand("UPDATE Design SET Project = @Project, Name = @Name, @Description = Description WHERE Id = @Id",
 					CreateParameter("Id", DbType.Int32),
 					CreateParameter("Project", DbType.Int32),
 					CreateParameter("Id", DbType.Int32),	
-					CreateParameter("Name", DbType.AnsiString),
-					CreateParameter("Description", DbType.AnsiString)));
+					CreateParameter("Name", DbType.String),
+					CreateParameter("Description", DbType.String)));
 			SetCommand(Design.EntityTypeName, RepositoryCommandType.Delete,
 				CreateCommand("DELETE FROM Design WHERE Id = @Id",
 					CreateParameter("Id", DbType.Int32)));
@@ -449,9 +453,12 @@ namespace Dataweb.NShape {
 					selectStyleList.ToString(), SqlTableNameForEntityName(et.FullName));
 				SetCommand(et.FullName, RepositoryCommandType.SelectByOwnerId, selectStyleCmd);
 			}
-			// === Generic Insert Style Commands ===
+			// === Specific Style Commands ===
 			foreach (IEntityType et in storeCache.EntityTypes) {
 				if (et.Category != EntityCategory.Style) continue;
+				string tableName = SqlTableNameForEntityName(et.FullName);
+
+				// === INSERT commands ===
 				IDbCommand insertStyleCmd = CreateCommand();
 				StringBuilder insertStyleCmdText1 = new StringBuilder();
 				StringBuilder insertStyleCmdText2 = new StringBuilder();
@@ -464,16 +471,15 @@ namespace Dataweb.NShape {
 					insertStyleCmdText1.Append(pi.Name);
 					insertStyleCmdText2.Append(", ");
 					insertStyleCmdText2.Append("@" + pi.Name);
-					insertStyleCmd.Parameters.Add(CreateParameter(pi.Name, DbTypeForDotNetType(((EntityFieldDefinition)pi).Type)));
+					insertStyleCmd.Parameters.Add(
+						CreateParameter(pi.Name, DbTypeForDotNetType(((EntityFieldDefinition)pi).Type)));
 				}
 				insertStyleCmd.CommandText = string.Format("INSERT INTO Style (Design) VALUES (@Design); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT CAST(IDENT_CURRENT('Style') AS INT)",
-					SqlTableNameForEntityName(et.FullName), insertStyleCmdText1.ToString(), insertStyleCmdText2.ToString());
+					tableName, insertStyleCmdText1.ToString(), insertStyleCmdText2.ToString());
 				SetCommand(et.FullName, RepositoryCommandType.Insert, insertStyleCmd);
-			}
-			// === Generic Update Style Commands ===
-			foreach (IEntityType et in storeCache.EntityTypes) {
-				if (et.Category != EntityCategory.Style) continue;
+
+				// === UPDATE commands ===
 				IDbCommand updateStyleCmd = CreateCommand();
 				StringBuilder updateStyleCmdText = new StringBuilder();
 				updateStyleCmd.Parameters.Add(CreateParameter("Id", DbType.Int32));
@@ -487,34 +493,61 @@ namespace Dataweb.NShape {
 				}
 				updateStyleCmdText.Remove(updateStyleCmdText.Length - 2, 2);
 				updateStyleCmd.CommandText = string.Format("UPDATE [{0}] SET {1} Where Id = @Id", 
-					SqlTableNameForEntityName(et.FullName), updateStyleCmdText.ToString());
+					tableName, updateStyleCmdText.ToString());
 				SetCommand(et.FullName, RepositoryCommandType.Update, updateStyleCmd);
+
+				// === DELETE commands ===
+				SetCommand(et.FullName, RepositoryCommandType.Delete, 
+					CreateCommand(string.Format("DELETE FROM [{0}] WHERE Id = @Id;"
+						+ "DELETE FROM [Style] WHERE Id = @Id;", tableName),
+						CreateParameter("@Id", DbType.Int32)
+					)
+				);
 			}
 		}
 
 
 		private void CreateDiagramCommands() {
+			string cmdTxt;
+
+			// Create "SelectByOwnerId" command
+			cmdTxt = string.Empty;
+			cmdTxt += "SELECT Id, Project, Name, ";
+			if (Version > 2) cmdTxt += "Title, ";
+			cmdTxt += "Width, Height, ";
+			cmdTxt += "BackgroundColor, BackgroundGradientEndColor, BackgroundImageFileName, BackgroundImage, ";
+			cmdTxt += "ImageLayout, ImageGamma, ImageTransparency, ImageGrayScale, ImageTransparentColor ";
+			cmdTxt += "FROM Diagram WHERE Project = @Project";
 			SetCommand(Diagram.EntityTypeName, RepositoryCommandType.SelectByOwnerId,
-				CreateCommand("SELECT Id, Project, Name, Width, Height, "
-					+ "BackgroundColor, BackgroundGradientEndColor, BackgroundImageFileName, BackgroundImage, ImageLayout, ImageGamma, "
-					+ "ImageTransparency, ImageGrayScale, ImageTransparentColor "
-					+ "FROM Diagram WHERE Project = @Project",
-					CreateParameter("Project", DbType.Int32)));
+				CreateCommand(cmdTxt, CreateParameter("Project", DbType.Int32)));
+
+			// Create "SelectById" command
+			cmdTxt = string.Empty;
+			cmdTxt += "SELECT Id, Project, Name, ";
+			if (Version > 2) cmdTxt += "Title, ";
+			cmdTxt += "Width, Height, BackgroundColor, BackgroundGradientEndColor, ";
+			cmdTxt += "BackgroundImageLayout, BackgroundImageFileName, BackgroundImage FROM Diagram ";
+			cmdTxt += "WHERE Id = @Id";
 			SetCommand(Diagram.EntityTypeName, RepositoryCommandType.SelectById,
-				CreateCommand("SELECT Id, Project, Name, Width, Height, BackgroundColor, BackgroundGradientEndColor, "
-					+ "BackgroundImageLayout, BackgroundImageFileName, BackgroundImage FROM Diagram "
-					+ "WHERE Id = @Id",
-					CreateParameter("Id", DbType.Int32)));
+				CreateCommand(cmdTxt, CreateParameter("Id", DbType.Int32)));
+
+			// Create "Insert" command
+			cmdTxt = string.Empty;
+			cmdTxt += "INSERT INTO Diagram (Project, Name, ";
+			if (Version > 2) cmdTxt += "Title, ";
+			cmdTxt += "Width, Height, BackgroundColor, BackgroundGradientEndColor, BackgroundImageFileName, ";
+			cmdTxt += "BackgroundImage, ImageLayout, ImageGamma, ImageTransparency, ImageGrayScale, ";
+			cmdTxt += "ImageTransparentColor) VALUES (@Project, @Name, ";
+			if (Version > 2) cmdTxt += "@Title, ";
+			cmdTxt += "@Width, @Height, @BackgroundColor, @BackgroundGradientEndColor, ";
+			cmdTxt += "@BackgroundImageFileName, @BackgroundImage, @ImageLayout, @ImageGamma, @ImageTransparency, ";
+			cmdTxt += "@ImageGrayScale, @ImageTransparentColor); ";
+			cmdTxt += "SELECT CAST(IDENT_CURRENT('Diagram') AS INT)";
 			SetCommand(Diagram.EntityTypeName, RepositoryCommandType.Insert,
-				CreateCommand("INSERT INTO Diagram (Project, Name, Width, Height, BackgroundColor, "
-					+ "BackgroundGradientEndColor, BackgroundImageFileName, BackgroundImage, ImageLayout, "
-					+ "ImageGamma, ImageTransparency, ImageGrayScale, ImageTransparentColor) "
-					+ "VALUES (@Project, @Name, @Width, @Height, @BackgroundColor, @BackgroundGradientEndColor, "
-					+ "@BackgroundImageFileName, @BackgroundImage, @ImageLayout, @ImageGamma, @ImageTransparency, "
-					+ "@ImageGrayScale, @ImageTransparentColor); "
-					+ "SELECT CAST(IDENT_CURRENT('Diagram') AS INT)",
+				CreateCommand(cmdTxt,
 					CreateParameter("Project", DbType.Int32),
-					CreateParameter("Name", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
+					CreateParameter("Title", DbType.String),
 					CreateParameter("Width", DbType.Int32),
 					CreateParameter("Height", DbType.Int32),
 					CreateParameter("BackgroundColor", DbType.Int32),
@@ -527,18 +560,23 @@ namespace Dataweb.NShape {
 					CreateParameter("ImageGrayScale", DbType.Boolean),
 					CreateParameter("ImageTransparentColor", DbType.Int32)
 				));
+
+			// Create "Update" command
+			cmdTxt = string.Empty;
+			cmdTxt += "UPDATE Diagram SET Name = @Name, ";
+			if (Version > 2) cmdTxt += "Title = @Title, ";
+			cmdTxt += "Width = @Width, Height = @Height, BackgroundColor = @BackgroundColor, ";
+			cmdTxt += "BackgroundGradientEndColor = @BackgroundGradientEndColor, ";
+			cmdTxt += "BackgroundImageFileName = @BackgroundImageFileName, ";
+			cmdTxt += "BackgroundImage = @BackgroundImage, ImageLayout = @ImageLayout, ";
+			cmdTxt += "ImageGamma = @ImageGamma, ImageTransparency = @ImageTransparency, ";
+			cmdTxt += "ImageGrayScale = @ImageGrayScale, ImageTransparentColor = @ImageTransparentColor ";
+			cmdTxt += "WHERE Id = @Id";
 			SetCommand(Diagram.EntityTypeName, RepositoryCommandType.Update,
-				CreateCommand("UPDATE Diagram SET Name = @Name, Width = @Width, "
-					+ "Height = @Height, BackgroundColor = @BackgroundColor, "
-					+ "BackgroundGradientEndColor = @BackgroundGradientEndColor, "
-					+ "BackgroundImageFileName = @BackgroundImageFileName, "
-					+ "BackgroundImage = @BackgroundImage, ImageLayout = @ImageLayout, "
-					+ "ImageGamma = @ImageGamma, ImageTransparency = @ImageTransparency, "
-					+ "ImageGrayScale = @ImageGrayScale, "
-					+ "ImageTransparentColor = @ImageTransparentColor "
-					+ "WHERE Id = @Id",
+				CreateCommand(cmdTxt,
 					CreateParameter("Id", DbType.Int32),
-					CreateParameter("Name", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
+					CreateParameter("Title", DbType.String), 
 					CreateParameter("Width", DbType.Int32),
 					CreateParameter("Height", DbType.Int32),
 					CreateParameter("BackgroundColor", DbType.Int32),
@@ -551,6 +589,8 @@ namespace Dataweb.NShape {
 					CreateParameter("ImageGrayScale", DbType.Boolean),
 					CreateParameter("ImageTransparentColor", DbType.Int32)
 				));
+
+			// Create "Delete" command
 			SetCommand(Diagram.EntityTypeName, RepositoryCommandType.Delete,
 				CreateCommand("DELETE FROM Diagram WHERE Id = @Id",
 					CreateParameter("Id", DbType.Int32)));
@@ -565,8 +605,8 @@ namespace Dataweb.NShape {
 				CreateCommand("INSERT INTO Layer (Diagram, Id, Name, Title, UpperZoomBound, LowerZoomBound) VALUES (@Diagram, @Id, @Name, @Title, @UpperZoomBound, @LowerZoomBound)",
 					CreateParameter("Diagram", DbType.Int32),
 					CreateParameter("Id", DbType.Int32),
-					CreateParameter("Name", DbType.AnsiString),
-					CreateParameter("Title", DbType.AnsiString),
+					CreateParameter("Name", DbType.String),
+					CreateParameter("Title", DbType.String),
 					CreateParameter("UpperZoomBound", DbType.Int32),
 					CreateParameter("LowerZoomBound", DbType.Int32)));
 			SetCommand("Core.Layer", RepositoryCommandType.Delete,
@@ -636,21 +676,21 @@ namespace Dataweb.NShape {
 					+ "INSERT INTO DiagramShape (Diagram, Shape) VALUES (@Parent, @Ident); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT @Ident",
 					SqlTableNameForEntityName(et.FullName), insertShapeCmdText1.ToString(), insertShapeCmdText2.ToString());
-				SetShapeCommand(et.FullName, RepositoryCommandType.InsertDiagramShape, insertDiagramShapeCmd);
+				SetCommand(et.FullName, RepositoryCommandType.InsertDiagramShape, insertDiagramShapeCmd);
 				IDbCommand insertTemplateShapeCmd = (IDbCommand)((ICloneable)insertShapeCmd).Clone();
 				insertTemplateShapeCmd.CommandText = string.Format("DECLARE @Ident INT; "
 					+ "INSERT INTO Shape DEFAULT VALUES; SET @Ident = @@IDENTITY; "
 					+ "INSERT INTO TemplateShape (Template, Shape) VALUES (@Parent, @Ident); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT @Ident",
 					SqlTableNameForEntityName(et.FullName), insertShapeCmdText1.ToString(), insertShapeCmdText2.ToString());
-				SetShapeCommand(et.FullName, RepositoryCommandType.InsertTemplateShape, insertTemplateShapeCmd);
+				SetCommand(et.FullName, RepositoryCommandType.InsertTemplateShape, insertTemplateShapeCmd);
 				IDbCommand insertChildShapeCmd = (IDbCommand)((ICloneable)insertShapeCmd).Clone();
 				insertChildShapeCmd.CommandText = string.Format("DECLARE @Ident INT; "
 					+ "INSERT INTO Shape DEFAULT VALUES; SET @Ident = @@IDENTITY; "
 					+ "INSERT INTO ChildShape (Parent, Shape) VALUES (@Parent, @Ident); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT @Ident",
 					SqlTableNameForEntityName(et.FullName), insertShapeCmdText1.ToString(), insertShapeCmdText2.ToString());
-				SetShapeCommand(et.FullName, RepositoryCommandType.InsertChildShape, insertChildShapeCmd);
+				SetCommand(et.FullName, RepositoryCommandType.InsertChildShape, insertChildShapeCmd);
 			}
 			// UPDATE commands
 			foreach (IEntityType et in storeCache.EntityTypes) {
@@ -672,14 +712,14 @@ namespace Dataweb.NShape {
 				cmdText.Length -= 2; // RemoveRange last comma + space
 				cmdText.Append(" WHERE Id = @Id");
 				updateShapeCmd.CommandText = cmdText.ToString();
-				SetShapeCommand(et.FullName, RepositoryCommandType.Update, updateShapeCmd);
+				SetCommand(et.FullName, RepositoryCommandType.Update, updateShapeCmd);
 			}
-			SetShapeCommand("Core.Shape", RepositoryCommandType.UpdateOwnerDiagram,
+			SetCommand(shapeEntityTypeName, RepositoryCommandType.UpdateOwnerDiagram,
 				CreateCommand("DELETE FROM DiagramShape WHERE Shape = @Id; DELETE FROM ChildShape WHERE Shape = @Id; "
 					+ "INSERT INTO DiagramShape (Diagram, Shape) VALUES (@Diagram, @Id)",
 					CreateParameter("Id", DbType.Int32),
 					CreateParameter("Diagram", DbType.Int32)));
-			SetShapeCommand("Core.Shape", RepositoryCommandType.UpdateOwnerShape,
+			SetCommand(shapeEntityTypeName, RepositoryCommandType.UpdateOwnerShape,
 				CreateCommand("DELETE FROM DiagramShape WHERE Shape = @Id; DELETE FROM ChildShape WHERE Shape = @Id; "
 					+ "INSERT INTO ChildShape (Parent, Shape) VALUES (@Parent, @Id)",
 					CreateParameter("Id", DbType.Int32),
@@ -696,33 +736,30 @@ namespace Dataweb.NShape {
 						+ "DELETE FROM [{0}] WHERE Id = @Id",
 						SqlTableNameForEntityName(et.FullName)),
 						CreateParameter("Id", DbType.Int32));
-				SetShapeCommand(et.FullName, RepositoryCommandType.Delete, deleteShapeCommand);
+				SetCommand(et.FullName, RepositoryCommandType.Delete, deleteShapeCommand);
 			}
 			// === Shape Connection Commands ===
-			SetSelectShapeConnectionByShapeIdCommand(
-				CreateCommand("SELECT ActiveShape, ActivePoint, PassiveShape, PassivePoint FROM ShapeConnection "
+			SetCommand(connectionEntityTypeName, RepositoryCommandType.SelectByOwnerId, CreateCommand("SELECT ActiveShape, ActivePoint, PassiveShape, PassivePoint FROM ShapeConnection "
 					+ "JOIN DiagramShape ON ActiveShape = DiagramShape.Shape WHERE DiagramShape.Diagram = @Diagram",
-					CreateParameter("Diagram", DbType.Int32))
-			);
-			SetInsertShapeConnectionCommand(
-				CreateCommand("INSERT INTO ShapeConnection (ActiveShape, ActivePoint, PassiveShape, PassivePoint) "
+					CreateParameter("Diagram", DbType.Int32)));
+			SetCommand(connectionEntityTypeName, RepositoryCommandType.Insert, CreateCommand("INSERT INTO ShapeConnection (ActiveShape, ActivePoint, PassiveShape, PassivePoint) "
 				+ "VALUES (@ActiveShape, @ActivePoint, @PassiveShape, @PassivePoint)",
 					CreateParameter("ActiveShape", DbType.Int32),
 					CreateParameter("ActivePoint", DbType.Int32),
 					CreateParameter("PassiveShape", DbType.Int32),
 					CreateParameter("PassivePoint", DbType.Int32)));
-			SetDeleteShapeConnectionCommand(
-				CreateCommand("DELETE FROM ShapeConnection WHERE Shape = @Shape",
-					CreateParameter("Shape", DbType.Int32)));
+			SetCommand(connectionEntityTypeName, RepositoryCommandType.Delete, CreateCommand("DELETE FROM ShapeConnection WHERE ActiveShape = @ActiveShape AND ActivePoint = @ActivePoint",
+					CreateParameter("ActiveShape", DbType.Int32),
+					CreateParameter("ActivePoint", DbType.Int32) ));
 			//
 			// === Inner Objects Commands ===
-			SetSelectInnerObjectsCommand("Core.Point",
+			SetCommand(pointEntityTypeName, RepositoryCommandType.SelectById, 
 				CreateCommand("SELECT SeqNo, Id, X, Y FROM Point WHERE Owner = @Owner",
 					CreateParameter("Owner", DbType.Int32)));
-			SetDeleteInnerObjectsCommand("Core.Point",
+			SetCommand(pointEntityTypeName, RepositoryCommandType.Delete, 
 				CreateCommand("DELETE FROM Point WHERE Owner = @Owner",
 					CreateParameter("Owner", DbType.Int32)));
-			SetInsertInnerObjectsCommand("Core.Point",
+			SetCommand(pointEntityTypeName, RepositoryCommandType.Insert, 
 				CreateCommand("INSERT INTO Point (Owner, SeqNo, Id, X, Y) VALUES (@Owner, @SeqNo, @Id, @X, @Y)",
 					CreateParameter("Owner", DbType.Int32),
 					CreateParameter("SeqNo", DbType.Int32),
@@ -806,21 +843,21 @@ namespace Dataweb.NShape {
 					+ "INSERT INTO ModelModelObject (Model, ModelObject) VALUES (@Parent, @Ident); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT @Ident",
 					SqlTableNameForEntityName(et.FullName), insertModelObjectCmdText1.ToString(), insertModelObjectCmdText2.ToString());
-				SetModelObjectCommand(et.FullName, RepositoryCommandType.InsertModelModelObject, insertModelModelObjectCmd);
+				SetCommand(et.FullName, RepositoryCommandType.InsertModelModelObject, insertModelModelObjectCmd);
 				IDbCommand insertTemplateModelObjectCmd = (IDbCommand)((ICloneable)insertModelObjectCmd).Clone();
 				insertTemplateModelObjectCmd.CommandText = string.Format("DECLARE @Ident INT; "
 					+ "INSERT INTO ModelObject DEFAULT VALUES; SET @Ident = @@IDENTITY; "
 					+ "INSERT INTO TemplateModelObject (Template, ModelObject) VALUES (@Parent, @Ident); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT @Ident",
 					SqlTableNameForEntityName(et.FullName), insertModelObjectCmdText1.ToString(), insertModelObjectCmdText2.ToString());
-				SetModelObjectCommand(et.FullName, RepositoryCommandType.InsertTemplateModelObject, insertTemplateModelObjectCmd);
+				SetCommand(et.FullName, RepositoryCommandType.InsertTemplateModelObject, insertTemplateModelObjectCmd);
 				IDbCommand insertChildModelObjectCmd = (IDbCommand)((ICloneable)insertModelObjectCmd).Clone();
 				insertChildModelObjectCmd.CommandText = string.Format("DECLARE @Ident INT; "
 					+ "INSERT INTO ModelObject DEFAULT VALUES; SET @Ident = @@IDENTITY; "
 					+ "INSERT INTO ChildModelObject (Parent, ModelObject) VALUES (@Parent, @Ident); "
 					+ "INSERT INTO [{0}] ({1}) VALUES ({2}); SELECT @Ident",
 					SqlTableNameForEntityName(et.FullName), insertModelObjectCmdText1.ToString(), insertModelObjectCmdText2.ToString());
-				SetModelObjectCommand(et.FullName, RepositoryCommandType.InsertChildModelObject, insertChildModelObjectCmd);
+				SetCommand(et.FullName, RepositoryCommandType.InsertChildModelObject, insertChildModelObjectCmd);
 			}
 			// UPDATE commands
 			foreach (IEntityType et in storeCache.EntityTypes) {
@@ -842,14 +879,14 @@ namespace Dataweb.NShape {
 				cmdText.Length -= 2; // RemoveRange last comma + space
 				cmdText.Append(" WHERE Id = @Id");
 				updateModelObjectCmd.CommandText = cmdText.ToString();
-				SetModelObjectCommand(et.FullName, RepositoryCommandType.Update, updateModelObjectCmd);
+				SetCommand(et.FullName, RepositoryCommandType.Update, updateModelObjectCmd);
 			}
-			SetModelObjectCommand("Core.ModelObject", RepositoryCommandType.UpdateOwnerModel,
+			SetCommand("Core.ModelObject", RepositoryCommandType.UpdateOwnerModel,
 				CreateCommand("DELETE FROM ModelModelObject WHERE ModelObject = @Id; DELETE FROM ChildModelObject WHERE ModelObject = @Id; "
 					+ "INSERT INTO ModelModelObject (Model, ModelObject) VALUES (@Model, @Id)",
 					CreateParameter("Id", DbType.Int32),
 					CreateParameter("Model", DbType.Int32)));
-			SetModelObjectCommand("Core.ModelObject", RepositoryCommandType.UpdateOwnerModelObject,
+			SetCommand("Core.ModelObject", RepositoryCommandType.UpdateOwnerModelObject,
 				CreateCommand("DELETE FROM ModelModelObject WHERE ModelObject = @Id; DELETE FROM ChildModelObject WHERE ModelObject = @Id; "
 					+ "INSERT INTO ChildModelObject (Parent, ModelObject) VALUES (@Parent, @Id)",
 					CreateParameter("Id", DbType.Int32),
@@ -866,7 +903,7 @@ namespace Dataweb.NShape {
 						+ "DELETE FROM [{0}] WHERE Id = @Id",
 						SqlTableNameForEntityName(et.FullName)),
 						CreateParameter("Id", DbType.Int32));
-				SetModelObjectCommand(et.FullName, RepositoryCommandType.Delete, deleteModelObjectCommand);
+				SetCommand(et.FullName, RepositoryCommandType.Delete, deleteModelObjectCommand);
 			}
 		}
 	
@@ -890,11 +927,18 @@ namespace Dataweb.NShape {
 				CreateCommand("UPDATE Template SET Name = @Name, Title = @Title, "
 					+ "Description = @Description, ConnectionPointMappings = @ConnectionPointMappings "
 					+ "WHERE Id = @Id",
+					CreateParameter("Id", DbType.Int32),
 					CreateParameter("Name", DbType.String),
 					CreateParameter("Title", DbType.String),
 					CreateParameter("Description", DbType.String),
-					CreateParameter("ConnectionPointMappings", DbType.String),
-					CreateParameter("Id", DbType.Int32)));
+					CreateParameter("ConnectionPointMappings", DbType.String)
+				)
+			);
+			SetCommand(Template.EntityTypeName, RepositoryCommandType.Delete,
+				CreateCommand("DELETE FROM Template WHERE Id = @Id",
+					CreateParameter("Id", DbType.Int32)
+				)
+			);
 		}
 
 
@@ -923,15 +967,22 @@ namespace Dataweb.NShape {
 			SetCommand(NumericModelMapping.EntityTypeName, RepositoryCommandType.Update,
 				CreateCommand(string.Format("UPDATE [{0}] SET "
 					+ "ShapePropertyId = @ShapePropertyId, ModelPropertyId = @ModelPropertyId, "
-					+ "MappingType = @MappingType, Intercept = @Intercept, Slope = @Slope)"
+					+ "MappingType = @MappingType, Intercept = @Intercept, Slope = @Slope "
 					+ "WHERE ModelMapping = @Id", tableName),
+					CreateParameter("@Id", DbType.Int32),
 					CreateParameter("@ShapePropertyId", DbType.Int32),
 					CreateParameter("@ModelPropertyId", DbType.Int32),
 					CreateParameter("@MappingType", DbType.Int32),
 					CreateParameter("@Intercept", DbTypeForDotNetType(typeof(float))),
-					CreateParameter("@Slope", DbType.Single),
-					CreateParameter("@TemplateId", DbType.Int32),
-					CreateParameter("@Id", DbType.Int32)));
+					CreateParameter("@Slope", DbType.Single)
+				)
+			);
+			SetCommand(NumericModelMapping.EntityTypeName, RepositoryCommandType.Delete,
+				CreateCommand(string.Format("DELETE FROM [{0}] WHERE ModelMapping = @Id;"
+					+ "DELETE FROM [{1}] WHERE Id = @Id;", tableName, "ModelMapping"),
+					CreateParameter("@Id", DbType.Int32)
+				)
+			);
 			//
 			// === FormatModelMapping Commands ===
 			tableName = SqlTableNameForEntityName(FormatModelMapping.EntityTypeName);
@@ -952,14 +1003,21 @@ namespace Dataweb.NShape {
 			SetCommand(FormatModelMapping.EntityTypeName, RepositoryCommandType.Update,
 				CreateCommand(string.Format("UPDATE [{0}] SET "
 					+ "ShapePropertyId = @ShapePropertyId, ModelPropertyId = @ModelPropertyId, "
-					+ "MappingType = @MappingType, Format = @Format)"
+					+ "MappingType = @MappingType, Format = @Format "
 					+ "WHERE ModelMapping = @Id", tableName),
+					CreateParameter("@Id", DbType.Int32),
 					CreateParameter("@ShapePropertyId", DbType.Int32),
 					CreateParameter("@ModelPropertyId", DbType.Int32),
 					CreateParameter("@MappingType", DbType.Int32),
-					CreateParameter("@Format", DbType.String),
-					CreateParameter("@TemplateId", DbType.Int32),
-					CreateParameter("@Id", DbType.Int32)));
+					CreateParameter("@Format", DbType.String)
+				)
+			);
+			SetCommand(FormatModelMapping.EntityTypeName, RepositoryCommandType.Delete,
+				CreateCommand(string.Format("DELETE FROM [{0}] WHERE ModelMapping = @Id;"
+					+ "DELETE FROM [{1}] WHERE Id = @Id;", tableName, "ModelMapping"),
+					CreateParameter("@Id", DbType.Int32)
+				)
+			);
 			//
 			// StyleModelMapping Commands
 			tableName = SqlTableNameForEntityName(StyleModelMapping.EntityTypeName);
@@ -979,24 +1037,34 @@ namespace Dataweb.NShape {
 					CreateParameter("@MappingType", DbType.Int32),
 					CreateParameter("@DefaultStyleType", DbType.Int32),
 					CreateParameter("@DefaultStyle", DbType.Int32),
-					CreateParameter("@ValueRanges", DbType.String)));
+					CreateParameter("@ValueRanges", DbType.String)
+				)
+			);
 			SetCommand(StyleModelMapping.EntityTypeName, RepositoryCommandType.Update,
 				CreateCommand(string.Format("UPDATE [{0}] SET "
 					+ "ShapePropertyId = @ShapePropertyId, ModelPropertyId = @ModelPropertyId, "
-					+ "MappingType = @MappingType, DefaultStyleType = @DefaultStyleType, DefaultStyle = @DefaultStyle, ValueRanges = @ValueRanges)"
+					+ "MappingType = @MappingType, DefaultStyleType = @DefaultStyleType, DefaultStyle = @DefaultStyle, ValueRanges = @ValueRanges "
 					+ "WHERE ModelMapping = @Id", tableName),
+					CreateParameter("@Id", DbType.Int32),
 					CreateParameter("@ShapePropertyId", DbType.Int32),
 					CreateParameter("@ModelPropertyId", DbType.Int32),
 					CreateParameter("@MappingType", DbType.Int32),
+					CreateParameter("@DefaultStyleType", DbType.Int32),
 					CreateParameter("@DefaultStyle", DbType.Int32),
-					CreateParameter("@ValueRanges", DbType.String),
-					CreateParameter("@Id", DbType.Int32)));
+					CreateParameter("@ValueRanges", DbType.String)
+				)
+			);
+			SetCommand(StyleModelMapping.EntityTypeName, RepositoryCommandType.Delete,
+				CreateCommand(string.Format("DELETE FROM [{0}] WHERE ModelMapping = @Id;"
+					+ "DELETE FROM [{1}] WHERE Id = @Id;", tableName, "ModelMapping"),
+					CreateParameter("@Id", DbType.Int32)
+				)
+			);
 		}
 
 
 		private string serverName;
 		private string databaseName;
-
 	}
 
 }

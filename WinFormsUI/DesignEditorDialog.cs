@@ -31,6 +31,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				| ControlStyles.SupportsTransparentBackColor
 				, true);
 			UpdateStyles();
+			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 
 			// Initialize Components
 			InitializeComponent();
@@ -225,7 +226,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void deleteDesignButton_Click(object sender, EventArgs e) {
-			if (MessageBox.Show("All styles in this design will be lost.\r\nDo you really want do to delete this design?", "Delete Design", MessageBoxButtons.YesNo) == DialogResult.Yes)
+			if (MessageBox.Show("All styles in this design will be lost." + Environment.NewLine + "Do you really want do to delete this design?", "Delete Design", MessageBoxButtons.YesNo) == DialogResult.Yes)
 				designPresenter.DeleteSelectedDesign();
 		}
 

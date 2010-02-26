@@ -8,14 +8,15 @@
     <ProjectGuid>{70860EAA-2E96-4B76-AF1C-FF243F3E2C56}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>nShapeViewer</RootNamespace>
-    <AssemblyName>nShapeViewer</AssemblyName>
+    <RootNamespace>NShapeViewer</RootNamespace>
+    <AssemblyName>NShape Viewer</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <ApplicationIcon>Resources\Dataweb.nShape.ico</ApplicationIcon>
+    <ApplicationIcon>Dataweb.nShape.ico</ApplicationIcon>
     <TargetFrameworkSubset>
     </TargetFrameworkSubset>
-    <StartupObject>nShapeViewer.Program</StartupObject>
+    <StartupObject>
+    </StartupObject>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -134,6 +135,7 @@
     <None Include="Resources\Position.bmp" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Dataweb.nShape.ico" />
     <Content Include="Resources\Dataweb.nShape.ico" />
   </ItemGroup>
   <ItemGroup>

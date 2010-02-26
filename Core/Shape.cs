@@ -25,36 +25,6 @@ using Dataweb.Utilities;
 
 namespace Dataweb.NShape.Advanced {
 
-	
-	//protected const int PropertyIdLineStyle = 1;
-	//protected const int PropertyIdAngle = 2;
-	//protected const int PropertyIdFillStyle = 3;
-	//protected const int PropertyIdText = 4;
-	//protected const int PropertyIdCharacterStyle = 5;
-	//protected const int PropertyIdParagraphStyle = 6;
-	
-	//protected const int PropertyIdDiameter = 7;	// DiameterBase
-	//protected const int PropertyIdWidth = 7;		// RectangleBase
-	//protected const int PropertyIdHeight = 8;
-	
-	//protected const int PropertyIdStartCapStyle = 7;
-	//protected const int PropertyIdEndCapStyle = 8;
-
-	//protected const int PropertyIdImage = 9;
-	//protected const int PropertyIdImageLayout = 10;
-	//protected const int PropertyIdImageGrayScale = 11;
-	//protected const int PropertyIdImageGamma = 12;
-	//protected const int PropertyIdImageTransparency = 13;
-	//protected const int PropertyIdImageTransparentColor = 14;
-	
-	//protected const int PropertyIdBodyHeight = 9;
-	//protected const int PropertyIdHeadWidth = 10;
-
-	//protected const int PropertyIdColumnBackgroundColorStyle = 9;
-	//protected const int PropertyIdColumnCharacterStyle = 10;
-	//protected const int PropertyIdColumnParagraphStyle = 11;
-
-	
 
 	#region Shape collection support
 
@@ -351,11 +321,11 @@ namespace Dataweb.NShape.Advanced {
 
 		public Rectangle GetBoundingRectangle(bool tight) {
 			if (tight) {
-				if (boundingRectangleTight == Geometry.InvalidRectangle)
+				if (!Geometry.IsValid(boundingRectangleTight))
 					GetBoundingRectangleCore(tight, out boundingRectangleTight);
 				return boundingRectangleTight;
 			} else {
-				if (boundingRectangleLoose == Geometry.InvalidRectangle)
+				if (!Geometry.IsValid(boundingRectangleLoose))
 					GetBoundingRectangleCore(tight, out boundingRectangleLoose);
 				return boundingRectangleLoose;
 			}
@@ -462,7 +432,7 @@ namespace Dataweb.NShape.Advanced {
 			if (shapeDictionary.ContainsKey(shape)) throw new ArgumentException("The shape item already exists in the collection.");
 			int idx = FindInsertPosition(shape.ZOrder);
 			InsertCore(idx, shape);
-			// Reset BoundingRectangle
+			// Reset bounding rectangles
 			boundingRectangleTight = boundingRectangleLoose = Geometry.InvalidRectangle;
 		}
 
@@ -494,7 +464,7 @@ namespace Dataweb.NShape.Advanced {
 		public int Count { get { return shapes.Count; } }
 
 
-		public bool IsReadOnly { get { return false; ; } }
+		public bool IsReadOnly { get { return false; } }
 
 
 		public bool Remove(Shape shape) {
@@ -611,8 +581,8 @@ namespace Dataweb.NShape.Advanced {
 		#region Methods (protected)
 
 		/// <summary>
-		/// Adds the given shape to the collection. The shape is inserted into the 
-		/// collection at the correct position, depending on the z-order.
+		/// Adds the given shape to the collection. 
+		/// The shape is inserted into the collection at the correct position, depending on the z-order.
 		/// </summary>
 		/// <returns>Index where the shape has been inserted. The shape indexes can vary.</returns>
 		protected virtual int InsertCore(int index, Shape shape) {
@@ -644,8 +614,8 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Inserts the elements of the collection into the ShapeCollection. This method 
-		/// inserts each element into the correct position, sorted by ZOrder.
+		/// Inserts the elements of the collection into the ShapeCollection. 
+		/// This method inserts each element into the correct position, sorted by z-order.
 		/// </summary>
 		protected virtual void AddRangeCore(IEnumerable<Shape> collection) {
 			int lastInsertPos = -1;
@@ -669,6 +639,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Replaces the old shape with the new shape.
+		/// </summary>
 		protected virtual void ReplaceCore(Shape oldShape, Shape newShape) {
 			if (shapeDictionary.ContainsKey(newShape)) throw new InvalidOperationException("The value to be inserted does already exist in the collection.");
 			if (!shapeDictionary.ContainsKey(oldShape)) throw new InvalidOperationException("The value to be replaced does not exist in the colection.");
@@ -707,9 +680,11 @@ namespace Dataweb.NShape.Advanced {
 			if (shapeDictionary.ContainsKey(shape)) {
 				int idx = FindShapeIndex(shape);
 				Debug.Assert(idx >= 0);
-				shapes.RemoveAt(idx);
-				MapRemove(shape);
-				shapeDictionary.Remove(shape);
+				if (idx >= 0) {
+					shapes.RemoveAt(idx);
+					MapRemove(shape);
+					shapeDictionary.Remove(shape);
+				}
 				// Reset BoundingRectangle
 				boundingRectangleTight = boundingRectangleLoose = Geometry.InvalidRectangle;
 				return true;
@@ -769,27 +744,20 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private uint CalcMapHashCode(Point cellIndex) {
-			uint x = (uint)(cellIndex.X);
-			uint y = (uint)(cellIndex.Y);
-			y = (y & 0x000000ffu) << 24 | (y & 0x0000ff00u) << 8 | (y & 0x00ff0000u) >> 8 | (y & 0xff000000u) >> 24;
-			return x ^ y;
+			unchecked {
+				uint x = (uint)(cellIndex.X);
+				uint y = (uint)(cellIndex.Y);
+				y = (y & 0x000000ffu) << 24 | (y & 0x0000ff00u) << 8 | (y & 0x00ff0000u) >> 8 | (y & 0xff000000u) >> 24;
+				return x ^ y;
+			}
 		}
 
 
 		// Inserts shape into the map
 		private void MapInsert(Shape shape) {
 			if (shapeMap != null) {
-#if _DEBUG
-				int cnt = 0;
-				foreach (Point p in shape.CalculateCells(Diagram.CellSize)) {
-					++cnt;
-					shapeMap.Add(CalcMapHashCode(p), shape);
-				}
-				Debug.Print("{0} occupies {1} cells with its bounding rectangle {2}", shape.Type.Name, cnt, shape.GetBoundingRectangle(false));
-#else
 				foreach (Point p in shape.CalculateCells(Diagram.CellSize))
 					shapeMap.Add(CalcMapHashCode(p), shape);
-#endif
 			}
 		}
 
@@ -817,12 +785,6 @@ namespace Dataweb.NShape.Advanced {
 						   || Geometry.RectangleContainsRectangle(left, top, Diagram.CellSize, Diagram.CellSize, s.GetBoundingRectangle(false))) {
 						   graphics.FillRectangle(occupiedBrush, left, top, Diagram.CellSize, Diagram.CellSize);
 						} else graphics.FillRectangle(emptyBrush, left, top, Diagram.CellSize, Diagram.CellSize);
-
-						//if (!(s.IntersectsWith(left, top, Diagram.CellSize, Diagram.CellSize)
-						//   || Geometry.RectangleContainsRectangle(left, top, Diagram.CellSize, Diagram.CellSize, s.GetBoundingRectangle(false)))) {
-						//   graphics.FillRectangle(Brushes.Red, left, top, Diagram.CellSize, Diagram.CellSize);
-						//   break;
-						//}
 					}
 				}
 			}
@@ -965,7 +927,18 @@ namespace Dataweb.NShape.Advanced {
 					// If the correct shape is found while searching, return its position
 					if (shapes[searchIdx] == shape)
 						return searchIdx;
-					if (shapes[searchIdx].ZOrder > zOrder)
+					if (shapes[searchIdx].ZOrder == zOrder) {
+						// If there are shapes with identical zOrders, search them all
+						int i;
+						i = searchIdx;
+						while (i < ePos && shapes[i].ZOrder == zOrder)
+							if (shapes[i] == shape) return i;
+							else ++i;
+						i = searchIdx;
+						while (i >= sPos && shapes[i].ZOrder == zOrder)
+							if (shapes[i] == shape) return i;
+							else --i;
+					} else if (shapes[searchIdx].ZOrder > zOrder)
 						sPos = searchIdx;
 					else ePos = searchIdx;
 				}
@@ -979,6 +952,7 @@ namespace Dataweb.NShape.Advanced {
 					for (int i = foundIndex; i >= 0; --i)
 						if (shapes[i] == shape) return i;
 				}
+				Debug.Fail("The shape was not found although it exists in the list!");
 			}
 			return -1;
 		}
@@ -1028,9 +1002,9 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private void ResetBoundingRectangles() {
-			if (boundingRectangleTight != Geometry.InvalidRectangle)
+			if (Geometry.IsValid(boundingRectangleTight))
 				boundingRectangleTight = Geometry.InvalidRectangle;
-			if (boundingRectangleLoose != Geometry.InvalidRectangle)
+			if (Geometry.IsValid(boundingRectangleLoose))
 				boundingRectangleLoose = Geometry.InvalidRectangle;
 		}
 		
@@ -1044,10 +1018,7 @@ namespace Dataweb.NShape.Advanced {
 				right = bottom = int.MinValue;
 				foreach (Shape shape in shapes) {
 					Rectangle r = shape.GetBoundingRectangle(tight);
-					Debug.Assert(r != Geometry.InvalidRectangle);
-					Debug.Assert(r.Location != Geometry.InvalidPoint);
-					Debug.Assert(r.Size != Geometry.InvalidSize);
-
+					Debug.Assert(Geometry.IsValid(r));
 					if (left > r.Left) left = r.Left;
 					if (top > r.Top) top = r.Top;
 					if (right < r.Right) right = r.Right;
@@ -1318,7 +1289,7 @@ namespace Dataweb.NShape.Advanced {
 	/// Identifies a control point within a shape.
 	/// </summary>
 	/// <remarks>Regular control points have integer ids greater than 0.</remarks>
-	public struct ControlPointId: IConvertible {
+	public struct ControlPointId : IConvertible, IComparable, IComparable<int>, IComparable<ControlPointId> {
 
 		public static bool operator ==(ControlPointId id1, ControlPointId id2) {
 			return id1.id == id2.id;
@@ -1479,6 +1450,42 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		#region IComparable Members
+
+		public int CompareTo(object obj) {
+			if (obj == null) return 1;
+			if (obj is ControlPointId) 
+				return CompareTo((ControlPointId)obj);
+			else if (obj is int || obj is short || obj is byte)
+				return CompareTo((int)obj);
+			else throw new ArgumentException("obj");
+		}
+
+		#endregion
+
+
+		#region IComparable<int> Members
+
+		public int CompareTo(int other) {
+			if (this < other) return -1;
+			if (this > other) return 1;
+			return 0;
+		}
+
+		#endregion
+
+
+		#region IComparable<ControlPointId> Members
+
+		public int CompareTo(ControlPointId other) {
+			if (this < other) return -1;
+			if (this > other) return 1;
+			return 0;
+		}
+
+		#endregion
+
+
 		static ControlPointId() {
 			empty = None;
 		}
@@ -1511,35 +1518,44 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public struct RelativePosition {
 
-		static RelativePosition() {
-			Empty.A = int.MinValue;
-			Empty.B = int.MinValue;
-		}
-
-		public int A;
-
-		public int B;
-
 		public static readonly RelativePosition Empty;
-
-		public override bool Equals(object obj) { 
-			return obj is RelativePosition && this == (RelativePosition)obj; 
-		}
-
-
-		public override int GetHashCode() { 
-			return (A.GetHashCode() ^ B.GetHashCode()); 
-		}
 
 
 		public static bool operator ==(RelativePosition x, RelativePosition y) { 
-			return (x.A == y.A && x.B == y.B); 
+			return (x.A == y.A && x.B == y.B && x.C == y.C); 
 		}
 
 
 		public static bool operator !=(RelativePosition x, RelativePosition y) { 
 			return !(x == y); 
 		}
+
+
+		public int A;
+
+		
+		public int B;
+
+
+		public int C;
+
+
+		public override bool Equals(object obj) { 
+			return obj is RelativePosition && this == (RelativePosition)obj; 
+		}
+
+
+		public override int GetHashCode() {
+			return (A.GetHashCode() ^ B.GetHashCode() ^ C.GetHashCode());
+		}
+
+		
+		static RelativePosition() {
+			Empty.A = int.MinValue;
+			Empty.B = int.MinValue;
+			Empty.C = int.MinValue;
+		}
+
 	}
 
 
@@ -1559,43 +1575,6 @@ namespace Dataweb.NShape.Advanced {
 		#region IDisposable Members
 
 		public abstract void Dispose();
-
-		#endregion
-
-
-		#region IEntity Members (explicit implementation)
-
-		object IEntity.Id { get { return IdCore; } }
-
-
-		void IEntity.AssignId(object id) {
-			AssignIdCore(id);
-		}
-
-
-		void IEntity.LoadFields(IRepositoryReader reader, int version) {
-			LoadFieldsCore(reader, version);
-		}
-
-
-		void IEntity.LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
-			LoadInnerObjectsCore(propertyName, reader, version);
-		}
-
-
-		void IEntity.SaveFields(IRepositoryWriter writer, int version) {
-			SaveFieldsCore(writer, version);
-		}
-
-
-		void IEntity.SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
-			SaveInnerObjectsCore(propertyName, writer, version);
-		}
-
-
-		void IEntity.Delete(IRepositoryWriter writer, int version) {
-			DeleteCore(writer, version);
-		}
 
 		#endregion
 
@@ -1681,7 +1660,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="otherShape">Target shape of the connections to return. 
 		/// If null/Nothing, connections to all connected shapes are returned.</param>
 		/// <param name="ownPointId">If a valid point id is given, all connections of this connection point are returned. 
-		/// If the constant ControlPointId. Any is given, connections of all connection points are returned.</param>
+		/// If the constant ControlPointId.Any is given, connections of all connection points are returned.</param>
 		public abstract IEnumerable<ShapeConnectionInfo> GetConnectionInfos(ControlPointId ownPointId, Shape otherShape);
 
 		/// <summary>
@@ -1692,9 +1671,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Tests, whether the shape is connected to a given other shape.
 		/// </summary>
-		/// <param name="otherShape">Other shape. Null if any other shape is taken into account.</param>
 		/// <param name="ownPointId">Id of shape's own connection point, which is to be tested. 
 		/// ControlPointId.All, if any connection point is taken into account.</param>
+		/// <param name="otherShape">Other shape. Null if any other shape is taken into account.</param>
 		/// <returns></returns>
 		public abstract ControlPointId IsConnected(ControlPointId ownPointId, Shape otherShape);
 
@@ -1913,7 +1892,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <remarks>Can be null, if no outline has to be drawn.</remarks>
 		[Category("Appearance")]
-		[Description("Defines the appearence of the shape's outline.")]
+		[Description("Defines the appearence of the shape's outline. \nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdLineStyle)]
 		[RequiredPermission(Permission.Present)]
 		public abstract ILineStyle LineStyle { get; set; }
@@ -1953,6 +1932,8 @@ namespace Dataweb.NShape.Advanced {
 
 		protected abstract void AssignIdCore(object id);
 
+		protected abstract void DeleteCore(IRepositoryWriter writer, int version);
+
 		protected abstract void LoadFieldsCore(IRepositoryReader reader, int version);
 
 		protected abstract void LoadInnerObjectsCore(string propertyName, IRepositoryReader reader, int version);
@@ -1961,7 +1942,42 @@ namespace Dataweb.NShape.Advanced {
 
 		protected abstract void SaveInnerObjectsCore(string propertyName, IRepositoryWriter writer, int version);
 
-		protected abstract void DeleteCore(IRepositoryWriter writer, int version);
+		#endregion
+
+
+		#region IEntity Members (explicit implementation)
+
+		object IEntity.Id { get { return IdCore; } }
+
+
+		void IEntity.AssignId(object id) {
+			AssignIdCore(id);
+		}
+
+
+		void IEntity.LoadFields(IRepositoryReader reader, int version) {
+			LoadFieldsCore(reader, version);
+		}
+
+
+		void IEntity.LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
+			LoadInnerObjectsCore(propertyName, reader, version);
+		}
+
+
+		void IEntity.SaveFields(IRepositoryWriter writer, int version) {
+			SaveFieldsCore(writer, version);
+		}
+
+
+		void IEntity.SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
+			SaveInnerObjectsCore(propertyName, writer, version);
+		}
+
+
+		void IEntity.Delete(IRepositoryWriter writer, int version) {
+			DeleteCore(writer, version);
+		}
 
 		#endregion
 

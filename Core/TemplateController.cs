@@ -19,203 +19,16 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Reflection;
 using Dataweb.NShape.Advanced;
+using System.Diagnostics;
 
 
 namespace Dataweb.NShape.Controllers {
 
-	public enum TemplateControllerEditMode { CreateTemplate, EditTemplate };
-
-
-	#region EventArgs
-
-	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the TemplateController is initializing itself.
-	/// </summary>
-	public class TemplateControllerInitializingEventArgs : EventArgs {
-
-		public TemplateControllerInitializingEventArgs(TemplateControllerEditMode editMode, Template template) {
-			this.editMode = editMode;
-			this.template = template;
-		}
-
-
-		public TemplateControllerEditMode EditMode {
-			get { return editMode; }
-		}
-
-
-		public Template Template {
-			get { return template; }
-		}
-
-
-		private TemplateControllerEditMode editMode;
-		private Template template;
-	}
-
-
-	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the template's projectName is modified.
-	/// </summary>
-	public class TemplateControllerStringChangedEventArgs : EventArgs {
-
-		public TemplateControllerStringChangedEventArgs(string oldString, string newString) {
-			this.oldString = oldString;
-			this.newString = newString;
-		}
-
-
-		public string OldString {
-			get { return oldString; }
-			internal set { oldString = value; }
-		}
-		
-
-		public string NewString { 
-			get { return newString; }
-			internal set { newString = value; }
-		}
-
-
-		private string newString;
-		private string oldString;
-	}
-
-
-	/// <summary>
-	/// Encapsulates parameters for a template-related TemplateController event.
-	/// </summary>
-	public class TemplateControllerTemplateEventArgs : EventArgs {
-
-		public TemplateControllerTemplateEventArgs(Template template) {
-			this.template = template;
-		}
-
-		
-		public Template Template {
-			get { return template; }
-			internal set { template = value; }
-		}
-
-
-		private Template template;
-	}
-
-
-	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when template's shape is replaced ba a shape of another Type.
-	/// </summary>
-	public class TemplateControllerTemplateShapeReplacedEventArgs : TemplateControllerTemplateEventArgs {
-
-		public TemplateControllerTemplateShapeReplacedEventArgs(Template template, Shape oldTemplateShape, Shape newTemplateShape)
-			: base(template) {
-			this.oldTemplateShape = oldTemplateShape;
-			this.newTemplateShape = newTemplateShape;
-		}
-
-
-		public Shape OldTemplateShape {
-			get { return oldTemplateShape; }
-			internal set { oldTemplateShape = value; }
-		}
-
-
-		public Shape NewTemplateShape {
-			get { return newTemplateShape; }
-			internal set { newTemplateShape = value; }
-		}
-
-
-		private Shape oldTemplateShape;
-		private Shape newTemplateShape;
-	}
-
-
-	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when template's model object is replaced by a model object of another ModelObejctType.
-	/// </summary>
-	public class TemplateControllerModelObjectReplacedEventArgs : TemplateControllerTemplateEventArgs {
-
-		public TemplateControllerModelObjectReplacedEventArgs(Template template,
-			IModelObject oldModelObject, IModelObject newModelObject)
-			: base(template) {
-			this.oldModelObject = oldModelObject;
-			this.newModelObject = newModelObject;
-		}
-
-
-		public IModelObject OldModelObject {
-			get { return oldModelObject; }
-			internal set { oldModelObject = value; }
-		}
-
-
-		public IModelObject NewModelObject {
-			get { return newModelObject; }
-			internal set { newModelObject = value; }
-		}
-
-		private IModelObject oldModelObject;
-		private IModelObject newModelObject;
-	}
-
-
-	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the mapping of ControlPointId to TerminalId is modified.
-	/// </summary>
-	public class TemplateControllerPropertyMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
-		public TemplateControllerPropertyMappingChangedEventArgs(Template template, IModelMapping modelMapping)
-			: base(template) {
-			this.propertyMapping = modelMapping;
-		}
-
-		public IModelMapping ModelMapping {
-			get { return propertyMapping; }
-			internal set { propertyMapping = value; }
-		}
-
-		private IModelMapping propertyMapping = null;
-	}
-
-
-	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the mapping of shape's properties to modeloject's properties is modified.
-	/// </summary>
-	public class TemplateControllerPointMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
-
-		public TemplateControllerPointMappingChangedEventArgs(Template template, ControlPointId controlPointId, TerminalId oldTerminalId, TerminalId newTerminalId)
-			: base(template) {
-			this.controlPointId = controlPointId;
-			this.oldTerminalId = oldTerminalId;
-			this.newTerminalId = newTerminalId;
-		}
-
-		public ControlPointId ControlPointId {
-			get { return controlPointId; }
-			internal set { controlPointId = value; }
-		}
-
-		public TerminalId OldTerminalId {
-			get { return oldTerminalId; }
-			internal set { oldTerminalId = value; }
-		}
-
-		public TerminalId NewTerminalId {
-			get { return newTerminalId; }
-			internal set { newTerminalId = value; }
-		}
-
-		private ControlPointId controlPointId;
-		private TerminalId oldTerminalId;
-		private TerminalId newTerminalId;
-	}
-
-	#endregion
-
-
 	/// <summary>
 	/// A non-visual component for editing templates. 
 	/// </summary>
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(TemplateController), "TemplateController.bmp")]
 	public class TemplateController : Component, IDisplayService {
 
 		/// <summary>
@@ -353,6 +166,12 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
+
 		/// <summary>
 		/// The TemplateController's Project.
 		/// </summary>
@@ -360,8 +179,13 @@ namespace Dataweb.NShape.Controllers {
 		public Project Project {
 			get { return project; }
 			set {
+				if (project != null) UnregisterProjectEvents();
 				project = value;
-				if (project != null) Initialize(project, OriginalTemplate);
+				if (project != null) {
+					RegisterProjectEvents();
+					if (!isInitializing && project.IsOpen)
+						Initialize(project, OriginalTemplate);
+				}
 			}
 		}
 
@@ -413,7 +237,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Specifies wether the TemplateController is isInitialized completly
+		/// Specifies wether the TemplateController was initialized completly.
 		/// </summary>
 		[Browsable(false)]
 		public bool IsInitialized {
@@ -438,50 +262,61 @@ namespace Dataweb.NShape.Controllers {
 		/// Calling this method initializes the TemplateController.
 		/// </summary>
 		public void Initialize(Project project, Template template) {
-			if (project == null) throw new ArgumentNullException("project");
-			if (this.project != project) Project = project;
+			if (isInitializing) {
+				Debug.Fail("Already initializing");
+				return;
+			}
+			try {
+				isInitializing = true;
+				if (project == null) throw new ArgumentNullException("project");
+				if (this.project != project) Project = project;
 
-			bool templateSupportingShapeTypeFound = false;
-			foreach (ShapeType shapeType in project.ShapeTypes) {
-				if (shapeType.SupportsAutoTemplates) {
-					templateSupportingShapeTypeFound = true;
-					break;
+				// Check if there are ShapeTypes supporting templating
+				bool templateSupportingShapeTypeFound = false;
+				foreach (ShapeType shapeType in project.ShapeTypes) {
+					if (shapeType.SupportsAutoTemplates) {
+						templateSupportingShapeTypeFound = true;
+						break;
+					}
 				}
-			}
-			if (!templateSupportingShapeTypeFound) throw new NShapeException("No template supporting shape types found. Load a shape library first.");
+				if (!templateSupportingShapeTypeFound) throw new NShapeException("No template supporting shape types found. Load a shape library first.");
 
-			// Disable all controls if the user has not the appropriate access rights
-			if (!project.SecurityManager.IsGranted(Permission.Templates)) {
-				// ToDo: implement access right restrictions
-			}
-			
-			// Create a copy of the template
-			if (template != null) {
-				editMode = TemplateControllerEditMode.EditTemplate;
-				originalTemplate = template;
-				workTemplate = template.Clone();
-				workTemplate.Shape.DisplayService = this;
-			} else {
-				// Create a new Template
-				editMode = TemplateControllerEditMode.CreateTemplate;
-				originalTemplate = null;
+				// Create a copy of the template
+				if (template != null) {
+					editMode = TemplateControllerEditMode.EditTemplate;
+					originalTemplate = template;
+					workTemplate = new Template(originalTemplate.Name, originalTemplate.Shape.Clone());
+					workTemplate.CopyFrom(originalTemplate);
+					workTemplate.Shape.DisplayService = this;
+				} else {
+					// Create a new Template
+					editMode = TemplateControllerEditMode.CreateTemplate;
+					originalTemplate = null;
 
-				// As a shape is mandatory for every template, find a shape first
-				Shape shape = FindFirstShapeOfType(true);
-				if (shape == null) shape = FindFirstShapeOfType(false); // if no planar shape was found, get the first one
-				int templateCnt = 1;
-				foreach (Template t in project.Repository.GetTemplates()) ++templateCnt;
-				workTemplate = new Template(string.Format("Template {0}", templateCnt), shape);
-				shape.DisplayService = this;
-			}
+					// As a shape is mandatory for every template, find a shape first
+					Shape shape = FindFirstShapeOfType(typeof(IPlanarShape));
+					if (shape == null) shape = FindFirstShapeOfType(typeof(Shape)); // if no planar shape was found, get the first one
+					int templateCnt = 1;
+					foreach (Template t in project.Repository.GetTemplates()) ++templateCnt;
+					workTemplate = new Template(string.Format("Template {0}", templateCnt), shape);
+					shape.DisplayService = this;
+				}
 
-			InitShapeList();
-			InitModelObjectList();
-			isInitialized = true;
+				// Disable all controls if the user has not the appropriate access rights
+				if (!project.SecurityManager.IsGranted(Permission.Templates)) {
+					// ToDo: implement access right restrictions
+				}
 
-			if (Initializing != null) {
-				TemplateControllerInitializingEventArgs eventArgs = new TemplateControllerInitializingEventArgs(editMode, template);
-				Initializing(this, eventArgs);
+				InitShapeList();
+				InitModelObjectList();
+				isInitialized = true;
+
+				if (Initializing != null) {
+					TemplateControllerInitializingEventArgs eventArgs = new TemplateControllerInitializingEventArgs(editMode, template);
+					Initializing(this, eventArgs);
+				}
+			} finally {
+				isInitializing = false;
 			}
 		}
 
@@ -581,7 +416,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Not yet implemented
+		/// Define a new model-to-shape property mapping.
 		/// </summary>
 		public void SetModelMapping(IModelMapping modelMapping) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
@@ -596,7 +431,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Deletes a ModelMapping
+		/// Deletes a model-to-shape property mapping
 		/// </summary>
 		/// <param name="modelMapping"></param>
 		public void DeleteModelMapping(IModelMapping modelMapping) {
@@ -736,6 +571,39 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Private] Methods
 
+		private void RegisterProjectEvents() {
+			Debug.Assert(project != null);
+			if (project != null) {
+				project.Closing += project_Closing;
+				project.Opened += project_Opened;
+			}
+		}
+
+
+		private void UnregisterProjectEvents() {
+			Debug.Assert(project != null);
+			if (project != null) {
+				project.Closing -= project_Closing;
+				project.Opened -= project_Opened;
+			}
+		}
+
+
+		private void project_Opened(object sender, EventArgs e) {
+			
+		}
+
+
+		private void project_Closing(object sender, EventArgs e) {
+			
+		}
+
+
+		private bool IsOfType(Type type, Type targetType) {
+			return (type.IsSubclassOf(targetType) || type.GetInterface(targetType.Name, true) != null);
+		}
+		
+		
 		private void ClearShapeList() {
 			//foreach (Shape shape in shapes)
 			//   shape.Dispose();
@@ -770,11 +638,11 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		private Shape FindFirstShapeOfType(bool findPlanarShape) {
+		private Shape FindFirstShapeOfType(Type type) {
 			foreach (ShapeType shapeType in project.ShapeTypes) {
 				if (!shapeType.SupportsAutoTemplates) continue;
 				Shape shape = shapeType.CreateInstance();
-				if (findPlanarShape) {
+				if (IsOfType(shape.GetType(), type)) {
 					if (shape is IPlanarShape) return shape;
 				} else return shape;
 			}
@@ -797,6 +665,7 @@ namespace Dataweb.NShape.Controllers {
 		private ReadOnlyList<Shape> shapes = new ReadOnlyList<Shape>();
 		private ReadOnlyList<IModelObject> modelObjects = new ReadOnlyList<IModelObject>();
 		private bool templateWasChanged = false;
+		private bool isInitializing = false;
 		private bool isInitialized = false;
 		// EventArgs buffers
 		private EventArgs eventArgs = new EventArgs();
@@ -813,5 +682,195 @@ namespace Dataweb.NShape.Controllers {
 
 		#endregion
 	}
+
+
+	public enum TemplateControllerEditMode { CreateTemplate, EditTemplate };
+
+
+	#region EventArgs
+
+	/// <summary>
+	/// Encapsulates parameters for a TemplateController event raised when the TemplateController is initializing itself.
+	/// </summary>
+	public class TemplateControllerInitializingEventArgs : EventArgs {
+
+		public TemplateControllerInitializingEventArgs(TemplateControllerEditMode editMode, Template template) {
+			this.editMode = editMode;
+			this.template = template;
+		}
+
+
+		public TemplateControllerEditMode EditMode {
+			get { return editMode; }
+		}
+
+
+		public Template Template {
+			get { return template; }
+		}
+
+
+		private TemplateControllerEditMode editMode;
+		private Template template;
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a TemplateController event raised when the template's projectName is modified.
+	/// </summary>
+	public class TemplateControllerStringChangedEventArgs : EventArgs {
+
+		public TemplateControllerStringChangedEventArgs(string oldString, string newString) {
+			this.oldString = oldString;
+			this.newString = newString;
+		}
+
+
+		public string OldString {
+			get { return oldString; }
+			internal set { oldString = value; }
+		}
+
+
+		public string NewString {
+			get { return newString; }
+			internal set { newString = value; }
+		}
+
+
+		private string newString;
+		private string oldString;
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a template-related TemplateController event.
+	/// </summary>
+	public class TemplateControllerTemplateEventArgs : EventArgs {
+
+		public TemplateControllerTemplateEventArgs(Template template) {
+			this.template = template;
+		}
+
+
+		public Template Template {
+			get { return template; }
+			internal set { template = value; }
+		}
+
+
+		private Template template;
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a TemplateController event raised when template's shape is replaced ba a shape of another Type.
+	/// </summary>
+	public class TemplateControllerTemplateShapeReplacedEventArgs : TemplateControllerTemplateEventArgs {
+
+		public TemplateControllerTemplateShapeReplacedEventArgs(Template template, Shape oldTemplateShape, Shape newTemplateShape)
+			: base(template) {
+			this.oldTemplateShape = oldTemplateShape;
+			this.newTemplateShape = newTemplateShape;
+		}
+
+
+		public Shape OldTemplateShape {
+			get { return oldTemplateShape; }
+			internal set { oldTemplateShape = value; }
+		}
+
+
+		public Shape NewTemplateShape {
+			get { return newTemplateShape; }
+			internal set { newTemplateShape = value; }
+		}
+
+
+		private Shape oldTemplateShape;
+		private Shape newTemplateShape;
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a TemplateController event raised when template's model object is replaced by a model object of another ModelObejctType.
+	/// </summary>
+	public class TemplateControllerModelObjectReplacedEventArgs : TemplateControllerTemplateEventArgs {
+
+		public TemplateControllerModelObjectReplacedEventArgs(Template template,
+			IModelObject oldModelObject, IModelObject newModelObject)
+			: base(template) {
+			this.oldModelObject = oldModelObject;
+			this.newModelObject = newModelObject;
+		}
+
+
+		public IModelObject OldModelObject {
+			get { return oldModelObject; }
+			internal set { oldModelObject = value; }
+		}
+
+
+		public IModelObject NewModelObject {
+			get { return newModelObject; }
+			internal set { newModelObject = value; }
+		}
+
+		private IModelObject oldModelObject;
+		private IModelObject newModelObject;
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a TemplateController event raised when the mapping of ControlPointId to TerminalId is modified.
+	/// </summary>
+	public class TemplateControllerPropertyMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
+		public TemplateControllerPropertyMappingChangedEventArgs(Template template, IModelMapping modelMapping)
+			: base(template) {
+			this.propertyMapping = modelMapping;
+		}
+
+		public IModelMapping ModelMapping {
+			get { return propertyMapping; }
+			internal set { propertyMapping = value; }
+		}
+
+		private IModelMapping propertyMapping = null;
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a TemplateController event raised when the mapping of shape's properties to modeloject's properties is modified.
+	/// </summary>
+	public class TemplateControllerPointMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
+
+		public TemplateControllerPointMappingChangedEventArgs(Template template, ControlPointId controlPointId, TerminalId oldTerminalId, TerminalId newTerminalId)
+			: base(template) {
+			this.controlPointId = controlPointId;
+			this.oldTerminalId = oldTerminalId;
+			this.newTerminalId = newTerminalId;
+		}
+
+		public ControlPointId ControlPointId {
+			get { return controlPointId; }
+			internal set { controlPointId = value; }
+		}
+
+		public TerminalId OldTerminalId {
+			get { return oldTerminalId; }
+			internal set { oldTerminalId = value; }
+		}
+
+		public TerminalId NewTerminalId {
+			get { return newTerminalId; }
+			internal set { newTerminalId = value; }
+		}
+
+		private ControlPointId controlPointId;
+		private TerminalId oldTerminalId;
+		private TerminalId newTerminalId;
+	}
+
+	#endregion
 
 }

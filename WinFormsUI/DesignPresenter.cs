@@ -111,6 +111,16 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties: DesignPresenter
 
+		/// <summary>
+		/// Specifies the version of the component.
+		/// </summary>
+		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
 		[Category("NShape")]
 		public Project Project {
 			get { return (designController == null) ? null : designController.Project; }
@@ -471,35 +481,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	
 		private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e) {
-		//   styleListBox.SuspendLayout();
-		//   propertyGrid.SuspendLayout();
-
-		//   object oldValue, newValue;
-		//   PropertyInfo propertyInfo;
-		//   // handle properties that can be unfolded so that the changed item is not the selected item 
-		//   // (e.g. if Font property is unfolded and Font.Size is changed)
-		//   if (e.ChangedItem.Parent != null && e.ChangedItem.Parent.PropertyDescriptor != null) {
-		//      Type selectedObjectsType = propertyGrid.SelectedObject.GetType();
-		//      propertyInfo = selectedObjectsType.GetProperty(e.ChangedItem.Parent.PropertyDescriptor.Name);
-
-		//      oldValue = e.OldValue;
-		//      newValue = e.ChangedItem.Parent.Value;
-		//   }
-		//   else {
-		//      Type modifiedObjectsType = propertyGrid.SelectedObject.GetType();
-		//      propertyInfo = modifiedObjectsType.GetProperty(e.ChangedItem.PropertyDescriptor.Name);
-
-		//      // e.OldValue is null if more than one objects are selected and the modified 
-		//      // properties did not have the same value
-		//      oldValue = e.OldValue;
-		//      newValue = e.ChangedItem.Value;
-		//   }
-			
-		//   designController.ReplaceStyle(selectedDesign, selectedStyle, propertyInfo.Name, oldValue, newValue);
-
-		//   propertyGrid.ResumeLayout();
-		//   styleListBox.Refresh();
-		//   styleListBox.ResumeLayout();
 		}
 
 
@@ -545,7 +526,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private StringFormat formatter;
 		private StringFormatFlags formatterFlags;
 
-		const string previewText = "This is the first line of the sample text.\r\nThis is line 2 of the text.\r\nLine 3 of the text.";
 		const int noneSelectedItemIdx = -1;
 		const int colorStylesItemIdx = 0;
 		const int fillStylesItemIdx = 1;

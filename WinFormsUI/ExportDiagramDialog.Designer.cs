@@ -128,9 +128,9 @@
 			this.bmpRadioButton.AutoSize = true;
 			this.bmpRadioButton.Location = new System.Drawing.Point(6, 111);
 			this.bmpRadioButton.Name = "bmpRadioButton";
-			this.bmpRadioButton.Size = new System.Drawing.Size(163, 17);
+			this.bmpRadioButton.Size = new System.Drawing.Size(195, 17);
 			this.bmpRadioButton.TabIndex = 4;
-			this.bmpRadioButton.Text = "Uncompressed Bitmap Image";
+			this.bmpRadioButton.Text = "BMP - Uncompressed Bitmap Image";
 			this.bmpRadioButton.UseVisualStyleBackColor = true;
 			this.bmpRadioButton.CheckedChanged += new System.EventHandler(this.bmpRadioButton_CheckedChanged);
 			// 
@@ -139,9 +139,9 @@
 			this.jpgRadioButton.AutoSize = true;
 			this.jpgRadioButton.Location = new System.Drawing.Point(6, 88);
 			this.jpgRadioButton.Name = "jpgRadioButton";
-			this.jpgRadioButton.Size = new System.Drawing.Size(150, 17);
+			this.jpgRadioButton.Size = new System.Drawing.Size(186, 17);
 			this.jpgRadioButton.TabIndex = 3;
-			this.jpgRadioButton.Text = "Compressed Bitmap Image";
+			this.jpgRadioButton.Text = "JPEG - Compressed Bitmap Image";
 			this.jpgRadioButton.UseVisualStyleBackColor = true;
 			this.jpgRadioButton.CheckedChanged += new System.EventHandler(this.jpgRadioButton_CheckedChanged);
 			// 
@@ -150,9 +150,9 @@
 			this.pngRadioButton.AutoSize = true;
 			this.pngRadioButton.Location = new System.Drawing.Point(6, 65);
 			this.pngRadioButton.Name = "pngRadioButton";
-			this.pngRadioButton.Size = new System.Drawing.Size(193, 17);
+			this.pngRadioButton.Size = new System.Drawing.Size(225, 17);
 			this.pngRadioButton.TabIndex = 2;
-			this.pngRadioButton.Text = "Lossless Compressed Bitmap Image";
+			this.pngRadioButton.Text = "PNG - Lossless Compressed Bitmap Image";
 			this.pngRadioButton.UseVisualStyleBackColor = true;
 			this.pngRadioButton.CheckedChanged += new System.EventHandler(this.pngRadioButton_CheckedChanged);
 			// 
@@ -161,9 +161,9 @@
 			this.emfRadioButton.AutoSize = true;
 			this.emfRadioButton.Location = new System.Drawing.Point(6, 42);
 			this.emfRadioButton.Name = "emfRadioButton";
-			this.emfRadioButton.Size = new System.Drawing.Size(88, 17);
+			this.emfRadioButton.Size = new System.Drawing.Size(161, 17);
 			this.emfRadioButton.TabIndex = 1;
-			this.emfRadioButton.Text = "Vector Image";
+			this.emfRadioButton.Text = "EMF (Classic) - Vector Image";
 			this.emfRadioButton.UseVisualStyleBackColor = true;
 			this.emfRadioButton.CheckedChanged += new System.EventHandler(this.emfRadioButton_CheckedChanged);
 			// 
@@ -172,9 +172,9 @@
 			this.emfPlusRadioButton.AutoSize = true;
 			this.emfPlusRadioButton.Location = new System.Drawing.Point(6, 19);
 			this.emfPlusRadioButton.Name = "emfPlusRadioButton";
-			this.emfPlusRadioButton.Size = new System.Drawing.Size(142, 17);
+			this.emfPlusRadioButton.Size = new System.Drawing.Size(233, 17);
 			this.emfPlusRadioButton.TabIndex = 0;
-			this.emfPlusRadioButton.Text = "High Quality Vector Imge";
+			this.emfPlusRadioButton.Text = "EMF (Plus Dual) - High Quality Vector Image";
 			this.emfPlusRadioButton.UseVisualStyleBackColor = true;
 			this.emfPlusRadioButton.CheckedChanged += new System.EventHandler(this.emfPlusRadioButton_CheckedChanged);
 			// 
@@ -490,7 +490,9 @@
 			this.Controls.Add(this.exportButton);
 			this.Controls.Add(this.cancelButton);
 			this.Controls.Add(this.okButton);
+			this.DoubleBuffered = true;
 			this.Name = "ExportDiagramDialog";
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Export Diagram";
 			this.FileFormatOptionsGroupBox.ResumeLayout(false);

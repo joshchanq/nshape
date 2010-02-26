@@ -25,7 +25,7 @@ namespace ArchiSketch {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			Dataweb.NShape.DefaultSecurity defaultSecurity2 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.fileNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -362,12 +362,12 @@ namespace ArchiSketch {
 			// project
 			// 
 			this.project.AutoGenerateTemplates = true;
-			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
+			this.project.LibrarySearchPaths = ((System.Collections.Generic.List<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = "ArchiSketch Project 1";
 			this.project.Repository = this.repository;
-			defaultSecurity2.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			defaultSecurity2.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = defaultSecurity2;
+			roleBasedSecurityManager.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager;
 			// 
 			// repository
 			// 
@@ -378,10 +378,9 @@ namespace ArchiSketch {
 			// xmlStore
 			// 
 			this.xmlStore.DesignFileName = "";
-			this.xmlStore.DirectoryName = "C:\\Dokumente und Einstellungen\\pepo.DATAWEB\\Eigene Dateien\\Diagramming Designer";
+			this.xmlStore.DirectoryName = "";
 			this.xmlStore.FileExtension = ".xml";
 			this.xmlStore.ProjectName = "ArchiSketch Project 1";
-			this.xmlStore.Version = 0;
 			// 
 			// toolStrip2
 			// 

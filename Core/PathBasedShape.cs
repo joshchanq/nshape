@@ -34,16 +34,12 @@ namespace Dataweb.NShape.Advanced {
 
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
-			
-			//this.location.X = source.X;
-			//this.location.Y = source.Y;
-			
 			if (source is IPlanarShape) {
 				IPlanarShape src = (IPlanarShape)source;
 				// Copy regular properties
 				this.angle = src.Angle;
 				// Copy templated properties
-				this.privateFillStyle = (Template != null && src.FillStyle == ((PathBasedPlanarShape)Template.Shape).FillStyle) ? null : src.FillStyle;
+				this.privateFillStyle = (Template != null && src.FillStyle == ((IPlanarShape)Template.Shape).FillStyle) ? null : src.FillStyle;
 			}
 		}
 
@@ -93,7 +89,7 @@ namespace Dataweb.NShape.Advanced {
 			Point result = Geometry.InvalidPoint;
 			Rectangle boundingRect = GetBoundingRectangle(true);
 			result = Geometry.IntersectLineWithRectangle(startX, startY, X, Y, boundingRect.X, boundingRect.Y, boundingRect.Right, boundingRect.Bottom);
-			if (result == Geometry.InvalidPoint) result = Center;
+			if (!Geometry.IsValid(result)) result = Center;
 			return result;
 		}
 
@@ -172,13 +168,13 @@ namespace Dataweb.NShape.Advanced {
 
 
 		[Category("Appearance")]
-		[Description("Defines the appearence of the shape's interior.")]
+		[Description("Defines the appearence of the shape's interior. \nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdFillStyle)]
 		[RequiredPermission(Permission.Present)]
 		public virtual IFillStyle FillStyle {
-			get { return privateFillStyle ?? ((PathBasedPlanarShape)Template.Shape).FillStyle; }
+			get { return privateFillStyle ?? ((IPlanarShape)Template.Shape).FillStyle; }
 			set {
-				privateFillStyle = (Template != null && value == ((PathBasedPlanarShape)Template.Shape).FillStyle) ? null : value;
+				privateFillStyle = (Template != null && value == ((IPlanarShape)Template.Shape).FillStyle) ? null : value;
 				Invalidate();
 			}
 		}
@@ -356,6 +352,7 @@ namespace Dataweb.NShape.Advanced {
 
 		protected override void InvalidateDrawCache() {
 			base.InvalidateDrawCache();
+			Path.Reset();
 			boundingRectangleUnrotated = Geometry.InvalidRectangle;
 		}
 
@@ -448,11 +445,7 @@ namespace Dataweb.NShape.Advanced {
 				Pen pen = ToolCache.GetPen(lineStyle, null, null);
 				graphics.DrawPath(pen, Path);
 			}
-//#if DEBUG
-//         // Draw tight and loose bounding rectangles
-//         graphics.DrawRectangle(Pens.GreenYellow, GetBoundingRectangle(true));
-//         graphics.DrawRectangle(Pens.Red, GetBoundingRectangle(false));
-//#endif
+
 		}
 
 

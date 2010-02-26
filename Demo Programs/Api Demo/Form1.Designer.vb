@@ -24,7 +24,7 @@ Partial Class Form1
     Private Sub InitializeComponent()
 		Me.components = New System.ComponentModel.Container
 		Dim resources As System.ComponentModel.ComponentResourceManager = New System.ComponentModel.ComponentResourceManager(GetType(Form1))
-		Dim DefaultSecurity2 As Dataweb.NShape.DefaultSecurity = New Dataweb.NShape.DefaultSecurity
+		Dim RoleBasedSecurityManager1 As Dataweb.NShape.RoleBasedSecurityManager = New Dataweb.NShape.RoleBasedSecurityManager
 		Me.Display1 = New Dataweb.NShape.WinFormsUI.Display
 		Me.DiagramSetController1 = New Dataweb.NShape.Controllers.DiagramSetController
 		Me.Project1 = New Dataweb.NShape.Project(Me.components)
@@ -43,7 +43,7 @@ Partial Class Form1
 		Me.Display1.AllowDrop = True
 		Me.Display1.AutoScroll = True
 		Me.Display1.BackColorGradient = System.Drawing.SystemColors.Control
-		Me.Display1.BackgroundGradientAngle = 45.0!
+		Me.Display1.BackgroundGradientAngle = 45
 		Me.Display1.ConnectionPointShape = Dataweb.NShape.Controllers.ControlPointShape.Circle
 		Me.Display1.ControlPointAlpha = CType(255, Byte)
 		Me.Display1.DiagramSetController = Me.DiagramSetController1
@@ -52,6 +52,7 @@ Partial Class Form1
 		Me.Display1.GridColor = System.Drawing.Color.White
 		Me.Display1.GridSize = 20
 		Me.Display1.GripSize = 3
+		Me.Display1.HideDeniedMenuItems = False
 		Me.Display1.HighQualityBackground = True
 		Me.Display1.HighQualityRendering = True
 		Me.Display1.ImeMode = System.Windows.Forms.ImeMode.NoControl
@@ -66,6 +67,7 @@ Partial Class Form1
 		Me.Display1.SelectionInactiveColor = System.Drawing.Color.Gray
 		Me.Display1.SelectionInteriorColor = System.Drawing.Color.WhiteSmoke
 		Me.Display1.SelectionNormalColor = System.Drawing.Color.DarkGreen
+		Me.Display1.ShowCellOccupation = False
 		Me.Display1.ShowDefaultContextMenu = False
 		Me.Display1.ShowGrid = False
 		Me.Display1.ShowScrollBars = True
@@ -89,9 +91,9 @@ Partial Class Form1
 		Me.Project1.LibrarySearchPaths = CType(resources.GetObject("Project1.LibrarySearchPaths"), System.Collections.Generic.IList(Of String))
 		Me.Project1.Name = ""
 		Me.Project1.Repository = Me.CachedRepository1
-		DefaultSecurity2.CurrentRole = Dataweb.NShape.StandardRole.Administrator
-		DefaultSecurity2.CurrentRoleName = "Administrator"
-		Me.Project1.SecurityManager = DefaultSecurity2
+		RoleBasedSecurityManager1.CurrentRole = Dataweb.NShape.StandardRole.Administrator
+		RoleBasedSecurityManager1.CurrentRoleName = "Administrator"
+		Me.Project1.SecurityManager = RoleBasedSecurityManager1
 		'
 		'CachedRepository1
 		'

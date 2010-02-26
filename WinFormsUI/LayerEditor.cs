@@ -28,6 +28,13 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
+		[Category("NShape")]
 		public IDiagramPresenter DiagramPresenter {
 			get { return presenter.DiagramPresenter; }
 			set { presenter.DiagramPresenter = value; }

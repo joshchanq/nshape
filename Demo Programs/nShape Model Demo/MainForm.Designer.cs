@@ -1,4 +1,4 @@
-﻿namespace nShape_Model_Demo {
+﻿namespace NShape_Model_Demo {
 	partial class MainForm {
 		/// <summary>
 		/// Required designer variable.
@@ -25,7 +25,7 @@
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager1 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.diagramSetController = new Dataweb.NShape.Controllers.DiagramSetController();
 			this.project = new Dataweb.NShape.Project(this.components);
 			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
@@ -47,12 +47,12 @@
 			// project
 			// 
 			this.project.AutoGenerateTemplates = true;
-			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
+			this.project.LibrarySearchPaths = ((System.Collections.Generic.List<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = null;
 			this.project.Repository = this.cachedRepository;
-			defaultSecurity1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			defaultSecurity1.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = defaultSecurity1;
+			roleBasedSecurityManager1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager1.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager1;
 			// 
 			// cachedRepository
 			// 
@@ -148,7 +148,7 @@
 			this.ClientSize = new System.Drawing.Size(909, 572);
 			this.Controls.Add(this.splitContainer);
 			this.Name = "MainForm";
-			this.Text = "nShape Model Demo";
+			this.Text = "NShape Model Demo";
 			this.Load += new System.EventHandler(this.MainForm_Load);
 			this.splitContainer.Panel1.ResumeLayout(false);
 			this.splitContainer.Panel2.ResumeLayout(false);

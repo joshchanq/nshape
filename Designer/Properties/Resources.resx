@@ -118,62 +118,29 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="BackBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\BackBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="CopyBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\CopyBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="CutBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\CutBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="DeleteBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DeleteBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ToForeground" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ToForeground.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="DeleteDiagramBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DeleteDiagramBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="ToggleGridBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ToggleGridBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="DesignEditorBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DesignEditorBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="DesignEditorBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DesignEditorBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="DiagramPropertiesBtn3" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\DiagramPropertiesBtn3.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="ForwardBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ForwardBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NewBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NewBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NewDiagramBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NewDiagramBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="OpenBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\OpenBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="OpenBtn1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\OpenBtn1.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="PasteBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PasteBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="PropertiesBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\PropertiesBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="RedoBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\RedoBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="RefreshBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RefreshBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ResetProjectBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ResetProjectBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="ForwardBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ForwardBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ResetProjectBtn1" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ResetProjectBtn1.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="DesignEditorBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DesignEditorBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="SaveBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SaveBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -181,19 +148,58 @@
   <data name="SaveBtn1" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\SaveBtn1.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DeleteBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ResetProjectBtn1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ResetProjectBtn1.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RedoBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RedoBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CutBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CutBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PropertiesBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PropertiesBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="ToBackground" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ToBackground.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ToForeground" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ToForeground.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="NewBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NewBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PasteBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PasteBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ResetProjectBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ResetProjectBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CopyBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CopyBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DiagramPropertiesBtn3" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DiagramPropertiesBtn3.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="ToggleGridBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ToggleGridBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="ToggleGridBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\ToggleGridBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="BackBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BackBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="OpenBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OpenBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="UndoBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\UndoBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NewDiagramBtn2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NewDiagramBtn2.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NShapeLogo_403x163" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NShapeLogo_403x163.PNG;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DebugToggleCellOccupation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DebugToggleCellOccupation.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

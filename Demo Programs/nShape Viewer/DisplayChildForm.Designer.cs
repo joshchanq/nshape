@@ -1,4 +1,4 @@
-﻿namespace nShapeViewer {
+﻿namespace NShapeViewer {
 	partial class DisplayChildForm {
 		/// <summary>
 		/// Required designer variable.
@@ -98,7 +98,7 @@
 			// 
 			// sizeLabel
 			// 
-			this.sizeLabel.Image = global::nShapeViewer.Properties.Resources.Size;
+			this.sizeLabel.Image = global::NShapeViewer.Properties.Resources.Size;
 			this.sizeLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.sizeLabel.Name = "sizeLabel";
 			this.sizeLabel.Size = new System.Drawing.Size(84, 17);
@@ -126,7 +126,7 @@
 			// 
 			// zoomLabel
 			// 
-			this.zoomLabel.Image = global::nShapeViewer.Properties.Resources.ZoomBtn;
+			this.zoomLabel.Image = global::NShapeViewer.Properties.Resources.ZoomBtn;
 			this.zoomLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.zoomLabel.Name = "zoomLabel";
 			this.zoomLabel.Size = new System.Drawing.Size(88, 17);
@@ -141,7 +141,7 @@
 			// 
 			// mousePosLabel
 			// 
-			this.mousePosLabel.Image = global::nShapeViewer.Properties.Resources.Position;
+			this.mousePosLabel.Image = global::NShapeViewer.Properties.Resources.Position;
 			this.mousePosLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.mousePosLabel.Name = "mousePosLabel";
 			this.mousePosLabel.Size = new System.Drawing.Size(94, 17);
@@ -156,7 +156,7 @@
 			// 
 			// topLeftLabel
 			// 
-			this.topLeftLabel.Image = global::nShapeViewer.Properties.Resources.TopLeft;
+			this.topLeftLabel.Image = global::NShapeViewer.Properties.Resources.TopLeft;
 			this.topLeftLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.topLeftLabel.Name = "topLeftLabel";
 			this.topLeftLabel.Size = new System.Drawing.Size(63, 17);
@@ -171,7 +171,7 @@
 			// 
 			// bottomRightLabel
 			// 
-			this.bottomRightLabel.Image = global::nShapeViewer.Properties.Resources.BottomRight;
+			this.bottomRightLabel.Image = global::NShapeViewer.Properties.Resources.BottomRight;
 			this.bottomRightLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.bottomRightLabel.Name = "bottomRightLabel";
 			this.bottomRightLabel.Size = new System.Drawing.Size(85, 17);

@@ -158,10 +158,12 @@ namespace Dataweb.NShape.Advanced {
 			int dx = 0, dy = 0;
 			int size = DiameterInternal;
 			int hSize = size, vSize = size;
+
 			switch (pointId) {
 				#region TopLeft
 				case TopLeftControlPoint:
-					if (!Geometry.MoveRectangleTopLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers | ResizeModifiers.MaintainAspect, out dx, out dy, out hSize, out vSize))
+					transformedDeltaX = transformedDeltaY = Math.Min(transformedDeltaX, transformedDeltaY);
+					if (!Geometry.MoveRectangleTopLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = Math.Min(hSize, vSize);
 					break;
@@ -169,7 +171,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region TopCenter
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out vSize))
+					if (!Geometry.MoveRectangleTop(size, size, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out vSize))
 						result = false;
 					size = vSize;
 					break;
@@ -177,7 +179,10 @@ namespace Dataweb.NShape.Advanced {
 
 				#region TopRight
 				case TopRightControlPoint:
-					if (!Geometry.MoveRectangleTopRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers | ResizeModifiers.MaintainAspect, out dx, out dy, out hSize, out vSize))
+					if (transformedDeltaX > Math.Abs(transformedDeltaY))
+						transformedDeltaY = -transformedDeltaX;
+					else transformedDeltaX = -transformedDeltaY;
+					if (!Geometry.MoveRectangleTopRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = Math.Min(hSize, vSize);
 					break;
@@ -185,7 +190,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Middle left
 				case MiddleLeftControlPoint:
-					if (!Geometry.MoveRectangleLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize))
+					if (!Geometry.MoveRectangleLeft(size, size, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out hSize))
 						result = false;
 					size = hSize;
 					break;
@@ -193,31 +198,35 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Middle right
 				case MiddleRightControlPoint:
-					if (!Geometry.MoveRectangleRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize))
+					if (!Geometry.MoveRectangleRight(size, size, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out hSize))
 						result = false;
 					size = hSize;
 					break;
 				#endregion
 
-				#region bottom left
+				#region Bottom left
 				case BottomLeftControlPoint:
-					if (!Geometry.MoveRectangleBottomLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers | ResizeModifiers.MaintainAspect, out dx, out dy, out hSize, out vSize))
+					if (Math.Abs(transformedDeltaX) > transformedDeltaY)
+						transformedDeltaY = -transformedDeltaX;
+					else transformedDeltaX = -transformedDeltaY;
+					if (!Geometry.MoveRectangleBottomLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = Math.Min(hSize, vSize);
 					break;
 				#endregion
 
-				#region bottom Center
+				#region Bottom Center
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out vSize))
+					if (!Geometry.MoveRectangleBottom(size, size, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out vSize))
 						result = false;
 					size = vSize;
 					break;
 				#endregion
 
-				#region bottom right
+				#region Bottom right
 				case BottomRightControlPoint:
-					if (!Geometry.MoveRectangleBottomRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers | ResizeModifiers.MaintainAspect, out dx, out dy, out hSize, out vSize))
+					transformedDeltaX = transformedDeltaY = Math.Max(transformedDeltaX, transformedDeltaY);
+					if (!Geometry.MoveRectangleBottomRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = Math.Min(hSize, vSize);
 					break;
@@ -243,19 +252,18 @@ namespace Dataweb.NShape.Advanced {
 		protected int DiameterInternal {
 			get { return internalDiameter; }
 			set {
-				if (value > 0) {
-					Invalidate();
-					if (Owner != null) Owner.NotifyChildResizing(this);
-					int delta = value - internalDiameter;
+				if (value < 0)  throw new ArgumentOutOfRangeException();
+				Invalidate();
+				if (Owner != null) Owner.NotifyChildResizing(this);
+				int delta = value - internalDiameter;
 
-					internalDiameter = value;
-					ControlPointsHaveMoved();
-					InvalidateDrawCache();
+				internalDiameter = value;
+				ControlPointsHaveMoved();
+				InvalidateDrawCache();
 
-					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, delta);
-					if (Owner != null) Owner.NotifyChildResized(this);
-					Invalidate();
-				}
+				if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, delta);
+				if (Owner != null) Owner.NotifyChildResized(this);
+				Invalidate();
 			}
 		}
 
@@ -370,7 +378,7 @@ namespace Dataweb.NShape.Advanced {
 				bounds.X = X - (Size / 2);
 				bounds.Y = Y - (Size / 2);
 				bounds.Width = bounds.Height = Size;
-				return rectangle.IntersectsWith(bounds);
+				return Geometry.RectangleIntersectsWithRectangle(rectangle, bounds);
 			} else {
 				if (rotatedBounds.Length != 4)
 					Array.Resize<PointF>(ref rotatedBounds, 4);
@@ -450,7 +458,7 @@ namespace Dataweb.NShape.Advanced {
 
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point p = Geometry.IntersectCircleWithLine(X, Y, (int)Math.Round(Diameter / 2f), startX, startY, X, Y, true);
-			if (p != Geometry.InvalidPoint) return p;
+			if (Geometry.IsValid(p)) return p;
 			else return Center;
 		}
 

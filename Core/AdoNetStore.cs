@@ -22,6 +22,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Dataweb.NShape.Advanced;
+using System.ComponentModel;
 
 
 namespace Dataweb.NShape {
@@ -116,16 +117,10 @@ namespace Dataweb.NShape {
 	/// <summary>
 	/// Stores NShape projects in any ADO.NET enabled database management system.
 	/// </summary>
+	[ToolboxBitmap(typeof(AdoNetStore))]
 	public abstract class AdoNetStore : Store {
 
 		#region Store Implementation
-
-		/// <override></override>
-		public override int Version {
-			get { return version; }
-			set { version = value; }
-		}
-
 
 		/// <override></override>
 		public override string ProjectName {
@@ -138,19 +133,42 @@ namespace Dataweb.NShape {
 
 
 		/// <override></override>
+		public override void ReadVersion(IStoreCache cache) {
+			bool closeConnection = EnsureDataSourceOpen();
+			bool commandsLoaded = false;
+			try {
+				if (commands.Count == 0) {
+					LoadSysCommands();
+					commandsLoaded = true;
+				}
+				version = DoReadVersion(cache.ProjectName);
+				cache.SetRepositoryBaseVersion(version);
+			} finally {
+				// As the AdoNetStore assumes the project is open when commands exist, we have to clear them here
+				if (commandsLoaded) ClearCommands();
+				if (closeConnection) EnsureDataSourceClosed();
+			}
+		}
+
+
+		/// <override></override>
 		public override bool Exists() {
 			bool result;
-			EnsureDataSourceOpen();
-			Connection.Open();
+			bool closeConnection = EnsureDataSourceOpen();
+			bool commandsLoaded = false;
 			try {
-				LoadSysCommands();
+				if (commands.Count == 0) {
+					LoadSysCommands();
+					commandsLoaded = true;
+				}
 				IDbCommand cmd = GetCommand(ProjectSettings.EntityTypeName, RepositoryCommandType.SelectByName);
 				((IDataParameter)cmd.Parameters[0]).Value = projectName;
 				using (IDataReader reader = cmd.ExecuteReader())
 					result = reader.Read();
 			} finally {
-				Connection.Close();
-				EnsureDataSourceClosed();
+				// As the AdoNetStore assumes the project is open when commands exist, we have to clear them here
+				if (commandsLoaded) ClearCommands();
+				if (closeConnection) EnsureDataSourceClosed();
 			}
 			return result;
 		}
@@ -178,6 +196,10 @@ namespace Dataweb.NShape {
 			if (storeCache == null) throw new ArgumentNullException("storeCache");
 			if (connection != null) connection.Dispose();
 			connection = null;
+			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands) {
+				if (item.Value != null) item.Value.Dispose();
+			}
+			commands.Clear();
 			base.Close(storeCache);
 		}
 
@@ -191,83 +213,12 @@ namespace Dataweb.NShape {
 				// If all constraints are in place, deleting the project info is sufficient.
 				IDbCommand cmd = GetCommand(projectInfoEntityTypeName, RepositoryCommandType.Delete);
 				cmd.Transaction = transaction;
-				((DbParameter)cmd.Parameters[0]). Value = projectName;
+				((DbParameter)cmd.Parameters[0]).Value = projectName;
 				cmd.ExecuteNonQuery();
 			} finally {
 				commands.Clear();	// Unload all commands
 				EnsureDataSourceClosed();
 			}
-		}
-
-
-		// This is the actual reading function and will go into a separate data access 
-		// layer in later versions.
-		/// <override></override>
-		public IEnumerable<EntityBucket<TEntity>> LoadEntities<TEntity>(IStoreCache cache,
-			IEntityType entityType, IdFilter idFilter, Resolver parentResolver, RepositoryCommandType cmdType, 
-			params object[] parameters) where TEntity: IEntity {
-			//
-			// We must store all loaded entities for loading of inner objects
-			// TODO 2: Now with MARS, we could reunite the two phases.
-			List<EntityBucket<TEntity>> newEntities = new List<EntityBucket<TEntity>>(1000);
-			//
-			bool connectionOpened = EnsureDataSourceOpen();
-			DbParameterReader repositoryReader = null;
-			int version = entityType.RepositoryVersion;
-			try {
-				IDbCommand cmd = GetCommand(entityType.FullName, cmdType);
-				for (int i = 0; i < parameters.Length; ++i)
-					((IDbDataParameter)cmd.Parameters[i]).Value = parameters[i];
-				//
-				IDataReader dataReader = cmd.ExecuteReader();
-				try {
-					repositoryReader = new DbParameterReader(this, cache);
-					repositoryReader.ResetFieldReading(entityType.PropertyDefinitions, dataReader);
-					while (repositoryReader.DoBeginObject()) {
-						object id = repositoryReader.ReadId();
-						if (idFilter(id)) {
-							// Read the fields
-							object parentId = repositoryReader.ReadId();
-							TEntity entity = (TEntity)entityType.CreateInstanceForLoading();
-							entity.AssignId(id);
-							entity.LoadFields(repositoryReader, version);
-							int pix = 0;
-							// Read the composite inner objects
-							foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions) {
-								if (pi is EntityInnerObjectsDefinition && IsComposition(pi)) {
-									// property index -1 is id. LoadInnerObjects will increment the PropertyIndex.
-									repositoryReader.PropertyIndex = pix - 1;
-									entity.LoadInnerObjects(pi.Name, repositoryReader, version);
-								}
-								++pix;
-							}
-							newEntities.Add(new EntityBucket<TEntity>(entity, parentResolver(parentId), ItemState.Original));
-						}
-					}
-				} finally {
-					dataReader.Close();
-				}
-				// Read the associated inner objects
-				if (entityType.HasInnerObjects) {
-					repositoryReader.ResetInnerObjectsReading();
-					foreach (EntityBucket<TEntity> eb in newEntities) {
-						repositoryReader.PrepareInnerObjectsReading(eb.ObjectRef);
-						int pix = 0;
-						foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions) {
-							if (pi is EntityInnerObjectsDefinition && !IsComposition(pi)) {
-								repositoryReader.PropertyIndex = pix - 1;
-								eb.ObjectRef.LoadInnerObjects(pi.Name, repositoryReader, version);
-							}
-							++pix;
-						}
-					}
-				}
-			} finally {
-				if (repositoryReader != null) repositoryReader.Dispose();
-				if (connectionOpened) EnsureDataSourceClosed();
-			}
-			foreach (EntityBucket<TEntity> eb in newEntities)
-				yield return eb;
 		}
 
 
@@ -283,7 +234,7 @@ namespace Dataweb.NShape {
 				//// -- Zeroth Step: Insert or update the project --
 				IDbCommand projectCommand;
 				if (cache.ProjectId == null) {
-				  // project is a new one
+					// project is a new one
 					projectCommand = GetCommand(projectInfoEntityTypeName, RepositoryCommandType.Insert);
 					((DbParameter)projectCommand.Parameters[0]).Value = cache.ProjectName;
 					((DbParameter)projectCommand.Parameters[1]).Value = version;
@@ -291,9 +242,9 @@ namespace Dataweb.NShape {
 					// Cast to int makes sure the command returns an id.
 					cache.SetProjectOwnerId((int)projectCommand.ExecuteScalar());
 				} else {
-				  // We update the project projectName in case it has been modified.
+					// We update the project projectName in case it has been modified.
 					projectCommand = GetCommand(projectInfoEntityTypeName, RepositoryCommandType.Update);
-				  ((DbParameter)projectCommand.Parameters[0]).Value = cache.ProjectId;
+					((DbParameter)projectCommand.Parameters[0]).Value = cache.ProjectId;
 					((DbParameter)projectCommand.Parameters[1]).Value = cache.ProjectName;
 					((DbParameter)projectCommand.Parameters[2]).Value = version;
 					projectCommand.Transaction = transaction;
@@ -301,15 +252,27 @@ namespace Dataweb.NShape {
 				}
 				// -- First Step: Delete --
 				// Children first, owners afterwards
-				/*FlushDeletedStyles();
-				FlushDeletedDesigns();*/
+				foreach (EntityType et in cache.EntityTypes)
+					if (et.Category == EntityCategory.ModelObject)
+						DeleteEntities<IModelObject>(cache, et, cache.LoadedModelObjects, delegate(IModelObject s, IEntity o) { return s.Type.FullName == et.FullName; });
+				DeleteEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.LoadedModels, null);
 				DeleteShapeConnections(cache);
 				foreach (EntityType et in cache.EntityTypes)
 					if (et.Category == EntityCategory.Shape)
-						DeleteEntities<Shape>(cache, et, cache.LoadedShapes);
-				DeleteEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.LoadedDiagrams);
-				DeleteEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects);
-				// FlushDeletedTemplates();
+						DeleteEntities<Shape>(cache, et, cache.LoadedShapes, delegate(Shape s, IEntity o) { return s.Type.FullName == et.FullName; });
+				DeleteEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.LoadedDiagrams, null);
+				DeleteEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is NumericModelMapping);
+				DeleteEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is FormatModelMapping);
+				DeleteEntities<IModelMapping>(cache, cache.FindEntityTypeByName(StyleModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is StyleModelMapping);
+				DeleteEntities<Template>(cache, cache.FindEntityTypeByName(Template.EntityTypeName), cache.LoadedTemplates, null);
+				DeleteEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ColorStyle);
+				DeleteEntities<IStyle>(cache, cache.FindEntityTypeByName(CapStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CapStyle);
+				DeleteEntities<IStyle>(cache, cache.FindEntityTypeByName(CharacterStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CharacterStyle);
+				DeleteEntities<IStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is FillStyle);
+				DeleteEntities<IStyle>(cache, cache.FindEntityTypeByName(LineStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is LineStyle);
+				DeleteEntities<IStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ParagraphStyle);
+				DeleteEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
+				DeleteEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
 				//
 				// -- Second Step: Updated --
 				// Owners first, children afterwards
@@ -321,6 +284,10 @@ namespace Dataweb.NShape {
 				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is FillStyle);
 				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CharacterStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CharacterStyle);
 				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ParagraphStyle);
+				UpdateEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.LoadedModels, null);
+				foreach (EntityType et in cache.EntityTypes)
+					if (et.Category == EntityCategory.ModelObject)
+						UpdateEntities<IModelObject>(cache, et, cache.LoadedModelObjects, delegate(IModelObject s, IEntity o) { return s.Type.FullName == et.FullName; });
 				UpdateEntities<Template>(cache, cache.FindEntityTypeByName(Template.EntityTypeName), cache.LoadedTemplates, null);
 				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is NumericModelMapping);
 				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is FormatModelMapping);
@@ -346,15 +313,15 @@ namespace Dataweb.NShape {
 				foreach (EntityType et in cache.EntityTypes)
 					if (et.Category == EntityCategory.ModelObject) {
 						// Flush parents first, then children
-						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetModelObjectCommand(et.FullName, RepositoryCommandType.InsertTemplateModelObject), 
+						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetCommand(et.FullName, RepositoryCommandType.InsertTemplateModelObject),
 							(m, o) => (m.Parent == null && m.Type.FullName == et.FullName && o is Template));
-						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetModelObjectCommand(et.FullName, RepositoryCommandType.InsertTemplateModelObject),
+						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetCommand(et.FullName, RepositoryCommandType.InsertTemplateModelObject),
 							(m, o) => (m.Parent != null && m.Type.FullName == et.FullName && o is Template));
 					}
 				// Flush shapes owned by templates
 				foreach (EntityType et in cache.EntityTypes)
 					if (et.Category == EntityCategory.Shape)
-						InsertEntities<Shape>(cache, et, cache.NewShapes, GetShapeCommand(et.FullName, RepositoryCommandType.InsertTemplateShape),
+						InsertEntities<Shape>(cache, et, cache.NewShapes, GetCommand(et.FullName, RepositoryCommandType.InsertTemplateShape),
 							(s, o) => o is Template && s.Type.FullName == et.FullName);
 				// Flush model mappings
 				InsertEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.NewModelMappings, (s, o) => s is NumericModelMapping);
@@ -367,9 +334,9 @@ namespace Dataweb.NShape {
 				foreach (EntityType et in cache.EntityTypes)
 					if (et.Category == EntityCategory.ModelObject) {
 						// Flush parents first, then children
-						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetModelObjectCommand(et.FullName, RepositoryCommandType.InsertModelModelObject),
+						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetCommand(et.FullName, RepositoryCommandType.InsertModelModelObject),
 							(m, o) => (m.Parent == null && m.Type.FullName == et.FullName && !(o is Template)));
-						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetModelObjectCommand(et.FullName, RepositoryCommandType.InsertModelModelObject),
+						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetCommand(et.FullName, RepositoryCommandType.InsertModelModelObject),
 							(m, o) => (m.Parent != null && m.Type.FullName == et.FullName && !(o is Template)));
 					}
 
@@ -377,10 +344,10 @@ namespace Dataweb.NShape {
 				InsertEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.NewDiagrams, null);
 				foreach (EntityType et in cache.EntityTypes)
 					if (et.Category == EntityCategory.Shape)
-						InsertEntities<Shape>(cache, et, cache.NewShapes, GetShapeCommand(et.FullName, RepositoryCommandType.InsertDiagramShape),
+						InsertEntities<Shape>(cache, et, cache.NewShapes, GetCommand(et.FullName, RepositoryCommandType.InsertDiagramShape),
 							(s, o) => o is Diagram && s.Type.FullName == et.FullName);
 				// RUNTIME CHECK: At this point we only must have new shapes left that are template shapes or child shapes
-				foreach (KeyValuePair<Shape, IEntity> p in cache.NewShapes) 
+				foreach (KeyValuePair<Shape, IEntity> p in cache.NewShapes)
 					Debug.Assert(((IEntity)p.Key).Id != null || p.Value is Template || p.Value is Shape);
 				// Flush child shapes level by level
 				// In each cycle we insert all those shapes, whose parent has already been inserted.
@@ -389,8 +356,8 @@ namespace Dataweb.NShape {
 					allInserted = true;
 					foreach (EntityType et in cache.EntityTypes)
 						if (et.Category == EntityCategory.Shape)
-							InsertEntities<Shape>(cache, et, cache.NewShapes, GetShapeCommand(et.FullName, RepositoryCommandType.InsertChildShape),
-								delegate(Shape s, IEntity o) { if (((IEntity)s).Id != null) return false; else { allInserted = false; return s.Type.FullName == et.FullName && ((IEntity)s.Parent).Id != null; }});
+							InsertEntities<Shape>(cache, et, cache.NewShapes, GetCommand(et.FullName, RepositoryCommandType.InsertChildShape),
+								delegate(Shape s, IEntity o) { if (((IEntity)s).Id != null) return false; else { allInserted = false; return s.Type.FullName == et.FullName && ((IEntity)s.Parent).Id != null; } });
 				} while (!allInserted);
 				InsertShapeConnections(cache);
 				UpdateShapeOwners(cache);
@@ -623,7 +590,7 @@ namespace Dataweb.NShape {
 				foreach (EntityType et in cache.EntityTypes) {
 					if (et.Category == EntityCategory.ModelObject) {
 						foreach (EntityBucket<IModelObject> mb
-							in LoadEntities<IModelObject>(cache, et, id => !cache.LoadedModelObjects.Contains(id), 
+							in LoadEntities<IModelObject>(cache, et, id => !cache.LoadedModelObjects.Contains(id),
 							id => cache.GetModel(), RepositoryCommandType.SelectModelModelObjects, modelId)) {
 							cache.LoadedModelObjects.Add(mb);
 							LoadChildModelObjects(cache, mb.ObjectRef.Id);
@@ -660,8 +627,168 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		protected virtual void LoadSysCommands() {
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
+
+		/// <summary>
+		/// Specifies the name of the ADO.NET provider used as listed in the system configuration.
+		/// </summary>
+		public string ProviderName {
+			get { return providerName; }
+			set {
+				providerName = value;
+				factory = string.IsNullOrEmpty(providerName) ? null : DbProviderFactories.GetFactory(providerName);
+			}
+		}
+
+
+		/// <summary>
+		/// Specifies the connection string for the database store.
+		/// </summary>
+		public string ConnectionString {
+			get { return connectionString; }
+			set { connectionString = value; }
+		}
+
+
+		/// <summary>
+		/// Override this method to create the actual SQL commands for your database.
+		/// </summary>
+		public virtual void CreateDbCommands(IStoreCache cache) {
+			if (cache == null) throw new ArgumentNullException("cache");
+			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
+				item.Value.Dispose();
 			commands.Clear();
+			Version = cache.RepositoryBaseVersion;
+		}
+
+
+		/// <summary>
+		/// Creates a schema for the database based on the current DB commands.
+		/// </summary>
+		/// <remarks>This function has to be regarded more as a testing feature. Real life 
+		/// application will usually provide their specialized database schemas and generation
+		/// scripts.</remarks>
+		public virtual void CreateDbSchema(IStoreCache cache) {
+			if (cache == null) throw new ArgumentNullException("cache");
+			AssertClosed();
+			EnsureDataSourceOpen();
+			try {
+				Version = cache.RepositoryBaseVersion;
+				// Create the actual schema
+				GetCreateTablesCommand().ExecuteNonQuery();
+				// Insert the SQL statements into the SysCommand table.
+				IDbCommand cmdCmd = GetInsertSysCommandCommand();
+				IDbCommand paramCmd = GetInsertSysParameterCommand();
+				try {
+					cmdCmd.Prepare();
+					paramCmd.Prepare();
+					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands) {
+						((IDbDataParameter)cmdCmd.Parameters[0]).Value = item.Key.Kind;
+						((IDbDataParameter)cmdCmd.Parameters[1]).Value = item.Key.EntityTypeName;
+						((IDbDataParameter)cmdCmd.Parameters[2]).Value = item.Value.CommandText;
+						int cmdId = (int)cmdCmd.ExecuteScalar();
+						for (int i = 0; i < item.Value.Parameters.Count; ++i) {
+							IDataParameter p = (IDataParameter)item.Value.Parameters[i];
+							((IDbDataParameter)paramCmd.Parameters[0]).Value = cmdId;
+							((IDbDataParameter)paramCmd.Parameters[1]).Value = i + 1;
+							((IDbDataParameter)paramCmd.Parameters[2]).Value = p.ParameterName;
+							((IDbDataParameter)paramCmd.Parameters[3]).Value = p.DbType.ToString();
+							paramCmd.ExecuteNonQuery();
+						}
+					}
+				} finally {
+					paramCmd.Dispose();
+					cmdCmd.Dispose();
+				}
+			} finally {
+				EnsureDataSourceClosed();
+			}
+		}
+
+
+		public virtual void DropDbSchema() {
+			AssertClosed();
+			EnsureDataSourceOpen();
+			try {
+				try {
+					LoadSysCommands();
+				} catch (DbException exc) {
+					Debug.Print(exc.Message);
+					// Assumption: No SysCommand table available, i.e. no NShape tables present
+					return;
+				}
+				IDbCommand dropCommand = GetCommand("All", RepositoryCommandType.Delete);
+				dropCommand.Connection = connection;
+				dropCommand.ExecuteNonQuery();
+			} finally {
+				EnsureDataSourceClosed();
+			}
+		}
+
+
+		public virtual IDbCommand GetInsertSysCommandCommand() {
+			IDbCommand result = CreateCommand(
+				"INSERT INTO SysCommand (Kind, EntityType, Text) VALUES (@Kind, @EntityType, @Text); "
+				+ "SELECT CAST(IDENT_CURRENT('SysCommand') AS INT)",
+				CreateParameter("Kind", DbType.String),
+				CreateParameter("EntityType", DbType.String),
+				CreateParameter("Text", DbType.String));
+			result.Connection = Connection;
+			return result;
+		}
+
+
+		public virtual IDbCommand GetInsertSysParameterCommand() {
+			IDbCommand result = CreateCommand("INSERT INTO SysParameter (Command, No, Name, Type) VALUES (@Command, @No, @Name, @Type)",
+				CreateParameter("Command", DbType.Int32),
+				CreateParameter("No", DbType.Int32),
+				CreateParameter("Name", DbType.String),
+				CreateParameter("Type", DbType.String));
+			result.Connection = Connection;
+			return result;
+		}
+
+
+		public IDbCommand GetSelectSysCommandsCommand() {
+			IDbCommand result = CreateCommand("SELECT * FROM SysCommand");
+			result.Connection = Connection;
+			return result;
+		}
+
+
+		public IDbCommand GetSelectSysParameterCommand() {
+			IDbCommand result = CreateCommand("SELECT Name, Type FROM SysParameter WHERE Command = @Command ORDER BY No",
+				CreateParameter("Command", DbType.Int32));
+			result.Connection = Connection;
+			return result;
+		}
+
+
+		/// <override></override>
+		protected override void Dispose(bool disposing) {
+			if (disposing) {
+				// Close and dispose connection
+				if (connection.State != ConnectionState.Closed) connection.Close();
+				if (connection != null) connection.Dispose();
+				// Dispose and delete commands
+				if (commands != null) {
+					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
+						if (item.Value != null) item.Value.Dispose();
+					commands.Clear();
+				}
+				if (createTablesCommand != null) createTablesCommand.Dispose();
+				if (transaction != null) transaction.Dispose();
+			}
+			base.Dispose(disposing);
+		}
+
+
+		protected virtual void LoadSysCommands() {
+			ClearCommands();
 			IDbCommand cmdCmd = GetSelectSysCommandsCommand();
 			IDbCommand paramCmd = GetSelectSysParameterCommand();
 			CommandKey ck;
@@ -681,44 +808,6 @@ namespace Dataweb.NShape {
 					commands.Add(ck, command);
 				}
 			}
-		}
-
-
-		protected virtual IDbCommand GetInsertSysCommandCommand() {
-			IDbCommand result = CreateCommand(
-				"INSERT INTO SysCommand (Kind, EntityType, Text) VALUES (@Kind, @EntityType, @Text); "
-				+ "SELECT CAST(IDENT_CURRENT('SysCommand') AS INT)",
-				CreateParameter("Kind", DbType.String),
-				CreateParameter("EntityType", DbType.String),
-				CreateParameter("Text", DbType.String));
-			result.Connection = Connection;
-			return result;
-		}
-
-
-		protected virtual IDbCommand GetInsertSysParameterCommand() {
-			IDbCommand result = CreateCommand("INSERT INTO SysParameter (Command, No, Name, Type) VALUES (@Command, @No, @Name, @Type)",
-				CreateParameter("Command", DbType.Int32),
-				CreateParameter("No", DbType.Int32),
-				CreateParameter("Name", DbType.String),
-				CreateParameter("Type", DbType.String));
-			result.Connection = Connection;
-			return result;
-		}
-
-
-		protected IDbCommand GetSelectSysCommandsCommand() {
-			IDbCommand result = CreateCommand("SELECT * FROM SysCommand");
-			result.Connection = Connection;
-			return result;
-		}
-
-
-		protected IDbCommand GetSelectSysParameterCommand() {
-			IDbCommand result = CreateCommand("SELECT Name, Type FROM SysParameter WHERE Command = @Command ORDER BY No",
-				CreateParameter("Command", DbType.Int32));
-			result.Connection = Connection;
-			return result;
 		}
 
 
@@ -790,6 +879,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Retrieves a command that creates all tables of the database schema.
+		/// </summary>
 		public IDbCommand GetCreateTablesCommand() {
 			if (createTablesCommand == null) throw new NShapeException("Command for creating the schema is not defined.");
 			if (createTablesCommand.Connection != Connection) createTablesCommand.Connection = Connection;
@@ -797,12 +889,18 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Sets a command that creates all tables of the database schema.
+		/// </summary>
 		public void SetCreateTablesCommand(IDbCommand command) {
 			if (command == null) throw new ArgumentNullException("command");
 			createTablesCommand = command;
 		}
 
 
+		/// <summary>
+		/// Retrieves a command of the specified type for the specified entity type.
+		/// </summary>
 		public IDbCommand GetCommand(string entityTypeName, RepositoryCommandType cmdType) {
 			if (entityTypeName == null) throw new ArgumentNullException("entityTypeName");
 			if (entityTypeName == string.Empty) throw new ArgumentException("entityTypeName");
@@ -817,6 +915,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Sets a command of the specified type for the specified entity type.
+		/// </summary>
 		public void SetCommand(string entityTypeName, RepositoryCommandType cmdType, IDbCommand command) {
 			if (entityTypeName == null) throw new ArgumentNullException("entityTypeName");
 			if (entityTypeName == string.Empty) throw new ArgumentException("entityTypeName");
@@ -828,390 +929,6 @@ namespace Dataweb.NShape {
 				commands[commandKey] = command;
 			else commands.Add(commandKey, command);
 		}
-
-
-		#region Get/Set commands for Styles
-
-		public IDbCommand GetSelectStyleByIdCommand(string entityTypeName) {
-			return GetCommand(entityTypeName, RepositoryCommandType.SelectById);
-		}
-
-
-		public void SetSelectStyleByIdCommand(string entityTypeName, IDbCommand command) {
-			SetCommand(entityTypeName, RepositoryCommandType.SelectById, command);
-		}
-
-
-		/// <summary>
-		/// Retrieves a command that selects all styles for the given design for the current
-		/// project.
-		/// </summary>
-		public IDbCommand GetSelectStylesByDesignIdCommand(string entityTypeName) {
-			return GetCommand(entityTypeName, RepositoryCommandType.SelectByOwnerId);
-		}
-
-
-		public void SetSelectStylesByDesignIdCommand(string entityTypeName, IDbCommand command) {
-			SetCommand(entityTypeName, RepositoryCommandType.SelectByOwnerId, command);
-		}
-
-
-		public IDbCommand GetInsertStyleCommand(string entityTypeName) {
-			return GetCommand(entityTypeName, RepositoryCommandType.Insert);
-		}
-
-
-		public void SetInsertStyleCommand(string entityTypeName, IDbCommand command) {
-			SetCommand(entityTypeName, RepositoryCommandType.Insert, command);
-		}
-
-
-		public IDbCommand GetUpdateStyleCommand(string entityTypeName) {
-			return GetCommand(entityTypeName, RepositoryCommandType.Update);
-		}
-
-
-		public void SetUpdateStyleCommand(string entityTypeName, IDbCommand command) {
-			SetCommand(entityTypeName, RepositoryCommandType.Update, command);
-		}
-
-
-		public IDbCommand GetDeleteStyleCommand(string entityTypeName) {
-			return GetCommand(entityTypeName, RepositoryCommandType.Delete);
-		}
-
-
-		public void SetDeleteStyleCommand(string entityTypeName, IDbCommand command) {
-			SetCommand(entityTypeName, RepositoryCommandType.Delete, command);
-		}
-
-		#endregion
-
-
-		#region Get/Set commands for Diagrams
-
-		public IDbCommand GetSelectDiagramIdsCommand() {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			return GetCommand("Core.Diagram", RepositoryCommandType.SelectAll);
-		}
-
-
-		public void SetSelectAllDiagramsCommand(IDbCommand command) {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			SetCommand("Core.Diagram", RepositoryCommandType.SelectAll, command);
-		}
-
-
-		public IDbCommand GetSelectDiagramByIdCommand() {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			return GetCommand("Core.Diagram", RepositoryCommandType.SelectById);
-		}
-
-
-		public void SetSelectDiagramByIdCommand(IDbCommand command) {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			SetCommand("Core.Diagram", RepositoryCommandType.SelectById, command);
-		}
-
-
-		public IDbCommand GetInsertDiagramCommand() {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			return GetCommand("Core.Diagram", RepositoryCommandType.Insert);
-		}
-
-
-		public void SetInsertDiagramCommand(IDbCommand command) {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			SetCommand("Core.Diagram", RepositoryCommandType.Insert, command);
-		}
-
-
-		public IDbCommand GetUpdateDiagramCommand() {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			return GetCommand("Core.Diagram", RepositoryCommandType.Update);
-		}
-
-
-		public void SetUpdateDiagramCommand(IDbCommand command) {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			SetCommand("Core.Diagram", RepositoryCommandType.Update, command);
-		}
-
-
-		public IDbCommand GetDeleteDiagramCommand() {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			return GetCommand("Core.Diagram", RepositoryCommandType.Delete);
-		}
-
-
-		public void SetDeleteDiagramCommand(IDbCommand command) {
-			// ToDo3: Use Diagram.EntityTypeName here?
-			SetCommand("Core.Diagram", RepositoryCommandType.Delete, command);
-		}
-
-		#endregion
-
-
-		#region Get/Set commands for Templates
-
-		protected virtual void SetTemplateCommand(RepositoryCommandType cmdType, IDbCommand command) {
-			SetCommand(Template.EntityTypeName, cmdType, command);
-		}
-
-
-		protected virtual IDbCommand GetTemplateCommand(RepositoryCommandType cmdType) {
-			return GetCommand(Template.EntityTypeName, cmdType);
-		}
-
-		#endregion
-
-
-		#region Get/Set commands for Shapes
-
-		public virtual IDbCommand GetSelectShapeIdsCommand(string entityTypeName) {
-			return GetShapeCommand(entityTypeName, RepositoryCommandType.SelectAll);
-		}
-
-
-		public virtual void SetSelectShapeIdsCommand(string entityTypeName, IDbCommand command) {
-			SetShapeCommand(entityTypeName, RepositoryCommandType.SelectAll, command);
-		}
-
-
-		public virtual IDbCommand GetSelectShapeByIdCommand(string entityTypeName) {
-			return GetShapeCommand(entityTypeName, RepositoryCommandType.SelectById);
-		}
-
-
-		public virtual void SetSelectShapeByIdCommand(string entityTypeName, IDbCommand command) {
-			SetShapeCommand(entityTypeName, RepositoryCommandType.SelectById, command);
-		}
-
-
-		public virtual IDbCommand GetSelectShapesByDiagramId(string entityTypeName) {
-			// We use the "SelectByName" command type for this task
-			return GetShapeCommand(entityTypeName, RepositoryCommandType.SelectByOwnerId);
-		}
-
-
-		public virtual void SetSelectShapesByDiagramId(string entityTypeName, IDbCommand command) {
-			// We use the "SelectByName" command type for this task
-			SetShapeCommand(entityTypeName, RepositoryCommandType.SelectByOwnerId, command);
-		}
-
-
-		protected virtual IDbCommand GetInsertShapeCommand(string entityTypeName) {
-			return GetShapeCommand(entityTypeName, RepositoryCommandType.Insert);
-		}
-
-
-		protected virtual void SetInsertShapeCommand(string entityTypeName, IDbCommand command) {
-			SetShapeCommand(entityTypeName, RepositoryCommandType.Insert, command);
-		}
-
-
-		protected virtual IDbCommand GetUpdateShapeCommand(string entityTypeName) {
-			return GetShapeCommand(entityTypeName, RepositoryCommandType.Update);
-		}
-
-
-		protected virtual void SetUpdateShapeCommand(string entityTypeName, IDbCommand command) {
-			SetShapeCommand(entityTypeName, RepositoryCommandType.Update, command);
-		}
-
-
-		protected virtual IDbCommand GetDeleteShapeCommand(string entityTypeName) {
-			return GetShapeCommand(entityTypeName, RepositoryCommandType.Delete);
-		}
-
-
-		public void SetDeleteShapeCommand(string entityTypeName, IDbCommand command) {
-			SetShapeCommand(entityTypeName, RepositoryCommandType.Delete, command);
-		}
-
-
-		protected IDbCommand GetShapeCommand(string entityTypeName, RepositoryCommandType cmdType) {
-			return GetCommand(entityTypeName, cmdType);
-		}
-
-
-		protected void SetShapeCommand(string entityTypeName, RepositoryCommandType cmdType, IDbCommand command) {
-			SetCommand(entityTypeName, cmdType, command);
-		}
-
-		#endregion
-
-
-		#region Get/Set commands for ShapeConnections
-
-		/// <summary>
-		/// Retrieves a SQL command for selecting the connections of a given shape.
-		/// </summary>
-		/// <returns></returns>
-		/// <remarks>The command selects the connections for which the given shape 
-		/// is on the active side.</remarks>
-		public IDbCommand GetSelectShapeConnectionByShapeIdCommand() {
-			// ToDo3: Use a constant here?
-			return GetCommand("Core.ShapeConnection", RepositoryCommandType.SelectByOwnerId);
-		}
-
-
-		/// <summary>
-		/// Defines a SQL command for selecting the connections of a given shape.
-		/// </summary>
-		/// <returns></returns>
-		/// <remarks>The command selects the connections for which the given shape 
-		/// is on the active side.</remarks>
-		public void SetSelectShapeConnectionByShapeIdCommand(IDbCommand command) {
-			// ToDo3: Use a constant here?
-			SetCommand("Core.ShapeConnection", RepositoryCommandType.SelectByOwnerId, command);
-		}
-
-
-		public virtual IDbCommand GetInsertShapeConnectionCommand() {
-			// ToDo3: Use a constant here?
-			return GetCommand("Core.ShapeConnection", RepositoryCommandType.Insert);
-		}
-
-
-		public virtual void SetInsertShapeConnectionCommand(IDbCommand command) {
-			// ToDo3: Use a constant here?
-			SetCommand("Core.ShapeConnection", RepositoryCommandType.Insert, command);
-		}
-
-
-		public virtual IDbCommand GetDeleteShapeConnectionCommand() {
-			// ToDo3: Use a constant here?
-			return GetCommand("Core.ShapeConnection", RepositoryCommandType.Delete);
-		}
-
-
-		public virtual void SetDeleteShapeConnectionCommand(IDbCommand command) {
-			// ToDo3: Use a constant here?
-			SetCommand("Core.ShapeConnection", RepositoryCommandType.Delete, command);
-		}
-
-		#endregion
-
-
-		#region Get/Set commands for ModelObjects
-
-		protected IDbCommand GetModelObjectCommand(string entityTypeName, RepositoryCommandType cmdType) {
-			return GetCommand(entityTypeName, cmdType);
-		}
-
-
-		protected void SetModelObjectCommand(string entityTypeName, RepositoryCommandType cmdType, IDbCommand command) {
-			SetCommand(entityTypeName, cmdType, command);
-		}
-
-
-		//public virtual IDbCommand GetSelectModelObjectIdsCommand(string entityTypeName) {
-		//   return GetModelObjectCommand(entityTypeName, RepositoryCommandType.SelectAll);
-		//}
-
-
-		//public virtual void SetSelectModelObjectIdsCommand(string entityTypeName, IDbCommand command) {
-		//   SetModelObjectCommand(entityTypeName, RepositoryCommandType.SelectAll, command);
-		//}
-
-
-		//public virtual IDbCommand GetSelectModelObjectByIdCommand(string entityTypeName) {
-		//   return GetModelObjectCommand(entityTypeName, RepositoryCommandType.SelectById);
-		//}
-
-
-		//public virtual void SetSelectModelObjectByIdCommand(string entityTypeName, IDbCommand command) {
-		//   SetModelObjectCommand(entityTypeName, RepositoryCommandType.SelectById, command);
-		//}
-
-
-		//public virtual IDbCommand GetSelectModelObjectsByDiagramId(string entityTypeName) {
-		//   // We use the "SelectByName" command type for this task
-		//   return GetModelObjectCommand(entityTypeName, RepositoryCommandType.SelectByOwnerId);
-		//}
-
-
-		//public virtual void SetSelectModelObjectsByDiagramId(string entityTypeName, IDbCommand command) {
-		//   // We use the "SelectByName" command type for this task
-		//   SetModelObjectCommand(entityTypeName, RepositoryCommandType.SelectByOwnerId, command);
-		//}
-
-
-		//protected virtual IDbCommand GetInsertModelObjectCommand(string entityTypeName) {
-		//   return GetModelObjectCommand(entityTypeName, RepositoryCommandType.Insert);
-		//}
-
-
-		//protected virtual void SetInsertModelObjectCommand(string entityTypeName, IDbCommand command) {
-		//   SetModelObjectCommand(entityTypeName, RepositoryCommandType.Insert, command);
-		//}
-
-
-		//protected virtual IDbCommand GetUpdateModelObjectCommand(string entityTypeName) {
-		//   return GetModelObjectCommand(entityTypeName, RepositoryCommandType.Update);
-		//}
-
-
-		//protected virtual void SetUpdateModelObjectCommand(string entityTypeName, IDbCommand command) {
-		//   SetModelObjectCommand(entityTypeName, RepositoryCommandType.Update, command);
-		//}
-
-
-		//protected virtual IDbCommand GetDeleteModelObjectCommand(string entityTypeName) {
-		//   return GetModelObjectCommand(entityTypeName, RepositoryCommandType.Delete);
-		//}
-
-
-		//public void SetDeleteModelObjectCommand(string entityTypeName, IDbCommand command) {
-		//   SetModelObjectCommand(entityTypeName, RepositoryCommandType.Delete, command);
-		//}
-
-		#endregion
-
-
-		#region Get/Set commands for Inner Objects
-
-		public virtual IDbCommand GetSelectInnerObjectsCommand(string entityTypeName) {
-			return GetInnerObjectsCommand(entityTypeName, RepositoryCommandType.SelectById);
-		}
-
-
-		public virtual void SetSelectInnerObjectsCommand(string entityTypeName, IDbCommand command) {
-			SetInnerObjectsCommand(entityTypeName, RepositoryCommandType.SelectById, command);
-		}
-
-
-		public virtual IDbCommand GetInsertInnerObjectsCommand(string entityTypeName) {
-			return GetInnerObjectsCommand(entityTypeName, RepositoryCommandType.Insert);
-		}
-		
-		
-		public virtual void SetInsertInnerObjectsCommand(string entityTypeName, IDbCommand command) {
-			SetInnerObjectsCommand(entityTypeName, RepositoryCommandType.Insert, command);
-		}
-
-
-		public virtual IDbCommand GetDeleteInnerObjectsCommand(string entityTypeName) {
-			return GetInnerObjectsCommand(entityTypeName, RepositoryCommandType.Delete);
-		}
-		
-		
-		public virtual void SetDeleteInnerObjectsCommand(string entityTypeName, IDbCommand command) {
-			SetInnerObjectsCommand(entityTypeName, RepositoryCommandType.Delete, command);
-		}
-
-
-		protected IDbCommand GetInnerObjectsCommand(string entityTypeName, RepositoryCommandType cmdType) {
-			return GetCommand(entityTypeName, cmdType);
-		}
-
-
-		protected void SetInnerObjectsCommand(string entityTypeName, RepositoryCommandType cmdType, IDbCommand command) {
-			SetCommand(entityTypeName, cmdType, command);
-		}
-		
-		#endregion
 
 		#endregion
 
@@ -1336,7 +1053,7 @@ namespace Dataweb.NShape {
 
 
 			protected override string DoReadString() {
-				string result = "";
+				string result = string.Empty;
 				if (!dataReader.IsDBNull(PropertyIndex + internalPropertyCount))
 					result = dataReader.GetString(PropertyIndex + internalPropertyCount);
 				return result;
@@ -1374,7 +1091,7 @@ namespace Dataweb.NShape {
 					innerObjectsReader = new StringReader(Cache);
 					((StringReader)innerObjectsReader).ResetFieldReading(innerInfo.PropertyDefinitions, dataReader.GetString(PropertyIndex + internalPropertyCount));
 				} else {
-					IDbCommand cmd = store.GetSelectInnerObjectsCommand(innerInfo.EntityTypeName);
+					IDbCommand cmd = store.GetCommand(innerInfo.EntityTypeName, RepositoryCommandType.SelectById);
 					cmd.Transaction = store.CurrentTransaction;
 					((IDataParameter)cmd.Parameters[0]).Value = Object.Id;
 					innerObjectsDataReader = cmd.ExecuteReader();
@@ -1397,7 +1114,7 @@ namespace Dataweb.NShape {
 
 
 			public override void EndReadInnerObject() {
-				innerObjectsReader. DoEndObject();
+				innerObjectsReader.DoEndObject();
 			}
 
 
@@ -1488,8 +1205,9 @@ namespace Dataweb.NShape {
 					Entity.AssignId(command.ExecuteScalar());
 				} else {
 					// Updating an entity
-					if (command.ExecuteNonQuery() == 0)
-						throw new Exception(string.Format("No Records affected by statement \n{0}", command.CommandText));
+					object result = command.ExecuteNonQuery();
+					if (result == null)
+						throw new Exception(string.Format("No Records affected by statement{0}{1}", Environment.NewLine, command.CommandText));
 				}
 			}
 
@@ -1594,7 +1312,7 @@ namespace Dataweb.NShape {
 					DoDeleteInnerObjects();
 					innerObjectsWriter = new DbParameterWriter(store, Cache);
 					InnerObjectsWriter.Reset(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
-					InnerObjectsWriter.Command = store.GetInsertInnerObjectsCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName);
+					InnerObjectsWriter.Command = store.GetCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName, RepositoryCommandType.Insert);
 					InnerObjectsWriter.Command.Transaction = store.transaction;
 				}
 			}
@@ -1629,7 +1347,7 @@ namespace Dataweb.NShape {
 				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
 				//
 				// Delete all existing inner objects of the current persistable object			
-				IDbCommand command = store.GetDeleteInnerObjectsCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName);
+				IDbCommand command = store.GetCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName, RepositoryCommandType.Delete);
 				command.Transaction = store.CurrentTransaction;
 				((IDataParameter)command.Parameters[0]).Value = Entity.Id;
 				int count = command.ExecuteNonQuery();
@@ -1673,7 +1391,7 @@ namespace Dataweb.NShape {
 
 			#endregion
 		}
-		
+
 		#endregion DbParameterReader/Writer
 
 
@@ -1737,7 +1455,7 @@ namespace Dataweb.NShape {
 					}
 					if (p < str.Length && str[p] == ')') ++p;
 
-					if (typeDesc != string.Empty){
+					if (typeDesc != string.Empty) {
 						if (typeDesc == typeof(int).Name)
 							result = DoReadInt32();
 						else if (typeDesc == typeof(long).Name)
@@ -1746,7 +1464,7 @@ namespace Dataweb.NShape {
 					}
 					if (p < str.Length && str[p] == ',') ++p;
 				}
-				return result;				
+				return result;
 			}
 
 
@@ -1880,8 +1598,8 @@ namespace Dataweb.NShape {
 				str.Append(';');
 				base.Finish();
 			}
-				
-			
+
+
 			public string StringData {
 				get { return str.ToString(); }
 			}
@@ -2001,17 +1719,95 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
+		protected internal override int Version {
+			get { return version; }
+			set { version = value; }
+		}
+
+
+		// This is the actual reading function and will go into a separate data access 
+		// layer in later versions.
+		/// <override></override>
+		protected IEnumerable<EntityBucket<TEntity>> LoadEntities<TEntity>(IStoreCache cache,
+			IEntityType entityType, IdFilter idFilter, Resolver parentResolver, RepositoryCommandType cmdType,
+			params object[] parameters) where TEntity : IEntity {
+			//
+			// We must store all loaded entities for loading of inner objects
+			// TODO 2: Now with MARS, we could reunite the two phases.
+			List<EntityBucket<TEntity>> newEntities = new List<EntityBucket<TEntity>>(1000);
+			//
+			bool connectionOpened = EnsureDataSourceOpen();
+			DbParameterReader repositoryReader = null;
+			int version = entityType.RepositoryVersion;
+			try {
+				IDbCommand cmd = GetCommand(entityType.FullName, cmdType);
+				for (int i = 0; i < parameters.Length; ++i)
+					((IDbDataParameter)cmd.Parameters[i]).Value = parameters[i];
+				//
+				IDataReader dataReader = cmd.ExecuteReader();
+				try {
+					repositoryReader = new DbParameterReader(this, cache);
+					repositoryReader.ResetFieldReading(entityType.PropertyDefinitions, dataReader);
+					while (repositoryReader.DoBeginObject()) {
+						object id = repositoryReader.ReadId();
+						if (idFilter(id)) {
+							// Read the fields
+							object parentId = repositoryReader.ReadId();
+							TEntity entity = (TEntity)entityType.CreateInstanceForLoading();
+							entity.AssignId(id);
+							entity.LoadFields(repositoryReader, version);
+							int pix = 0;
+							// Read the composite inner objects
+							foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions) {
+								if (pi is EntityInnerObjectsDefinition && IsComposition(pi)) {
+									// property index -1 is id. LoadInnerObjects will increment the PropertyIndex.
+									repositoryReader.PropertyIndex = pix - 1;
+									entity.LoadInnerObjects(pi.Name, repositoryReader, version);
+								}
+								++pix;
+							}
+							newEntities.Add(new EntityBucket<TEntity>(entity, parentResolver(parentId), ItemState.Original));
+						}
+					}
+				} finally {
+					dataReader.Close();
+				}
+				// Read the associated inner objects
+				if (entityType.HasInnerObjects) {
+					repositoryReader.ResetInnerObjectsReading();
+					foreach (EntityBucket<TEntity> eb in newEntities) {
+						repositoryReader.PrepareInnerObjectsReading(eb.ObjectRef);
+						int pix = 0;
+						foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions) {
+							if (pi is EntityInnerObjectsDefinition && !IsComposition(pi)) {
+								repositoryReader.PropertyIndex = pix - 1;
+								eb.ObjectRef.LoadInnerObjects(pi.Name, repositoryReader, version);
+							}
+							++pix;
+						}
+					}
+				}
+			} finally {
+				if (repositoryReader != null) repositoryReader.Dispose();
+				if (connectionOpened) EnsureDataSourceClosed();
+			}
+			foreach (EntityBucket<TEntity> eb in newEntities)
+				yield return eb;
+		}
+
+
 		#region Save objects to database
 
 		protected void InsertEntities<TEntity>(IStoreCache cache, IEntityType entityType,
-			IEnumerable<KeyValuePair<TEntity, IEntity>> newEntities, 
+			IEnumerable<KeyValuePair<TEntity, IEntity>> newEntities,
 			FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
-			InsertEntities<TEntity>(cache, entityType, newEntities, 
+			InsertEntities<TEntity>(cache, entityType, newEntities,
 				GetCommand(entityType.FullName, RepositoryCommandType.Insert), filterDelegate);
 		}
 
 
-		protected virtual void InsertEntities<TEntity>(IStoreCache cache, 
+		protected virtual void InsertEntities<TEntity>(IStoreCache cache,
 			IEntityType entityType, IEnumerable<KeyValuePair<TEntity, IEntity>> newEntities,
 			IDbCommand dbCommand, FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
 			// We must remove the new entities from the new dictionary and enter them to 
@@ -2063,8 +1859,8 @@ namespace Dataweb.NShape {
 		/// <param name="entityType"></param>
 		/// <param name="loadedEntities"></param>
 		/// <param name="filterDelegate"></param>
-		protected virtual void UpdateEntities<TEntity>(IStoreCache cache, 
-			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities, 
+		protected virtual void UpdateEntities<TEntity>(IStoreCache cache,
+			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities,
 			FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
 			List<object> modifiedIds = new List<object>(100);
 			DbParameterWriter repositoryWriter = null;
@@ -2085,16 +1881,16 @@ namespace Dataweb.NShape {
 						repositoryWriter.Prepare(ei.ObjectRef);
 						repositoryWriter.WriteId(ei.ObjectRef.Id);
 						// repositoryWriter.WriteId(ei.Owner == null? null: ei.Owner.Id);
-						ei.ObjectRef.SaveFields(repositoryWriter, version);
+						ei.ObjectRef.SaveFields(repositoryWriter, entityType.RepositoryVersion);
 						// Save all the composite inner objects.
 						foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions)
 							if (pi is EntityInnerObjectsDefinition && IsComposition(pi))
-								ei.ObjectRef.SaveInnerObjects(pi.Name, repositoryWriter, version);
+								ei.ObjectRef.SaveInnerObjects(pi.Name, repositoryWriter, entityType.RepositoryVersion);
 						repositoryWriter.Flush();
 						// Now save all the non-composite inner objects.
 						foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions)
 							if (pi is EntityInnerObjectsDefinition && !IsComposition(pi))
-								ei.ObjectRef.SaveInnerObjects(pi.Name, repositoryWriter, version);
+								ei.ObjectRef.SaveInnerObjects(pi.Name, repositoryWriter, entityType.RepositoryVersion);
 						modifiedIds.Add(ei.ObjectRef.Id);
 						break;
 					case ItemState.Deleted:
@@ -2113,12 +1909,13 @@ namespace Dataweb.NShape {
 		/// <typeparam projectName="TEntity"></typeparam>
 		/// <param name="entityType"></param>
 		/// <param name="loadedEntities"></param>
-		protected virtual void DeleteEntities<TEntity>(IStoreCache cache, 
-			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities) where TEntity : IEntity {
+		protected virtual void DeleteEntities<TEntity>(IStoreCache cache,
+			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities,
+			FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
 			// store id's of deleted shapes in this list and remove them after iterating with the IEnumerable enumerator
-			List<object> deletedIds = new List<object>(100);
 			DbParameterWriter repositoryWriter = null;
 			foreach (EntityBucket<TEntity> ei in loadedEntities) {
+				if (filterDelegate != null && !filterDelegate(ei.ObjectRef, null)) continue;
 				if (ei.ObjectRef is TEntity) {
 					switch (ei.State) {
 						case ItemState.Deleted:
@@ -2130,10 +1927,16 @@ namespace Dataweb.NShape {
 							}
 							repositoryWriter.Prepare(ei.ObjectRef);
 							repositoryWriter.WriteId(ei.ObjectRef.Id);
-							ei.ObjectRef.Delete(repositoryWriter, version);
+							// Delete all non-composition inner objects
+							int pix = 0;
+							foreach (EntityPropertyDefinition pi in entityType.PropertyDefinitions) {
+								if (pi is EntityInnerObjectsDefinition && !IsComposition(pi)) {
+									repositoryWriter.PropertyIndex = pix - 1;
+									repositoryWriter.DeleteInnerObjects();
+								}
+								++pix;
+							}
 							repositoryWriter.Flush();
-							// add to list of deleted ids
-							deletedIds.Add(ei.ObjectRef.Id);
 							break;
 						case ItemState.OwnerChanged:
 						case ItemState.Modified:
@@ -2144,8 +1947,6 @@ namespace Dataweb.NShape {
 					}
 				}
 			}
-			deletedIds.Clear();
-			deletedIds = null;
 		}
 
 
@@ -2172,7 +1973,7 @@ namespace Dataweb.NShape {
 
 
 		protected virtual void InsertShapeConnections(IStoreCache storeCache) {
-			IDbCommand command = GetInsertShapeConnectionCommand();
+			IDbCommand command = GetCommand(connectionEntityTypeName, RepositoryCommandType.Insert);
 			command.Transaction = transaction;
 			foreach (ShapeConnection sc in storeCache.NewShapeConnections) {
 				((IDataParameter)command.Parameters[0]).Value = ((IEntity)sc.ConnectorShape).Id;
@@ -2185,14 +1986,15 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Deletes the deleted connections from the database.
+		/// Erases the deleted connections from the database.
 		/// </summary>
 		protected virtual void DeleteShapeConnections(IStoreCache cache) {
 			// Delete command need not be defined if no deleted shape connections exist.
-			IDbCommand command = GetDeleteShapeConnectionCommand();
+			IDbCommand command = GetCommand(connectionEntityTypeName, RepositoryCommandType.Delete);
 			command.Transaction = transaction;
 			foreach (ShapeConnection sc in cache.DeletedShapeConnections) {
 				((IDataParameter)command.Parameters[0]).Value = ((IEntity)sc.ConnectorShape).Id;
+				((IDataParameter)command.Parameters[1]).Value = sc.GluePointId;
 				command.ExecuteNonQuery();
 			}
 		}
@@ -2207,13 +2009,8 @@ namespace Dataweb.NShape {
 			try {
 				LoadSysCommands();
 				if (!create) {
-					// Read the project's repository version
-					IDbCommand cmd = GetCommand(projectInfoEntityTypeName, RepositoryCommandType.SelectByName);
-					((IDataParameter)cmd.Parameters[0]).Value = cache.ProjectName;
-					using (IDataReader reader = cmd.ExecuteReader()) {
-						if (!reader.Read()) throw new InvalidOperationException(string.Format("Project '{0}' not found in ADO.NET repository.", projectName));
-						cache.SetRepositoryBaseVersion(reader.GetInt32(1));
-					}
+					int ver = DoReadVersion(cache.ProjectName);
+					Debug.Assert(ver == version);
 				}
 			} finally {
 				EnsureDataSourceClosed();
@@ -2316,99 +2113,6 @@ namespace Dataweb.NShape {
 		}
 
 
-		/// <summary>
-		/// Specifies the projectName of the ADO.NET provider used as listed in the System 
-		/// Configuration.
-		/// </summary>
-		public string ProviderName {
-			get { return providerName; }
-			set { 
-				providerName = value;
-				factory = string.IsNullOrEmpty(providerName)? null: DbProviderFactories.GetFactory(providerName);
-			}
-		}
-
-
-		/// <summary>
-		/// Specifies the connection string for the database store.
-		/// </summary>
-		public string ConnectionString {
-			get { return connectionString; }
-			set { connectionString = value; }
-		}
-
-
-		/// <summary>
-		/// Override this method to create the actual SQL commands for your database.
-		/// </summary>
-		public virtual void CreateDbCommands(IStoreCache cache) {
-			if (cache == null) throw new ArgumentNullException("cache");
-			commands.Clear();
-		}
-
-
-		/// <summary>
-		/// Creates a schema for the database based on the current DB commands.
-		/// </summary>
-		/// <remarks>This function has to be regarded more as a testing feature. Real life 
-		/// application will usually provide their specialized database schemas and generation
-		/// scripts.</remarks>
-		public virtual void CreateDbSchema() {
-			AssertClosed();
-			EnsureDataSourceOpen();
-			try {
-				// Create the actual schema
-				GetCreateTablesCommand().ExecuteNonQuery();
-				// Insert the SQL statements into the SysCommand table.
-				IDbCommand cmdCmd = GetInsertSysCommandCommand();
-				IDbCommand paramCmd = GetInsertSysParameterCommand();
-				try {
-					cmdCmd.Prepare();
-					paramCmd.Prepare();
-					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands) {
-						((IDbDataParameter)cmdCmd.Parameters[0]).Value = item.Key.Kind;
-						((IDbDataParameter)cmdCmd.Parameters[1]).Value = item.Key.EntityTypeName;
-						((IDbDataParameter)cmdCmd.Parameters[2]).Value = item.Value.CommandText;
-						int cmdId = (int)cmdCmd.ExecuteScalar();
-						for (int i = 0; i < item.Value.Parameters.Count; ++i) {
-							IDataParameter p = (IDataParameter)item.Value.Parameters[i];
-							((IDbDataParameter)paramCmd.Parameters[0]).Value = cmdId;
-							((IDbDataParameter)paramCmd.Parameters[1]).Value = i + 1;
-							((IDbDataParameter)paramCmd.Parameters[2]).Value = p.ParameterName;
-							((IDbDataParameter)paramCmd.Parameters[3]).Value = p.DbType.ToString();
-							paramCmd.ExecuteNonQuery();
-						}
-					}
-				} finally {
-					paramCmd.Dispose();
-					cmdCmd.Dispose();
-				}
-			} finally {
-				EnsureDataSourceClosed();
-			}
-		}
-
-
-		public virtual void DropDbSchema() {
-			AssertClosed();
-			EnsureDataSourceOpen();
-			try {
-				try {
-					LoadSysCommands();
-				} catch (DbException exc) {
-					Debug.Print(exc.Message);
-					// Assumption: No SysCommand table available, i.e. no NShape tables present
-					return;
-				}
-				IDbCommand dropCommand = GetCommand("All", RepositoryCommandType.Delete);
-				dropCommand.Connection = connection;
-				dropCommand.ExecuteNonQuery();
-			} finally {
-				EnsureDataSourceClosed();
-			}
-		}
-
-
 		protected void EnsureDataSourceClosed() {
 			Connection.Close();
 		}
@@ -2429,8 +2133,14 @@ namespace Dataweb.NShape {
 		}
 
 
-		private void AssertOpen()
-		{
+		private void ClearCommands() {
+			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
+				item.Value.Dispose();
+			commands.Clear();
+		}
+
+
+		private void AssertOpen() {
 			// TODO 3: Implement
 		}
 
@@ -2444,9 +2154,24 @@ namespace Dataweb.NShape {
 		}
 
 
+		private int DoReadVersion(string projectName) {
+			// Read the project's repository version
+			IDbCommand cmd = GetCommand(projectInfoEntityTypeName, RepositoryCommandType.SelectByName);
+			((IDataParameter)cmd.Parameters[0]).Value = projectName;
+			using (IDataReader reader = cmd.ExecuteReader()) {
+				if (!reader.Read()) throw new InvalidOperationException(string.Format("Project '{0}' not found in ADO.NET repository.", projectName));
+				return reader.GetInt32(1);
+			}
+		}
+
+
 		#region Fields
 
 		protected const string projectInfoEntityTypeName = "AdoNetRepository.ProjectInfo";
+		protected const string shapeEntityTypeName = "Core.Shape";
+		protected const string connectionEntityTypeName = "Core.ShapeConnection";
+		protected const string pointEntityTypeName = "Core.Point";
+
 
 		private string projectName;
 		private string providerName;

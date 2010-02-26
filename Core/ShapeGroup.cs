@@ -27,7 +27,7 @@ namespace Dataweb.NShape.Advanced {
 
 		void NotifyChildLayoutChanging();
 
-		void NotifyChildLayoutChangeded();
+		void NotifyChildLayoutChanged();
 
 	}
 
@@ -193,7 +193,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
-			RelativePosition result;
+			RelativePosition result = RelativePosition.Empty;
 			result.A = x - X;
 			result.B = y - Y;
 			return result;
@@ -259,7 +259,7 @@ namespace Dataweb.NShape.Advanced {
 			rect.Y = y;
 			rect.Width = width;
 			rect.Height = height;
-			if (children.Count <= 0) return rect.Contains(X, Y);
+			if (children.Count <= 0) return Geometry.RectangleContainsPoint(rect, X, Y);
 			else if (Geometry.RectangleIntersectsWithRectangle(rect, children.GetBoundingRectangle(false))) {
 				foreach (Shape shape in children)
 					if (shape.IntersectsWith(x, y, width, height))
@@ -289,7 +289,10 @@ namespace Dataweb.NShape.Advanced {
 			}
 			foreach (Shape shape in children) {
 				ControlPointId pointId = shape.HitTest(x, y, controlPointCapability, range);
-				if (pointId != ControlPointId.None) return pointId;
+				//if (pointId != ControlPointId.None) return pointId;
+
+				// All control points but the rotate point are deactivated
+				if (pointId != ControlPointId.None) return ControlPointId.Reference;
 			}
 			return ControlPointId.None;
 		}
@@ -311,7 +314,7 @@ namespace Dataweb.NShape.Advanced {
 			if (children.Count <= 0) result.Offset(X, Y);
 			else {
 				result = children.GetBoundingRectangle(tight);
-				if (!result.Contains(X, Y))
+				if (!Geometry.RectangleContainsPoint(result, X, Y))
 					result = Geometry.UniteRectangles(X, Y, X, Y, result);
 			}
 			return result;
@@ -410,7 +413,7 @@ namespace Dataweb.NShape.Advanced {
 			// Notify Owner
 			if (Owner != null) Owner.NotifyChildRotating(this);
 
-			// first, perform rotation around the center point...
+			// First, perform rotation around the center point...
 			angle = (3600 + angle + deltaAngle) % 3600;
 			// ...then, rotate the shape's center around the given rotation center and 
 			// move the shape (including its children) to this point
@@ -564,7 +567,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public void NotifyChildLayoutChangeded() {
+		public void NotifyChildLayoutChanged() {
 			if (Owner != null) Owner.NotifyChildResized(this);
 		}
 
@@ -627,10 +630,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		protected override void DeleteCore(IRepositoryWriter writer, int version) {
-			/*foreach (EntityPropertyDefinition pi in Type.PropertyInfos) {
-				if (pi is EntityInnerObjectsDefinition)
-					writer.DeleteInnerObjects();
-			}*/
+			// nothing to do
 		}
 
 		#endregion

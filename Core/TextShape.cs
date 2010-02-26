@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -27,86 +28,15 @@ namespace Dataweb.NShape.Advanced {
 	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class TextBase : RectangleBase {
 
-		protected internal override void InitializeToDefault(IStyleSet styleSet) {
-			base.InitializeToDefault(styleSet);
-			AutoSize = true;
-			Text = "Text";
-			// override standard Line- and FillStyles
-			FillStyle = styleSet.FillStyles.Transparent;
-			LineStyle = styleSet.LineStyles.None;
-		}
+		#region [Public] Properties
 
-
-		public override void CopyFrom(Shape source) {
-			base.CopyFrom(source);
-			if (source is TextBase) {
-				if (((TextBase)source).AutoSize) {
-					autoSize = ((TextBase)source).AutoSize;
-					CalcNewShapeSize(Text);
-				}
-			}
-		}
-
-
-		#region IPersistable Members
-
-		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
-			base.LoadFieldsCore(reader, version);
-			AutoSize = reader.ReadBool();
-		}
-
-
-		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
-			base.SaveFieldsCore(writer, version);
-			writer.WriteBool(AutoSize);
-		}
-
-
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
-				yield return pi;
-			yield return new EntityFieldDefinition("AutoSize", typeof(bool));
-		}
-
-		#endregion
-
-
+		/// <override></override>
 		public override string Text {
 			get { return base.Text; }
 			set {
-				if (autoSize) CalcNewShapeSize(value);
 				base.Text = value;
+				if (autoSize) FitShapeToText();
 			}
-		}
-
-
-		public override int Width {
-			get {
-				if (autoSize && !(Text == string.Empty)) {
-					if (textWidth == 0)
-						CalcNewShapeSize(Text);
-					if (textWidth > 0)
-						return textWidth;
-					else return base.Width;
-				} else
-					return base.Width;
-			}
-			set { base.Width = value; }
-		}
-
-
-		public override int Height {
-			get {
-				if (autoSize && !(Text == string.Empty)) {
-					if (textHeight == 0)
-						CalcNewShapeSize(Text);
-					if (textHeight > 0)
-						return textHeight;
-					else return base.Height;
-				}
-				return base.Height;
-			}
-			set { base.Height = value; }
 		}
 
 
@@ -118,10 +48,35 @@ namespace Dataweb.NShape.Advanced {
 			set {
 				Invalidate();
 				autoSize = value;
-				CalcNewShapeSize(Text);
-				InvalidateDrawCache();
-				Invalidate();
+				if (autoSize) {
+					FitShapeToText();
+					InvalidateDrawCache();
+					Invalidate();
+				}
 			}
+		}
+
+		#endregion
+
+
+		#region [Public] Methods
+
+		public override void CopyFrom(Shape source) {
+			base.CopyFrom(source);
+			if (source is TextBase)
+				this.AutoSize = ((TextBase)source).AutoSize;
+		}
+
+
+		public override void SetCaptionCharacterStyle(int index, ICharacterStyle characterStyle) {
+			base.SetCaptionCharacterStyle(index, characterStyle);
+			if (autoSize) FitShapeToText();
+		}
+
+
+		public override void SetCaptionParagraphStyle(int index, IParagraphStyle paragraphStyle) {
+			base.SetCaptionParagraphStyle(index, paragraphStyle);
+			if (autoSize) FitShapeToText();
 		}
 
 
@@ -152,40 +107,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		//protected override Rectangle CalculateBoundingRectangle(bool tight) {
-		//   if (!string.IsNullOrEmpty(Text) && autoSize) {
-		//      Rectangle result = Rectangle.Empty;
-		//      if (Angle % 1800 == 0) {
-		//         result.Width = Width;
-		//         result.Height = Height;
-		//         result.X = X - (int)Math.Round(result.Width / 2f);
-		//         result.Y = Y - (int)Math.Round(result.Height / 2f);
-		//      } else if (Angle % 1800 == 0) {
-		//         result.Width = Height;
-		//         result.Height = Width;
-		//         result.X = X - (int)Math.Round(result.Width / 2f);
-		//         result.Y = Y - (int)Math.Round(result.Height / 2f);
-		//      } else {
-		//         result.X = (int)Math.Round(-Width / 2f);
-		//         result.Y = (int)Math.Round(-Height / 2f);
-		//         result.Width = Width;
-		//         result.Height = Height;
-
-		//         Point tl = Point.Empty, tr = Point.Empty, br = Point.Empty, bl = Point.Empty;
-		//         tl.Offset(result.Left, result.Top);
-		//         tr.Offset(result.Right, result.Top);
-		//         bl.Offset(result.Left, result.Bottom);
-		//         br.Offset(result.Right, result.Bottom);
-		//         Geometry.TransformRectangle(Center, Angle, result, out tl, out tr, out br, out bl);
-
-		//         result.X = Math.Min(Math.Min(tl.X, tr.X), Math.Min(bl.X, br.X));
-		//         result.Y = Math.Min(Math.Min(tl.Y, tr.Y), Math.Min(bl.Y, br.Y));
-		//         result.Width = Math.Max(Math.Max(tl.X, tr.X), Math.Max(bl.X, br.X)) - result.X;
-		//         result.Height = Math.Max(Math.Max(tl.Y, tr.Y), Math.Max(bl.Y, br.Y)) - result.Y;
-		//      }
-		//      return result;
-		//   } else return base.CalculateBoundingRectangle(tight);
-		//}
+		public override bool NotifyStyleChanged(IStyle style) {
+			if (base.NotifyStyleChanged(style)) {
+				if (autoSize && (style is ICharacterStyle || style is IParagraphStyle))
+					FitShapeToText();
+				return true;
+			} else return false;
+		}
 
 
 		public override void Draw(Graphics graphics) {
@@ -211,25 +139,10 @@ namespace Dataweb.NShape.Advanced {
 			base.DrawThumbnail(image, margin, transparentColor);
 		}
 
+		#endregion
 
-		//protected override void CalcCaptionBounds(int index, ref Rectangle captionBounds) {
-		//   if (index != 0) throw new IndexOutOfRangeException();
-		//   if (CharacterStyle != null && ParagraphStyle != null && autoSize) {
-		//      Size textSize = Size.Empty;
-		//      textSize.Height = textSize.Width = int.MaxValue;
-		//      TextFormatFlags textFormatFlags = ToolCache.GetTextFormatFlags(ParagraphStyle);
-		//      textFormatFlags |= TextFormatFlags.SingleLine;
-		//      textSize = TextRenderer.MeasureText(Title, ToolCache.GetFont(CharacterStyle), textSize, textFormatFlags);
-		//      else textSize = TextRenderer.MeasureText(null, Title, ToolCache.GetFont(CharacterStyle), textSize, textFormatFlags);
-		//      captionBounds.X = (int)Math.Round(-textSize.Width / 2f);
-		//      captionBounds.Y = (int)Math.Round(-textSize.Height / 2f);
-		//      captionBounds.Width = textSize.Width;
-		//      captionBounds.Height = textSize.Height;
-		//   }
-		//   else 
-		//   base.CalcCaptionBounds(index, ref captionBounds);
-		//}
 
+		#region [Protected] Methods
 
 		protected internal TextBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
@@ -238,6 +151,28 @@ namespace Dataweb.NShape.Advanced {
 
 		protected internal TextBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
+		}
+
+
+		protected internal override void InitializeToDefault(IStyleSet styleSet) {
+			base.InitializeToDefault(styleSet);
+			AutoSize = true;
+			Text = "Text";
+			// override standard Line- and FillStyles
+			FillStyle = styleSet.FillStyles.Transparent;
+			LineStyle = styleSet.LineStyles.None;
+		}
+
+
+		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
+			captionBounds = Rectangle.Empty;
+			if (autoSize) {
+				captionBounds.Size = TextMeasurer.MeasureText(Text, CharacterStyle, Size.Empty, ParagraphStyle);
+				captionBounds.Width += ParagraphStyle.Padding.Horizontal;
+				captionBounds.Height += ParagraphStyle.Padding.Vertical;
+				captionBounds.X = (int)Math.Round(-captionBounds.Width / 2f);
+				captionBounds.Y = (int)Math.Round(-captionBounds.Height / 2f);
+			} else base.CalcCaptionBounds(index, out captionBounds);
 		}
 
 
@@ -250,7 +185,7 @@ namespace Dataweb.NShape.Advanced {
 				rectangle.Height = height;
 
 				if (Angle % 900 == 0)
-					return rectangle.IntersectsWith(GetBoundingRectangle(true));
+					return Geometry.RectangleIntersectsWithRectangle(rectangle, GetBoundingRectangle(true));
 				else {
 					float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
 					Point tl = Point.Empty, tr = Point.Empty, br = Point.Empty, bl = Point.Empty;
@@ -258,7 +193,10 @@ namespace Dataweb.NShape.Advanced {
 					CalcCaptionBounds(0, out layoutRectangle);
 					Geometry.TransformRectangle(Center, Angle, layoutRectangle, out tl, out tr, out br, out bl);
 
-					if (rectangle.Contains(tl) || rectangle.Contains(tr) || rectangle.Contains(bl) || rectangle.Contains(br))
+					if (Geometry.RectangleContainsPoint(rectangle, tl) 
+						|| Geometry.RectangleContainsPoint(rectangle, tr) 
+						|| Geometry.RectangleContainsPoint(rectangle, bl) 
+						|| Geometry.RectangleContainsPoint(rectangle, br))
 						return true;
 					else {
 						if (Geometry.RectangleIntersectsWithLine(rectangle, tl.X, tl.Y, tr.X, tr.Y, true))
@@ -277,38 +215,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected override void InvalidateDrawCache() {
-			base.InvalidateDrawCache();
-			textWidth = 0;
-			textHeight = 0;
+		protected override void RecalcDrawCache() {
+			base.RecalcDrawCache();
+			if (autoSize) FitShapeToText();
 		}
 
 
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				int width, height;
-				//if (autoSize) {
-				//   Size size = Size.Empty;
-				//   Graphics gfx = DisplayService.GetInfoGraphics();
-				//   if (gfx != null) {
-				//      size = TextRenderer.MeasureText(gfx, Title, ToolCache.GetFont(CharacterStyle), layoutRectangle.Size, ToolCache.GetTextFormatFlags(ParagraphStyle));
-				//      gfx.Dispose();
-				//   }
-				//   else TextRenderer.MeasureText(Title, ToolCache.GetFont(CharacterStyle), layoutRectangle.Size, ToolCache.GetTextFormatFlags(ParagraphStyle));
-				//   width = size.Width;
-				//   height = size.Height;
-				//}
-				//else {
-				width = Width;
-				height = Height;
-				//}
-
 				Path.Reset();
 				Rectangle shapeBuffer = Rectangle.Empty;
-				shapeBuffer.X = (int)Math.Round(-width / 2f);
-				shapeBuffer.Y = (int)Math.Round(-height / 2f); ;
-				shapeBuffer.Width = width;
-				shapeBuffer.Height = height;
+				shapeBuffer.X = (int)Math.Round(-Width / 2f);
+				shapeBuffer.Y = (int)Math.Round(-Height / 2f);
+				shapeBuffer.Width = Width;
+				shapeBuffer.Height = Height;
 
 				Path.Reset();
 				Path.StartFigure();
@@ -319,14 +239,39 @@ namespace Dataweb.NShape.Advanced {
 			return false;
 		}
 
+		#endregion
 
-		private void CalcNewShapeSize(string txt) {
-			textHeight = textWidth = 0;
-			if (CharacterStyle != null && ParagraphStyle != null) {
-				//formatFlags |= TextFormatFlags.SingleLine | TextFormatFlags.LeftAndRightPadding;
-				Size textSize = TextMeasurer.MeasureText(txt, ToolCache.GetFont(CharacterStyle), Size.Empty, ParagraphStyle);
-				textWidth = textSize.Width + ParagraphStyle.Padding.Horizontal + ParagraphStyle.Padding.Horizontal;
-				textHeight = textSize.Height + ParagraphStyle.Padding.Vertical + ParagraphStyle.Padding.Vertical;
+
+		#region IEntity Members
+
+		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+			foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
+				yield return pi;
+			yield return new EntityFieldDefinition("AutoSize", typeof(bool));
+		}
+
+
+		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+			base.LoadFieldsCore(reader, version);
+			AutoSize = reader.ReadBool();
+		}
+
+
+		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			base.SaveFieldsCore(writer, version);
+			writer.WriteBool(AutoSize);
+		}
+
+		#endregion
+
+
+		private void FitShapeToText() {
+			System.Diagnostics.Debug.Assert(CharacterStyle != null);
+			System.Diagnostics.Debug.Assert(ParagraphStyle != null);
+			if (!string.IsNullOrEmpty(Text) && CharacterStyle != null && ParagraphStyle != null) {
+				Size textSize = TextMeasurer.MeasureText(Text, CharacterStyle, Size.Empty, ParagraphStyle);
+				Width = textSize.Width + ParagraphStyle.Padding.Horizontal + ParagraphStyle.Padding.Horizontal;
+				Height = textSize.Height + ParagraphStyle.Padding.Vertical + ParagraphStyle.Padding.Vertical;
 			}
 		}
 
@@ -345,14 +290,31 @@ namespace Dataweb.NShape.Advanced {
 		private const int MiddleCenterControlPoint = 9;
 		
 		private bool autoSize = true;
-		private int textWidth;
-		private int textHeight;
-		
 		#endregion
 	}
 
 
 	public abstract class LabelBase : TextBase {
+
+		#region [Public] Properties
+
+		[Category("Layout")]
+		[Description("If false, the label maintains its angle if it is attached to an other shape (in case the attached shape is beeing rotated).")]
+		[RequiredPermission(Permission.Layout)]
+		public bool MaintainOrientation {
+			get { return maintainOrientation; }
+			set {
+				Invalidate();
+				maintainOrientation = value;
+				InvalidateDrawCache();
+				Invalidate();
+			}
+		}
+
+		#endregion
+
+
+		#region [Public] Shape Members
 
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
@@ -370,17 +332,15 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Category("Layout")]
-		[Description("If false, the label maintains its angle if it is attached to an other shape (in case the attached shape is beeing rotated).")]
-		[RequiredPermission(Permission.Layout)]
-		public bool MaintainOrientation {
-			get { return maintainOrientation; }
-			set {
-				Invalidate();
-				maintainOrientation = value;
-				InvalidateDrawCache();
-				Invalidate();
+		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapabilities, int range) {
+			if ((controlPointCapabilities & ControlPointCapabilities.Glue) != 0
+				|| (controlPointCapabilities & ControlPointCapabilities.Resize) != 0) {
+				if (Geometry.DistancePointPoint(x, y, gluePointPos.X, gluePointPos.Y) <= range)
+					return GlueControlPoint;
+				if (IsConnected(GlueControlPoint, null) == ControlPointId.None
+					&& pinPath.IsVisible(x, y)) return GlueControlPoint;
 			}
+			return base.HitTest(x, y, controlPointCapabilities, range);
 		}
 
 
@@ -389,11 +349,6 @@ namespace Dataweb.NShape.Advanced {
 				return ((controlPointCapability & ControlPointCapabilities.Glue) != 0 
 					|| (controlPointCapability & ControlPointCapabilities.Resize) != 0);
 			else return base.HasControlPointCapability(controlPointId, controlPointCapability);
-		}
-
-
-		protected internal override int ControlPointCount {
-			get { return base.ControlPointCount + 1; }
 		}
 
 
@@ -417,6 +372,51 @@ namespace Dataweb.NShape.Advanced {
 				return gluePointPos;
 			else
 				return base.GetControlPointPosition(controlPointId);
+		}
+
+
+		public override void FollowConnectionPointWithGluePoint(ControlPointId gluePointId, Shape connectedShape, ControlPointId movedPointId) {
+			if (connectedShape == null) throw new ArgumentNullException("connectedShape");
+			// Follow the connected shape
+			try {
+				followingConnectedShape = true;
+				Point currGluePtPos = gluePointPos;
+				Point newGluePtPos = Geometry.InvalidPoint;
+				// If the connection is a point-to-shape connection, the shape calculates the new glue point position 
+				// with the help of the connected shape. 
+				if (movedPointId == ControlPointId.Reference) {
+					newGluePtPos = CalcGluePoint(gluePointId, connectedShape);
+				} else newGluePtPos = connectedShape.GetControlPointPosition(movedPointId);
+				if (!Geometry.IsValid(newGluePtPos)) {
+					System.Diagnostics.Debug.Fail("Invalid glue point position");
+					newGluePtPos = currGluePtPos;
+				}
+
+				// Move the glue point to the new position
+				int dx, dy;
+				dx = newGluePtPos.X - currGluePtPos.X;
+				dy = newGluePtPos.Y - currGluePtPos.Y;
+				if (dx != 0 || dy != 0) {
+					// Calculate new target outline intersection point along with old and new anchor point position
+					int shapeAngle;
+					if (connectedShape is ILinearShape) {
+						Point normalVector = ((ILinearShape)connectedShape).CalcNormalVector(newGluePtPos);
+						shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(newGluePtPos.X, newGluePtPos.Y, normalVector.X, normalVector.Y)) - 900;
+					} else if (connectedShape is IPlanarShape) {
+						shapeAngle = ((IPlanarShape)connectedShape).Angle;
+					} else shapeAngle = 0; // There is no way to get an angle from a generic shape
+
+					// Calculate new position of the GlueLabel (calculation method depends on the desired behavior)
+					Point newCenter = Point.Round(Geometry.CalcPoint(newGluePtPos.X, newGluePtPos.Y, calcInfo.Alpha + Geometry.TenthsOfDegreeToDegrees(shapeAngle), calcInfo.Distance));
+					// move GlueLabel
+					MoveTo(newCenter.X, newCenter.Y);
+					gluePointPos = newGluePtPos;
+					if (!maintainOrientation) {
+						int newAngle = calcInfo.LabelAngle + shapeAngle;
+						if (Angle != newAngle) Angle = newAngle;
+					}
+				}
+			} finally { followingConnectedShape = false; }
 		}
 
 
@@ -451,40 +451,40 @@ namespace Dataweb.NShape.Advanced {
 					graphics.FillPath(backbrush, pinPath);
 					graphics.DrawPath(forePen, pinPath);
 				}
-			}
-			//else {
-			//   // Draw Line to GluePoint
-			//   graphics.DrawLine(Pens.Green, gluePointPos, Center);
-			//   GdiHelpers.DrawPoint(graphics, Pens.Green, gluePointPos.X, gluePointPos.Y, 3);
+			} 
+//#if DEBUG
+//         else {
+//            // Draw Line to GluePoint
+//            graphics.DrawLine(Pens.Green, gluePointPos, Center);
+//            GdiHelpers.DrawPoint(graphics, Pens.Green, gluePointPos.X, gluePointPos.Y, 3);
 
-			//   ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
-			//   if (ci != ShapeConnectionInfo.Empty) {
-			//      Point absPos = ci.OtherShape.CalculateAbsolutePosition(calcInfo.RelativePosition);
-			//      GdiHelpers.DrawPoint(graphics, Pens.Red, absPos.X, absPos.Y, 3);
-			//      System.Diagnostics.Debug.Print("Relative Position: A = {0}, B = {1}", calcInfo.RelativePosition.A, calcInfo.RelativePosition.B);
-			//      System.Diagnostics.Debug.Print("Absolute Position: {0}", absPos);
-			//   }
+//            ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
+//            if (ci != ShapeConnectionInfo.Empty) {
+//               Point absPos = ci.OtherShape.CalculateAbsolutePosition(calcInfo.RelativePosition);
+//               GdiHelpers.DrawPoint(graphics, Pens.Red, absPos.X, absPos.Y, 3);
+//               System.Diagnostics.Debug.Print("Relative Position: A = {0}, B = {1}", calcInfo.RelativePosition.A, calcInfo.RelativePosition.B);
+//               System.Diagnostics.Debug.Print("Absolute Position: {0}", absPos);
+//            }
 
+//            ////ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
+//            //float shapeAngle = 0;
+//            //if (ci.OtherShape is ILinearShape) {
+//            //   ILinearShape line = (ILinearShape)ci.OtherShape;
+//            //   Point nv = line.CalcNormalVector(gluePointPos);
+//            //   graphics.DrawLine(Pens.Red, gluePointPos, nv);
+//            //   shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(gluePointPos.X, gluePointPos.Y, nv.X, nv.Y)) - 900;
+//            //} else if (ci.OtherShape is IPlanarShape) {
+//            //   shapeAngle = Geometry.TenthsOfDegreeToDegrees(((IPlanarShape)ci.OtherShape).Angle);
+//            //}
+//            //shapeAngle = shapeAngle / 10f;
+//            //GdiHelpers.DrawAngle(graphics, Brushes.Red, gluePointPos, shapeAngle, 10);
+//            //GdiHelpers.DrawAngle(graphics, Brushes.Purple, gluePointPos, shapeAngle, calcInfo.Alpha, 10);
 
-			//   //ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
-			//   //float shapeAngle = 0;
-			//   //if (ci.OtherShape is ILinearShape) {
-			//   //   ILinearShape line = (ILinearShape)ci.OtherShape;
-			//   //   Point nv = line.CalcNormalVector(gluePointPos);
-			//   //   graphics.DrawLine(Pens.Red, gluePointPos, nv);
-			//   //   shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(gluePointPos.X, gluePointPos.Y, nv.X, nv.Y)) - 900;
-			//   //} else if (ci.OtherShape is IPlanarShape) {
-			//   //   shapeAngle = Geometry.TenthsOfDegreeToDegrees(((IPlanarShape)ci.OtherShape).Angle);
-			//   //}
-			//   //shapeAngle = shapeAngle / 10f;
-			//   //GdiHelpers.DrawAngle(graphics, Brushes.Red, gluePointPos, shapeAngle, 10);
-			//   //GdiHelpers.DrawAngle(graphics, Brushes.Purple, gluePointPos, shapeAngle, calcInfo.Alpha, 10);
-
-			//   //Font font = new Font("Arial", 8);
-			//   //string debugStr = string.Format("ShapeAngle: {0}°\nAlpha: {1}°", shapeAngle, calcInfo.Alpha);
-			//   //graphics.DrawString(debugStr, font, Brushes.Blue, gluePointPos);
-			//   //font.Dispose();
-			//}
+//            //string debugStr = string.Format("ShapeAngle: {0}°{1}Alpha: {2}°", shapeAngle, Environment.NewLine, calcInfo.Alpha);
+//            //using (Font font = new Font("Arial", 8))
+//            //   graphics.DrawString(debugStr, font, Brushes.Blue, gluePointPos);
+//         }
+//#endif
 		}
 
 
@@ -503,6 +503,10 @@ namespace Dataweb.NShape.Advanced {
 			graphics.DrawLine(pen, gluePointPos, p);
 		}
 
+		#endregion
+
+
+		#region [Protected] Methods (Inherited)
 
 		protected internal LabelBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
@@ -519,51 +523,19 @@ namespace Dataweb.NShape.Advanced {
 			gluePointPos.X = (int)Math.Round(X - (Width / 2f)) - 10;
 			gluePointPos.Y = (int)Math.Round(Y - (Height / 2f)) - 10;
 			calcInfo = GluePointCalcInfo.Empty;
+			maintainOrientation = true;
 		}
 
 
-		#region IPersistable Members
-
-		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
-			base.LoadFieldsCore(reader, version);
-			gluePointPos.X = reader.ReadInt32();
-			gluePointPos.Y = reader.ReadInt32();
-		}
-
-
-		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
-			base.SaveFieldsCore(writer, version);
-			writer.WriteInt32(gluePointPos.X);
-			writer.WriteInt32(gluePointPos.Y);
-		}
-
-
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
-			foreach (EntityPropertyDefinition pi in TextBase.GetPropertyDefinitions(version))
-				yield return pi;
-			yield return new EntityFieldDefinition("GluePointX", typeof(int));
-			yield return new EntityFieldDefinition("GluePointY", typeof(int));
-		}
-
-		#endregion
-
-
-		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapabilities, int range) {
-			if ((controlPointCapabilities & ControlPointCapabilities.Glue) != 0
-				|| (controlPointCapabilities & ControlPointCapabilities.Resize) != 0) {
-				if (Geometry.DistancePointPoint(x, y, gluePointPos.X, gluePointPos.Y) <= range)
-					return GlueControlPoint;
-				if (IsConnected(GlueControlPoint, null) == ControlPointId.None
-					&& pinPath.IsVisible(x, y)) return GlueControlPoint;
-			}
-			return base.HitTest(x, y, controlPointCapabilities, range);
+		protected internal override int ControlPointCount {
+			get { return base.ControlPointCount + 1; }
 		}
 
 
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			Rectangle result = base.CalculateBoundingRectangle(tight);
 			if (!tight && IsConnected(GlueControlPoint, null) == ControlPointId.None) {
-				if (gluePointPos != Geometry.InvalidPoint) {
+				if (Geometry.IsValid(gluePointPos)) {
 					Point tl = Point.Empty, tr = Point.Empty, bl = Point.Empty, br = Point.Empty;
 					tl.X = bl.X = gluePointPos.X - pinSize / 2;
 					tr.X = br.X = gluePointPos.X + pinSize / 2;
@@ -609,15 +581,17 @@ namespace Dataweb.NShape.Advanced {
 			// If the glue point is not connected, move it with the shape
 			ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
 			if (ci.IsEmpty) {
-				gluePointPos.X += deltaX;
-				gluePointPos.Y += deltaY;
+				if (Geometry.IsValid(gluePointPos)) {
+					gluePointPos.X += deltaX;
+					gluePointPos.Y += deltaY;
+				}
 			} else {
 				// If the gluePoint is connected and the shape is not
 				// following the connected shape, recalculate GluePointCalcInfo
 				if (!followingConnectedShape) {
 					calcInfo = GluePointCalcInfo.Empty;
 					CalcGluePointCalcInfo(ci.OwnPointId, ci.OtherShape, ci.OtherPointId);
-					InvalidateDrawCache();
+					//InvalidateDrawCache();
 				}
 			}
 			return result;
@@ -631,7 +605,7 @@ namespace Dataweb.NShape.Advanced {
 				ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
 				if (ci.IsEmpty) {
 					// If the glue point is not connected, move the glue point to the desired position
-					if (gluePointPos != Geometry.InvalidPoint) {
+					if (Geometry.IsValid(gluePointPos)) {
 						gluePointPos.X += origDeltaX;
 						gluePointPos.Y += origDeltaY;
 						InvalidateDrawCache();
@@ -720,54 +694,42 @@ namespace Dataweb.NShape.Advanced {
 			if (pointId == ControlPointId.Reference)
 				result = shape.CalculateAbsolutePosition(calcInfo.RelativePosition);
 			else result = shape.GetControlPointPosition(pointId);
-			if (result == Geometry.InvalidPoint) System.Diagnostics.Debug.Fail("Unable to calculate glue point position!");
+			Debug.Assert(Geometry.IsValid(result));
 			return result;
 		}
 
+		#endregion
 
-		public override void FollowConnectionPointWithGluePoint(ControlPointId gluePointId, Shape connectedShape, ControlPointId movedPointId) {
-			if (connectedShape == null) throw new ArgumentNullException("connectedShape");
-			// Follow the connected shape
-			try {
-				followingConnectedShape = true;
 
-				Point currGluePtPos = gluePointPos;
-				Point newGluePtPos = Geometry.InvalidPoint;
-				// If the connection is a point-to-shape connection, the shape calculates the new glue point position 
-				// with the help of the connected shape. 
-				if (movedPointId == ControlPointId.Reference)
-					newGluePtPos = CalcGluePoint(gluePointId, connectedShape);
-				else newGluePtPos = connectedShape.GetControlPointPosition(movedPointId);
-				if (newGluePtPos == Geometry.InvalidPoint) newGluePtPos = currGluePtPos;
+		#region IEntity Members (Explicit Implementation)
 
-				// Move the glue point to the new position
-				int dx, dy;
-				dx = newGluePtPos.X - currGluePtPos.X;
-				dy = newGluePtPos.Y - currGluePtPos.Y;
-				if (dx != 0 || dy != 0) {
-					// Calculate new target outline intersection point along with old and new anchor point position
-					int shapeAngle;
-					if (connectedShape is ILinearShape) {
-						Point normalVector = ((ILinearShape)connectedShape).CalcNormalVector(newGluePtPos);
-						shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(newGluePtPos.X, newGluePtPos.Y, normalVector.X, normalVector.Y)) - 900;
-					} else if (connectedShape is IPlanarShape) {
-						shapeAngle = ((IPlanarShape)connectedShape).Angle;
-					} else shapeAngle = 0; // There is no way to get an angle from a generic shape
-					
-					// Calculate new position of the GlueLabel (calculation method depands on the desired behavior)
-					Point newCenter = Point.Round(Geometry.CalcPoint(newGluePtPos.X, newGluePtPos.Y, calcInfo.Alpha + Geometry.TenthsOfDegreeToDegrees(shapeAngle), calcInfo.Distance));
-					// move GlueLabel
-					MoveTo(newCenter.X, newCenter.Y);
-					gluePointPos = newGluePtPos;
-					if (!maintainOrientation) {
-						int newAngle = calcInfo.LabelAngle + shapeAngle;
-						if (Angle != newAngle) Angle = newAngle;
-					}
-				}
-			} finally { followingConnectedShape = false; }
+		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+			base.LoadFieldsCore(reader, version);
+			gluePointPos.X = reader.ReadInt32();
+			gluePointPos.Y = reader.ReadInt32();
+			if (version > 2) maintainOrientation = reader.ReadBool();
 		}
-		
-		
+
+
+		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			base.SaveFieldsCore(writer, version);
+			writer.WriteInt32(gluePointPos.X);
+			writer.WriteInt32(gluePointPos.Y);
+			if (version > 2) writer.WriteBool(maintainOrientation);
+		}
+
+
+		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+			foreach (EntityPropertyDefinition pi in TextBase.GetPropertyDefinitions(version))
+				yield return pi;
+			yield return new EntityFieldDefinition("GluePointX", typeof(int));
+			yield return new EntityFieldDefinition("GluePointY", typeof(int));
+			if (version > 2) yield return new EntityFieldDefinition("MaintainOrientation", typeof(bool));
+		}
+
+		#endregion
+
+
 		private void CalcGluePointCalcInfo(ControlPointId gluePointId, Shape otherShape, ControlPointId otherPointId) {
 			// calculate GluePoint position and AnchorPoint position
 			Point gluePtPos = GetControlPointPosition(gluePointId);
@@ -806,7 +768,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private struct GluePointCalcInfo {
+		protected struct GluePointCalcInfo {
 
 			static GluePointCalcInfo() {
 				Empty.Alpha = float.NaN;
@@ -869,22 +831,22 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
-		private const int GlueControlPoint = 10;
+		protected const int GlueControlPoint = 10;
 		private const int pinSize = 6;
 		private const int pinAngle = -45;
 
-		private Rectangle shapeBuffer = Rectangle.Empty;
+		// Position of glue point (unrotated)
+		protected Point gluePointPos = Geometry.InvalidPoint;
+		protected GluePointCalcInfo calcInfo = GluePointCalcInfo.Empty;
+
+		//private Rectangle shapeBuffer = Rectangle.Empty;
 		private GraphicsPath pinPath;
 
 		// Specifies if the shape maintains its orientation if the connected shape is rotated
-		private bool maintainOrientation = true;
+		private bool maintainOrientation;
 		// Specifis if the movement of a connected label is due to repositioning or 
 		// due to a "FollowConnectionPointWithGluePoint" call
 		private bool followingConnectedShape = false;
-		// Position of glue point (unrotated)
-		private Point gluePointPos = Geometry.InvalidPoint;
-		private GluePointCalcInfo calcInfo = GluePointCalcInfo.Empty;
-
 		#endregion
 	}
 

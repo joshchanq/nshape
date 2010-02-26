@@ -17,6 +17,9 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using Dataweb.NShape;
+using System.IO;
+using System.Diagnostics;
+using System.ComponentModel;
 
 
 namespace Dataweb.NShape.Advanced {
@@ -42,6 +45,17 @@ namespace Dataweb.NShape.Advanced {
 
 
 	public static class GdiHelpers {
+
+		/// <summary>
+		/// If the given object exists, it will be disposed and set to null/Nothing.
+		/// </summary>
+		public static void DisposeObject<T>(ref T disposableObject) where T : class, IDisposable {
+			if (disposableObject != null) {
+				disposableObject.Dispose();
+				disposableObject = null;
+			}
+		}
+
 
 		#region Methods for drawing geometric primitives (debug mode obly)
 
@@ -302,42 +316,25 @@ namespace Dataweb.NShape.Advanced {
 		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale, bool forPreview, Color transparentColor) {
 			if (transparency < 0 || transparency > 100) throw new ArgumentOutOfRangeException("transparency");
 			ImageAttributes imageAttribs = new ImageAttributes();
-
+			//
 			// Set WrapMode
 			imageAttribs.SetWrapMode(GetWrapMode(imageLayout));
-
+			//
 			// Set Gamma correction
 			if (gamma > 0) imageAttribs.SetGamma(gamma);
-
-			// Set / Reset conversion to grayScale
-			if (grayScale || (forPreview && Design.PreviewsAsGrayScale)) {
-				// set luminance corrected color shear matrix
-				// Row 0, Element 1 to 3
-				colorMatrix.Matrix00 = luminanceFactorRed;
-				colorMatrix.Matrix01 = luminanceFactorRed;
-				colorMatrix.Matrix02 = luminanceFactorRed;
-				// Row 1, Element 1 to 3
-				colorMatrix.Matrix10 = luminanceFactorGreen;
-				colorMatrix.Matrix11 = luminanceFactorGreen;
-				colorMatrix.Matrix12 = luminanceFactorGreen;
-				// Row 2, Element 1 to 3
-				colorMatrix.Matrix20 = luminanceFactorBlue;
-				colorMatrix.Matrix21 = luminanceFactorBlue;
-				colorMatrix.Matrix22 = luminanceFactorBlue;
-			} else {
-				// reset color shear matrix
-				colorMatrix.Matrix00 = colorMatrix.Matrix11 = colorMatrix.Matrix22 = 1;
-				colorMatrix.Matrix01 = colorMatrix.Matrix02 = 
-				colorMatrix.Matrix10 = colorMatrix.Matrix12 = 
-				colorMatrix.Matrix20 = colorMatrix.Matrix21 = 0;
-			}
-			// set transparency
-			if (forPreview) 
-				colorMatrix.Matrix33 = (float)(100 - Design.GetPreviewTransparency(transparency)) / 100;
-			else 
-				colorMatrix.Matrix33 = (float)(100 - transparency) / 100;
+			//
+			// Reset color matrix before applying effects
+			ResetColorMatrix(colorMatrix);
+			// Add conversion to grayScale
+			if (grayScale || (forPreview && Design.PreviewsAsGrayScale))
+				ApplyGrayScale(colorMatrix);
+			// Add transparency
+			float transparencyFactor = forPreview?Design.GetPreviewTransparency(transparency) / 100f:transparency / 100f;
+			if (transparencyFactor != 0) ApplyTransparency(colorMatrix, transparencyFactor);
+			// Apply color matrix
 			imageAttribs.SetColorMatrix(colorMatrix);
-
+			//
+			// Set color remap table
 			if (transparentColor != Color.Empty) {
 				colorMaps[0].OldColor = transparentColor;
 				colorMaps[0].NewColor = Color.Transparent;
@@ -359,6 +356,17 @@ namespace Dataweb.NShape.Advanced {
 		/// Draw an image into the specified bounds
 		/// </summary>
 		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, ImageLayoutMode imageLayout, Rectangle dstBounds, Rectangle srcBounds, float angle) {
+			PointF center = PointF.Empty;
+			center.X = dstBounds.X + (dstBounds.Width / 2f);
+			center.Y = dstBounds.Y + (dstBounds.Height / 2f);
+			DrawImage(gfx, image, imageAttribs, imageLayout, dstBounds, srcBounds, angle, center);
+		}
+
+
+		/// <summary>
+		/// Draw an image into the specified bounds
+		/// </summary>
+		public static void DrawImage(Graphics gfx, Image image, ImageAttributes imageAttribs, ImageLayoutMode imageLayout, Rectangle dstBounds, Rectangle srcBounds, float angle, PointF rotationCenter) {
 			if (gfx == null) throw new ArgumentNullException("gfx");
 			if (image == null) throw new ArgumentNullException("image");
 			// ToDo: Optimize this (draw only the drawArea part of the image, optimize calculations and variable use, draw bitmaps by using a TextureBrush)
@@ -401,13 +409,10 @@ namespace Dataweb.NShape.Advanced {
 					throw new NShapeException(string.Format("Unexpected {0} '{1}'.", imageLayout.GetType(), imageLayout));
 			}
 
-			PointF center = PointF.Empty;
-			center.X = dstBounds.X + (dstBounds.Width / 2f);
-			center.Y = dstBounds.Y + (dstBounds.Height / 2f);
 			if (angle != 0) {
-				gfx.TranslateTransform(center.X, center.Y);
+				gfx.TranslateTransform(rotationCenter.X, rotationCenter.Y);
 				gfx.RotateTransform(angle);
-				gfx.TranslateTransform(-center.X, -center.Y);
+				gfx.TranslateTransform(-rotationCenter.X, -rotationCenter.Y);
 			}
 
 			GraphicsUnit gfxUnit = GraphicsUnit.Display;
@@ -497,9 +502,9 @@ namespace Dataweb.NShape.Advanced {
 				default: throw new NShapeUnsupportedValueException(imageLayout);
 			}
 			if (angle != 0) {
-				gfx.TranslateTransform(center.X, center.Y);
+				gfx.TranslateTransform(rotationCenter.X, rotationCenter.Y);
 				gfx.RotateTransform(-angle);
-				gfx.TranslateTransform(-center.X, -center.Y);
+				gfx.TranslateTransform(-rotationCenter.X, -rotationCenter.Y);
 			}
 		}
 
@@ -507,6 +512,44 @@ namespace Dataweb.NShape.Advanced {
 
 
 		#region Creating and transforming brushes
+
+		/// <summary>
+		/// Copies the given image into a new image if the desired size is at half (or less) of the image's size, the image will be shrinked to the desired size.
+		/// If the desired size is more than half of the image's size, the original image will be returned.
+		/// </summary>
+		public static Image GetBrushImage(Image image, int desiredWidth, int desiredHeight) {
+			if (image == null) throw new ArgumentNullException("image");
+			float scaleFactor = Geometry.CalcScaleFactor(
+				image.Width,
+				image.Height,
+				image.Width / Math.Max(1, (image.Width / desiredWidth)),
+				image.Height / Math.Max(1, (image.Height / desiredHeight)));
+			if (scaleFactor > 0.5)
+				return image;
+			else {
+				int scaledWidth = (int)Math.Round(image.Width * scaleFactor);
+				int scaledHeight = (int)Math.Round(image.Height * scaleFactor);
+				Stopwatch w = new Stopwatch();
+				w.Reset();
+				w.Start();
+				Image newImage = image.GetThumbnailImage(scaledWidth, scaledHeight, null, IntPtr.Zero);
+				w.Stop();
+				Debug.Print(string.Format("GetThumbnailImage: {0}", w.Elapsed));
+				w.Reset();
+				w.Start();
+				newImage = new Bitmap(image, scaledWidth, scaledHeight);
+				w.Stop();
+				Debug.Print(string.Format("Create new Bitmap: {0}", w.Elapsed));
+				return newImage;
+			}
+		}
+
+
+		public static TextureBrush CreateTextureBrush(Image image, int width, int height, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
+			if (image == null) throw new ArgumentNullException("image");
+			return CreateTextureBrush(image, width, height, GetImageAttributes(imageLayout, gamma, transparency, grayScale));
+		}
+
 
 		public static TextureBrush CreateTextureBrush(Image image, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
@@ -522,6 +565,13 @@ namespace Dataweb.NShape.Advanced {
 			brushBounds.Width = image.Width;
 			brushBounds.Height = image.Height;
 			return new TextureBrush(image, brushBounds, imageAttribs);
+		}
+
+
+		public static TextureBrush CreateTextureBrush(Image image, int desiredWidth, int desiredHeight, ImageAttributes imageAttribs) {
+			if (image == null) throw new ArgumentNullException("image");
+			if (!(image is Bitmap)) throw new ArgumentException(string.Format("{0} are not supported for this operation.", image.GetType().Name));
+			return CreateTextureBrush(GetBrushImage(image, desiredWidth, desiredHeight), imageAttribs);
 		}
 		
 		
@@ -584,7 +634,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="dstWidth">The desired width of the image.</param>
 		/// <param name="dstHeight">The desired height of the image.</param>
 		/// <param name="image">the untransformed Image object.</param>
-		/// <param name="imageLayout">ImageLayout enumeration. Deines the scaling behaviour.</param>
+		/// <param name="imageLayout">ImageLayout enumeration. Deines the scaling behavior.</param>
 		/// <returns>Aspect ratio of the image.</returns>
 		public static float CalcImageScaleAndAspect(out float scaleFactorX, out float scaleFactorY, int dstWidth, int dstHeight, Image image, ImageLayoutMode imageLayout) {
 			float aspectRatio = 1;
@@ -763,6 +813,122 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		#region [Private] Methods
+
+		private static void ResetColorMatrix(ColorMatrix colorMatrix) {
+			// Reset color shear matrix to these values:
+			//		1	0	0	0	0
+			//		0	1	0	0	0
+			//		0	0	1	0	0
+			//		0	0	0	1	0
+			//		0	0	0	0	1
+			colorMatrix.Matrix00 =
+			colorMatrix.Matrix11 =
+			colorMatrix.Matrix22 =
+			colorMatrix.Matrix33 =
+			colorMatrix.Matrix44 = 1;
+			colorMatrix.Matrix01 = colorMatrix.Matrix02 = colorMatrix.Matrix03 = colorMatrix.Matrix04 =
+			colorMatrix.Matrix10 = colorMatrix.Matrix12 = colorMatrix.Matrix13 = colorMatrix.Matrix14 =
+			colorMatrix.Matrix20 = colorMatrix.Matrix21 = colorMatrix.Matrix23 = colorMatrix.Matrix24 =
+			colorMatrix.Matrix30 = colorMatrix.Matrix31 = colorMatrix.Matrix32 = colorMatrix.Matrix34 =
+			colorMatrix.Matrix40 = colorMatrix.Matrix41 = colorMatrix.Matrix42 = colorMatrix.Matrix43 = 0;
+		}
+
+
+		private static void ApplyGrayScale(ColorMatrix colorMatrix) {
+			// Grayscale == no color saturation
+			ApplySaturation(colorMatrix, 0);
+		}
+
+
+		private static void ApplyContrast(ColorMatrix colorMatrix, float contrastFactor) {
+			ApplyContrast(colorMatrix, contrastFactor, contrastFactor, contrastFactor);
+		}
+
+
+		private static void ApplyContrast(ColorMatrix colorMatrix, float contrastFactorR, float contrastFactorG, float contrastFactorB) {
+			// Contrast correction matrix:
+			//		c	0	0	0	0
+			//		0	c	0	0	0
+			//		0	0	c	0	0
+			//		0	0	0	1	0
+			//		0	0	0	0	1
+			// Note: 
+			// Due to a overflow bug in GDI+, the RGB color channel values will flip to 0 as soon as 
+			// the original value multiplied with the contrast factor exceeds 255.
+			// This bug was corrected with Windows 7.
+			
+			// Workaround for the GDI+ bug (see above)
+			colorMatrix.Matrix40 = 
+			colorMatrix.Matrix41 = 
+			colorMatrix.Matrix42 = 0.000001f;
+
+			// Set contrast color shear matrix
+			colorMatrix.Matrix00 *= contrastFactorR;
+			colorMatrix.Matrix11 *= contrastFactorG;
+			colorMatrix.Matrix22 *= contrastFactorB;
+		}
+
+
+		private static void ApplyInvertation(ColorMatrix colorMatrix) {
+			ApplyInvertation(colorMatrix, 1);
+		}
+
+
+		private static void ApplyInvertation(ColorMatrix colorMatrix, float invertationFactor) {
+			ApplyInvertation(colorMatrix, invertationFactor, invertationFactor, invertationFactor);
+		}
+
+
+		private static void ApplyInvertation(ColorMatrix colorMatrix, float invertFactorR, float invertFactorG, float invertFactorB) {
+			// Matrix layout:
+			//		-r		0		0		0		0
+			//		0		-g		0		0		0
+			//		0		0		-b		0		0
+			//		0		0		0		1		0
+			//		1		1		1		0		1
+			// Set invertation color shear matrix
+			colorMatrix.Matrix00 *= -invertFactorR;
+			colorMatrix.Matrix11 *= -invertFactorG;
+			colorMatrix.Matrix22 *= -invertFactorB;
+			colorMatrix.Matrix40 = colorMatrix.Matrix41 = colorMatrix.Matrix42 = 1f;
+		}
+
+
+		private static void ApplySaturation(ColorMatrix colorMatrix, float saturationFactor) {
+			ApplySaturation(colorMatrix, saturationFactor, saturationFactor, saturationFactor);
+		}
+
+
+		private static void ApplySaturation(ColorMatrix colorMatrix, float saturationFactorR, float saturationFactorG, float saturationFactorB) {
+			float complementR = luminanceFactorR * (colorMatrix.Matrix00 - saturationFactorR);
+			float complementG = luminanceFactorG * (colorMatrix.Matrix11 - saturationFactorG);
+			float complementB = luminanceFactorB * (colorMatrix.Matrix22 - saturationFactorB);
+			//float complementR = 0.3086f * (colorMatrix.Matrix00 - saturationFactorR);
+			//float complementG = 0.6094f * (colorMatrix.Matrix11 - saturationFactorG);
+			//float complementB = 0.0820f * (colorMatrix.Matrix22 - saturationFactorB);
+
+			colorMatrix.Matrix00 = complementR + saturationFactorR;
+			colorMatrix.Matrix01 = complementR;
+			colorMatrix.Matrix02 = complementR;
+
+			colorMatrix.Matrix10 = complementG;
+			colorMatrix.Matrix11 = complementG + saturationFactorG;
+			colorMatrix.Matrix12 = complementG;
+
+			colorMatrix.Matrix20 = complementB;
+			colorMatrix.Matrix21 = complementB;
+			colorMatrix.Matrix22 = complementB + saturationFactorB;
+		}
+
+
+		private static void ApplyTransparency(ColorMatrix colorMatrix, float transparencyFactor) {
+			colorMatrix.Matrix33 *= 1f - transparencyFactor;
+		}
+		
+		#endregion
+
+
 		#region Fields
 
 		private static ImageAttributes imageAttribs = new ImageAttributes();
@@ -770,11 +936,11 @@ namespace Dataweb.NShape.Advanced {
 		private static ColorMatrix colorMatrix = new ColorMatrix();
 		private static Matrix matrix = new Matrix();
 
-		// constants for the color-to-greyscale conversion
-		// luminance correction factor (the human eye has preferences regarding colors)
-		private const float luminanceFactorRed = 0.3f;
-		private const float luminanceFactorGreen = 0.59f;
-		private const float luminanceFactorBlue = 0.11f;
+		// Constants for the color-to-greyscale conversion
+		// Luminance correction factor (the human eye has preferences regarding colors)
+		private const float luminanceFactorR = 0.3f;
+		private const float luminanceFactorG = 0.59f;
+		private const float luminanceFactorB = 0.11f;
 		// Alternative values
 		//private const float luminanceFactorRed = 0.3f;
 		//private const float luminanceFactorGreen = 0.5f;
@@ -783,4 +949,279 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 	}
 
+
+	/// <summary>
+	/// This structure combines GDI+ images (bitmaps or metafiles) with a projectName (typically the filename withoout path and extension).
+	/// </summary>
+	[TypeConverter("Dataweb.NShape.WinFormsUI.NamedImageConverter, Dataweb.NShape.WinFormsUI")]
+	public class NamedImage : IDisposable {
+
+		/// <summary>
+		/// Loads an image from a file.
+		/// </summary>
+		public static NamedImage FromFile(string fileName) {
+			return new NamedImage(fileName);
+		}
+
+
+		public static bool IsNullOrEmpty(NamedImage namedImage) {
+			if (namedImage != null) {
+				if (namedImage.image != null)
+					return false;
+				else if (File.Exists(namedImage.FilePath))
+					return false;
+			}
+			return true;
+		}
+
+
+		/// <override></override>
+		public override string ToString() {
+			return this.name;
+		}
+
+
+		public NamedImage() {
+			image = null;
+			name = string.Empty;
+			filePath = string.Empty;
+			//canLoadFromFile = false;
+			//imageType = typeof(Image);
+			imageSize = Size.Empty;
+		}
+
+
+		/// <summary>
+		/// Creates a NamedImage from the given file.
+		/// </summary>
+		/// <param name="pathName"></param>
+		public NamedImage(string fileName)
+			: this() {
+			if (fileName == null) throw new ArgumentNullException("fileName");
+			if (fileName == string.Empty) throw new ArgumentException("fileName");
+			Load(fileName);
+		}
+
+
+		/// <summary>
+		/// Creates a NamedImage
+		/// </summary>
+		public NamedImage(Image image, string name)
+			: this() {
+			if (image == null) throw new ArgumentNullException("image");
+			if (name == null) throw new ArgumentNullException("name");
+			Image = (Image)image.Clone();
+			Name = name;
+		}
+
+
+		/// <summary>
+		/// Creates a NamedImage
+		/// </summary>
+		public NamedImage(Image image, string fileName, string name)
+			: this() {
+			if (image == null) throw new ArgumentNullException("image");
+			if (fileName == null) throw new ArgumentNullException("fileName");
+			if (name == null) throw new ArgumentNullException("name");
+			this.name = name;
+			this.filePath = fileName;
+			this.image = (Image)image.Clone();
+		}
+
+
+		public NamedImage(NamedImage source) {
+			if (source == null) throw new ArgumentNullException("source");
+			Name = source.Name;
+			FilePath = source.FilePath;
+			//this.canLoadFromFile = source.canLoadFromFile;
+			//if (source.canLoadFromFile) {
+			//   image = null;	// Load on next usage
+			//   imageSize = source.imageSize;
+			//   imageType = source.imageType;
+			//} else {
+				if (source.Image == null)
+					Image = null;
+				else Image = (Image)source.Image.Clone();
+			//}
+		}
+
+
+		~NamedImage() {
+			Dispose();
+		}
+
+
+		#region IDisposable Members
+
+		public void Dispose() {
+			if (image != null) {
+				image.Dispose();
+				image = null;
+			}
+		}
+
+		#endregion
+
+
+		public NamedImage Clone() {
+			return new NamedImage(this);
+		}
+
+
+		/// <summary>
+		/// The image.
+		/// </summary>
+		public Image Image {
+			get {
+				if (image == null && File.Exists(filePath))
+					Load(filePath);
+				return image;
+			}
+			set {
+				//canLoadFromFile = false;
+				//imageType = typeof(Image);
+				imageSize = Size.Empty;
+				image = value;
+				if (image != null) {
+					imageSize = image.Size;
+					//imageType = image.GetType();
+				}
+			}
+		}
+
+
+		/// <summary>
+		/// Name of the image (typically the filename without path and extension)
+		/// </summary>
+		public string Name {
+			get {
+				if (!string.IsNullOrEmpty(name))
+					return name;
+				else if (!string.IsNullOrEmpty(filePath))
+					return Path.GetFileNameWithoutExtension(filePath);
+				else return string.Empty;
+			}
+			set {
+				if (string.IsNullOrEmpty(value))
+					name = string.Empty;
+				else name = value; 
+			}
+		}
+
+
+		/// <summary>
+		/// Path to the image file
+		/// </summary>
+		public string FilePath {
+			get { return filePath; }
+			set {
+				if (string.IsNullOrEmpty(value))
+					filePath = string.Empty;
+				else filePath = value;
+			}
+		}
+
+
+		/// <summary>
+		/// Width of the image. 0 if no image is set.
+		/// </summary>
+		public int Width {
+			get { return imageSize.Width; }
+		}
+
+
+		/// <summary>
+		/// Height of the image. 0 if no image is set.
+		/// </summary>
+		public int Height {
+			get { return imageSize.Height; }
+		}
+
+
+		/// <summary>
+		/// Size of the image. 0 if no image is set.
+		/// </summary>
+		public Size Size {
+			get { return imageSize; }
+		}
+
+
+		/// <summary>
+		/// Saves this NamedImage to an image file.
+		/// </summary>
+		/// <param name="directoryName"></param>
+		/// <param name="format"></param>
+		public void Save(string directoryName, ImageFormat format) {
+			if (!Directory.Exists(directoryName))
+				throw new FileNotFoundException("Directory does not exist.", directoryName);
+			string fileName = Name;
+			if (string.IsNullOrEmpty(fileName)) fileName = Guid.NewGuid().ToString();
+			fileName += GetImageFormatExtension(format);
+			image.Save(Path.Combine(directoryName, fileName), format);
+
+			if (string.IsNullOrEmpty(name) && string.IsNullOrEmpty(filePath)) {
+				filePath = fileName;
+				//canLoadFromFile = true;
+			}
+		}
+
+
+		/// <summary>
+		/// Loads the imagefile into this NamedImage.
+		/// </summary>
+		/// <param name="pathName"></param>
+		public void Load(string fileName) {
+			if (!File.Exists(fileName)) throw new FileNotFoundException("File not found or access denied.", fileName);
+			// GDI+ only reads the file header and keeps the image file locked for loading the 
+			// image data later on demand. 
+			// So we have to read the entire image to a buffer and create the image from a MemoryStream
+			//
+			// open the image file via FileStream
+			FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+			// Copy image data to memory buffer
+			byte[] buffer = new byte[fs.Length];
+			fs.Read(buffer, 0, buffer.Length);
+			// Close and dispose the FileStream
+			fs.Close();
+			fs.Dispose();
+			//
+			// Create the image from a MemoryStream
+			MemoryStream memStream = new MemoryStream(buffer);
+			image = Image.FromStream(memStream, true, true);
+			imageSize = image.Size;
+			imageType = image.GetType();
+			if (!canLoadFromFile) canLoadFromFile = true;
+			if (filePath != fileName) filePath = fileName;
+		}
+
+
+		/// <summary>
+		/// Gets the appropriate file extension for the given ImageFormat.
+		/// </summary>
+		private string GetImageFormatExtension(ImageFormat imageFormat) {
+			string result = string.Empty;
+			if (image.RawFormat.Guid == ImageFormat.Bmp.Guid) result = ".bmp";
+			else if (image.RawFormat.Guid == ImageFormat.Emf.Guid) result = ".emf";
+			else if (image.RawFormat.Guid == ImageFormat.Exif.Guid) result = ".exif";
+			else if (image.RawFormat.Guid == ImageFormat.Gif.Guid) result = ".gif";
+			else if (image.RawFormat.Guid == ImageFormat.Icon.Guid) result = ".ico";
+			else if (image.RawFormat.Guid == ImageFormat.Jpeg.Guid) result = ".jpeg";
+			else if (image.RawFormat.Guid == ImageFormat.MemoryBmp.Guid) result = ".bmp";
+			else if (image.RawFormat.Guid == ImageFormat.Png.Guid) result = ".png";
+			else if (image.RawFormat.Guid == ImageFormat.Tiff.Guid) result = ".tiff";
+			else if (image.RawFormat.Guid == ImageFormat.Wmf.Guid) result = ".wmf";
+			else Debug.Fail("Unsupported image format.");
+			return result;
+		}
+
+
+		#region Fields
+		private Image image = null;
+		private string name = string.Empty;
+		private string filePath = string.Empty;
+		private Size imageSize = Size.Empty;
+		private bool canLoadFromFile = false;
+		private Type imageType = typeof(Image);
+		#endregion
+	}
 }

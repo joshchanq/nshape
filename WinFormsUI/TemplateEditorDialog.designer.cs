@@ -1,10 +1,6 @@
 namespace Dataweb.NShape.WinFormsUI {
 
 	partial class TemplateEditorDialog {
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		//private System.ComponentModel.IContainer components = null;
 
 		#region Windows Form Designer generated code
 
@@ -13,7 +9,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TemplateEditorDialog));
 			this.applyButton = new System.Windows.Forms.Button();
 			this.cancelButton = new System.Windows.Forms.Button();
 			this.buttonPanel = new System.Windows.Forms.Panel();
@@ -96,8 +91,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.ClientSize = new System.Drawing.Size(638, 459);
 			this.Controls.Add(this.templatePresenter);
 			this.Controls.Add(this.buttonPanel);
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+			this.DoubleBuffered = true;
 			this.Name = "TemplateEditorDialog";
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
@@ -111,6 +105,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 		#endregion
+
+		/// <summary>
+		/// Required designer variable.
+		/// </summary>
+		private System.ComponentModel.IContainer components = null;
 
 		private System.Windows.Forms.Button applyButton;
 		private System.Windows.Forms.Button cancelButton;

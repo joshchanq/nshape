@@ -56,25 +56,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		#region ICommand Members
 
 		public override void Execute() {
-			//string[] columns = new string[shape.ColumnNames.Length + 1];
-			//Array.Copy(shape.ColumnNames, columns, shape.ColumnNames.Length);
-			//columns[columns.Length - 1] = ColumnText;
-			//shape.ColumnNames = columns;
-			//shape.Invalidate();
-
 			shape.AddColumn(ColumnText);
 			shape.Invalidate();
-
-			if (Repository != null)
-				Repository.UpdateShape(shape);
+			if (Repository != null) Repository.UpdateShape(shape);
 		}
 
 
 		public override void Revert() {
-			//string[] columns = new string[shape.ColumnNames.Length - 1];
-			//Array.Copy(shape.ColumnNames, columns, columns.Length);
-			//shape.ColumnNames = columns;
-
 			shape.RemoveColumn(ColumnText);
 			if (Repository != null) Repository.UpdateShape(shape);
 		}
@@ -95,6 +83,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 	public class InsertColumnCommand : EntityShapeColumnCommand {
+		
 		public InsertColumnCommand(EntitySymbol shape, int beforeColumnIndex, string columnText)
 			: base() {
 			base.description = string.Format("Insert new column in {0}", shape.Type.Name);
@@ -240,17 +229,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class EntitySymbol : RectangleBase {
 
-		protected override void InitializeToDefault(IStyleSet styleSet) {
-			base.InitializeToDefault(styleSet);
-			privateColumnBackgroundColorStyle = styleSet.ColorStyles.White;
-			privateColumnCharacterStyle = styleSet.CharacterStyles.Caption;
-			privateColumnParagraphStyle = styleSet.ParagraphStyles.Label;
-			Width = 80;
-			Height = 120;
-			Text = "Table";
-		}
-
-
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
 
@@ -329,30 +307,31 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		protected override void SaveInnerObjectsCore(string propertyName, IRepositoryWriter writer, int version) {
-			base.SaveInnerObjectsCore(propertyName, writer, version);
-			writer.BeginWriteInnerObjects();
-			for (int i = 0; i < ColumnNames.Length; ++i) {
-				writer.BeginWriteInnerObject();
-				writer.WriteInt32(i);
-				writer.WriteString(columnNames[i]);
-				writer.EndWriteInnerObject();
-			}
-			writer.EndWriteInnerObjects();
+			if (propertyName == "TableColumns") {
+				writer.BeginWriteInnerObjects();
+				int cnt = CaptionCount;
+				for (int i = 1; i < cnt; ++i) {	// Skip first caption (title)
+					writer.BeginWriteInnerObject();
+					writer.WriteInt32(i - 1);
+					writer.WriteString(GetCaptionText(i));
+					writer.EndWriteInnerObject();
+				}
+				writer.EndWriteInnerObjects();
+			} else base.SaveInnerObjectsCore(propertyName, writer, version);
 		}
 
 
 		protected override void LoadInnerObjectsCore(string propertyName, IRepositoryReader reader, int version) {
-			base.LoadInnerObjectsCore(propertyName, reader, version);
-			string[] colNameArr = new string[ColumnNames.Length];
-			reader.BeginReadInnerObjects();
-			while (reader.BeginReadInnerObject()) {
-				int colIdx = reader.ReadInt32();
-				string colName = reader.ReadString();
-				reader.EndReadInnerObject();
-				colNameArr[colIdx] = colName;
-			}
-			reader.EndReadInnerObjects();
-			ColumnNames = colNameArr;
+			if (propertyName == "TableColumns") {
+				reader.BeginReadInnerObjects();
+				while (reader.BeginReadInnerObject()) {
+					int colIdx = reader.ReadInt32();
+					string colName = reader.ReadString();
+					reader.EndReadInnerObject();
+					InsertColumn(colIdx, colName);
+				}
+				reader.EndReadInnerObjects();
+			} else base.LoadInnerObjectsCore(propertyName, reader, version);
 		}
 
 
@@ -463,7 +442,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		#region Properties
 		[Category("Appearance")]
-		[Description("Defines the appearence of the shape's interior.")]
+		[Description("Defines the appearence of the shape's interior. \nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdColumnBackgroundColorStyle)]
 		[RequiredPermission(Permission.Present)]
 		public virtual IColorStyle ColumnBackgroundColorStyle {
@@ -548,6 +527,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public void AddColumn(string columnName) {
 			columnCaptions.Add(new Caption(columnName));
 			Array.Resize(ref columnControlPoints, columnControlPoints.Length + 2);
+			Array.Resize(ref columnNames, columnNames.Length + 1);
+			columnNames[columnNames.Length - 1] = columnName;
 			InvalidateDrawCache();
 		}
 
@@ -555,6 +536,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public void InsertColumn(int index, string columnName) {
 			columnCaptions.Insert(index, new Caption(columnName));
 			Array.Resize(ref columnControlPoints, columnControlPoints.Length + 2);
+			Array.Resize(ref columnNames, columnCaptions.Count);
+			for (int i = columnCaptions.Count - 1; i >= 0; --i)
+				columnNames[i] = columnCaptions[i].Text;
 			InvalidateDrawCache();
 		}
 
@@ -582,10 +566,14 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			foreach (ShapeConnectionInfo sci in GetConnectionInfos(id, null))
 				DetachGluePointFromConnectionPoint(id, sci.OtherShape, sci.OtherPointId);
 
+			// Remove caption
 			columnCaptions.RemoveAt(index);
 			if (index < columnControlPoints.Length - 2)
 				Array.Copy(columnControlPoints, index + 2, columnControlPoints, index, columnControlPoints.Length - index - 2);
 			Array.Resize(ref columnControlPoints, columnControlPoints.Length - 2);
+			if (index < columnNames.Length - 1)
+				Array.Copy(columnNames, index + 1, columnNames, index, columnNames.Length - index - 1);
+			Array.Resize(ref columnNames, columnCaptions.Count);
 			InvalidateDrawCache();
 		}
 
@@ -593,6 +581,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public void ClearColumns() {
 			columnCaptions.Clear();
 			Array.Resize<Point>(ref columnControlPoints, 0);
+			Array.Resize(ref columnNames, 0);
 		}
 
 		#endregion
@@ -643,7 +632,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			//   captionBounds.Height = columnHeight;
 			//   for (int i = 0; i < columnCaptions.Count; ++i) {
 			//      captionBounds.Y = top + headerHeight + (i * columnHeight);
-			//      if (captionBounds.Contains(mouseX, mouseY)) {
+			//      if (Geometry.RectangleContainsPoint(captionBounds, mouseX, mouseY)) {
 			//         yield return new EditColumnCommandAction("Edit Column", new EditColumnCommand(this, i, columnCaptions[i].Text));
 			//         yield return new InsertColumnCommandAction("Insert Column", new InsertColumnCommand(this, i, null));
 			//         yield return new RemoveColumnCommandAction("Remove Column", new RemoveColumnCommand(this, i, columnCaptions[i].Text));
@@ -744,6 +733,17 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				}
 			}
 			graphics.DrawPath(pen, Path);
+		}
+
+
+		protected override void InitializeToDefault(IStyleSet styleSet) {
+			base.InitializeToDefault(styleSet);
+			privateColumnBackgroundColorStyle = styleSet.ColorStyles.White;
+			privateColumnCharacterStyle = styleSet.CharacterStyles.Caption;
+			privateColumnParagraphStyle = styleSet.ParagraphStyles.Label;
+			Width = 80;
+			Height = 120;
+			Text = "Table";
 		}
 
 
@@ -1185,7 +1185,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			UpdateDrawCache();
 			Point result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true));
-			if (result == Geometry.InvalidPoint) result = Center;
+			if (!Geometry.IsValid(result)) result = Center;
 			return result;
 		}
 
@@ -1394,7 +1394,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				halfEllipseBounds.Y = Y - (int)Math.Round(Height / 2f);
 				halfEllipseBounds.Width = Width;
 				halfEllipseBounds.Height = (int)Math.Round(EllipseHeight / 2);
-				// Use RectContainsPoint because Rectangle.Contains() does include the rectangle's bounds
 				calcUpperEllipseIntersection = Geometry.RectangleContainsPoint(halfEllipseBounds.X, halfEllipseBounds.Y, halfEllipseBounds.Width, halfEllipseBounds.Height, result.X, result.Y, true);
 				if (!calcUpperEllipseIntersection) {
 					// check bounds of the lower half-ellipse
@@ -1432,7 +1431,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				ellipseCenter.X = X;
 				if (Angle != 0) ellipseCenter = Geometry.RotatePoint(Center, angleDeg, ellipseCenter);
 				PointF p = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectEllipseLine(ellipseCenter.X, ellipseCenter.Y, Width, EllipseHeight, angleDeg, startX, startY, X, Y, false));
-				if (p != Geometry.InvalidPointF) result = Point.Round(p);
+				if (Geometry.IsValid(p)) result = Point.Round(p);
 			}
 			return result;
 		}
@@ -2032,15 +2031,15 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			registrar.RegisterShapeType(new ShapeType("Server", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.PC2.emf", Assembly.GetExecutingAssembly());
-				result.Text = "PC N";
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Tower.emf", Assembly.GetExecutingAssembly());
+				result.Text = "Server";
 				return result;
 				}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("RTU", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
 					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.RTU.emf", Assembly.GetExecutingAssembly());
-				result.Text = "RTU N";
+				result.Text = "RTU";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Actor", namespaceName, namespaceName, 
@@ -2054,28 +2053,34 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
 					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Monitor.emf", Assembly.GetExecutingAssembly());
-				result.Text = "Monitor N";
+				result.Text = "Monitor";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("PC", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
-					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.PC.emf", Assembly.GetExecutingAssembly());
-				result.Text = "PC N";
+					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Desktop.emf", Assembly.GetExecutingAssembly());
+				result.Text = "PC";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("Tower", namespaceName, namespaceName, 
 				delegate(ShapeType shapeType, Template t) {
 				VectorImage result = VectorImage.CreateInstance(shapeType, t,
 					"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Tower.emf", Assembly.GetExecutingAssembly());
-				result.Text = "Tower N";
+				result.Text = "Tower";
 				return result;
 			}, VectorImage.GetPropertyDefinitions));
-
+			registrar.RegisterShapeType(new ShapeType("Laptop", namespaceName, namespaceName,
+				delegate(ShapeType shapeType, Template t) {
+					VectorImage result = VectorImage.CreateInstance(shapeType, t,
+						"Dataweb.NShape.SoftwareArchitectureShapes.Resources.Laptop.emf", Assembly.GetExecutingAssembly());
+					result.Text = "Notebook";
+					return result;
+				}, VectorImage.GetPropertyDefinitions));
 		}
 
 
 		private const string namespaceName = "SoftwareArchitectureShapes";
-		private const int preferredRepositoryVersion = 2;
+		private const int preferredRepositoryVersion = 3;
 	}
 }

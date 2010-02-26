@@ -115,7 +115,7 @@ namespace Dataweb.NShape.GeneralModelObjects {
 
 		private const string namespaceName = "GeneralModelObjects";
 		private const string categoryTitle = "General";
-		private const int preferredRepositoryVersion = 2;
+		private const int preferredRepositoryVersion = 3;
 
 		#endregion
 	}

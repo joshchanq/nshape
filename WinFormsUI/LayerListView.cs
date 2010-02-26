@@ -166,6 +166,33 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
+		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
+		[Category("Behavior")]
+		public bool HideDeniedMenuItems {
+			get { return hideMenuItemsIfNotGranted; }
+			set { hideMenuItemsIfNotGranted = value; }
+		}
+
+
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
+		[Category("Behavior")]
+		public bool ShowDefaultContextMenu {
+			get { return showDefaultContextMenu; }
+			set { showDefaultContextMenu = value; }
+		}
+
+
 		#region [Protected] Overridden Methods
 
 		protected override void OnMouseDown(MouseEventArgs e) {
@@ -519,7 +546,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private string newName;
 		private bool labelEditAllowed;
 		private bool showDefaultContextMenu = true;
-		private bool hideMenuItemsIfNotGranted = true;
+		private bool hideMenuItemsIfNotGranted = false;
 
 		// prawing and painting
 		Brush selectedBrush = new SolidBrush(Color.FromArgb(128, Color.Gainsboro));

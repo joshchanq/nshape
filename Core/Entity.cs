@@ -351,6 +351,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#endregion
 
+
 		#region Fields
 
 		private string name;
@@ -471,7 +472,7 @@ namespace Dataweb.NShape.Advanced {
 
 		ILineStyle ReadLineStyle();
 
-		IShapeStyle ReadShapeStyle();
+		//IShapeStyle ReadShapeStyle();
 
 		IParagraphStyle ReadParagraphStyle();
 

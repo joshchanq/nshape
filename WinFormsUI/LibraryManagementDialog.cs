@@ -26,6 +26,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			InitializeComponent();
 			if (project == null) throw new ArgumentNullException("project");
 			this.project = project;
+			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		}
 
 		
@@ -35,6 +36,15 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		private void LibraryManagementDialog_Shown(object sender, EventArgs e) {
+			bool librariesLoaded = false;
+			foreach (Assembly a in project.Libraries) {
+				librariesLoaded = true; break;
+			}
+			if (!librariesLoaded) addLibraryButton_Click(this, null);
+		}
+
+	
 		private void LibraryManagementDialog_FormClosed(object sender, FormClosedEventArgs e) {
 			project.LibraryLoaded -= Project_LibraryLoaded;
 		}
@@ -42,10 +52,14 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void addLibraryButton_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = "Assembly Files|*.dll|All Files|*.*";
+			openFileDialog.FileName = "";
 			openFileDialog.Multiselect = true;
 			if (string.IsNullOrEmpty(openFileDialog.InitialDirectory))
 				openFileDialog.InitialDirectory = Application.StartupPath;
 			if (openFileDialog.ShowDialog() == DialogResult.OK) {
+				// Repaint windows under the file dialog before starting with adding libraries
+				Application.DoEvents();
+
 				List<string> fileNames = new List<string>(openFileDialog.FileNames);
 				fileNames.Sort();
 				for (int i = 0; i < fileNames.Count; ++i) {
@@ -69,6 +83,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		void Project_LibraryLoaded(object sender, LibraryLoadedEventArgs e) {
 			RefreshList();
+		}
+
+
+		private void openFileDialog_FileOk(object sender, System.ComponentModel.CancelEventArgs e) {
+			e.Cancel = !project.IsValidLibrary(openFileDialog.FileName);
 		}
 
 

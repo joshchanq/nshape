@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("WebVisists")]
-[assembly: AssemblyDescription("WebVisits Demo for nShape - Visualize web page statistics")]
+[assembly: AssemblyDescription("WebVisits Demo for NShape - Visualize web page statistics")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH")]
 [assembly: AssemblyProduct("WebVisists")]

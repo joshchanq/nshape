@@ -72,7 +72,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Extracts and returns nShapeKeyEventArgs from Windows.Forms.KeyEventArgs
+		/// Extracts and returns KeyEventArgs from Windows.Forms.KeyEventArgs
 		/// </summary>
 		public static KeyEventArgsDg GetKeyEventArgs(KeyEventType eventType, KeyEventArgs e) {
 			return GetKeyEventArgs(eventType, '\0', (int)e.KeyData, e.Handled, e.SuppressKeyPress);
@@ -80,7 +80,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Extracts and returns nShapeKeyEventArgs from Windows.Forms.PreviewKeyDownEventArgs
+		/// Extracts and returns KeyEventArgs from Windows.Forms.PreviewKeyDownEventArgs
 		/// </summary>
 		public static KeyEventArgsDg GetKeyEventArgs(PreviewKeyDownEventArgs e) {
 			return GetKeyEventArgs(KeyEventType.PreviewKeyDown, '\0', (int)e.KeyData, false, false);
@@ -88,7 +88,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Extracts and returns nShapeKeyEventArgs from Windows.Forms.KeyPressEventArgs
+		/// Extracts and returns KeyEventArgs from Windows.Forms.KeyPressEventArgs
 		/// </summary>
 		public static KeyEventArgsDg GetKeyEventArgs(KeyPressEventArgs e) {
 			int keyData = (int)char.ToUpper(e.KeyChar) | (int)Control.ModifierKeys;
@@ -97,7 +97,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Returns nShapeKeyEventArgs built with the provided parameters
+		/// Returns KeyEventArgs built with the provided parameters
 		/// </summary>
 		public static KeyEventArgsDg GetKeyEventArgs(KeyEventType eventType, char keyChar, int keyData, bool handled, bool suppressKeyPress) {
 			keyEventArgs.SetEventType(eventType);
@@ -116,6 +116,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromAllowedActions(IEnumerable<MenuItemDef> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
+			MenuItemDef lastMenuItemDef = null;
 			// Attention!!
 			// We have to iterate manually instead of unsing foreach here because otherwise always the least 
 			// processed action's Execute method will be called.
@@ -123,8 +124,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			while (enumerator.MoveNext()) {
 				// Skip actions that are not allowed
 				if (!enumerator.Current.IsGranted(project.SecurityManager)) continue;
+				// If the item is a separator and no 'real' item was created before, skip the separator 
+				// as we do not want a context  menu beginning with a menu seperator
+				if (enumerator.Current is SeparatorMenuItemDef 
+					&& (lastMenuItemDef == null || lastMenuItemDef is SeparatorMenuItemDef)) continue;
 				// Build and return menu item
 				yield return CreateMenuItemFromAction(enumerator.Current, project);
+				lastMenuItemDef = enumerator.Current;
 			}
 		}
 
@@ -152,7 +158,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			if (itemCnt > 0 && !(contextMenuStrip.Items[itemCnt - 1] is ToolStripSeparator))
 				contextMenuStrip.Items.Add(CreateMenuItemSeparator());
 			IEnumerable<ToolStripItem> items = 
-				skipIfNotGranted ? GetContextMenuItemsFromAllowedActions(actions, project) : GetContextMenuItemsFromActions(actions, project);
+				skipIfNotGranted ? GetContextMenuItemsFromAllowedActions(actions, project) 
+				: GetContextMenuItemsFromActions(actions, project);
 			foreach (ToolStripItem item in items) contextMenuStrip.Items.Add(item);
 		}
 

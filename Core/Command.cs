@@ -105,7 +105,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Checks if the given entity has to be undeleted instead of being inserted
 		/// </summary>
-		protected bool UndeleteEntity(IEntity entity) {
+		protected bool CanUndeleteEntity(IEntity entity) {
 			if (entity == null) throw new ArgumentNullException();
 			return entity.Id != null;
 		}
@@ -114,9 +114,9 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Checks if the given entity has to be undeleted instead of being inserted
 		/// </summary>
-		protected bool UndeleteEntities<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity {
+		protected bool CanUndeleteEntities<TEntity>(IEnumerable<TEntity> entities) where TEntity : IEntity {
 			if (entities == null) throw new ArgumentNullException();
-			foreach (IEntity e in entities) return UndeleteEntity(e);
+			foreach (IEntity e in entities) return CanUndeleteEntity(e);
 			return false;
 		}
 		
@@ -325,7 +325,7 @@ namespace Dataweb.NShape {
 			int cnt = ModelObjects.Count;
 			if (cnt == 0) throw new NShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
-				if (UndeleteEntities(ModelObjects.Keys))
+				if (CanUndeleteEntities(ModelObjects.Keys))
 					Repository.UndeleteModelObjects(ModelObjects.Keys);
 				else Repository.InsertModelObjects(ModelObjects.Keys);
 				foreach (KeyValuePair<IModelObject, AttachedObjects> item in ModelObjects)
@@ -345,42 +345,6 @@ namespace Dataweb.NShape {
 
 
 		protected Dictionary<IModelObject, AttachedObjects> ModelObjects = new Dictionary<IModelObject, AttachedObjects>();
-
-
-		protected struct AttachedObjects {
-
-			public AttachedObjects(IModelObject modelObject, IRepository repository) {
-				shapes = new List<Shape>();
-				children = new Dictionary<IModelObject, AttachedObjects>();
-				Add(modelObject, repository);
-			}
-
-
-			public List<Shape> Shapes {
-				get { return shapes; }
-			}
-
-
-			public Dictionary<IModelObject, AttachedObjects> Children {
-				get { return children; }
-			}
-
-
-			public void Add(IModelObject modelObject, IRepository repository) {
-				DoAdd(this, modelObject, repository);
-			}
-
-
-			private void DoAdd(AttachedObjects attachedObjects, IModelObject modelObject, IRepository repository) {
-				attachedObjects.Shapes.AddRange(modelObject.Shapes);
-				foreach (IModelObject child in repository.GetModelObjects(modelObject))
-					attachedObjects.Children.Add(child, new AttachedObjects(child, repository));
-			}
-
-
-			private List<Shape> shapes;
-			private Dictionary<IModelObject, AttachedObjects> children;
-		}
 
 
 		private void DetachAndDeleteObjects(AttachedObjects attachedObjects, IRepository repository, bool deleteShapes) {
@@ -404,7 +368,7 @@ namespace Dataweb.NShape {
 
 		private void InsertAndAttachObjects(IModelObject modelObject, AttachedObjects attachedObjects, IRepository repository, bool insertShapes) {
 			// Insert model objects
-			if (UndeleteEntities(attachedObjects.Children.Keys))
+			if (CanUndeleteEntities(attachedObjects.Children.Keys))
 				repository.UndeleteModelObjects(attachedObjects.Children.Keys);
 			else repository.InsertModelObjects(attachedObjects.Children.Keys);
 			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children) {
@@ -422,6 +386,42 @@ namespace Dataweb.NShape {
 			}
 		}
 
+	}
+
+
+	public class AttachedObjects {
+
+		public AttachedObjects(IModelObject modelObject, IRepository repository) {
+			shapes = new List<Shape>();
+			children = new Dictionary<IModelObject, AttachedObjects>();
+			Add(modelObject, repository);
+		}
+
+
+		public List<Shape> Shapes {
+			get { return shapes; }
+		}
+
+
+		public Dictionary<IModelObject, AttachedObjects> Children {
+			get { return children; }
+		}
+
+
+		public void Add(IModelObject modelObject, IRepository repository) {
+			DoAdd(this, modelObject, repository);
+		}
+
+
+		private void DoAdd(AttachedObjects attachedObjects, IModelObject modelObject, IRepository repository) {
+			attachedObjects.Shapes.AddRange(modelObject.Shapes);
+			foreach (IModelObject child in repository.GetModelObjects(modelObject))
+				attachedObjects.Children.Add(child, new AttachedObjects(child, repository));
+		}
+
+
+		private List<Shape> shapes;
+		private Dictionary<IModelObject, AttachedObjects> children;
 	}
 	
 	
@@ -609,10 +609,10 @@ namespace Dataweb.NShape {
 			}
 			if (Repository != null) {
 				if (startIdx == 0) {
-					if (UndeleteEntity(Shapes[0])) Repository.UndeleteShape(Shapes[0], diagram);
+					if (CanUndeleteEntity(Shapes[0])) Repository.UndeleteShape(Shapes[0], diagram);
 					else Repository.InsertShape(Shapes[0], diagram);
 				} else {
-					if (UndeleteEntities(Shapes)) Repository.UndeleteShapes(Shapes, diagram);
+					if (CanUndeleteEntities(Shapes)) Repository.UndeleteShapes(Shapes, diagram);
 					else Repository.InsertShapes(Shapes, diagram);
 				}
 			}
@@ -632,7 +632,7 @@ namespace Dataweb.NShape {
 					foreach (IModelObject modelObject in ModelObjects)
 						modelsAndObjects.Add(modelObject, new AttachedObjects(modelObject, Repository));
 				}
-				if (UndeleteEntities(modelsAndObjects.Keys))
+				if (CanUndeleteEntities(modelsAndObjects.Keys))
 					Repository.UndeleteModelObjects(modelsAndObjects.Keys);
 				else Repository.InsertModelObjects(modelsAndObjects.Keys);
 				foreach (KeyValuePair<IModelObject, AttachedObjects> item in modelsAndObjects)
@@ -652,7 +652,7 @@ namespace Dataweb.NShape {
 
 
 		private void InsertAndAttachObjects(IModelObject modelObject, AttachedObjects attachedObjects, IRepository repository) {
-			if (UndeleteEntities(attachedObjects.Children.Keys))
+			if (CanUndeleteEntities(attachedObjects.Children.Keys))
 				repository.UndeleteModelObjects(attachedObjects.Children.Keys);
 			else repository.InsertModelObjects(attachedObjects.Children.Keys);
 			foreach (KeyValuePair<IModelObject, AttachedObjects> child in attachedObjects.Children) {
@@ -664,44 +664,6 @@ namespace Dataweb.NShape {
 				attachedObjects.Shapes[sIdx].ModelObject = modelObject;
 			repository.UpdateShapes(attachedObjects.Shapes);
 			repository.UpdateModelObject(modelObject);
-		}
-
-
-		protected struct AttachedObjects {
-
-			public AttachedObjects(IModelObject modelObject, IRepository repository) {
-				shapes = new List<Shape>();
-				children = new Dictionary<IModelObject, AttachedObjects>();
-				if (modelObject != null) Add(modelObject, repository);
-			}
-
-
-			public List<Shape> Shapes {
-				get { return shapes; }
-			}
-
-
-			public Dictionary<IModelObject, AttachedObjects> Children {
-				get { return children; }
-			}
-
-
-			public void Add(IModelObject modelObject, IRepository repository) {
-				DoAdd(this, modelObject, repository);
-			}
-
-
-			private void DoAdd(AttachedObjects attachedObjects, IModelObject modelObject, IRepository repository) {
-				if (modelObject != null) {
-					attachedObjects.Shapes.AddRange(modelObject.Shapes);
-					foreach (IModelObject child in repository.GetModelObjects(modelObject))
-						attachedObjects.Children.Add(child, new AttachedObjects(child, repository));
-				}
-			}
-
-
-			private List<Shape> shapes;
-			private Dictionary<IModelObject, AttachedObjects> children;
 		}
 
 
@@ -730,7 +692,7 @@ namespace Dataweb.NShape {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			this.diagram = diagram;
 			this.aggregationShape = aggregationShape;
-			this.diagramContainsAggregationShape = diagram.Shapes.Contains(aggregationShape);
+			this.aggregationShapeOwnedByDiagram = diagram.Shapes.Contains(aggregationShape);
 			this.shapes = new List<Shape>(shapes);
 			aggregationLayerIds = LayerIds.None;
 			for (int i = 0; i < this.shapes.Count; ++i)
@@ -740,17 +702,17 @@ namespace Dataweb.NShape {
 
 		protected void CreateShapeAggregation(bool maintainZOrders) {
 			// Add aggregation shape to diagram
-			if (!diagramContainsAggregationShape) {
+			if (!aggregationShapeOwnedByDiagram) {
 				diagram.Shapes.Add(aggregationShape);
 				diagram.AddShapeToLayers(aggregationShape, aggregationLayerIds);
 			}
 			// Insert aggregation shape to repository (if necessary)
 			if (Repository != null) {
-				if (!diagramContainsAggregationShape)
-					if (UndeleteEntity(aggregationShape))
+				if (!aggregationShapeOwnedByDiagram) {
+					if (CanUndeleteEntity(aggregationShape))
 						Repository.UndeleteShape(aggregationShape, diagram);
 					else Repository.InsertShape(aggregationShape, diagram);
-				else Repository.UpdateShape(aggregationShape);
+				}
 			}
 
 			// Remove shapes from diagram
@@ -766,6 +728,8 @@ namespace Dataweb.NShape {
 			if (Repository != null) {
 				foreach (Shape childShape in aggregationShape.Children)
 					Repository.UpdateShapeOwner(childShape, aggregationShape);
+				if (aggregationShapeOwnedByDiagram)
+					Repository.UpdateShape(aggregationShape);
 			}
 		}
 
@@ -779,13 +743,15 @@ namespace Dataweb.NShape {
 
 			// Move the shapes to their initial owner
 			aggregationShape.Children.RemoveRange(shapes);
-			if (!diagramContainsAggregationShape)
+			if (!aggregationShapeOwnedByDiagram)
+				// If the aggregation shape was not initialy part of the diagram, remove it.
 				diagram.Shapes.Remove(aggregationShape);
 			diagram.Shapes.AddRange(shapes);
 
 			// Delete shapes from repository
 			if (Repository != null) {
-				if (!diagramContainsAggregationShape)
+				// If the aggregation shape was not initialy part of the diagram, remove it.
+				if (!aggregationShapeOwnedByDiagram)
 					// Shape aggregations are deleted with all their children
 					Repository.DeleteShape(aggregationShape);
 				else Repository.UpdateShape(aggregationShape);
@@ -797,7 +763,8 @@ namespace Dataweb.NShape {
 		protected List<Shape> shapes;
 		protected LayerIds aggregationLayerIds;
 		protected Shape aggregationShape;
-		protected bool diagramContainsAggregationShape;
+		// Specifies if the aggreagtion shape initialy was owned by the diagram
+		protected bool aggregationShapeOwnedByDiagram;	
 	}
 
 
@@ -818,7 +785,7 @@ namespace Dataweb.NShape {
 			if (modifiedObjects == null) throw new ArgumentNullException("modifiedObjects");
 			Construct(propertyInfo);
 			this.modifiedObjects = new List<T>(modifiedObjects);
-			this.oldValues=new List<object>(oldValues);
+			this.oldValues = new List<object>(oldValues);
 			this.newValues = new List<object>(1);
 			this.newValues.Add(newValue);
 		}
@@ -848,8 +815,10 @@ namespace Dataweb.NShape {
 				// This check is necessary because if the value is a value that is exclusive-or'ed when set 
 				// (e.g. a FontStyle), the change would be undone when setting the value again
 				if (currValue == null && newValue != null
-					|| (currValue != null && !currValue.Equals(newValue)))
+					|| currValue != null && newValue == null
+					|| (currValue != null && !currValue.Equals(newValue))) {
 					propertyInfo.SetValue(modifiedObjects[i], newValue, null);
+				}
 			}
 		}
 
@@ -1155,14 +1124,12 @@ namespace Dataweb.NShape {
 		private void CreateLabelString() {
 			description = string.Empty;
 			if (commands.Count > 0) {
-				string newLine = commands.Count > 3 ? "\n" : "";
+				string newLine = commands.Count > 3 ? Environment.NewLine : string.Empty;
 				description = commands[0].Description;
 				int lastIdx = commands.Count - 1;
 				for (int i = 1; i <= lastIdx; ++i) {
-					if (i < lastIdx)
-						description += string.Format(", {0}{1}{2}", newLine, commands[i].Description.Substring(0, 1).ToLowerInvariant(), commands[i].Description.Substring(1));
-					else
-						description += string.Format(" and {0}{1}{2}", newLine, commands[i].Description.Substring(0, 1).ToLowerInvariant(), commands[i].Description.Substring(1));
+					description += (i < lastIdx) ? ", " : " and ";
+					description += string.Format("{0}{1}{2}", newLine, commands[i].Description.Substring(0, 1).ToLowerInvariant(), commands[i].Description.Substring(1));
 				}
 			}
 		}
@@ -1315,7 +1282,7 @@ namespace Dataweb.NShape {
 			// move shapes
 			int cnt = shapes.Count;
 			for (int i = 0; i < cnt; ++i)
-				shapes[i].MoveControlPointBy(ControlPointId.Reference, dX, dY, ResizeModifiers.None);
+				shapes[i].MoveBy(dX, dY);
 			// restore temporarily removed connections between selected shapes
 			if (connectionsBuffer != null) {
 				for (int i = 0; i < connectionsBuffer.Count; ++i)
@@ -1335,7 +1302,7 @@ namespace Dataweb.NShape {
 
 			// move shapes
 			for (int i = 0; i < shapes.Count; ++i)
-				shapes[i].MoveControlPointBy(ControlPointId.Reference, -dX, -dY, ResizeModifiers.None);
+				shapes[i].MoveBy(-dX, -dY);
 
 			// restore temporarily removed connections between selected shapes
 			if (connectionsBuffer != null) {
@@ -1668,10 +1635,9 @@ namespace Dataweb.NShape {
 
 		public override void Execute() {
 			foreach (Shape shape in shapes) {
-				if (rotateCenterX == int.MinValue && rotateCenterY == int.MinValue)
+				if (!Geometry.IsValid(rotateCenterX , rotateCenterY))
 					shape.Rotate(angle, shape.X, shape.Y);
-				else
-					shape.Rotate(angle, rotateCenterX, rotateCenterY);
+				else shape.Rotate(angle, rotateCenterX, rotateCenterY);
 			}
 			if (Repository != null) Repository.UpdateShapes(shapes);
 		}
@@ -1679,7 +1645,7 @@ namespace Dataweb.NShape {
 
 		public override void Revert() {
 			foreach (Shape shape in shapes) {
-				if (rotateCenterX == int.MinValue && rotateCenterY == int.MinValue)
+				if (!Geometry.IsValid(rotateCenterX, rotateCenterY))
 					shape.Rotate(-angle, shape.X, shape.Y);
 				else {
 					if (shape is ILinearShape) {
@@ -1691,8 +1657,7 @@ namespace Dataweb.NShape {
 							p = shape.GetControlPointPosition(id);
 							shape.MoveControlPointTo(id, p.X, p.Y, ResizeModifiers.None);
 						}
-					} else
-						shape.Rotate(-angle, rotateCenterX, rotateCenterY);
+					} else shape.Rotate(-angle, rotateCenterX, rotateCenterY);
 				}
 			}
 			if (Repository != null) Repository.UpdateShapes(shapes);
@@ -1706,8 +1671,8 @@ namespace Dataweb.NShape {
 
 		private int angle;
 		private List<Shape> shapes;
-		private int rotateCenterX = int.MinValue;
-		private int rotateCenterY = int.MinValue;
+		private int rotateCenterX = Geometry.InvalidPoint.X;
+		private int rotateCenterY = Geometry.InvalidPoint.Y;
 		private Dictionary<ILinearShape, List<Point>> unrotatedLinePoints = new Dictionary<ILinearShape, List<Point>>();
 	}
 
@@ -1812,10 +1777,10 @@ namespace Dataweb.NShape {
 	#endregion
 
 
-	#region SetShapeZOrderCommand class
-	public class LiftShapeCommandCommand : Command {
+	#region LiftShapeCommand class
+	public class LiftShapeCommand : Command {
 
-		public LiftShapeCommandCommand(Diagram diagram, IEnumerable<Shape> shapes, ZOrderDestination liftMode)
+		public LiftShapeCommand(Diagram diagram, IEnumerable<Shape> shapes, ZOrderDestination liftMode)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -1824,7 +1789,7 @@ namespace Dataweb.NShape {
 		}
 
 
-		public LiftShapeCommandCommand(Diagram diagram, Shape shape, ZOrderDestination liftMode)
+		public LiftShapeCommand(Diagram diagram, Shape shape, ZOrderDestination liftMode)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -2098,40 +2063,75 @@ namespace Dataweb.NShape {
 
 	#region ExchangeTemplateCommand class
 	public class ExchangeTemplateCommand : Command {
+		
 		public ExchangeTemplateCommand(Template originalTemplate, Template changedTemplate)
 			: base() {
 			if (originalTemplate == null) throw new ArgumentNullException("originalTemplate");
 			if (changedTemplate == null) throw new ArgumentNullException("changedTemplate");
 			this.description = string.Format("Change tempate '{0}'", originalTemplate.Name);
 			this.originalTemplate = originalTemplate;
-			this.oldTemplate = originalTemplate.Clone();
-			this.newTemplate = changedTemplate;
+			this.oldTemplate = new Template(originalTemplate.Name, originalTemplate.Shape.Clone());
+			this.oldTemplate.CopyFrom(originalTemplate);
+			this.newTemplate = new Template(changedTemplate.Name, changedTemplate.Shape.Clone());
+			this.newTemplate.CopyFrom(changedTemplate);
 		}
 
 
 		public override void Execute() {
+			DoExchangeTemplates(originalTemplate, oldTemplate, newTemplate);
+		}
+
+
+		public override void Revert() {
+			DoExchangeTemplates(originalTemplate, newTemplate, oldTemplate);
+		}
+
+
+		private void DoExchangeTemplates(Template originalTemplate, Template oldTemplate, Template newTemplate) {
+			if (Repository != null) {
+				// Delete current model mappings
+				Repository.DeleteModelMappings(originalTemplate.GetPropertyMappings());
+				//
+				// Delete current shape if the template's shape has changed
+				if (originalTemplate.Shape != newTemplate.Shape)
+					Repository.DeleteShape(originalTemplate.Shape);
+				else {
+					// ToDo: Optimize this (do not delete all child shapes)
+					if (originalTemplate.Shape.Children.Count > 0) {
+						Repository.DeleteShapes(originalTemplate.Shape.Children);
+						foreach (Shape childShape in originalTemplate.Shape.Children)
+							DisposeShape(childShape);
+					}
+				}
+				// Delete current model object if the new shape has no model object
+				if (originalTemplate.Shape.ModelObject != null && newTemplate.Shape.ModelObject == null)
+					Repository.DeleteModelObject(originalTemplate.Shape.ModelObject);
+			}
+
 			// ToDo: Handle exchanging shapes of different ShapeTypes
 			originalTemplate.CopyFrom(newTemplate);
 			if (Repository != null) {
 				// ToDo: Optimize deleting/updating/insterting property mappings
-				Repository.DeleteModelMappings(oldTemplate.GetPropertyMappings());
+				//
+				// Update template (includes inserting/undeleting/updating the shape and model object)
 				Repository.UpdateTemplate(originalTemplate);
-				Repository.InsertModelMappings(originalTemplate.GetPropertyMappings(), originalTemplate);
+				// Insert/undelete model mappings
+				foreach (IModelMapping modelMapping in originalTemplate.GetPropertyMappings()) {
+					if (CanUndeleteEntity(modelMapping))
+						Repository.UndeleteModelMapping(modelMapping, originalTemplate);
+					else Repository.InsertModelMapping(modelMapping, originalTemplate);
+				}
 			}
 			InvalidateTemplateShapes();
 		}
 
 
-		public override void Revert() {
-			// ToDo: Handle exchanging shapes of different ShapeTypes
-			originalTemplate.CopyFrom(oldTemplate);
-			if (Repository != null) {
-				// ToDo: Optimize deleting/updating/insterting property mappings
-				Repository.DeleteModelMappings(newTemplate.GetPropertyMappings());
-				Repository.UpdateTemplate(originalTemplate);
-				Repository.InsertModelMappings(originalTemplate.GetPropertyMappings(), originalTemplate);
+		private void DisposeShape(Shape shape) {
+			if (shape.Children.Count > 0) {
+				foreach (Shape childShape in shape.Children)
+					DisposeShape(childShape);
 			}
-			InvalidateTemplateShapes();
+			shape.Dispose();
 		}
 
 
@@ -2157,6 +2157,9 @@ namespace Dataweb.NShape {
 		private Template originalTemplate;
 		private Template oldTemplate;
 		private Template newTemplate;
+
+		IFillStyle oldFillStyle;
+		IFillStyle newFillStyle;
 
 		private List<ShapeConnectionInfo> shapeConnectionInfos = new List<ShapeConnectionInfo>();
 		#endregion
@@ -2188,9 +2191,6 @@ namespace Dataweb.NShape {
 			originalTemplate.Shape = null;
 			originalTemplate.CopyFrom(newTemplate);
 			originalTemplate.Shape = newTemplateShape;
-			if (Repository != null) 
-				Repository.ReplaceTemplateShape(originalTemplate, oldTemplateShape, newTemplateShape);
-
 			// exchange oldShapes with newShapes
 			int cnt = shapesFromTemplate.Count;
 			for (int i = 0; i < cnt; ++i)
@@ -2199,6 +2199,8 @@ namespace Dataweb.NShape {
 									shapesFromTemplate[i].newShape,
 									shapesFromTemplate[i].oldConnections,
 									shapesFromTemplate[i].newConnections);
+			if (Repository != null)
+				Repository.ReplaceTemplateShape(originalTemplate, oldTemplateShape, newTemplateShape);
 		}
 
 
@@ -2206,7 +2208,6 @@ namespace Dataweb.NShape {
 			originalTemplate.Shape = null;
 			originalTemplate.CopyFrom(oldTemplate);
 			originalTemplate.Shape = oldTemplateShape;
-			if (Repository != null) Repository.ReplaceTemplateShape(originalTemplate, newTemplateShape, oldTemplateShape);
 
 			// exchange old shape with new Shape
 			int cnt = shapesFromTemplate.Count;
@@ -2216,6 +2217,9 @@ namespace Dataweb.NShape {
 									shapesFromTemplate[i].oldShape,
 									shapesFromTemplate[i].newConnections,
 									shapesFromTemplate[i].oldConnections);
+
+			if (Repository != null) 
+				Repository.ReplaceTemplateShape(originalTemplate, newTemplateShape, oldTemplateShape);
 		}
 
 
@@ -2286,7 +2290,7 @@ namespace Dataweb.NShape {
 			oldShape.CopyFrom(newShape);
 			diagram.Shapes.Replace(oldShape, newShape);
 			if (Repository != null) {
-				if (UndeleteEntity(newShape))
+				if (CanUndeleteEntity(newShape))
 					Repository.UndeleteShape(newShape, diagram);
 				else Repository.InsertShape(newShape, diagram);
 				Repository.DeleteShape(oldShape);
@@ -2363,10 +2367,10 @@ namespace Dataweb.NShape {
 				template = new Template(templateName, templateShape);
 			}
 			if (Repository != null) {
-				if (UndeleteEntity(template))
+				if (CanUndeleteEntity(template))
 					Repository.UndeleteTemplate(template);
 				else Repository.InsertTemplate(template);
-				if (UndeleteEntities(template.GetPropertyMappings()))
+				if (CanUndeleteEntities(template.GetPropertyMappings()))
 					Repository.UndeleteModelMappings(template.GetPropertyMappings(), template);
 				else Repository.InsertModelMappings(template.GetPropertyMappings(), template);
 			}
@@ -2417,10 +2421,10 @@ namespace Dataweb.NShape {
 
 		public override void Revert() {
 			if (Repository != null) {
-				if (UndeleteEntity(template))
+				if (CanUndeleteEntity(template))
 					Repository.UndeleteTemplate(template);
 				else Repository.InsertTemplate(template);
-				if (UndeleteEntities(template.GetPropertyMappings()))
+				if (CanUndeleteEntities(template.GetPropertyMappings()))
 					Repository.UndeleteModelMappings(template.GetPropertyMappings(), template);
 				else Repository.InsertModelMappings(template.GetPropertyMappings(), template);
 			}
@@ -2428,7 +2432,7 @@ namespace Dataweb.NShape {
 
 
 		public override Permission RequiredPermission {
-			get { return Permission.ModifyData | Permission.Present; }
+			get { return Permission.Templates; }
 		}
 
 
@@ -2707,7 +2711,7 @@ namespace Dataweb.NShape {
 			this.layerIds = layerIds;
 			PrepareShape(shape, offsetX, offsetY, keepZOrder);
 			SetShape(shape, withModelObjects);
-			GetDescription(DescriptionType.Insert, shape, withModelObjects);
+			description = GetDescription(DescriptionType.Insert, shape, withModelObjects);
 		}
 
 
@@ -2716,7 +2720,7 @@ namespace Dataweb.NShape {
 			foreach (Shape shape in shapes)
 				PrepareShape(shape, offsetX, offsetY, keepZOrder);
 			SetShapes(shapes, withModelObjects);
-			GetDescription(DescriptionType.Insert, shapes, withModelObjects);
+			description = GetDescription(DescriptionType.Insert, shapes, withModelObjects);
 		}
 
 
@@ -2910,8 +2914,7 @@ namespace Dataweb.NShape {
 
 		public override void Execute() {
 			// store point position if not done yet
-			if (p == Geometry.InvalidPoint) 
-				p = shape.GetControlPointPosition(removedPointId);
+			if (!Geometry.IsValid(p)) p = shape.GetControlPointPosition(removedPointId);
 			shape.Invalidate();
 			((ILinearShape)shape).RemoveVertex(removedPointId);
 			shape.Invalidate();
@@ -2956,7 +2959,7 @@ namespace Dataweb.NShape {
 
 		public override void Execute() {
 			if (Repository != null) {
-				if (UndeleteEntity(design))
+				if (CanUndeleteEntity(design))
 					Repository.UndeleteDesign(design);
 				else Repository.InsertDesign(design);
 			}
@@ -2997,7 +3000,7 @@ namespace Dataweb.NShape {
 
 		public override void Revert() {
 			if (Repository != null) {
-				if (UndeleteEntity(design))
+				if (CanUndeleteEntity(design))
 					Repository.UndeleteDesign(design);
 				else Repository.InsertDesign(design);
 			}
@@ -3033,7 +3036,7 @@ namespace Dataweb.NShape {
 			Design d = design ?? Repository.GetDesign(null);
 			d.AddStyle(style);
 			if (Repository != null) {
-				if (UndeleteEntity(style))
+				if (CanUndeleteEntity(style))
 					Repository.UndeleteStyle(d, style);
 				Repository.InsertStyle(d, style);
 				Repository.UpdateDesign(d);
@@ -3090,7 +3093,7 @@ namespace Dataweb.NShape {
 			Design d = design ?? Repository.GetDesign(null);
 			d.AddStyle(style);
 			if (Repository != null) {
-				if (UndeleteEntity(style))
+				if (CanUndeleteEntity(style))
 					Repository.UndeleteStyle(d, style);
 				else Repository.InsertStyle(d, style);
 				Repository.UpdateDesign(d);
@@ -3225,6 +3228,7 @@ namespace Dataweb.NShape {
 				}
 				aggregationShape.MoveTo(r.X + (r.Width / 2), r.Y + (r.Height / 2));
 			}
+			aggregationShapeOwnedByDiagram = false;
 		}
 
 
@@ -3258,6 +3262,7 @@ namespace Dataweb.NShape {
 			: base(diagram, shapeGroup, (shapeGroup != null) ? shapeGroup.Children : null) {
 			if (!(shapeGroup is IShapeGroup)) throw new ArgumentException("Shape must support IShapeGroup.");
 			this.description = string.Format("Release {0} shapes from {1}'s aggregation", base.shapes.Count, base.aggregationShape.Type.Name);
+			aggregationShapeOwnedByDiagram = false;
 		}
 
 
@@ -3343,7 +3348,7 @@ namespace Dataweb.NShape {
 
 		public override void Execute() {
 			if (Repository != null) {
-				if (UndeleteEntity(diagram))
+				if (CanUndeleteEntity(diagram))
 					Repository.UndeleteDiagram(diagram);
 				else Repository.InsertDiagram(diagram);
 			}
@@ -3385,7 +3390,7 @@ namespace Dataweb.NShape {
 			if (Repository != null) {
 				if (diagram.Shapes.Count == 0)
 					diagram.Shapes.AddRange(shapes);
-				if (UndeleteEntity(diagram))
+				if (CanUndeleteEntity(diagram))
 					Repository.UndeleteDiagram(diagram);
 				else Repository.InsertDiagram(diagram);
 			}

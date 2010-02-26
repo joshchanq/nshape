@@ -49,6 +49,12 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Public] Properties
 
 		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
+
+		[Category("NShape")]
 		public ModelController ModelTreeController {
 			get { return modelTreeController; }
 			set {
@@ -98,6 +104,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			set { hideMenuItemsIfNotGranted = value; }
 		}
 
+
+		[Category("Behavior")]
+		public bool ShowDefaultContextMenu {
+			get { return showDefaultContextMenu; }
+			set { showDefaultContextMenu = value; }
+		}
+
 		#endregion
 
 
@@ -143,34 +156,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		public IEnumerable<MenuItemDef> GetMenuItemDefs() {
-			foreach (MenuItemDef action in modelTreeController.GetActions(selectedModelObjects))
+			foreach (MenuItemDef action in modelTreeController.GetMenuItemDefs(selectedModelObjects))
 				yield return action;
 			// ToDo: Add presenter's actions
 		}
 
 		#endregion
-
-
-		// ToDo: Move these methods into the ModelPresenter
-		//// Display event handler implementation
-		//private void Display_ShapesSelected(object sender, EventArgs e) {
-		//   bool first = true;
-		//   foreach (DiagramController diagramController in diagramSetController.DiagramControllers) {
-		//      foreach (Shape shape in diagramController.SelectedShapes) {
-		//         if (shape.ModelObject != null) {
-		//            SelectModelObject(shape.ModelObject, !first);
-		//            first = false;
-		//         }
-		//      }
-		//   }
-		//}
-
-
-		//private ModelObjectSelectedEventArgs GetModelObjectSelectedEventArgs() {
-		//   selectedEventArgs.SelectedModelObjects = selectedModelObjects;
-		//   selectedEventArgs.EnsureVisibility = false;
-		//   return selectedEventArgs;
-		//}
 
 
 		#region [Private] Methods
@@ -203,23 +194,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void FillTree() {
 			if (treeView == null) throw new NShapePropertyNotSetException(this, "TreeView");
 			if (modelTreeController == null) throw new NShapePropertyNotSetException(this, "ModelTreeController");
-
 			Debug.Assert(modelTreeController.Project.Repository.IsOpen);
-			//AddModelObjectNodes(modelTreeController.Project.Repository.GetChildren(null));
 
-			// ToDo: Remove this workaround as soon as the repository implements returning only Non-Template-Models when calling GetCildren().
-			// Build a dictionary of models assigned to templates
-			templateModels.Clear();
-			foreach (Template template in modelTreeController.Project.Repository.GetTemplates()) {
-				if (template.Shape.ModelObject != null) 
-					templateModels.Add(template.Shape.ModelObject, template);
-			}
-
-			// Add all model objects (that are not assigned to a template) to the tree
-			foreach (IModelObject modelObject in modelTreeController.Project.Repository.GetModelObjects(null)) {
-				if (templateModels.ContainsKey(modelObject)) continue;
+			// Add all root model objects to the tree
+			foreach (IModelObject modelObject in modelTreeController.Project.Repository.GetModelObjects(null))
 				AddModelObjectNode(modelObject);
-			}
 		}
 
 		
@@ -240,6 +219,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		private void AddModelObjectNode(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
+			foreach (Shape s in modelObject.Shapes) {
+				// do not add nodes of template shapes
+				// ToDo: Find a better way of determining wether the model belongs to a template.
+				if (s.Template == null) return;	
+			}
 			if (modelObject.Parent != null) {
 				TreeNode node = FindTreeNode(treeView.Nodes, modelObject.Parent);
 				if (node != null && (node.IsExpanded || node.Nodes.Count == 0))
@@ -351,10 +335,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void DeleteNodeImage(string imageKey) {
 			if (string.IsNullOrEmpty(imageKey)) throw new ArgumentException("imageKey");
-			int idx = imageList.Images.IndexOfKey(imageKey);
-			if (idx >= 0) {
-				imageList.Images[idx].Dispose();
-				imageList.Images.RemoveAt(idx);
+			if (imageList.Images.ContainsKey(imageKey)) {
+				Image img = imageList.Images[imageKey];
+				imageList.Images.RemoveByKey(imageKey);
+				img.Dispose();
+				img = null;
 			}
 		}
 
@@ -388,7 +373,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// check if all registered shapes are created from the same template
 			Template template = null;
 			foreach (Shape shape in modelObject.Shapes) {
-				if (template == null) {
+				if (template == null && shape.Template != null) {
 					template = shape.Template;
 					imageKey = template.Name;
 				} else if (template != shape.Template) {
@@ -458,7 +443,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			if (nodesCollection == null) throw new ArgumentNullException("nodesCollection");
 			if (template == null) throw new ArgumentNullException("template");
 			int dummyNodeIdx = nodesCollection.IndexOfKey(keyDummyNode);
-			for (int i = 0; i < nodesCollection.Count; ++i) {
+			for (int i = nodesCollection.Count - 1; i >= 0; --i) {
 				if (i == dummyNodeIdx) continue;
 				TreeNode node = nodesCollection[i];
 				Debug.Assert(node.Tag is IModelObject);
@@ -482,7 +467,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region [Private] Methods: (Un)Registerung for events
+		#region [Private] Methods: (Un)Registering for events
 
 		private void RegisterTreeViewEvents() {
 			treeView.AfterCollapse += treeView_AfterCollapse;
@@ -607,12 +592,14 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Private] Methods: ContextMenu event handler implementation
 
 		private void contextMenuStrip_Opening(object sender, CancelEventArgs e) {
-			if (modelTreeController != null && modelTreeController.Project != null) {
-				// Remove DummyItem
-				if (contextMenuStrip.Items.Contains(dummyItem))
-					contextMenuStrip.Items.Remove(dummyItem);
-				// Collect all actions provided by the display itself
-				WinFormHelpers.BuildContextMenu(contextMenuStrip, GetMenuItemDefs(), modelTreeController.Project, hideMenuItemsIfNotGranted);
+			if (showDefaultContextMenu && treeView != null && treeView.ContextMenuStrip != null) {
+				if (modelTreeController != null && modelTreeController.Project != null) {
+					// Remove DummyItem
+					if (contextMenuStrip.Items.Contains(dummyItem))
+						contextMenuStrip.Items.Remove(dummyItem);
+					// Collect all actions provided by the display itself
+					WinFormHelpers.BuildContextMenu(contextMenuStrip, GetMenuItemDefs(), modelTreeController.Project, hideMenuItemsIfNotGranted);
+				}
 			}
 		}
 
@@ -776,12 +763,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		private PropertyController propertyController;
 
 		private bool hideMenuItemsIfNotGranted = false;
+		private bool showDefaultContextMenu = true;
 		private System.Collections.Specialized.HybridDictionary dict = new System.Collections.Specialized.HybridDictionary();
 		private ReadOnlyList<IModelObject> selectedModelObjects = new ReadOnlyList<IModelObject>();
 
 		private List<IModelObject> modelObjectBuffer = new List<IModelObject>();
-		// ToDo: Remove this as soon as all repository implementations return only non-template ModelObjects
-		private Dictionary<IModelObject, Template> templateModels = new Dictionary<IModelObject,Template>();
 		
 		private ImageList imageList;
 		private IContainer components;

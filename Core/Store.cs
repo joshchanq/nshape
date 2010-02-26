@@ -25,7 +25,7 @@ namespace Dataweb.NShape.Advanced {
 	/// Provides access to NShape entities of one type for stores.
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public interface ICacheCollection<TEntity>: IEnumerable<EntityBucket<TEntity>> where TEntity: IEntity {
+	public interface ICacheCollection<TEntity> : IEnumerable<EntityBucket<TEntity>> where TEntity : IEntity {
 
 		bool Contains(object id);
 
@@ -79,7 +79,7 @@ namespace Dataweb.NShape.Advanced {
 		IStyle GetProjectStyle(object id);
 
 		Model GetModel();
-		
+
 		Template GetTemplate(object id);
 
 		Diagram GetDiagram(object id);
@@ -144,23 +144,27 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Stores cache data persistently in a data source.
 	/// </summary>
-	public abstract class Store: Component {
-
-		/// <summary>
-		/// Specifies the main version of the storage format.
-		/// </summary>
-		public abstract int Version { get; set; }
+	public abstract class Store : Component {
 
 		/// <summary>
 		/// Specifies the name of the project.
 		/// </summary>
+		[Browsable(false)]
 		public abstract string ProjectName { get; set; }
+
 
 		/// <summary>
 		/// Tests whether the project already exists in the data source.
 		/// </summary>
 		/// <returns></returns>
 		public abstract bool Exists();
+
+
+		/// <summary>
+		/// Reads the version of the project from the persistent store.
+		/// </summary>
+		public abstract void ReadVersion(IStoreCache cache);
+
 
 		/// <summary>
 		/// Creates a project store in the data source.
@@ -196,8 +200,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="parameters"></param>
 		public abstract void LoadProjects(IStoreCache cache, IEntityType entityType, params object[] parameters);
 
-		public abstract void LoadModel(IStoreCache cache, object projectId);		
-		
+		public abstract void LoadModel(IStoreCache cache, object projectId);
+
 		/// <summary>
 		/// Loads general designs or a project design.
 		/// </summary>
@@ -216,15 +220,20 @@ namespace Dataweb.NShape.Advanced {
 		public abstract void LoadChildShapes(IStoreCache cache, object parentShapeId);
 
 		public abstract void LoadTemplateModelObjects(IStoreCache cache, object templateId);
-		
+
 		public abstract void LoadModelModelObjects(IStoreCache cache, object modelId);
-		
+
 		public abstract void LoadChildModelObjects(IStoreCache cache, object parentModelObjectId);
 
 		/// <summary>
 		/// Commits all modifications in the cache to the data store.
 		/// </summary>
 		public abstract void SaveChanges(IStoreCache storeCache);
+
+		/// <summary>
+		/// Specifies the main version of the storage format.
+		/// </summary>
+		protected internal abstract int Version { get; set; }
 
 	}
 

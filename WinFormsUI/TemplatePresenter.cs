@@ -118,6 +118,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Public] Properties
 
 		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
+		[Category("NShape")]
 		public TemplateController TemplateController {
 			get { return templateController; }
 			set {
@@ -497,6 +504,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		// PropertyMapping Grid
 		private void InitPropertyColumn(DataGridViewComboBoxColumn column, List<PropertyInfo> propertyInfos){
+			column.Items.Clear();
 			// Add all mappable properties
 			for (int i = 0; i < propertyInfos.Count; ++i) {
 				if (GetPropertyId(propertyInfos[i]).HasValue)
@@ -510,7 +518,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <summary>
 		/// Creates a row in the property mapping grid for each existing model mapping of the given template
 		/// </summary>
-		public void PopulatePropertyMappingGrid() {
+		private void PopulatePropertyMappingGrid() {
 			propertyMappingGridPopulating = true;
 			// Add all (writable) shape and model properties with a PropertyIdAttribute set
 			InitPropertyColumn(shapePropertyColumn, shapePropertyInfos);
@@ -697,11 +705,11 @@ namespace Dataweb.NShape.WinFormsUI {
 			valueMappingGrid.Columns.Clear();
 			// Column for range start value
 			valueMappingGrid.Columns.Add(mappingPropertyNameCol, titleRangeValue);
-			if (modelMapping.MappingType == StyleModelMappingType.IntegerStyle)
+			if (modelMapping.Type == StyleModelMapping.MappingType.IntegerStyle)
 				valueMappingGrid.Columns[mappingPropertyNameCol].ValueType = typeof(int);
-			else if (modelMapping.MappingType == StyleModelMappingType.FloatStyle)
+			else if (modelMapping.Type == StyleModelMapping.MappingType.FloatStyle)
 				valueMappingGrid.Columns[mappingPropertyNameCol].ValueType = typeof(float);
-			else throw new NShapeUnsupportedValueException(modelMapping.MappingType);
+			else throw new NShapeUnsupportedValueException(modelMapping.Type);
 			valueMappingGrid.Columns[mappingPropertyNameCol].ReadOnly = false;
 			valueMappingGrid.Columns[mappingPropertyNameCol].Width = valueMappingGrid.Width / 2;
 
@@ -729,17 +737,17 @@ namespace Dataweb.NShape.WinFormsUI {
 			Debug.Assert(modelMapping != null);
 			valueMappingGrid.Rows.Clear();
 			valueMappingGrid.AllowUserToAddRows = true;
-			if (modelMapping.MappingType == StyleModelMappingType.IntegerStyle) {
+			if (modelMapping.Type == StyleModelMapping.MappingType.IntegerStyle) {
 				foreach (object val in modelMapping.ValueRanges) {
 					IStyle style = modelMapping[(int)val];
 					valueMappingGrid.Rows.Add(new object[] { (int)val, style.Title });
 				}
-			} else if (modelMapping.MappingType == StyleModelMappingType.FloatStyle) {
+			} else if (modelMapping.Type == StyleModelMapping.MappingType.FloatStyle) {
 				foreach (object val in modelMapping.ValueRanges) {
 					IStyle style = modelMapping[(float)val];
 					valueMappingGrid.Rows.Add(new object[] { (float)val, style.Title });
 				}
-			} else throw new NShapeUnsupportedValueException(modelMapping.MappingType);
+			} else throw new NShapeUnsupportedValueException(modelMapping.Type);
 			// Add an empty row for creating new range/style mappings
 			valueMappingGrid.Rows.Add();
 		}
@@ -786,18 +794,18 @@ namespace Dataweb.NShape.WinFormsUI {
 			// Check if the format string is valid
 			try {
 				string tstString;
-				if (formatMapping.MappingType == FormatModelMappingType.FloatString)
+				if (formatMapping.Type == FormatModelMapping.MappingType.FloatString)
 					tstString = string.Format(formatString, 0f);
-				else if (formatMapping.MappingType == FormatModelMappingType.IntegerString)
+				else if (formatMapping.Type == FormatModelMapping.MappingType.IntegerString)
 					tstString = string.Format(formatString, 0);
-				else if (formatMapping.MappingType == FormatModelMappingType.StringString)
+				else if (formatMapping.Type == FormatModelMapping.MappingType.StringString)
 					tstString = string.Format(formatString, " ");
-				else throw new NShapeUnsupportedValueException(formatMapping.MappingType);
+				else throw new NShapeUnsupportedValueException(formatMapping.Type);
 				// Set ModelMapping
 				formatMapping.Format = formatString;
 				templateController.SetModelMapping(formatMapping);
 			} catch (Exception ex) {
-				MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -833,11 +841,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 				// if all required values were found, create a new mapping range
 				if (rangeValue != null && style != null) {
-					if (styleMapping.MappingType == StyleModelMappingType.IntegerStyle)
+					if (styleMapping.Type == StyleModelMapping.MappingType.IntegerStyle)
 						styleMapping.AddValueRange((int)rangeValue, style);
-					else if (styleMapping.MappingType == StyleModelMappingType.IntegerStyle)
+					else if (styleMapping.Type == StyleModelMapping.MappingType.FloatStyle)
 						styleMapping.AddValueRange((float)rangeValue, style);
-					else throw new NShapeUnsupportedValueException(styleMapping.MappingType);
+					else throw new NShapeUnsupportedValueException(styleMapping.Type);
 				}
 			}
 			// Set ModelMapping
@@ -1107,6 +1115,21 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void propertyController_PropertyChanged(object sender, PropertyControllerPropertyChangedEventArgs e) {
 			templateModified = true;
 			templateController.NotifyTemplateShapeChanged();
+			previewPanel.Invalidate();
+		}
+
+
+		private void dataGridView_Resize(object sender, EventArgs e) {
+			if (sender is DataGridView) {
+				DataGridView grid = (DataGridView)sender;
+				int cnt = grid.Columns.Count;
+				if (cnt > 0) {
+					int colWidth = (grid.ClientRectangle.Width / cnt) - 4;
+					for (int i = 0; i < cnt; ++i)
+						grid.Columns[i].Width = colWidth;
+					grid.Invalidate();
+				}
+			}
 		}
 
 
@@ -1166,7 +1189,6 @@ namespace Dataweb.NShape.WinFormsUI {
 				else Debug.Fail(string.Format("Unexpected '{0}' type '{1}'", typeof(IModelMapping).Name, modelMapping.GetType().Name));
 			}
 		}
-
 
 		#endregion
 
@@ -1244,25 +1266,25 @@ namespace Dataweb.NShape.WinFormsUI {
 			switch (modelPropType) {
 				case MappedPropertyType.Float:
 					switch (shapePropType) {
-						case MappedPropertyType.Float: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMappingType.FloatFloat); break;
-						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMappingType.FloatInteger); break;
-						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMappingType.FloatString); break;
-						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMappingType.FloatStyle); break;
+						case MappedPropertyType.Float: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.FloatFloat); break;
+						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.FloatInteger); break;
+						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.FloatString); break;
+						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMapping.MappingType.FloatStyle); break;
 						default: throw new NotSupportedException("Property mappings from '{0}' to {1} are not supported.");
 					}
 					break;
 				case MappedPropertyType.Int:
 					switch (shapePropType) {
-						case MappedPropertyType.Float: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMappingType.IntegerFloat); break;
-						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMappingType.IntegerInteger); break;
-						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMappingType.IntegerString); break;
-						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMappingType.IntegerStyle); break;
+						case MappedPropertyType.Float: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.IntegerFloat); break;
+						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.IntegerInteger); break;
+						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.IntegerString); break;
+						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMapping.MappingType.IntegerStyle); break;
 						default: throw new NotSupportedException("Property mappings from '{0}' to {1} are not supported.");
 					}
 					break;
 				case MappedPropertyType.String:
 					if (shapePropType == MappedPropertyType.String)
-						result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMappingType.StringString);
+						result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.StringString);
 					else throw new NotSupportedException("Property mappings from '{0}' to {1} are not supported.");
 					break;
 				default: throw new NotSupportedException();

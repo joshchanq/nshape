@@ -24,7 +24,6 @@ namespace Dataweb.NShape.Designer {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DisplaySettingsForm));
 			this.snapToGridCheckBox = new System.Windows.Forms.CheckBox();
 			this.gridSizeUpDown = new System.Windows.Forms.NumericUpDown();
 			this.snapDistanceUpDown = new System.Windows.Forms.NumericUpDown();
@@ -41,11 +40,15 @@ namespace Dataweb.NShape.Designer {
 			this.resizePointCombo = new System.Windows.Forms.ComboBox();
 			this.label5 = new System.Windows.Forms.Label();
 			this.label4 = new System.Windows.Forms.Label();
+			this.groupBox3 = new System.Windows.Forms.GroupBox();
+			this.showDynamicContextMenu = new System.Windows.Forms.CheckBox();
+			this.hideDeniedMenuItemsCheckBox = new System.Windows.Forms.CheckBox();
 			((System.ComponentModel.ISupportInitialize)(this.gridSizeUpDown)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.snapDistanceUpDown)).BeginInit();
 			this.groupBox1.SuspendLayout();
 			this.groupBox2.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pointSizeUpDown)).BeginInit();
+			this.groupBox3.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// snapToGridCheckBox
@@ -95,7 +98,7 @@ namespace Dataweb.NShape.Designer {
 			// showGridCheckBox
 			// 
 			this.showGridCheckBox.AutoSize = true;
-			this.showGridCheckBox.Location = new System.Drawing.Point(6, 19);
+			this.showGridCheckBox.Location = new System.Drawing.Point(6, 18);
 			this.showGridCheckBox.Name = "showGridCheckBox";
 			this.showGridCheckBox.Size = new System.Drawing.Size(75, 17);
 			this.showGridCheckBox.TabIndex = 13;
@@ -105,7 +108,7 @@ namespace Dataweb.NShape.Designer {
 			// cancelButton
 			// 
 			this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cancelButton.Location = new System.Drawing.Point(209, 202);
+			this.cancelButton.Location = new System.Drawing.Point(209, 322);
 			this.cancelButton.Name = "cancelButton";
 			this.cancelButton.Size = new System.Drawing.Size(75, 23);
 			this.cancelButton.TabIndex = 14;
@@ -116,7 +119,7 @@ namespace Dataweb.NShape.Designer {
 			// okButton
 			// 
 			this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.okButton.Location = new System.Drawing.Point(128, 202);
+			this.okButton.Location = new System.Drawing.Point(128, 322);
 			this.okButton.Name = "okButton";
 			this.okButton.Size = new System.Drawing.Size(75, 23);
 			this.okButton.TabIndex = 15;
@@ -143,9 +146,9 @@ namespace Dataweb.NShape.Designer {
 			this.groupBox1.Controls.Add(this.snapDistanceUpDown);
 			this.groupBox1.Controls.Add(this.gridSizeUpDown);
 			this.groupBox1.Controls.Add(this.snapToGridCheckBox);
-			this.groupBox1.Location = new System.Drawing.Point(11, 12);
+			this.groupBox1.Location = new System.Drawing.Point(12, 12);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(272, 72);
+			this.groupBox1.Size = new System.Drawing.Size(271, 72);
 			this.groupBox1.TabIndex = 17;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Grid Settings";
@@ -208,19 +211,54 @@ namespace Dataweb.NShape.Designer {
 			this.label4.TabIndex = 17;
 			this.label4.Text = "Connection Point Shape";
 			// 
+			// groupBox3
+			// 
+			this.groupBox3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBox3.Controls.Add(this.showDynamicContextMenu);
+			this.groupBox3.Controls.Add(this.hideDeniedMenuItemsCheckBox);
+			this.groupBox3.Location = new System.Drawing.Point(12, 196);
+			this.groupBox3.Name = "groupBox3";
+			this.groupBox3.Size = new System.Drawing.Size(271, 100);
+			this.groupBox3.TabIndex = 19;
+			this.groupBox3.TabStop = false;
+			this.groupBox3.Text = "Permissions";
+			// 
+			// showDynamicContextMenu
+			// 
+			this.showDynamicContextMenu.AutoSize = true;
+			this.showDynamicContextMenu.Location = new System.Drawing.Point(6, 55);
+			this.showDynamicContextMenu.Name = "showDynamicContextMenu";
+			this.showDynamicContextMenu.Size = new System.Drawing.Size(167, 17);
+			this.showDynamicContextMenu.TabIndex = 1;
+			this.showDynamicContextMenu.Text = "Show NShape context menus";
+			this.showDynamicContextMenu.UseVisualStyleBackColor = true;
+			// 
+			// hideDeniedMenuItemsCheckBox
+			// 
+			this.hideDeniedMenuItemsCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
+			this.hideDeniedMenuItemsCheckBox.Location = new System.Drawing.Point(6, 19);
+			this.hideDeniedMenuItemsCheckBox.Name = "hideDeniedMenuItemsCheckBox";
+			this.hideDeniedMenuItemsCheckBox.Size = new System.Drawing.Size(259, 30);
+			this.hideDeniedMenuItemsCheckBox.TabIndex = 0;
+			this.hideDeniedMenuItemsCheckBox.Text = "Hide menu items that are not allowed due to insufficent permissions.";
+			this.hideDeniedMenuItemsCheckBox.UseVisualStyleBackColor = true;
+			// 
 			// DisplaySettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
-			this.ClientSize = new System.Drawing.Size(295, 237);
+			this.ClientSize = new System.Drawing.Size(295, 357);
+			this.Controls.Add(this.groupBox3);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
 			this.Controls.Add(this.okButton);
 			this.Controls.Add(this.cancelButton);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "DisplaySettingsForm";
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Display Settings";
 			((System.ComponentModel.ISupportInitialize)(this.gridSizeUpDown)).EndInit();
@@ -230,6 +268,8 @@ namespace Dataweb.NShape.Designer {
 			this.groupBox2.ResumeLayout(false);
 			this.groupBox2.PerformLayout();
 			((System.ComponentModel.ISupportInitialize)(this.pointSizeUpDown)).EndInit();
+			this.groupBox3.ResumeLayout(false);
+			this.groupBox3.PerformLayout();
 			this.ResumeLayout(false);
 
 		}
@@ -252,5 +292,8 @@ namespace Dataweb.NShape.Designer {
 		private System.Windows.Forms.NumericUpDown pointSizeUpDown;
 		private System.Windows.Forms.ComboBox connectionPointCombo;
 		private System.Windows.Forms.ComboBox resizePointCombo;
+		private System.Windows.Forms.GroupBox groupBox3;
+		private System.Windows.Forms.CheckBox showDynamicContextMenu;
+		private System.Windows.Forms.CheckBox hideDeniedMenuItemsCheckBox;
 	}
 }

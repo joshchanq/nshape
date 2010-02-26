@@ -36,6 +36,13 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { return base.ProductVersion; }
+		}
+
+
+		[Category("NShape")]
 		public ToolSetController ToolSetController {
 			get { return toolSetController; }
 			set {
@@ -43,6 +50,16 @@ namespace Dataweb.NShape.WinFormsUI {
 				toolSetController = value;
 				if (toolSetController != null) RegisterToolBoxEventHandlers();
 			}
+		}
+
+
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
+		[Category("Behavior")]
+		public bool HideDeniedMenuItems {
+			get { return hideMenuItemsIfNotGranted; }
+			set { hideMenuItemsIfNotGranted = value; }
 		}
 
 
@@ -65,6 +82,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			button.DoubleClickEnabled = true;
 			return button;
 		}
+
 
 		#region (Un)Registering for events
 
@@ -179,5 +197,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private ToolSetController toolSetController;
 		private PropertyController propertyController;
+		private bool hideMenuItemsIfNotGranted = false;
 	}
 }

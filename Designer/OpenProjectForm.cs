@@ -27,8 +27,13 @@ namespace Dataweb.NShape.Designer {
 		private const string fileFilterAllRepositories = "XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
 
 
-		public OpenProjectForm(IEnumerable<string> lastUsedRepositories) {
+		public OpenProjectForm(Form owner, IEnumerable<string> lastUsedRepositories) {
+			if (lastUsedRepositories == null) throw new ArgumentNullException("lastUsedRepositories");
 			InitializeComponent();
+			if (owner != null) {
+				Owner = owner;
+				Icon = Owner.Icon;
+			}
 
 			listBox1.Items.Clear();
 			foreach (string repository in lastUsedRepositories) {
@@ -37,6 +42,10 @@ namespace Dataweb.NShape.Designer {
 			newProjectRadioBtn.Checked = (listBox1.Items.Count == 0);
 			openRecentProjectRadioBtn.Checked = (listBox1.Items.Count > 0);
 			openRecentProjectRadioBtn.Enabled = (listBox1.Items.Count > 0);
+		}
+
+
+		public OpenProjectForm(IEnumerable<string> lastUsedRepositories) {
 		}
 
 
@@ -92,7 +101,7 @@ namespace Dataweb.NShape.Designer {
 			newProjectRadioBtn.Checked = true;
 
 			saveFileDialog.Filter = fileFilterAllRepositories;
-			saveFileDialog.FileName = "";
+			saveFileDialog.FileName = string.Empty;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK)
 				fileNameTextBox.Text = saveFileDialog.FileName;
 		}
@@ -107,7 +116,7 @@ namespace Dataweb.NShape.Designer {
 			openProjectRadioBtn.Checked = true;
 
 			openFileDialog.Filter = fileFilterAllRepositories;
-			openFileDialog.FileName = "";
+			openFileDialog.FileName = string.Empty;
 			if (openFileDialog.ShowDialog() == DialogResult.OK)
 				existingFileNameTextBox.Text = openFileDialog.FileName;
 		}

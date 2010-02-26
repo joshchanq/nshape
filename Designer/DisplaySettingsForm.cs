@@ -22,9 +22,18 @@ using Dataweb.NShape.Controllers;
 namespace Dataweb.NShape.Designer {
 
 	public partial class DisplaySettingsForm : Form {
-		public DisplaySettingsForm() {
-			InitializeComponent();
 
+		public DisplaySettingsForm()
+			: this(null) {
+		}
+
+
+		public DisplaySettingsForm(Form owner) {
+			InitializeComponent();
+			if (owner != null) {
+				Owner = owner;
+				Icon = Owner.Icon;
+			}
 			resizePointCombo.Items.Clear();
 			connectionPointCombo.Items.Clear();
 			foreach (ControlPointShape ptShape in Enum.GetValues(typeof(ControlPointShape))) {
@@ -73,6 +82,18 @@ namespace Dataweb.NShape.Designer {
 		public int ControlPointSize {
 			get { return Convert.ToInt32(pointSizeUpDown.Value); }
 			set { pointSizeUpDown.Value = value; }
+		}
+
+
+		public bool HideDeniedMenuItems {
+			get { return hideDeniedMenuItemsCheckBox.Checked;}
+			set { hideDeniedMenuItemsCheckBox.Checked = value; }
+		}
+
+
+		public bool ShowDefaultContextMenu {
+			get { return showDynamicContextMenu.Checked; }
+			set { showDynamicContextMenu.Checked = value; }
 		}
 
 

@@ -23,7 +23,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(StringInputDialog));
 			this.okButton = new System.Windows.Forms.Button();
 			this.nextButton = new System.Windows.Forms.Button();
 			this.promptLabel = new System.Windows.Forms.Label();
@@ -39,7 +38,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.okButton.TabIndex = 2;
 			this.okButton.Text = "OK";
 			this.okButton.UseVisualStyleBackColor = true;
-			this.okButton.Click += this.okButton_Click;
 			// 
 			// nextButton
 			// 
@@ -50,7 +48,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.nextButton.TabIndex = 1;
 			this.nextButton.Text = "Cancel";
 			this.nextButton.UseVisualStyleBackColor = true;
-			this.nextButton.Click += this.nextButton_Click;
 			// 
 			// promptLabel
 			// 
@@ -68,7 +65,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.resultTextBox.Name = "resultTextBox";
 			this.resultTextBox.Size = new System.Drawing.Size(275, 20);
 			this.resultTextBox.TabIndex = 0;
-			this.resultTextBox.KeyUp += this.resultTextBox_KeyUp;
 			// 
 			// StringInputDialog
 			// 
@@ -80,9 +76,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.Controls.Add(this.nextButton);
 			this.Controls.Add(this.okButton);
 			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-			this.Name = "TextInputDialog";
+			this.Name = "StringInputDialog";
 			this.ShowInTaskbar = false;
+			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "TextInputDialog";
 			this.TopMost = true;

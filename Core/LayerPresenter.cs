@@ -22,121 +22,14 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
-	public enum LayerItem {
-		Name,
-		Visibility,
-		ActiveState,
-		MinZoom,
-		MaxZoom,
-		None
-	}
-	
-	
-	public class LayerMouseEventArgs : MouseEventArgsDg {
-
-		public LayerMouseEventArgs(Layer layer, LayerItem item, 
-			MouseEventType eventType, MouseButtonsDg buttons, int clickCount, int wheelDelta, 
-			Point position, KeysDg modifiers)
-			: base(eventType, buttons, clickCount, wheelDelta, position, modifiers) {
-			this.layer = layer;
-			this.item = item;
-		}
-		
-		
-		public LayerMouseEventArgs(Layer layer, LayerItem item, MouseEventArgsDg mouseEventArgs)
-			: this(layer, item, mouseEventArgs.EventType, mouseEventArgs.Buttons, mouseEventArgs.Clicks, mouseEventArgs.WheelDelta, mouseEventArgs.Position, mouseEventArgs.Modifiers) {
-			if (layer == null) throw new ArgumentNullException("layer");
-			this.layer = layer;
-			this.item = item;
-		}
-
-
-		public Layer Layer {
-			get { return layer; }
-			protected internal set { layer = value; }
-		}
-
-
-		public LayerItem Item {
-			get { return item; }
-			protected internal set { item = value; }
-		}
-
-
-		protected internal LayerMouseEventArgs()
-			: base() {
-			layer = null;
-			item = LayerItem.None;
-		}
-
-		
-		protected internal void SetMouseEvent(MouseEventType eventType, MouseButtonsDg buttons, 
-			int clickCount, int wheelDelta, Point position, KeysDg modifiers){
-			this.eventType = eventType;
-			this.buttons = buttons;
-			this.clicks = clickCount;
-			this.modifiers = modifiers;
-			this.position = position;
-			this.wheelDelta = wheelDelta;
-		}
-
-
-		private Layer layer;
-		private LayerItem item;
-	}
-
-
-	public interface ILayerView {
-
-		#region Events
-
-		event EventHandler<LayersEventArgs> SelectedLayerChanged;
-
-		event EventHandler<LayerRenamedEventArgs> LayerRenamed;
-
-		event EventHandler<LayerZoomThresholdChangedEventArgs> LayerUpperZoomThresholdChanged;
-
-		event EventHandler<LayerZoomThresholdChangedEventArgs> LayerLowerZoomThresholdChanged;
-
-		event EventHandler<LayerMouseEventArgs> LayerViewMouseDown;
-
-		event EventHandler<LayerMouseEventArgs> LayerViewMouseMove;
-
-		event EventHandler<LayerMouseEventArgs> LayerViewMouseUp;
-
-		#endregion
-
-
-		#region Methods
-
-		void Clear();
-
-		void BeginUpdate();
-
-		void EndUpdate();
-
-		void AddLayer(Layer layer, bool isActive, bool isVisible);
-
-		void RemoveLayer(Layer layer);
-
-		void RefreshLayer(Layer layer, bool isActive, bool isVisible);
-
-		void BeginEditLayerName(Layer layer);
-
-		void BeginEditLayerMinZoomBound(Layer layer);
-
-		void BeginEditLayerMaxZoomBound(Layer layer);
-
-		void Invalidate();
-
-		void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> contextMenuActions, Project project);
-
-		#endregion
-	}
-
-
 	[ToolboxItem(true)]
+	[ToolboxBitmap("LayerPresenter.bmp")]
 	public class LayerPresenter : Component {
+
+		public LayerPresenter()
+			: base() {
+		}
+
 
 		#region [Public] Events
 
@@ -146,6 +39,12 @@ namespace Dataweb.NShape.Controllers {
 
 
 		#region [Public] Properties
+
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
 
 		[Category("NShape")]
 		public LayerController LayerController {
@@ -182,6 +81,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		[Category("NShape")]
 		public ILayerView LayerView {
 			get { return layerView; }
 			set {
@@ -200,6 +100,16 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
+		[Category("Behavior")]
+		public bool HideDeniedMenuItems {
+			get { return hideMenuItemsIfNotGranted; }
+			set { hideMenuItemsIfNotGranted = value; }
+		}
+
+
 		[Browsable(false)]
 		public IReadOnlyCollection<Layer> SelectedLayers {
 			get { return selectedLayers; }
@@ -210,14 +120,14 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods (protected)
 
-		protected IEnumerable<MenuItemDef> GetActions() {
+		protected IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			if (layerController == null || diagramPresenter == null)
 				yield break;
 
 			string pluralPostFix = (selectedLayers.Count > 1) ? "s" : string.Empty;
 
 			bool separatorNeeded = false;
-			foreach (MenuItemDef controllerAction in LayerController.GetActions(diagramPresenter.Diagram, selectedLayers)) {
+			foreach (MenuItemDef controllerAction in LayerController.GetMenuItemDefs(diagramPresenter.Diagram, selectedLayers)) {
 				if (!separatorNeeded) separatorNeeded = true;
 				yield return controllerAction;
 			}
@@ -491,7 +401,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		void diagramPresenter_DiagramChanged(object sender, EventArgs e) {
+		private void diagramPresenter_DiagramChanged(object sender, EventArgs e) {
 			if (layerView != null && DiagramPresenter.Diagram != null)
 				AddLayerItemsToLayerView(diagramPresenter.Diagram.Layers);
 		}
@@ -545,7 +455,7 @@ namespace Dataweb.NShape.Controllers {
 					break;
 
 				case MouseButtonsDg.Right:
-					layerView.OpenContextMenu(e.Position.X, e.Position.Y, GetActions(), LayerController.DiagramSetController.Project);
+					layerView.OpenContextMenu(e.Position.X, e.Position.Y, GetMenuItemDefs(), LayerController.DiagramSetController.Project);
 					break;
 			}
 		}
@@ -574,10 +484,125 @@ namespace Dataweb.NShape.Controllers {
 		private IDiagramPresenter diagramPresenter;
 		private ILayerView layerView;
 		private ReadOnlyList<Layer> selectedLayers = new ReadOnlyList<Layer>();
+		private bool hideMenuItemsIfNotGranted = false;
 
 		private LayerEventArgs layerEventArgs = new LayerEventArgs();
 		private LayersEventArgs layersEventArgs = new LayersEventArgs();
 
 		#endregion
 	}
+
+
+	public interface ILayerView {
+
+		#region Events
+
+		event EventHandler<LayersEventArgs> SelectedLayerChanged;
+
+		event EventHandler<LayerRenamedEventArgs> LayerRenamed;
+
+		event EventHandler<LayerZoomThresholdChangedEventArgs> LayerUpperZoomThresholdChanged;
+
+		event EventHandler<LayerZoomThresholdChangedEventArgs> LayerLowerZoomThresholdChanged;
+
+		event EventHandler<LayerMouseEventArgs> LayerViewMouseDown;
+
+		event EventHandler<LayerMouseEventArgs> LayerViewMouseMove;
+
+		event EventHandler<LayerMouseEventArgs> LayerViewMouseUp;
+
+		#endregion
+
+
+		#region Methods
+
+		void Clear();
+
+		void BeginUpdate();
+
+		void EndUpdate();
+
+		void AddLayer(Layer layer, bool isActive, bool isVisible);
+
+		void RemoveLayer(Layer layer);
+
+		void RefreshLayer(Layer layer, bool isActive, bool isVisible);
+
+		void BeginEditLayerName(Layer layer);
+
+		void BeginEditLayerMinZoomBound(Layer layer);
+
+		void BeginEditLayerMaxZoomBound(Layer layer);
+
+		void Invalidate();
+
+		void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> contextMenuActions, Project project);
+
+		#endregion
+	}
+
+
+	public enum LayerItem {
+		Name,
+		Visibility,
+		ActiveState,
+		MinZoom,
+		MaxZoom,
+		None
+	}
+	
+	
+	public class LayerMouseEventArgs : MouseEventArgsDg {
+
+		public LayerMouseEventArgs(Layer layer, LayerItem item, 
+			MouseEventType eventType, MouseButtonsDg buttons, int clickCount, int wheelDelta, 
+			Point position, KeysDg modifiers)
+			: base(eventType, buttons, clickCount, wheelDelta, position, modifiers) {
+			this.layer = layer;
+			this.item = item;
+		}
+		
+		
+		public LayerMouseEventArgs(Layer layer, LayerItem item, MouseEventArgsDg mouseEventArgs)
+			: this(layer, item, mouseEventArgs.EventType, mouseEventArgs.Buttons, mouseEventArgs.Clicks, mouseEventArgs.WheelDelta, mouseEventArgs.Position, mouseEventArgs.Modifiers) {
+			if (layer == null) throw new ArgumentNullException("layer");
+			this.layer = layer;
+			this.item = item;
+		}
+
+
+		public Layer Layer {
+			get { return layer; }
+			protected internal set { layer = value; }
+		}
+
+
+		public LayerItem Item {
+			get { return item; }
+			protected internal set { item = value; }
+		}
+
+
+		protected internal LayerMouseEventArgs()
+			: base() {
+			layer = null;
+			item = LayerItem.None;
+		}
+
+		
+		protected internal void SetMouseEvent(MouseEventType eventType, MouseButtonsDg buttons, 
+			int clickCount, int wheelDelta, Point position, KeysDg modifiers){
+			this.eventType = eventType;
+			this.buttons = buttons;
+			this.clicks = clickCount;
+			this.modifiers = modifiers;
+			this.position = position;
+			this.wheelDelta = wheelDelta;
+		}
+
+
+		private Layer layer;
+		private LayerItem item;
+	}
+
 }

@@ -25,7 +25,7 @@
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DatabaseDesignerForm));
-			Dataweb.NShape.DefaultSecurity defaultSecurity4 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager1 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.toolStripContainer = new System.Windows.Forms.ToolStripContainer();
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
@@ -149,12 +149,12 @@
 			// project
 			// 
 			this.project.AutoGenerateTemplates = false;
-			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
+			this.project.LibrarySearchPaths = ((System.Collections.Generic.List<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = null;
 			this.project.Repository = this.cachedRepository;
-			defaultSecurity4.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			defaultSecurity4.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = defaultSecurity4;
+			roleBasedSecurityManager1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager1.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager1;
 			// 
 			// propertyController
 			// 
@@ -407,7 +407,6 @@
 			this.xmlStore.DirectoryName = "";
 			this.xmlStore.FileExtension = ".xml";
 			this.xmlStore.ProjectName = "";
-			this.xmlStore.Version = 0;
 			// 
 			// cachedRepository
 			// 

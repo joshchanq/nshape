@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("nShape Model Demo")]
+[assembly: AssemblyTitle("NShape Model Demo")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("dataweb GmbH")]
-[assembly: AssemblyProduct("nShape Model Demo")]
+[assembly: AssemblyProduct("NShape Model Demo")]
 [assembly: AssemblyCopyright("Copyright © dataweb GmbH 2009")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

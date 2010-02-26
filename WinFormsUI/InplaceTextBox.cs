@@ -30,12 +30,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <summary>
 		/// Creates a new InPlaceTextBox instance
 		/// </summary>
-		/// <param name="owner">The display that owns the nwe instance.</param>
-		/// <param name="text">The original text.</param>
-		/// <param name="newText">The text that was Types by the user. If empty, the whole text will be preselected, otherwise the new text will be displayed and the cursor will be placed to the end of the text.</param>
-		/// <param name="maxTextArea">The maximum text area. If the text does not fit into this area, scrollbars will be displayed.</param>
-		/// <param name="characterStyle">The character style of the text.</param>
-		/// <param name="paragraphStyle">The paragraph style of the text.</param>
 		public InPlaceTextBox(IDiagramPresenter owner, ICaptionedShape shape, int captionIndex, string currentText)
 			: this(owner, shape, captionIndex, currentText, null) {
 		}
@@ -53,6 +47,16 @@ namespace Dataweb.NShape.WinFormsUI {
 				// Set the types text and place the cursor at the end of the text
 				base.Text = newText;
 				SelectionStart = Text.Length;
+			}
+		}
+
+
+		[Category("NShape")]
+		[Browsable(true)]
+		public new string ProductVersion {
+			get { 
+				//return this.GetType().Assembly.GetName().Version.ToString();
+				return base.ProductVersion;
 			}
 		}
 
@@ -270,7 +274,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			// calculate unrotated captionBounds
 			float angle;
-			Point center = Geometry.VectorLinearInterpolation(tl, br, 0.5d);
+			Point center = Geometry.VectorLinearInterpolation(tl, br, 0.5f);
 			angle = Geometry.RadiansToDegrees(Geometry.Angle(tl.X, tl.Y, tr.X, tr.Y));
 			tl = Geometry.RotatePoint(center, -angle, tl);
 			br = Geometry.RotatePoint(center, -angle, br);

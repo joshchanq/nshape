@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -158,7 +158,7 @@ namespace Database_Designer {
 			propertyPresenter.PrimaryPropertyGrid = propertyWindow.PropertyGrid;
 			toolSetPresenter.ListView = toolBoxWindow.ListView;
 
-			ResetProject();
+			NewProject();
 		}
 
 		
@@ -336,21 +336,23 @@ namespace Database_Designer {
 		}
 
 
-		private void ResetProject(){
+		private void NewProject(){
 			if (project.IsOpen) {
 				display.UnselectAll();
 				display.Diagram = null;
 				List<Diagram> diagrams = new List<Diagram>(project.Repository.GetDiagrams());
 				for (int i = diagrams.Count - 1; i >= 0; i--)
 					DeleteDiagram(diagrams[i]);
+				diagramsDropDownButton.DropDown.Items.Clear();
+
 				project.Close();
 			}
 
 			xmlStore.DirectoryName = xmlStore.FileExtension = string.Empty;
 			project.Name = defaultProjectName;
 			project.Create();
-			project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
-			project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
+			project.AddLibraryByName("Dataweb.NShape.GeneralShapes");
+			project.AddLibraryByName("Dataweb.NShape.SoftwareArchitectureShapes");
 
 			CreateTools();
 
@@ -524,7 +526,7 @@ namespace Database_Designer {
 
 
 		private void clearButton_Click(object sender, EventArgs e) {
-			ResetProject();
+			NewProject();
 		}
 
 		
@@ -538,7 +540,7 @@ namespace Database_Designer {
 		}
 
 
-		#region nShape component's event handler implementations
+		#region NShape component's event handler implementations
 
 		private void display_ZoomChanged(object sender, EventArgs e) {
 			zoomLabel.Text = string.Format("{0} %", display.ZoomLevel);

@@ -37,13 +37,15 @@ namespace Dataweb.Utilities {
 				Element e;
 #if DEBUG
 				int cnt = 0;
-				for (e = list[(int)(key % list.Capacity)]; e.next != null; e = e.next) ++cnt;
+				for (e = list[(int)(key % list.Capacity)]; !e.item.Equals(value) && e.next != null; e = e.next) 
+					++cnt;
 				if (cnt > maxListLen) maxListLen = cnt;
 				else if (cnt > 0 && cnt < minListLen) minListLen = cnt;
 #else
-				for (e = list[(int)(key % list.Capacity)]; e.next != null; e = e.next) ;
+				for (e = list[(int)(key % list.Capacity)]; !e.item.Equals(value) && e.next != null; e = e.next) ;
 #endif
-				e.next = newElement;
+				// TODO 2: Optimize the second comparison.
+				if (!e.item.Equals(value)) e.next = newElement;
 			}
 		}
 
@@ -58,6 +60,7 @@ namespace Dataweb.Utilities {
 				for (e = list[(int)(key % list.Capacity)]; 
 					e.next != null && (e.next.key != key || !e.next.item.Equals(value)); 
 					e = e.next) ;
+				// Either e.next is null or the one we are searching for
 				if (e.next == null) return false;
 				e.next = e.next.next;
 				return true;

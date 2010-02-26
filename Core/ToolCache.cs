@@ -197,31 +197,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 		
-		public static GraphicsPath GetCapPath(ICapStyle capStyle, ILineStyle lineStyle) {
-			if (capStyle == null) throw new ArgumentNullException("capStyle");
-			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
-
-			// build CapKey
-			CapKey capKey;
-			capKey.CapStyle = capStyle;
-			capKey.LineStyle = lineStyle;
-			// find/create CapPath
-			GraphicsPath capPath;
-			capPathCache.TryGetValue(capKey, out capPath);
-			if (capPath == null) {
-				capPath = new GraphicsPath();
-				CalcCapShape(ref capPath, capStyle.CapShape, capStyle.CapSize);
-				// Scale GraphicsPath down for correcting the automatic scaling that is applied to
-				// LineCaps by GDI+ when altering the LineWidth of the pen
-				matrix.Reset();
-				matrix.Scale(1f / lineStyle.LineWidth, 1f / lineStyle.LineWidth);
-				capPath.Transform(matrix);
-				capPathCache.Add(capKey, capPath);
-			}
-			return capPath;
-		}
-		
-
 		public static Pen GetPen(ILineStyle lineStyle, ICapStyle startCapStyle, ICapStyle endCapStyle) {
 			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
 			
@@ -306,7 +281,7 @@ namespace Dataweb.NShape.Advanced {
 						brush = new LinearGradientBrush(rectBuffer, GetColor(fillStyle.AdditionalColorStyle, fillStyle.ConvertToGrayScale), GetColor(fillStyle.BaseColorStyle, fillStyle.ConvertToGrayScale), fillStyle.GradientAngle);
 						break;
 					case FillMode.Image:
-						if (fillStyle.Image.Image == null)
+						if (fillStyle.Image == null || fillStyle.Image.Image == null)
 							brush = new SolidBrush(Color.Transparent);
 						else {
 							// First, get ImageAttributes
@@ -461,7 +436,7 @@ namespace Dataweb.NShape.Advanced {
 						throw new Exception(string.Format("Unexpected ContentAlignment value '{0}'.", paragraphStyle.Alignment));
 				}
 				// LineLimit prevents the Title from being drawn outside the layout rectangle.
-				// If the layoutRectangle is too small, the text will not be rendered at all, so we do not use it.
+				// If the layoutRectangle is too small, the text will not be rendered at all.
 				//stringFormat.FormatFlags = StringFormatFlags.MeasureTrailingSpaces | StringFormatFlags.FitBlackBox | StringFormatFlags.LineLimit;
 				stringFormat.FormatFlags = StringFormatFlags.MeasureTrailingSpaces | StringFormatFlags.FitBlackBox;
 				if (!paragraphStyle.WordWrap)
@@ -689,6 +664,31 @@ namespace Dataweb.NShape.Advanced {
 			} else return (colorStyle != null) ? colorStyle.Color : Color.Empty;
 		}
 
+
+		private static GraphicsPath GetCapPath(ICapStyle capStyle, ILineStyle lineStyle) {
+			if (capStyle == null) throw new ArgumentNullException("capStyle");
+			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
+
+			// build CapKey
+			CapKey capKey;
+			capKey.CapStyle = capStyle;
+			capKey.LineStyle = lineStyle;
+			// find/create CapPath
+			GraphicsPath capPath;
+			capPathCache.TryGetValue(capKey, out capPath);
+			if (capPath == null) {
+				capPath = new GraphicsPath();
+				CalcCapShape(ref capPath, capStyle.CapShape, capStyle.CapSize);
+				// Scale GraphicsPath down for correcting the automatic scaling that is applied to
+				// LineCaps by GDI+ when altering the LineWidth of the pen
+				matrix.Reset();
+				matrix.Scale(1f / lineStyle.LineWidth, 1f / lineStyle.LineWidth);
+				capPath.Transform(matrix);
+				capPathCache.Add(capKey, capPath);
+			}
+			return capPath;
+		}
+		
 
 		/// <summary>
 		/// (re)calculates the given GraphicsPath according to the given CapShape.

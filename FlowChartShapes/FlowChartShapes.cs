@@ -429,7 +429,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
-			captionBounds.X = (int)Math.Round(X - (Width / 2f) + (Width / 8f));
+			captionBounds.X = (int)Math.Round(-(Width / 2f) + (Width / 8f));
 			captionBounds.Width = Width - (Width / 4);
 		}
 
@@ -523,7 +523,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 			int bottom = top + Height;
 
 			// top row (left to right)
-			ControlPoints[0].X = left + offset; ;
+			ControlPoints[0].X = left + offset;
 			ControlPoints[0].Y = top;
 			ControlPoints[1].X = 0;
 			ControlPoints[1].Y = top;
@@ -553,8 +553,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
-			captionBounds.X = shapePoints[0].X;
-			captionBounds.Width = shapePoints[2].X - shapePoints[0].X;
 		}
 
 
@@ -1965,7 +1963,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = true;
-			int dx, dy;
+			int dx = 0, dy = 0;
 			int width = Width;
 			int height = Height;
 			switch ((int)pointId) {
@@ -1988,11 +1986,38 @@ namespace Dataweb.NShape.FlowChartShapes {
 				default:
 					break;
 			}
+			if (result) {
+				Width = width;
+				Height = height;
+				X += dx;
+				Y += dy;
+			}
 			ControlPointsHaveMoved();
 			return result;
 		}
 
 
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			Rectangle bounds;
+			CalculalteTranslatedShapePoints();
+			Geometry.CalcBoundingRectangle(pointBuffer, out bounds);
+			return bounds;
+		}
+
+
+		protected override bool ContainsPointCore(int x, int y) {
+			CalculalteTranslatedShapePoints();
+			bool result = Geometry.PolygonContainsPoint(pointBuffer, x, y);
+			if (!result) {
+				pt.X = x;
+				pt.Y = y;
+				if (DisplayService != null)
+					DisplayService.Invalidate(new Rectangle(short.MinValue, short.MinValue, short.MaxValue * 2, short.MaxValue * 2));
+			} else pt = Point.Empty;
+			return result;
+		}
+		
+		
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -2014,25 +2039,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-				int w = (int)Math.Round(Width / 8f);
-				int h = (int)Math.Round(Height / 16f);
-
-				pointBuffer[0].X = 0;
-				pointBuffer[0].Y = top;
-				pointBuffer[1].X = right;
-				pointBuffer[1].Y = 0 + h;
-				pointBuffer[2].X = 0 - w;
-				pointBuffer[2].Y = 0 + (int)Math.Round(h / 2f);
-				pointBuffer[3].X = 0;
-				pointBuffer[3].Y = bottom;
-				pointBuffer[4].X = left;
-				pointBuffer[4].Y = 0 - h;
-				pointBuffer[5].X = 0 + w;
-				pointBuffer[5].Y = 0 - (int)Math.Round(h / 2f);
+				CalculateShapePoints();
 
 				Path.Reset();
 				Path.StartFigure();
@@ -2043,6 +2050,40 @@ namespace Dataweb.NShape.FlowChartShapes {
 			return false;
 		}
 
+
+		private void CalculateShapePoints() {
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+			int w = (int)Math.Round(Width / 8f);
+			int h = (int)Math.Round(Height / 16f);
+
+			pointBuffer[0].X = 0;
+			pointBuffer[0].Y = top;
+			pointBuffer[1].X = right;
+			pointBuffer[1].Y = 0 + h;
+			pointBuffer[2].X = 0 - w;
+			pointBuffer[2].Y = 0 + (int)Math.Round(h / 2f);
+			pointBuffer[3].X = 0;
+			pointBuffer[3].Y = bottom;
+			pointBuffer[4].X = left;
+			pointBuffer[4].Y = 0 - h;
+			pointBuffer[5].X = 0 + w;
+			pointBuffer[5].Y = 0 - (int)Math.Round(h / 2f);
+		}
+
+
+		private void CalculalteTranslatedShapePoints() {
+			CalculateShapePoints();
+			Matrix.Reset();
+			Matrix.Translate(X, Y, MatrixOrder.Prepend);
+			Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, MatrixOrder.Append);
+			Matrix.TransformPoints(pointBuffer);
+		}
+
+
+		private Point pt;
 
 		#region Fields
 		private const int TopCenterControlPoint = 1;
@@ -2137,6 +2178,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 		private const string namespaceName = "FlowChartShapes";
-		private const int preferredRepositoryVersion = 2;
+		private const int preferredRepositoryVersion = 3;
 	}
 }

@@ -26,6 +26,8 @@ namespace Dataweb.NShape.Controllers {
 	/// <summary>
 	/// Controller class providing access to the templates of a project.
 	/// </summary>
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(ToolSetController), "ToolSetController.bmp")]
 	public class ToolSetController : Component, IDisplayService, IDisposable {
 
 		public ToolSetController() {
@@ -143,18 +145,14 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
-		/// <summary>
-		/// Specifies the NShape project to which this toolbox belongs. This is 
-		/// a mandatory property.
-		/// </summary>
 		[Category("NShape")]
-		[Description("Specifies the NShape project to which this toolbox belongs. This is a mandotory property.")]
-		public Project Project {
-			get { return (diagramSetController == null) ? null : diagramSetController.Project; }
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
 		[Category("NShape")]
+		[Description("Specifies the NShape DiagramSetController to which this toolbox belongs. This is a mandotory property.")]
 		public DiagramSetController DiagramSetController {
 			get { return diagramSetController; }
 			set {
@@ -170,13 +168,19 @@ namespace Dataweb.NShape.Controllers {
 
 
 		[Browsable(false)]
+		public Project Project {
+			get { return (diagramSetController == null) ? null : diagramSetController.Project; }
+		}
+
+
+		[Browsable(false)]
 		public IEnumerable<Tool> Tools {
 			get { return tools; }
 		}
 
 
-		[Browsable(false)]
 		[ReadOnly(true)]
+		[Browsable(false)]
 		public Tool SelectedTool {
 			get { return selectedTool; }
 			set {
@@ -210,6 +214,15 @@ namespace Dataweb.NShape.Controllers {
 		/// Creates a new tool for creating a templated shape.
 		/// </summary>
 		/// <param name="template">The template of the creation tool.</param>
+		public void CreateTemplateTool(Template template) {
+			CreateTemplateTool(template, null);
+		}
+
+
+		/// <summary>
+		/// Creates a new tool for creating a templated shape.
+		/// </summary>
+		/// <param name="template">The template of the creation tool.</param>
 		/// <param name="categoryTitle">Title of the toolbox category where the tool is inserted</param>
 		public void CreateTemplateTool(Template template, string categoryTitle) {
 			if (template == null) throw new ArgumentNullException("template");
@@ -235,23 +248,13 @@ namespace Dataweb.NShape.Controllers {
 		public void CreateStandardTools() {
 			// First check whether we have a already a pointer tool or a free hand tool.
 			bool pointerToolFound = false;
-			bool freeHandToolFound = false;
 			foreach (Tool t in Tools) {
 				if (t is PointerTool)
 					pointerToolFound = true;
-#if DEBUG
-				else if (t is FreeHandTool)
-					freeHandToolFound = true;
-#endif
-				if (pointerToolFound && freeHandToolFound)
 					break;
 			}
 			// If we do not have a pointer tool yet, create one.
 			if (!pointerToolFound) AddTool(new PointerTool(), true);
-#if DEBUG
-			// If we do not have a free hand tool yet, create one.
-			if (!freeHandToolFound) AddTool(new FreeHandTool(Project));
-#endif
 		}
 
 
@@ -409,7 +412,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Get actions provided by the toolset controller.
 		/// </summary>
-		public IEnumerable<MenuItemDef> GetActions(Tool clickedTool) {
+		public IEnumerable<MenuItemDef> GetMenuItemDefs(Tool clickedTool) {
 			// menu structure:
 			//
 			// Create Template...
@@ -610,6 +613,7 @@ namespace Dataweb.NShape.Controllers {
 				diagramSetController.Project.Repository.TemplateInserted += Repository_TemplateInserted;
 				diagramSetController.Project.Repository.TemplateUpdated += Repository_TemplateUpdated;
 				diagramSetController.Project.Repository.TemplateDeleted += Repository_TemplateDeleted;
+				diagramSetController.Project.Repository.TemplateShapeReplaced += Repository_TemplateShapeReplaced;
 				repositoryInitialized = true;
 			}
 		}
@@ -621,6 +625,7 @@ namespace Dataweb.NShape.Controllers {
 				diagramSetController.Project.Repository.TemplateInserted -= Repository_TemplateInserted;
 				diagramSetController.Project.Repository.TemplateUpdated -= Repository_TemplateUpdated;
 				diagramSetController.Project.Repository.TemplateDeleted -= Repository_TemplateDeleted;
+				diagramSetController.Project.Repository.TemplateShapeReplaced -= Repository_TemplateShapeReplaced;
 				repositoryInitialized = false;
 			}
 		}
@@ -679,6 +684,11 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private void Repository_TemplateUpdated(object sender, RepositoryTemplateEventArgs e) {
+			RefreshTool(e.Template);
+		}
+
+
+		private void Repository_TemplateShapeReplaced(object sender, RepositoryTemplateShapeReplacedEventArgs e) {
 			RefreshTool(e.Template);
 		}
 

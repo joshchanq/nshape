@@ -13,15 +13,744 @@
 ******************************************************************************/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+
 using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.Controllers {
+
+	/// <summary>
+	/// Controls the behavior of a set of diagrams.
+	/// </summary>
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(DiagramSetController), "DiagramSetController.bmp")]
+	public class DiagramSetController : Component {
+
+		public DiagramSetController() {
+		}
+
+
+		public DiagramSetController(Project project)
+			: this() {
+			if (project == null) throw new ArgumentNullException("project");
+			Project = project;
+		}
+
+
+		~DiagramSetController() {
+		}
+
+
+		#region [Public] Events
+
+		public event EventHandler ProjectChanging;
+		
+		public event EventHandler ProjectChanged;
+
+		public event EventHandler ToolChanged;
+
+		public event EventHandler<ModelObjectsEventArgs> SelectModelObjectsRequested;
+
+		public event EventHandler<DiagramEventArgs> DiagramAdded;
+
+		public event EventHandler<DiagramEventArgs> DiagramRemoved;
+
+		#endregion
+
+
+		#region [Public] Properties
+
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
+
+		[Category("NShape")]
+		public Project Project {
+			get { return project; }
+			set {
+				if (ProjectChanging != null) ProjectChanging(this, new EventArgs());
+				if (project != null) UnregisterProjectEvents();
+				project = value;
+				if (project != null) RegisterProjectEvents();
+				if (ProjectChanged != null) ProjectChanged(this, new EventArgs());
+			}
+		}
+
+
+		[Browsable(false)]
+		public Tool ActiveTool {
+			get { return tool; }
+			set {
+				tool = value;
+				if (ToolChanged != null) ToolChanged(this, new EventArgs());
+			}
+		}
+
+
+		[Browsable(false)]
+		public IEnumerable<Diagram> Diagrams {
+			get {
+				for (int i = 0; i < diagramControllers.Count; ++i)
+					yield return diagramControllers[i].Diagram;
+			}
+		}
+
+		#endregion
+
+
+		#region [Public] Methods
+
+		public Diagram CreateDiagram(string name) {
+			if (name == null) throw new ArgumentNullException("name");
+			AssertProjectIsOpen();
+			// Create new diagram
+			Diagram diagram = new Diagram(name);
+			diagram.Width = 1000;
+			diagram.Height = 1000;
+			ICommand cmd = new InsertDiagramCommand(diagram);
+			project.ExecuteCommand(cmd);
+			return diagram;
+		}
+
+
+		public void CloseDiagram(string name) {
+			if (name == null) throw new ArgumentNullException("name");
+			AssertProjectIsOpen();
+			int idx = IndexOf(name);
+			if (idx >= 0) {
+				DiagramEventArgs eventArgs = GetDiagramEventArgs(diagramControllers[idx].Diagram);
+				diagramControllers.RemoveAt(idx);
+				if (DiagramRemoved != null) DiagramRemoved(this, eventArgs);
+			}
+		}
+
+
+		public void CloseDiagram(Diagram diagram) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			AssertProjectIsOpen();
+			int idx = DiagramControllerIndexOf(diagram);
+			if (idx >= 0) {
+				DiagramController controller = diagramControllers[idx];
+				diagramControllers.RemoveAt(idx);
+
+				DiagramEventArgs eventArgs = GetDiagramEventArgs(controller.Diagram);
+				if (DiagramRemoved != null) DiagramRemoved(this, eventArgs);
+				controller.Diagram = null;
+				controller = null;
+			}
+		}
+
+
+		public void DeleteDiagram(string name) {
+			if (name == null) throw new ArgumentNullException("name");
+			AssertProjectIsOpen();
+			int idx = IndexOf(name);
+			if (idx >= 0) {
+				DiagramController controller = diagramControllers[idx];
+				ICommand cmd = new DeleteDiagramCommand(controller.Diagram);
+				project.ExecuteCommand(cmd);
+			}
+		}
+
+
+		public void DeleteDiagram(Diagram diagram) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			AssertProjectIsOpen();
+			int idx = DiagramControllerIndexOf(diagram);
+			if (idx >= 0) {
+				DiagramController controller = diagramControllers[idx];
+				ICommand cmd = new DeleteDiagramCommand(controller.Diagram);
+				project.ExecuteCommand(cmd);
+			}
+		}
+
+
+		public void SelectModelObjects(IEnumerable<IModelObject> modelObjects) {
+			if (SelectModelObjectsRequested != null) 
+				SelectModelObjectsRequested(this, GetModelObjectsEventArgs(modelObjects));
+		}
+
+		#endregion
+
+
+		#region [Public] Methods: Methods provided by actions
+
+		public void InsertShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers, bool withModelObjects) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			ICommand cmd = new InsertShapeCommand(diagram, activeLayers, shapes, withModelObjects, true);
+			Project.ExecuteCommand(cmd);
+			// ToDo: Raise event
+			//if (ShapesInserted != null) ShapesInserted(this, eventArgs);
+		}
+
+
+		public void DeleteShapes(Diagram diagram, IEnumerable<Shape> shapes, bool withModelObjects) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			ICommand cmd = new DeleteShapeCommand(diagram, shapes, withModelObjects);
+			Project.ExecuteCommand(cmd);
+			// ToDo: Raise event
+			//if (ShapesRemoved != null) ShapesRemoved(this, eventArgs);
+		}
+
+
+		public void Copy(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects) {
+			Copy(source, shapes, withModelObjects, Geometry.InvalidPoint);
+		}
+
+
+		public void Copy(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects, Point startPos) {
+			if (source == null) throw new ArgumentNullException("source");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+
+			editBuffer.Clear();
+			editBuffer.action = EditAction.Copy;
+			editBuffer.withModelObjects = withModelObjects;
+			editBuffer.initialMousePos = startPos;
+			editBuffer.shapes.AddRange(shapes);
+			// Copy shapes:
+			// Use the ShapeCollection's Clone method in order to maintain connections 
+			// between shapes inside the collection
+			editBuffer.shapes = editBuffer.shapes.Clone(withModelObjects);	
+		}
+
+
+		public void Cut(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects) {
+			Cut(source, shapes, withModelObjects, Geometry.InvalidPoint);
+		}
+
+
+		public void Cut(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects, Point startPos) {
+			if (source == null) throw new ArgumentNullException("source");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+
+			editBuffer.Clear();
+			editBuffer.action = EditAction.Cut;
+			editBuffer.withModelObjects = withModelObjects;
+			editBuffer.initialMousePos = startPos;
+			editBuffer.shapes.AddRange(shapes);
+
+			ICommand cmd = new DeleteShapeCommand(source, editBuffer.shapes, withModelObjects);
+			project.ExecuteCommand(cmd);
+		}
+
+
+		public void Paste(Diagram destination, LayerIds activeLayers) {
+			Paste(destination, activeLayers, 20, 20);
+		}
+
+
+		public void Paste(Diagram destination, LayerIds activeLayers, Point p) {
+			if (!editBuffer.IsEmpty) {
+				int dx, dy;
+				if (!Geometry.IsValid(editBuffer.initialMousePos))
+					dx = dy = 20;
+				else {
+					dx = p.X - editBuffer.initialMousePos.X;
+					dy = p.Y - editBuffer.initialMousePos.Y;
+				}
+				Paste(destination, activeLayers, dx, dy);
+				editBuffer.initialMousePos = p;
+			}
+		}
+
+
+		public void Paste(Diagram destination, LayerIds activeLayers, int offsetX, int offsetY) {
+			if (destination == null) throw new ArgumentNullException("destination");
+			if (!editBuffer.IsEmpty) {
+				++editBuffer.pasteCount;
+
+				// create command
+				ICommand cmd = new InsertShapeCommand(
+					destination,
+					activeLayers,
+					editBuffer.shapes.BottomUp,
+					editBuffer.withModelObjects,
+					(editBuffer.action == EditAction.Cut),
+					offsetX,
+					offsetY);
+				// Execute InsertCommand and select inserted shapes
+				Project.ExecuteCommand(cmd);
+
+				// Clone shapes for another paste operation
+				editBuffer.shapes = editBuffer.shapes.Clone(editBuffer.withModelObjects);
+				if (editBuffer.action == EditAction.Cut) editBuffer.action = EditAction.Copy;
+			}
+		}
+
+
+		/// <summary>
+		/// Aggregates the selected shapes to a group.
+		/// </summary>
+		public void GroupShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			int cnt = 0;
+			foreach (Shape s in shapes)
+				if (++cnt > 1) break;
+			if (cnt > 1) {
+				ShapeType groupShapeType = Project.ShapeTypes["ShapeGroup"];
+				Debug.Assert(groupShapeType != null);
+
+				Shape groupShape = groupShapeType.CreateInstance();
+				ICommand cmd = new GroupShapesCommand(diagram, activeLayers, groupShape, shapes);
+				Project.ExecuteCommand(cmd);
+			}
+		}
+
+
+		/// <summary>
+		/// Aggregate selected shapes to a composite shape based on the bottom shape.
+		/// </summary>
+		public void AggregateCompositeShape(Diagram diagram, Shape compositeShape, IEnumerable<Shape> shapes, LayerIds activeLayers) {
+			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			// Add shapes to buffer (TopDown)
+			shapeBuffer.Clear();
+			foreach (Shape shape in shapes) {
+				if (shape == compositeShape) continue;
+				shapeBuffer.Add(shape);
+			}
+			ICommand cmd = new AggregateCompositeShapeCommand(diagram, activeLayers, compositeShape, shapeBuffer);
+			Project.ExecuteCommand(cmd);
+			shapeBuffer.Clear();
+		}
+
+
+		/// <summary>
+		/// Ungroups the selected shapes or the selected shape aggregation.
+		/// </summary>
+		public void UngroupShapes(Diagram diagram, Shape groupShape) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (groupShape == null) throw new ArgumentNullException("groupShape");
+			if (!(groupShape is IShapeGroup)) throw new ArgumentException(string.Format("groupShape does not implpement interface {0}", typeof(IShapeGroup).Name));
+			// Add grouped shapes to shape buffer for selecting them later
+			shapeBuffer.Clear();
+			shapeBuffer.AddRange(groupShape.Children);
+
+			ICommand cmd = new UngroupShapesCommand(diagram, groupShape);
+			Project.ExecuteCommand(cmd);
+
+			shapeBuffer.Clear();
+		}
+
+
+		/// <summary>
+		/// Splits the selected composite shape into independent shapes.
+		/// </summary>
+		public void SplitCompositeShape(Diagram diagram, Shape compositeShape) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
+			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
+			Debug.Assert(!(compositeShape is IShapeGroup));
+			// Add grouped shapes to shape buffer for selecting them later
+			shapeBuffer.Clear();
+			shapeBuffer.AddRange(compositeShape.Children);
+			shapeBuffer.Add(compositeShape);
+
+			ICommand cmd = new SplitCompositeShapeCommand(diagram, diagram.GetShapeLayers(compositeShape), compositeShape);
+			Project.ExecuteCommand(cmd);
+
+			shapeBuffer.Clear();
+		}
+
+
+		/// <summary>
+		/// Lists one shape on top or to bottom
+		/// </summary>
+		public void LiftShape(Diagram diagram, Shape shape, ZOrderDestination liftMode) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shape == null) throw new ArgumentNullException("shape");
+			ICommand cmd = null;
+			cmd = new LiftShapeCommand(diagram, shape, liftMode);
+			Project.ExecuteCommand(cmd);
+		}
+
+
+		/// <summary>
+		/// Lifts a collection of shapes on top or to bottom.
+		/// </summary>
+		public void LiftShapes(Diagram diagram, IEnumerable<Shape> shapes, ZOrderDestination liftMode) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			ICommand cmd = new LiftShapeCommand(diagram, shapes, liftMode);
+			Project.ExecuteCommand(cmd);
+		}
+
+
+		public bool CanInsertShapes(Diagram diagram, IEnumerable<Shape> shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			return (Project.SecurityManager.IsGranted(Permission.Insert)
+				&& !diagram.Shapes.ContainsAny(shapes));
+		}
+
+
+		public bool CanDeleteShapes(Diagram diagram, IEnumerable<Shape> shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			return Project.SecurityManager.IsGranted(Permission.Delete)
+				&& diagram.Shapes.ContainsAll(shapes);
+		}
+
+
+		public bool CanCut(Diagram diagram, IEnumerable<Shape> shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			return CanCopy(shapes) && CanDeleteShapes(diagram, shapes);
+		}
+
+
+		public bool CanCopy(IEnumerable<Shape> shapes) {
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			// Check if shapes is not an empty collection
+			foreach (Shape s in shapes) return true;
+			return false;
+		}
+
+
+		public bool CanPaste(Diagram diagram) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (editBuffer.IsEmpty) return false;
+			else {
+				if (editBuffer.action == EditAction.Copy)
+					return Project.SecurityManager.IsGranted(Permission.Insert);
+				else return CanInsertShapes(diagram, editBuffer.shapes);
+			}
+		}
+
+
+		public bool CanGroupShapes(IEnumerable<Shape> shapes) {
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			int cnt= 0;
+			foreach (Shape shape in shapes) {
+				++cnt;
+				if (cnt >= 2) return Project.SecurityManager.IsGranted(Permission.Delete);
+			}
+			return false;
+		}
+
+
+		public bool CanUngroupShape(Diagram diagram, IEnumerable<Shape> shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			foreach (Shape shape in shapes) {
+				if (shape is IShapeGroup && shape.Parent == null)
+					return CanInsertShapes(diagram, shape.Children);
+				else return false;
+			}
+			return false;
+		}
+
+
+		public bool CanAggregateShapes(Diagram diagram, IReadOnlyShapeCollection shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			return CanDeleteShapes(diagram, shapes)
+				&& shapes.Count > 1
+				&& !(shapes.Bottom is IShapeGroup);
+		}
+
+
+		public bool CanSplitShapeAggregation(Diagram diagram, IReadOnlyShapeCollection shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			if (shapes.Count == 1 && !(shapes.TopMost is IShapeGroup)) {
+				Shape s = shapes.TopMost;
+				if (s.Children.Count > 0 && CanInsertShapes(diagram, shapes.TopMost.Children))
+					return true;
+			} 
+			return false;
+		}
+
+
+		public bool CanLiftShapes(Diagram diagram, IEnumerable<Shape> shapes) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			return Project.SecurityManager.IsGranted(Permission.Layout)
+				&& diagram.Shapes.ContainsAll(shapes);
+		}
+		
+		#endregion
+
+
+		#region [Internal] Types
+
+		internal enum EditAction { None, Copy, Cut }
+
+
+		internal class EditBuffer {
+
+			public EditBuffer() {
+				action = EditAction.None;
+				initialMousePos = Geometry.InvalidPoint;
+				pasteCount = 0;
+				shapes = new ShapeCollection();
+			}
+
+			public bool IsEmpty {
+				get { return shapes.Count == 0; }
+			}
+			
+			public void Clear() {
+				initialMousePos = Geometry.InvalidPoint;
+				action = EditAction.None;
+				pasteCount = 0;
+				shapes.Clear();
+			}
+
+			public Point initialMousePos;
+
+			public EditAction action;
+
+			public int pasteCount;
+
+			public bool withModelObjects;
+
+			public ShapeCollection shapes;
+		}
+
+		#endregion
+
+
+		#region [Internal] Properties 
+
+		internal IReadOnlyCollection<DiagramController> DiagramControllers {
+			get { return diagramControllers; }
+		}
+
+		#endregion
+
+
+		#region [Public/Internal] Methods
+
+		// ToDo: Make these methods protected internal as soon as the WinFormsUI.Display class 
+		// is split into DiagramPresenter and Display:IDiagramView
+		public DiagramController OpenDiagram(Diagram diagram) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			return DoAddDiagramController(diagram);
+		}
+
+
+		public DiagramController OpenDiagram(string name) {
+			if (name == null) throw new ArgumentNullException("name");
+			AssertProjectIsOpen();
+			// Try to find diagram with given projectName
+			Diagram diagram = null;
+			foreach (Diagram d in project.Repository.GetDiagrams()) {
+				if (d.Name == name) {
+					diagram = d;
+					break;
+				}
+			}
+			// If a suitable diagram was found, create a diagramController for it
+			if (diagram == null) return null;
+			else return DoAddDiagramController(diagram);
+		}
+
+		#endregion
+
+
+		#region [Private] Methods: Registering event handlers
+
+		private void RegisterProjectEvents() {
+			project.Opened += project_ProjectOpen;
+			project.Closed += project_ProjectClosed;
+			if (project.IsOpen) RegisterRepositoryEvents();
+		}
+
+
+		private void UnregisterProjectEvents(){
+			project.Opened -= project_ProjectOpen;
+			project.Closed -= project_ProjectClosed;
+		}
+
+
+		private void RegisterRepositoryEvents() {
+			project.Repository.DiagramInserted += Repository_DiagramInserted;
+			project.Repository.DiagramDeleted += Repository_DiagramDeleted;
+			
+			project.Repository.DesignUpdated += Repository_DesignUpdated;
+
+			project.Repository.TemplateShapeReplaced += Repository_TemplateShapeReplaced;
+
+			project.Repository.ShapesInserted += Repository_ShapesInserted;
+			project.Repository.ShapesDeleted += Repository_ShapesDeleted;
+		}
+
+
+		private void UnregisterRepositoryEvents() {
+			project.Repository.DiagramInserted -= Repository_DiagramInserted;
+			project.Repository.DiagramDeleted -= Repository_DiagramDeleted;
+			
+			project.Repository.DesignUpdated -= Repository_DesignUpdated;
+			
+			project.Repository.TemplateShapeReplaced -= Repository_TemplateShapeReplaced;
+
+			project.Repository.ShapesInserted -= Repository_ShapesInserted;
+			project.Repository.ShapesDeleted -= Repository_ShapesDeleted;
+		}
+
+		#endregion
+
+
+		#region [Private] Methods: Event handler implementations
+
+		private void project_ProjectClosed(object sender, EventArgs e) {
+			UnregisterRepositoryEvents();
+		}
+
+		
+		private void project_ProjectOpen(object sender, EventArgs e) {
+			Debug.Assert(project.Repository != null);
+			RegisterRepositoryEvents();
+		}
+
+	
+		private void Repository_DesignUpdated(object sender, RepositoryDesignEventArgs e) {
+			// nothing to do
+		}
+
+
+		private void Repository_DiagramDeleted(object sender, RepositoryDiagramEventArgs e) {
+			CloseDiagram(e.Diagram);
+		}
+
+
+		private void Repository_DiagramInserted(object sender, RepositoryDiagramEventArgs e) {
+			// nothing to do
+		}
+
+
+		private void Repository_TemplateShapeReplaced(object sender, RepositoryTemplateShapeReplacedEventArgs e) {
+			// Nothing to do here... Should be done by the ReplaceShapeCommand
+
+			//foreach (Diagram diagram in Diagrams) {
+			//   foreach (Shape oldShape in diagram.Shapes) {
+			//      if (oldShape.Template == e.Template) {
+			//         Shape newShape = e.Template.CreateShape();
+			//         newShape.CopyFrom(oldShape);
+			//         diagram.Shapes.Replace(oldShape, newShape);
+			//      }
+			//   }
+			//}
+		}
+
+
+		private void Repository_ShapesDeleted(object sender, RepositoryShapesEventArgs e) {
+			// Check if the deleted shapes still exists in its diagram and remove them in this case
+			foreach (Shape s in e.Shapes) {
+				if (s.Diagram != null) {
+					Diagram d = s.Diagram;
+					d.Shapes.Remove(s);
+				}
+			}
+		}
+
+
+		private void Repository_ShapesInserted(object sender, RepositoryShapesEventArgs e) {
+			// Insert shapes that are not yet part of its diagram
+			foreach (Shape shape in e.Shapes) {
+				Diagram d = e.GetDiagram(shape);
+				if (d != null && !d.Shapes.Contains(shape))
+					d.Shapes.Add(shape);
+			}
+		}
+
+		#endregion
+
+
+		#region [Private] Methods
+
+		private void AssertProjectIsOpen() {
+			if (project == null) throw new NShapePropertyNotSetException(this, "Project");
+			if (!project.IsOpen) throw new NShapeException("Project is not open.");
+		}
+
+
+		private int IndexOf(string name) {
+			for (int i = diagramControllers.Count - 1; i >= 0; --i) {
+				if (diagramControllers[i].Diagram.Name == name)
+					return i;
+			}
+			return -1;
+		}
+		
+		
+		private int DiagramControllerIndexOf(Diagram diagram) {
+			for (int i = diagramControllers.Count - 1; i >= 0; --i) {
+				if (diagramControllers[i].Diagram == diagram)
+					return i;
+			}
+			return -1;
+		}
+		
+		
+		private DiagramController DoAddDiagramController(Diagram diagram) {
+			if (DiagramControllerIndexOf(diagram) >= 0) throw new ArgumentException("The diagram was already opened.");
+			DiagramController controller= new DiagramController(this, diagram);
+			diagramControllers.Add(controller);
+			if (DiagramAdded != null) DiagramAdded(this, GetDiagramEventArgs(controller.Diagram));
+			return controller;
+		}
+
+
+		private DiagramEventArgs GetDiagramEventArgs(Diagram diagram) {
+			diagramEventArgs.Diagram = diagram;
+			return diagramEventArgs;
+		}
+
+
+		private DiagramShapeEventArgs GetShapeEventArgs(Shape shape, Diagram diagram) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			diagramShapeEventArgs.SetDiagramShapes(shape, diagram);
+			return diagramShapeEventArgs;
+		}
+
+
+		private DiagramShapeEventArgs GetShapeEventArgs(IEnumerable<Shape> shapes, Diagram diagram) {
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			diagramShapeEventArgs.SetDiagramShapes(shapes, diagram);
+			return diagramShapeEventArgs;
+		}
+
+
+		private ModelObjectsEventArgs GetModelObjectsEventArgs(IEnumerable<IModelObject> modelObjects) {
+			modelObjectEventArgs.SetModelObjects(modelObjects);
+			return modelObjectEventArgs;
+		}
+
+		#endregion
+
+
+		#region Fields
+
+		private Project project = null;
+		private Tool tool;
+		private ReadOnlyList<DiagramController> diagramControllers = new ReadOnlyList<DiagramController>();
+
+		// Cut'n'Paste buffers
+		private EditBuffer editBuffer = new EditBuffer();		// Buffer for Copy/Cut/Paste-Actions
+		private Rectangle copyCutBounds = Rectangle.Empty;
+		private Point copyCutMousePos = Point.Empty;
+		// Other buffers
+		private List<Shape> shapeBuffer = new List<Shape>();
+		private List<IModelObject> modelBuffer = new List<IModelObject>();
+		// EventArgs buffers
+		private DiagramEventArgs diagramEventArgs = new DiagramEventArgs();
+		private DiagramShapeEventArgs diagramShapeEventArgs = new DiagramShapeEventArgs();
+		private ModelObjectsEventArgs modelObjectEventArgs = new ModelObjectsEventArgs();
+
+		#endregion
+	}
+
 
 	#region Enums
 
@@ -69,6 +798,7 @@ namespace Dataweb.NShape.Controllers {
 	/// <summary>
 	/// This is the NShape representation of System.Windows.Forms.Keys (Framework 2.0)
 	/// </summary>
+	[Flags]
 	public enum KeysDg {
 		A = 0x41,
 		Add = 0x6b,
@@ -448,740 +1178,6 @@ namespace Dataweb.NShape.Controllers {
 		protected bool suppressKeyPress;
 	}
 
-	
-	#endregion
-
-
-	/// <summary>
-	/// Controls the behavior of a set of diagrams.
-	/// </summary>
-	public class DiagramSetController : Component {
-
-		public DiagramSetController() {
-		}
-
-
-		public DiagramSetController(Project project)
-			: this() {
-			if (project == null) throw new ArgumentNullException("project");
-			Project = project;
-		}
-
-
-		~DiagramSetController() {
-		}
-
-
-		#region [Public] Events
-
-		public event EventHandler ProjectChanging;
-		
-		public event EventHandler ProjectChanged;
-
-		public event EventHandler ToolChanged;
-
-		public event EventHandler<ModelObjectsEventArgs> SelectModelObjectsRequested;
-
-		public event EventHandler<DiagramEventArgs> DiagramAdded;
-
-		public event EventHandler<DiagramEventArgs> DiagramRemoved;
-
-		#endregion
-
-
-		#region [Public] Properties
-
-		[Category("NShape")]
-		public Project Project {
-			get { return project; }
-			set {
-				if (ProjectChanging != null) ProjectChanging(this, new EventArgs());
-				if (project != null) UnregisterProjectEvents();
-				project = value;
-				if (project != null) RegisterProjectEvents();
-				if (ProjectChanged != null) ProjectChanged(this, new EventArgs());
-			}
-		}
-
-
-		[Browsable(false)]
-		public Tool ActiveTool {
-			get { return tool; }
-			set {
-				tool = value;
-				if (ToolChanged != null) ToolChanged(this, new EventArgs());
-			}
-		}
-
-
-		[Browsable(false)]
-		public IEnumerable<Diagram> Diagrams {
-			get {
-				for (int i = 0; i < diagramControllers.Count; ++i)
-					yield return diagramControllers[i].Diagram;
-			}
-		}
-
-		#endregion
-
-
-		#region [Public] Methods
-
-		public Diagram CreateDiagram(string name) {
-			if (name == null) throw new ArgumentNullException("name");
-			AssertProjectIsOpen();
-			// Create new diagram
-			Diagram diagram = new Diagram(name);
-			diagram.Width = 1000;
-			diagram.Height = 1000;
-			ICommand cmd = new InsertDiagramCommand(diagram);
-			project.ExecuteCommand(cmd);
-			return diagram;
-		}
-
-
-		public void CloseDiagram(string name) {
-			if (name == null) throw new ArgumentNullException("name");
-			AssertProjectIsOpen();
-			int idx = IndexOf(name);
-			if (idx >= 0) {
-				DiagramEventArgs eventArgs = GetDiagramEventArgs(diagramControllers[idx].Diagram);
-				diagramControllers.RemoveAt(idx);
-				if (DiagramRemoved != null) DiagramRemoved(this, eventArgs);
-			}
-		}
-
-
-		public void CloseDiagram(Diagram diagram) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			AssertProjectIsOpen();
-			int idx = DiagramControllerIndexOf(diagram);
-			if (idx >= 0) {
-				DiagramController controller = diagramControllers[idx];
-				diagramControllers.RemoveAt(idx);
-
-				DiagramEventArgs eventArgs = GetDiagramEventArgs(controller.Diagram);
-				if (DiagramRemoved != null) DiagramRemoved(this, eventArgs);
-				controller.Diagram = null;
-				controller = null;
-			}
-		}
-
-
-		public void DeleteDiagram(string name) {
-			if (name == null) throw new ArgumentNullException("name");
-			AssertProjectIsOpen();
-			int idx = IndexOf(name);
-			if (idx >= 0) {
-				DiagramController controller = diagramControllers[idx];
-				ICommand cmd = new DeleteDiagramCommand(controller.Diagram);
-				project.ExecuteCommand(cmd);
-			}
-		}
-
-
-		public void DeleteDiagram(Diagram diagram) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			AssertProjectIsOpen();
-			int idx = DiagramControllerIndexOf(diagram);
-			if (idx >= 0) {
-				DiagramController controller = diagramControllers[idx];
-				ICommand cmd = new DeleteDiagramCommand(controller.Diagram);
-				project.ExecuteCommand(cmd);
-			}
-		}
-
-
-		public void SelectModelObjects(IEnumerable<IModelObject> modelObjects) {
-			if (SelectModelObjectsRequested != null) 
-				SelectModelObjectsRequested(this, GetModelObjectsEventArgs(modelObjects));
-		}
-
-		#endregion
-
-
-		#region [Public] Methods: Methods provided by actions
-
-		public void InsertShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers, bool withModelObjects) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			ICommand cmd = new InsertShapeCommand(diagram, activeLayers, shapes, withModelObjects, true);
-			Project.ExecuteCommand(cmd);
-			// ToDo: Raise event
-			//if (ShapesInserted != null) ShapesInserted(this, eventArgs);
-		}
-
-
-		public void DeleteShapes(Diagram diagram, IEnumerable<Shape> shapes, bool withModelObjects) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			ICommand cmd = new DeleteShapeCommand(diagram, shapes, withModelObjects);
-			Project.ExecuteCommand(cmd);
-			// ToDo: Raise event
-			//if (ShapesRemoved != null) ShapesRemoved(this, eventArgs);
-		}
-
-
-		public void Copy(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects) {
-			Copy(source, shapes, withModelObjects, Geometry.InvalidPoint);
-		}
-
-
-		public void Copy(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects, Point startPos) {
-			if (source == null) throw new ArgumentNullException("source");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-
-			editBuffer.Clear();
-			editBuffer.action = EditAction.Copy;
-			editBuffer.withModelObjects = withModelObjects;
-			editBuffer.initialMousePos = startPos;
-			editBuffer.shapes.AddRange(shapes);
-			// Copy shapes:
-			// Use the ShapeCollection's Clone method in order to maintain connections 
-			// between shapes inside the collection
-			editBuffer.shapes = editBuffer.shapes.Clone(withModelObjects);	
-		}
-
-
-		public void Cut(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects) {
-			Cut(source, shapes, withModelObjects, Geometry.InvalidPoint);
-		}
-
-
-		public void Cut(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects, Point startPos) {
-			if (source == null) throw new ArgumentNullException("source");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-
-			editBuffer.Clear();
-			editBuffer.action = EditAction.Cut;
-			editBuffer.withModelObjects = withModelObjects;
-			editBuffer.initialMousePos = startPos;
-			editBuffer.shapes.AddRange(shapes);
-
-			ICommand cmd = new DeleteShapeCommand(source, editBuffer.shapes, withModelObjects);
-			project.ExecuteCommand(cmd);
-		}
-
-
-		public void Paste(Diagram destination, LayerIds activeLayers) {
-			Paste(destination, activeLayers, 20, 20);
-		}
-
-
-		public void Paste(Diagram destination, LayerIds activeLayers, Point p) {
-			if (!editBuffer.IsEmpty) {
-				int dx, dy;
-				if (editBuffer.initialMousePos == Geometry.InvalidPoint)
-					dx = dy = 20;
-				else {
-					dx = p.X - editBuffer.initialMousePos.X;
-					dy = p.Y - editBuffer.initialMousePos.Y;
-				}
-				Paste(destination, activeLayers, dx, dy);
-				editBuffer.initialMousePos = p;
-			}
-		}
-
-
-		public void Paste(Diagram destination, LayerIds activeLayers, int offsetX, int offsetY) {
-			if (destination == null) throw new ArgumentNullException("destination");
-			if (!editBuffer.IsEmpty) {
-				++editBuffer.pasteCount;
-
-				// create command
-				ICommand cmd = new InsertShapeCommand(
-					destination,
-					activeLayers,
-					editBuffer.shapes.BottomUp,
-					editBuffer.withModelObjects,
-					(editBuffer.action == EditAction.Cut),
-					offsetX,
-					offsetY);
-				// Execute InsertCommand and select inserted shapes
-				Project.ExecuteCommand(cmd);
-
-				// Clone shapes for another paste operation
-				editBuffer.shapes = editBuffer.shapes.Clone(editBuffer.withModelObjects);
-				if (editBuffer.action == EditAction.Cut) editBuffer.action = EditAction.Copy;
-			}
-		}
-
-
-		/// <summary>
-		/// Aggregates the selected shapes to a group.
-		/// </summary>
-		public void GroupShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			int cnt = 0;
-			foreach (Shape s in shapes)
-				if (++cnt > 1) break;
-			if (cnt > 1) {
-				ShapeType groupShapeType = Project.ShapeTypes["ShapeGroup"];
-				Debug.Assert(groupShapeType != null);
-
-				Shape groupShape = groupShapeType.CreateInstance();
-				ICommand cmd = new GroupShapesCommand(diagram, activeLayers, groupShape, shapes);
-				Project.ExecuteCommand(cmd);
-			}
-		}
-
-
-		/// <summary>
-		/// Aggregate selected shapes to a composite shape based on the bottom shape.
-		/// </summary>
-		public void AggregateCompositeShape(Diagram diagram, Shape compositeShape, IEnumerable<Shape> shapes, LayerIds activeLayers) {
-			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			// Add shapes to buffer (TopDown)
-			shapeBuffer.Clear();
-			foreach (Shape shape in shapes) {
-				if (shape == compositeShape) continue;
-				shapeBuffer.Add(shape);
-			}
-			ICommand cmd = new AggregateCompositeShapeCommand(diagram, activeLayers, compositeShape, shapeBuffer);
-			Project.ExecuteCommand(cmd);
-			shapeBuffer.Clear();
-		}
-
-
-		/// <summary>
-		/// Ungroups the selected shapes or the selected shape aggregation.
-		/// </summary>
-		public void UngroupShapes(Diagram diagram, Shape groupShape) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (groupShape == null) throw new ArgumentNullException("groupShape");
-			if (!(groupShape is IShapeGroup)) throw new ArgumentException(string.Format("groupShape does not implpement interface {0}", typeof(IShapeGroup).Name));
-			// Add grouped shapes to shape buffer for selecting them later
-			shapeBuffer.Clear();
-			shapeBuffer.AddRange(groupShape.Children);
-
-			ICommand cmd = new UngroupShapesCommand(diagram, groupShape);
-			Project.ExecuteCommand(cmd);
-
-			shapeBuffer.Clear();
-		}
-
-
-		/// <summary>
-		/// Splits the selected composite shape into independent shapes.
-		/// </summary>
-		public void SplitCompositeShape(Diagram diagram, Shape compositeShape) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
-			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
-			Debug.Assert(!(compositeShape is IShapeGroup));
-			// Add grouped shapes to shape buffer for selecting them later
-			shapeBuffer.Clear();
-			shapeBuffer.AddRange(compositeShape.Children);
-			shapeBuffer.Add(compositeShape);
-
-			ICommand cmd = new SplitCompositeShapeCommand(diagram, diagram.GetShapeLayers(compositeShape), compositeShape);
-			Project.ExecuteCommand(cmd);
-
-			shapeBuffer.Clear();
-		}
-
-
-		/// <summary>
-		/// Lists one shape on top or to bottom
-		/// </summary>
-		public void LiftShape(Diagram diagram, Shape shape, ZOrderDestination liftMode) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shape == null) throw new ArgumentNullException("shape");
-			ICommand cmd = null;
-			cmd = new LiftShapeCommandCommand(diagram, shape, liftMode);
-			Project.ExecuteCommand(cmd);
-		}
-
-
-		/// <summary>
-		/// Lifts a collection of shapes on top or to bottom.
-		/// </summary>
-		public void LiftShapes(Diagram diagram, IEnumerable<Shape> shapes, ZOrderDestination liftMode) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			ICommand cmd = new LiftShapeCommandCommand(diagram, shapes, liftMode);
-			Project.ExecuteCommand(cmd);
-		}
-
-
-		public bool CanInsertShapes(Diagram diagram, IEnumerable<Shape> shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			return (!diagram.Shapes.ContainsAny(shapes) && Project.SecurityManager.IsGranted(Permission.Insert));
-		}
-
-
-		public bool CanDeleteShapes(Diagram diagram, IEnumerable<Shape> shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			return diagram.Shapes.ContainsAll(shapes) && Project.SecurityManager.IsGranted(Permission.Delete);
-		}
-
-
-		public bool CanCut(Diagram diagram, IEnumerable<Shape> shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			return CanCopy(shapes) && CanDeleteShapes(diagram, shapes);
-		}
-
-
-		public bool CanCopy(IEnumerable<Shape> shapes) {
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			// Check if shapes is not an empty collection
-			foreach (Shape s in shapes) return true;
-			return false;
-		}
-
-
-		public bool CanPaste(Diagram diagram) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (editBuffer.IsEmpty) return false;
-			else {
-				if (editBuffer.action == EditAction.Copy)
-					return Project.SecurityManager.IsGranted(Permission.Insert);
-				else return CanInsertShapes(diagram, editBuffer.shapes);
-			}
-		}
-
-
-		public bool CanGroupShapes(IEnumerable<Shape> shapes) {
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			int cnt= 0;
-			foreach (Shape shape in shapes) {
-				++cnt;
-				if (cnt >= 2) return Project.SecurityManager.IsGranted(Permission.Delete);
-			}
-			return false;
-		}
-
-
-		public bool CanUngroupShape(Diagram diagram, IEnumerable<Shape> shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			foreach (Shape shape in shapes) {
-				if (shape is IShapeGroup && shape.Parent == null)
-					return CanInsertShapes(diagram, shape.Children);
-				else return false;
-			}
-			return false;
-		}
-
-
-		public bool CanAggregateShapes(Diagram diagram, IReadOnlyShapeCollection shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			return CanDeleteShapes(diagram, shapes)
-				&& shapes.Count > 1
-				&& !(shapes.Bottom is IShapeGroup);
-		}
-
-
-		public bool CanSplitShapeAggregation(Diagram diagram, IReadOnlyShapeCollection shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			if (shapes.Count == 1 && !(shapes.TopMost is IShapeGroup)) {
-				Shape s = shapes.TopMost;
-				if (s.Children.Count > 0 && CanInsertShapes(diagram, shapes.TopMost.Children))
-					return true;
-			} 
-			return false;
-		}
-
-
-		public bool CanLiftShapes(Diagram diagram, IEnumerable<Shape> shapes) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			return diagram.Shapes.ContainsAll(shapes) && Project.SecurityManager.IsGranted(Permission.Layout);
-		}
-		
-		#endregion
-
-
-		#region [Internal] Types
-
-		internal enum EditAction { None, Copy, Cut }
-
-
-		internal class EditBuffer {
-
-			public EditBuffer() {
-				action = EditAction.None;
-				initialMousePos = Geometry.InvalidPoint;
-				pasteCount = 0;
-				shapes = new ShapeCollection();
-			}
-
-			public bool IsEmpty {
-				get { return shapes.Count == 0; }
-			}
-			
-			public void Clear() {
-				initialMousePos = Geometry.InvalidPoint;
-				action = EditAction.None;
-				pasteCount = 0;
-				shapes.Clear();
-			}
-
-			public Point initialMousePos;
-
-			public EditAction action;
-
-			public int pasteCount;
-
-			public bool withModelObjects;
-
-			public ShapeCollection shapes;
-		}
-
-		#endregion
-
-
-		#region [Internal] Properties 
-
-		internal IReadOnlyCollection<DiagramController> DiagramControllers {
-			get { return diagramControllers; }
-		}
-
-		#endregion
-
-
-		#region [Public/Internal] Methods
-
-		// ToDo: Make these methods protected internal as soon as the WinFormsUI.Display class 
-		// is split into DiagramPresenter and Display:IDiagramView
-		public DiagramController OpenDiagram(Diagram diagram) {
-			if (diagram == null) throw new ArgumentNullException("diagram");
-			return DoAddDiagramController(diagram);
-		}
-
-
-		public DiagramController OpenDiagram(string name) {
-			if (name == null) throw new ArgumentNullException("name");
-			AssertProjectIsOpen();
-			// Try to find diagram with given projectName
-			Diagram diagram = null;
-			foreach (Diagram d in project.Repository.GetDiagrams()) {
-				if (d.Name == name) {
-					diagram = d;
-					break;
-				}
-			}
-			// If a suitable diagram was found, create a diagramController for it
-			if (diagram == null) return null;
-			else return DoAddDiagramController(diagram);
-		}
-
-		#endregion
-
-
-		#region [Private] Methods: Registering event handlers
-
-		private void RegisterProjectEvents() {
-			project.Opened += project_ProjectOpen;
-			project.Closed += project_ProjectClosed;
-			if (project.IsOpen) RegisterRepositoryEvents();
-		}
-
-
-		private void UnregisterProjectEvents(){
-			project.Opened -= project_ProjectOpen;
-			project.Closed -= project_ProjectClosed;
-		}
-
-
-		private void RegisterRepositoryEvents() {
-			project.Repository.DiagramInserted += Repository_DiagramInserted;
-			project.Repository.DiagramDeleted += Repository_DiagramDeleted;
-			
-			project.Repository.DesignUpdated += Repository_DesignUpdated;
-
-			project.Repository.TemplateShapeReplaced += Repository_TemplateShapeReplaced;
-
-			project.Repository.ShapesInserted += Repository_ShapesInserted;
-			project.Repository.ShapesDeleted += Repository_ShapesDeleted;
-		}
-
-
-		private void UnregisterRepositoryEvents() {
-			project.Repository.DiagramInserted -= Repository_DiagramInserted;
-			project.Repository.DiagramDeleted -= Repository_DiagramDeleted;
-			
-			project.Repository.DesignUpdated -= Repository_DesignUpdated;
-			
-			project.Repository.TemplateShapeReplaced -= Repository_TemplateShapeReplaced;
-
-			project.Repository.ShapesInserted -= Repository_ShapesInserted;
-			project.Repository.ShapesDeleted -= Repository_ShapesDeleted;
-		}
-
-		#endregion
-
-
-		#region [Private] Methods: Event handler implementations
-
-		private void project_ProjectClosed(object sender, EventArgs e) {
-			UnregisterRepositoryEvents();
-		}
-
-		
-		private void project_ProjectOpen(object sender, EventArgs e) {
-			Debug.Assert(project.Repository != null);
-			RegisterRepositoryEvents();
-		}
-
-	
-		private void Repository_DesignUpdated(object sender, RepositoryDesignEventArgs e) {
-			// nothing to do
-		}
-
-
-		private void Repository_DiagramDeleted(object sender, RepositoryDiagramEventArgs e) {
-			CloseDiagram(e.Diagram);
-		}
-
-
-		private void Repository_DiagramInserted(object sender, RepositoryDiagramEventArgs e) {
-			// nothing to do
-		}
-
-
-		private void Repository_TemplateShapeReplaced(object sender, RepositoryTemplateShapeReplacedEventArgs e) {
-			// Nothing to do here... Should be done by the ReplaceShapeCommand
-
-			//foreach (Diagram diagram in Diagrams) {
-			//   foreach (Shape oldShape in diagram.Shapes) {
-			//      if (oldShape.Template == e.Template) {
-			//         Shape newShape = e.Template.CreateShape();
-			//         newShape.CopyFrom(oldShape);
-			//         diagram.Shapes.Replace(oldShape, newShape);
-			//      }
-			//   }
-			//}
-		}
-
-
-		private void Repository_ShapesDeleted(object sender, RepositoryShapesEventArgs e) {
-			// Check if the deleted shapes still exists in its diagram and remove them in this case
-			foreach (Shape s in e.Shapes) {
-				if (s.Diagram != null) {
-					Diagram d = s.Diagram;
-					d.Shapes.Remove(s);
-				}
-			}
-		}
-
-
-		private void Repository_ShapesInserted(object sender, RepositoryShapesEventArgs e) {
-			// Insert shapes that are not yet part of its diagram
-			foreach (Shape shape in e.Shapes) {
-				Diagram d = e.GetDiagram(shape);
-				if (d != null && !d.Shapes.Contains(shape))
-					d.Shapes.Add(shape);
-			}
-		}
-
-		#endregion
-
-
-		#region [Private] Methods
-
-		private void AssertProjectIsOpen() {
-			if (project == null) throw new NShapePropertyNotSetException(this, "Project");
-			if (!project.IsOpen) throw new NShapeException("Project is not open.");
-		}
-
-
-		private int IndexOf(string name) {
-			for (int i = diagramControllers.Count - 1; i >= 0; --i) {
-				if (diagramControllers[i].Diagram.Name == name)
-					return i;
-			}
-			return -1;
-		}
-		
-		
-		private int DiagramControllerIndexOf(Diagram diagram) {
-			for (int i = diagramControllers.Count - 1; i >= 0; --i) {
-				if (diagramControllers[i].Diagram == diagram)
-					return i;
-			}
-			return -1;
-		}
-		
-		
-		private DiagramController DoAddDiagramController(Diagram diagram) {
-			if (DiagramControllerIndexOf(diagram) >= 0) throw new ArgumentException("The diagram was already opened.");
-			DiagramController controller= new DiagramController(this, diagram);
-			diagramControllers.Add(controller);
-			if (DiagramAdded != null) DiagramAdded(this, GetDiagramEventArgs(controller.Diagram));
-			return controller;
-		}
-
-
-		private DiagramEventArgs GetDiagramEventArgs(Diagram diagram) {
-			diagramEventArgs.Diagram = diagram;
-			return diagramEventArgs;
-		}
-
-
-		private DiagramShapeEventArgs GetShapeEventArgs(Shape shape, Diagram diagram) {
-			if (shape == null) throw new ArgumentNullException("shape");
-			diagramShapeEventArgs.SetDiagramShapes(shape, diagram);
-			return diagramShapeEventArgs;
-		}
-
-
-		private DiagramShapeEventArgs GetShapeEventArgs(IEnumerable<Shape> shapes, Diagram diagram) {
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			diagramShapeEventArgs.SetDiagramShapes(shapes, diagram);
-			return diagramShapeEventArgs;
-		}
-
-
-		private ModelObjectsEventArgs GetModelObjectsEventArgs(IEnumerable<IModelObject> modelObjects) {
-			modelObjectEventArgs.SetModelObjects(modelObjects);
-			return modelObjectEventArgs;
-		}
-
-		#endregion
-
-
-		#region Fields
-
-		private Project project = null;
-		private Tool tool;
-		private ReadOnlyList<DiagramController> diagramControllers = new ReadOnlyList<DiagramController>();
-
-		// Cut'n'Paste buffers
-		private EditBuffer editBuffer = new EditBuffer();		// Buffer for Copy/Cut/Paste-Actions
-		private Rectangle copyCutBounds = Rectangle.Empty;
-		private Point copyCutMousePos = Point.Empty;
-		// Other buffers
-		private List<Shape> shapeBuffer = new List<Shape>();
-		private List<IModelObject> modelBuffer = new List<IModelObject>();
-		// EventArgs buffers
-		private DiagramEventArgs diagramEventArgs = new DiagramEventArgs();
-		private DiagramShapeEventArgs diagramShapeEventArgs = new DiagramShapeEventArgs();
-		private ModelObjectsEventArgs modelObjectEventArgs = new ModelObjectsEventArgs();
-
-		#endregion
-	}
-
-
-	#region Exceptions
-
-	public class DiagramControllerNotFoundException : NShapeException {
-		public DiagramControllerNotFoundException(Diagram diagram)
-			: base("No {0} found for {1} '{2}'", typeof(DiagramController).Name, typeof(Diagram).Name, (diagram != null) ? diagram.Name : string.Empty) {
-		}
-	}
-
-	#endregion
-
-
-	#region EventArgs
 
 	public class DiagramEventArgs : EventArgs {
 		
@@ -1333,4 +1329,16 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 	#endregion
+
+
+	#region Exceptions
+
+	public class DiagramControllerNotFoundException : NShapeException {
+		public DiagramControllerNotFoundException(Diagram diagram)
+			: base("No {0} found for {1} '{2}'", typeof(DiagramController).Name, typeof(Diagram).Name, (diagram != null) ? diagram.Name : string.Empty) {
+		}
+	}
+
+	#endregion
+
 }

@@ -1,4 +1,4 @@
-﻿namespace nShapeViewer {
+﻿namespace NShapeViewer {
 	partial class FrameForm {
 		/// <summary>
 		/// Required designer variable.
@@ -25,7 +25,7 @@
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrameForm));
-			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager1 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.project = new Dataweb.NShape.Project(this.components);
 			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
 			this.xmlStore = new Dataweb.NShape.XmlStore();
@@ -43,11 +43,11 @@
 			this.horizontalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.verticalToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.aboutDiagramViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.modelTreeView = new System.Windows.Forms.TreeView();
 			this.splitter1 = new System.Windows.Forms.Splitter();
 			this.modelTreeViewPresenter = new Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter();
-			this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-			this.aboutDiagramViewerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -57,9 +57,9 @@
 			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = null;
 			this.project.Repository = this.cachedRepository;
-			defaultSecurity1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			defaultSecurity1.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = defaultSecurity1;
+			roleBasedSecurityManager1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager1.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager1;
 			this.project.Opened += new System.EventHandler(this.project_Opened);
 			this.project.Closing += new System.EventHandler(this.project_Closing);
 			this.project.Closed += new System.EventHandler(this.project_Closed);
@@ -76,7 +76,6 @@
 			this.xmlStore.DirectoryName = "";
 			this.xmlStore.FileExtension = ".xml";
 			this.xmlStore.ProjectName = "";
-			this.xmlStore.Version = 0;
 			// 
 			// modelController
 			// 
@@ -181,6 +180,21 @@
 			this.cascadeToolStripMenuItem.Text = "Cascade";
 			this.cascadeToolStripMenuItem.Click += new System.EventHandler(this.cascadeToolStripMenuItem_Click);
 			// 
+			// helpToolStripMenuItem
+			// 
+			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.aboutDiagramViewerToolStripMenuItem});
+			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+			this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+			this.helpToolStripMenuItem.Text = "Help";
+			// 
+			// aboutDiagramViewerToolStripMenuItem
+			// 
+			this.aboutDiagramViewerToolStripMenuItem.Name = "aboutDiagramViewerToolStripMenuItem";
+			this.aboutDiagramViewerToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+			this.aboutDiagramViewerToolStripMenuItem.Text = "About Diagram Viewer...";
+			this.aboutDiagramViewerToolStripMenuItem.Click += new System.EventHandler(this.aboutDiagramViewerToolStripMenuItem_Click);
+			// 
 			// modelTreeView
 			// 
 			this.modelTreeView.Dock = System.Windows.Forms.DockStyle.Left;
@@ -203,23 +217,11 @@
 			// 
 			// modelTreeViewPresenter
 			// 
+			this.modelTreeViewPresenter.HideDeniedMenuItems = false;
 			this.modelTreeViewPresenter.ModelTreeController = this.modelController;
+			this.modelTreeViewPresenter.PropertyController = null;
+			this.modelTreeViewPresenter.ShowDefaultContextMenu = true;
 			this.modelTreeViewPresenter.TreeView = this.modelTreeView;
-			// 
-			// helpToolStripMenuItem
-			// 
-			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.aboutDiagramViewerToolStripMenuItem});
-			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-			this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
-			this.helpToolStripMenuItem.Text = "Help";
-			// 
-			// aboutDiagramViewerToolStripMenuItem
-			// 
-			this.aboutDiagramViewerToolStripMenuItem.Name = "aboutDiagramViewerToolStripMenuItem";
-			this.aboutDiagramViewerToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
-			this.aboutDiagramViewerToolStripMenuItem.Text = "About Diagram Viewer...";
-			this.aboutDiagramViewerToolStripMenuItem.Click += new System.EventHandler(this.aboutDiagramViewerToolStripMenuItem_Click);
 			// 
 			// FrameForm
 			// 
@@ -232,7 +234,7 @@
 			this.IsMdiContainer = true;
 			this.MainMenuStrip = this.menuStrip;
 			this.Name = "FrameForm";
-			this.Text = "nShape Viewer";
+			this.Text = "NShape Viewer";
 			this.menuStrip.ResumeLayout(false);
 			this.menuStrip.PerformLayout();
 			this.ResumeLayout(false);

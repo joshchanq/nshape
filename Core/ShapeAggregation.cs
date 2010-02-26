@@ -85,83 +85,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Notifies the child shapes that their parent has been rotated. Rotates all children according to the parent's rotation.
-		/// </summary>
-		/// <returns>
-		/// True if all child shapes have rotated in the desired way. 
-		/// False if the child shapes cannot move as desired due to restrictions (such as connections).
-		/// </returns>
-		public bool NotifyParentRotated(int angle, int rotationCenterX, int rotationCenterY) {
-			if (shapes.Count == 0) return false;
-			else {
-				bool result = true;
-				try {
-					SuspendUpdate();
-					RevertRotation();
-
-					// set new rotation center and shapeAngle
-					aggregationAngle = (aggregationAngle + angle) % 3600;
-					rotationCenter.X = rotationCenterX;
-					rotationCenter.Y = rotationCenterY;
-
-					// rotate child shapes around the parent's center
-					for (int i = shapes.Count-1; i >= 0 ; --i) {
-						if (!shapes[i].Rotate(aggregationAngle, rotationCenter.X, rotationCenter.Y))
-							result = false;
-					}
-					// Reset bounding rectangles
-					boundingRectangleTight = boundingRectangleLoose = Geometry.InvalidRectangle;
-				} finally { ResumeUpdate(); }
-				return result;
-			}
-		}
-
-
-		/// <summary>
-		/// Notifies the child shapes that their parent has been moved. Moves all children according to the parent's movement.
-		/// </summary>
-		/// <returns>
-		/// True if all child shapes have moved in the desired way. 
-		/// False if the child shapes cannot move as desired due to restrictions (such as connections).
-		/// </returns>
-		public virtual bool NotifyParentMoved(int deltaX, int deltaY) {
-			if (shapes.Count == 0) return true;
-			else {
-				bool result = true;
-				try {
-					SuspendUpdate();
-					// move child shapes with parent
-					for (int i = 0; i < shapes.Count; ++i) {
-						// move shape
-						if (!shapes[i].MoveBy(deltaX, deltaY))
-							result = false;
-						// Update centerPoint: 
-						// Due to the fact that Point is a value Type, we have to overwrite the Point with a new Point.
-						Point shapeCenter = shapePositions[shapes[i]];
-						shapeCenter.Offset(deltaX, deltaY);
-						shapePositions[shapes[i]] = shapeCenter;
-					}
-					if (boundingRectangleTight != Geometry.InvalidRectangle)
-						boundingRectangleTight.Offset(deltaX, deltaY);
-					if (boundingRectangleLoose != Geometry.InvalidRectangle)
-						boundingRectangleLoose.Offset(deltaX, deltaY);
-				} finally { ResumeUpdate(); }
-				return result;
-			}
-		}
-
-
-		/// <summary>
-		/// Notifies the child shapes that their parent has been resized. The action performed depends on the implementing class.
-		/// </summary>
-		/// <returns>
-		/// True if all child shapes have resized in the desired way. 
-		/// False if the child shapes cannot move as desired due to restrictions (such as connections).
-		/// </returns>
-		public abstract bool NotifyParentSized(int deltaX, int deltaY);
-
-
 		public void SetPreviewStyles(IStyleSet styleSet) {
 			if (styleSet == null) throw new ArgumentNullException("styleSet");
 			foreach (Shape shape in shapes)
@@ -230,6 +153,111 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		#region Methods called by the owner
+
+		///// <summary>
+		///// Notifies the child shapes that their parent will be rotated.
+		///// </summary>
+		//public virtual void NotifyParentRotating() {
+		//   // nothing to do
+		//}
+
+
+ 		/// <summary>
+		/// Notifies the child shapes that their parent has been rotated. Rotates all children according to the parent's rotation.
+		/// </summary>
+		/// <returns>
+		/// True if all child shapes have rotated in the desired way. 
+		/// False if the child shapes cannot move as desired due to restrictions (such as connections).
+		/// </returns>
+		public virtual bool NotifyParentRotated(int angle, int rotationCenterX, int rotationCenterY) {
+			if (shapes.Count == 0) return false;
+			else {
+				bool result = true;
+				try {
+					SuspendUpdate();
+					RevertRotation();
+
+					// set new rotation center and shapeAngle
+					aggregationAngle = (aggregationAngle + angle) % 3600;
+					rotationCenter.X = rotationCenterX;
+					rotationCenter.Y = rotationCenterY;
+
+					// rotate child shapes around the parent's center
+					for (int i = shapes.Count-1; i >= 0 ; --i) {
+						if (!shapes[i].Rotate(aggregationAngle, rotationCenter.X, rotationCenter.Y))
+							result = false;
+					}
+					// Reset bounding rectangles
+					boundingRectangleTight = boundingRectangleLoose = Geometry.InvalidRectangle;
+				} finally { ResumeUpdate(); }
+				return result;
+			}
+		}
+
+
+		///// <summary>
+		///// Notifies the child shapes that their parent will be moved. Moves all children according to the parent's movement.
+		///// </summary>
+		//public virtual void NotifyParentMoving() {
+		//   // nothing to do
+		//}
+
+
+		/// <summary>
+		/// Notifies the child shapes that their parent has been moved. Moves all children according to the parent's movement.
+		/// </summary>
+		/// <returns>
+		/// True if all child shapes have moved in the desired way. 
+		/// False if the child shapes cannot move as desired due to restrictions (such as connections).
+		/// </returns>
+		public virtual bool NotifyParentMoved(int deltaX, int deltaY) {
+			if (shapes.Count == 0) return true;
+			else {
+				bool result = true;
+				try {
+					SuspendUpdate();
+					// move child shapes with parent
+					for (int i = 0; i < shapes.Count; ++i) {
+						// move shape
+						if (!shapes[i].MoveBy(deltaX, deltaY))
+							result = false;
+						// Update centerPoint: 
+						// Due to the fact that Point is a value Type, we have to overwrite the Point with a new Point.
+						Point shapeCenter = shapePositions[shapes[i]];
+						shapeCenter.Offset(deltaX, deltaY);
+						shapePositions[shapes[i]] = shapeCenter;
+					}
+					if (Geometry.IsValid(boundingRectangleTight))
+						boundingRectangleTight.Offset(deltaX, deltaY);
+					if (Geometry.IsValid(boundingRectangleLoose))
+						boundingRectangleLoose.Offset(deltaX, deltaY);
+				} finally { ResumeUpdate(); }
+				return result;
+			}
+		}
+
+
+		///// <summary>
+		///// Notifies the child shapes that their parent will be resized.
+		///// </summary>
+		//public virtual void NotifyParentSizing() {
+		//   // nothing to do
+		//}
+
+
+		/// <summary>
+		/// Notifies the child shapes that their parent has been resized. The action performed depends on the implementing class.
+		/// </summary>
+		/// <returns>
+		/// True if all child shapes have resized in the desired way. 
+		/// False if the child shapes cannot move as desired due to restrictions (such as connections).
+		/// </returns>
+		public abstract bool NotifyParentSized(int deltaX, int deltaY);
+
+		#endregion
+
+
 		#region ShapeAggregation Methods called by the child shapes
 
 		/// <override></override>
@@ -238,7 +266,7 @@ namespace Dataweb.NShape.Advanced {
 			// reset rotation of the ShapeAggregation if any of the Children are changed directly
 			if (!UpdateSuspended) {
 				// reset rotation info and re-assign (unrotated) shape position
-				//ResetRotation();
+				//ResetRotation();	// ToDo: Only reset position of the particular shape
 				
 				UpdateShapePosition(shape);
 				boundingRectangleTight = boundingRectangleLoose = Geometry.InvalidRectangle;
@@ -272,6 +300,17 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Overridden methods (protected)
 
+		protected override void ClearCore() {
+			foreach (Shape shape in shapes) {
+				shape.Invalidate();
+				shape.Parent = null;
+				shape.DisplayService = null;
+			}
+			shapePositions.Clear();
+			base.ClearCore();
+		}
+
+
 		protected override int InsertCore(int index, Shape shape) {
 			int result = base.InsertCore(index, shape);
 			// Store position of the (unrotated) shape and reset bounding rectangle
@@ -302,17 +341,6 @@ namespace Dataweb.NShape.Advanced {
 			// Set new shape's Parent and DisplayService
 			newShape.Parent = Owner;
 			newShape.DisplayService = Owner.DisplayService;
-		}
-
-
-		protected override void ClearCore() {
-			foreach (Shape shape in shapes) {
-				shape.Invalidate();
-				shape.Parent = null;
-				shape.DisplayService = null;
-			}
-			shapePositions.Clear();
-			base.ClearCore();
 		}
 
 		#endregion
@@ -362,17 +390,6 @@ namespace Dataweb.NShape.Advanced {
 				shapes[i].MoveTo(unrotatedShapeCenter.X, unrotatedShapeCenter.Y);
 			}
 		}
-
-
-		//private void ResetRotation() {
-		//   this.rotationCenter = Point.Empty;
-		//   this.aggregationAngle = 0;
-		//   foreach (Shape s in shapes) {
-		//      Point p = Point.Empty;
-		//      p.Offset(s.X, s.Y);
-		//      shapePositions[s] = p;
-		//   }
-		//}
 
 
 		private void UpdateShapePosition(Shape shape) {
@@ -457,7 +474,7 @@ namespace Dataweb.NShape.Advanced {
 			base.NotifyChildMoved(shape);
 			if (!UpdateSuspended) {
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -474,7 +491,7 @@ namespace Dataweb.NShape.Advanced {
 			base.NotifyChildResized(shape);
 			if (!UpdateSuspended) {
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -491,7 +508,7 @@ namespace Dataweb.NShape.Advanced {
 			base.NotifyChildRotated(shape);
 			if (!UpdateSuspended) {
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -509,7 +526,7 @@ namespace Dataweb.NShape.Advanced {
 			if (!UpdateSuspended) {
 				if (Owner != null) Owner.NotifyChildLayoutChanging();
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 			return result;
 		}
@@ -524,7 +541,7 @@ namespace Dataweb.NShape.Advanced {
 			} finally { ResumeUpdate(); }
 			if (!UpdateSuspended) {
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -535,7 +552,7 @@ namespace Dataweb.NShape.Advanced {
 			if (!UpdateSuspended) {
 				if (Owner != null) Owner.NotifyChildLayoutChanging();
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 			return result;
 		}
@@ -551,7 +568,7 @@ namespace Dataweb.NShape.Advanced {
 			} finally { ResumeUpdate(); }
 			if (!UpdateSuspended) {
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 			return result;
 		}
@@ -563,7 +580,7 @@ namespace Dataweb.NShape.Advanced {
 			if (!UpdateSuspended) {
 				if (Owner != null) Owner.NotifyChildLayoutChanging();
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -577,7 +594,7 @@ namespace Dataweb.NShape.Advanced {
 			} finally { ResumeUpdate(); }
 			if (!UpdateSuspended) {
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -588,7 +605,7 @@ namespace Dataweb.NShape.Advanced {
 			if (!UpdateSuspended) {
 				if (Owner != null) Owner.NotifyChildLayoutChanging();
 				CalcCenter();
-				if (Owner != null) Owner.NotifyChildLayoutChangeded();
+				if (Owner != null) Owner.NotifyChildLayoutChanged();
 			}
 		}
 
@@ -621,13 +638,13 @@ namespace Dataweb.NShape.Advanced {
 
 		public CompositeShapeAggregation(Shape owner)
 			: base(owner) {
-			relativePositions = new Dictionary<Shape, RelativePosition>();
+			relativePositions = new Dictionary<Shape, PointPositions>();
 		}
 
 
 		public CompositeShapeAggregation(Shape owner, int capacity)
 			: base(owner, capacity) {
-			relativePositions = new Dictionary<Shape, RelativePosition>(capacity);
+			relativePositions = new Dictionary<Shape, PointPositions>(capacity);
 		}
 
 
@@ -639,15 +656,15 @@ namespace Dataweb.NShape.Advanced {
 				IList<Shape> shapeList = (IList<Shape>)collection;
 				int cnt = shapeList.Count;
 				// Create dictionary of relative positions
-				relativePositions = new Dictionary<Shape, RelativePosition>(cnt);
+				relativePositions = new Dictionary<Shape, PointPositions>(cnt);
 				// Add shapes
 				for (int i = 0; i < cnt; ++i)
 					Add(shapeList[i]);
 			} else {
 				// Create dictionary of relative positions
 				if (collection is ICollection<Shape>)
-					relativePositions = new Dictionary<Shape, RelativePosition>(((ICollection<Shape>)collection).Count);
-				else relativePositions = new Dictionary<Shape, RelativePosition>();
+					relativePositions = new Dictionary<Shape, PointPositions>(((ICollection<Shape>)collection).Count);
+				else relativePositions = new Dictionary<Shape, PointPositions>();
 				// Add shapes
 				foreach (Shape shape in collection)
 					Add(shape);
@@ -661,28 +678,28 @@ namespace Dataweb.NShape.Advanced {
 				CompositeShapeAggregation src = (CompositeShapeAggregation)source;
 				// Copy relative positions of the children
 				relativePositions.Clear();
-				for (int i = 0; i < shapes.Count; ++i) {
-					RelativePosition pos = src.relativePositions[src.shapes[i]];
-					relativePositions.Add(shapes[i], pos);
+				int cnt = shapes.Count;
+				for (int i = 0; i < cnt; ++i) {
+					// Copy all items
+					PointPositions srcPtPositions = src.relativePositions[src.shapes[i]];
+					PointPositions dstPtPositions = new PointPositions();
+					foreach (KeyValuePair<ControlPointId, RelativePosition> item in srcPtPositions.Items)
+						dstPtPositions.Items.Add(item.Key, item.Value);
+					relativePositions.Add(shapes[i], dstPtPositions);
 				}
 			}
 		}
 
 
 		public override bool NotifyParentSized(int deltaX, int deltaY) {
-			bool result = true;
-			try {
-				SuspendUpdate();
-				// move children to their new absolute position calculated from relativePosition
-				for (int i = 0; i < shapes.Count; ++i) {
-					Point p = Owner.CalculateAbsolutePosition(relativePositions[shapes[i]]);
-					shapes[i].MoveTo(p.X, p.Y);
-				}
-				boundingRectangleLoose = boundingRectangleTight = Geometry.InvalidRectangle;
-			} finally {
-				ResumeUpdate();
-			}
-			return result;
+			return RestoreCildrenPositions();
+		}
+
+
+		public override bool NotifyParentRotated(int angle, int rotationCenterX, int rotationCenterY) {
+			if (base.NotifyParentRotated(angle, rotationCenterX, rotationCenterY))
+				return RestoreCildrenPositions();
+			else return false;
 		}
 
 
@@ -707,13 +724,70 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private void AddRelativePosition(Shape shape) {
-			RelativePosition relativePos = Owner.CalculateRelativePosition(shape.X, shape.Y);
-			relativePositions.Add(shape, relativePos);
+			PointPositions ptPositions = new PointPositions(shape, Owner);
+			relativePositions.Add(shape, ptPositions);
 		}
 
 
+		private bool RestoreCildrenPositions() {
+			bool result = true;
+			try {
+				SuspendUpdate();
+				Rectangle ownerBounds = Owner.GetBoundingRectangle(true);
+				// move children to their new absolute position calculated from relativePosition
+				for (int i = 0; i < shapes.Count; ++i) {
+					PointPositions ptPositions = relativePositions[shapes[i]];
+					Debug.Assert(ptPositions != null);
+					// This will be the desired solution, but it does not work well for all shapes.
+					foreach (KeyValuePair<ControlPointId, RelativePosition> item in ptPositions.Items) {
+						Debug.Assert(item.Value != RelativePosition.Empty);
+						Point p = Owner.CalculateAbsolutePosition(item.Value);
+						Debug.Assert(Geometry.IsValid(p));
+						shapes[i].MoveControlPointTo(item.Key, p.X, p.Y, ResizeModifiers.None);
+					}
+				}
+				boundingRectangleLoose = boundingRectangleTight = Geometry.InvalidRectangle;
+			} finally {
+				ResumeUpdate();
+			}
+			return result;
+		}
+
+
+		private class PointPositions {
+
+			public PointPositions() {
+				items = new SortedList<ControlPointId, RelativePosition>();
+			}
+
+			public PointPositions(Shape shape, Shape owner)
+				: this() {
+				if (shape == null) throw new ArgumentNullException("shape");
+				if (owner == null) throw new ArgumentNullException("owner");
+				// First, store position of reference point
+				RelativePosition relativePos = RelativePosition.Empty;
+				relativePos = owner.CalculateRelativePosition(shape.X, shape.Y);
+				Debug.Assert(relativePos != RelativePosition.Empty);
+				items.Add(ControlPointId.Reference, relativePos);
+				// Then, store all resize control point positions as relative position
+				foreach (ControlPointId ptId in shape.GetControlPointIds(ControlPointCapabilities.Resize)) {
+					Point p = shape.GetControlPointPosition(ptId);
+					relativePos = owner.CalculateRelativePosition(p.X, p.Y);
+					Debug.Assert(relativePos != RelativePosition.Empty);
+					items.Add(ptId, relativePos);
+				}
+			}
+
+			public SortedList<ControlPointId, RelativePosition> Items {
+				get { return items; }
+			}
+
+			private SortedList<ControlPointId, RelativePosition> items;
+		}
+		
+		
 		#region Fields
-		private Dictionary<Shape, RelativePosition> relativePositions;
+		private Dictionary<Shape, PointPositions> relativePositions;
 		#endregion
 	}
 

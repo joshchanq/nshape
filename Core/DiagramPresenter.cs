@@ -76,11 +76,15 @@ namespace Dataweb.NShape.Controllers {
 
 		event EventHandler<DiagramPresenterShapeEventArgs> ShapeRemove;
 
+		event EventHandler DiagramChanging;
+
 		event EventHandler DiagramChanged;
 
 		event EventHandler<LayersEventArgs> LayerVisibilityChanged;
 
 		event EventHandler<LayersEventArgs> ActiveLayersChanged;
+
+		event EventHandler ZoomChanged;
 
 		#endregion
 
@@ -326,7 +330,7 @@ namespace Dataweb.NShape.Controllers {
 
 		void DrawSelectionFrame(Rectangle frameRect);
 
-		void DrawAnglePreview(Point center, int radius, Point mousePos, int cursorId, int originalAngle, int newAngle);
+		void DrawAnglePreview(Point center, int radius, Point mousePos, int cursorId, int startAngle, int sweepAngle);
 
 		void DrawLine(Point a, Point b);
 

@@ -26,7 +26,7 @@ Public Class Form1
 		Dim diagram As New Diagram("Diagram")
 		diagram.Width = 3 * rectSize
 		diagram.Height = 3 * rectSize
-		diagram.BackgroundImage = New Dataweb.Utilities.NamedImage(NShape_API_Demo.My.Resources.Background, "Background")
+		diagram.BackgroundImage = New NamedImage(NShape_API_Demo.My.Resources.Background, "Background")
 		diagram.BackgroundImageLayout = ImageLayoutMode.FilpTile
 
 		Dim fillstyle As New FillStyle

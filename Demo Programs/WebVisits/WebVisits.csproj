@@ -48,10 +48,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dataweb.NShape, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+    <Reference Include="Dataweb.NShape, Version=1.0.4.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\bin\Dataweb.NShape.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

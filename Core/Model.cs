@@ -207,21 +207,21 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="propertyId"></param>
 		/// <returns></returns>
-		int GetInteger(int propertyIndex);
+		int GetInteger(int propertyId);
 
 		/// <summary>
 		/// Retrieves the float value of a field.
 		/// </summary>
 		/// <param name="propertyId"></param>
 		/// <returns></returns>
-		float GetFloat(int propertyIndex);
+		float GetFloat(int propertyId);
 
 		/// <summary>
 		/// Retrieves the string value of a field.
 		/// </summary>
 		/// <param name="propertyId"></param>
 		/// <returns></returns>
-		string GetString(int propertyIndex);
+		string GetString(int propertyId);
 
 		/// <summary>
 		/// Gets the possible actions for this model object.
@@ -534,15 +534,13 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	/// <remarks>ModelObjectTypes objects can inherit from this class but need not.</remarks>
 	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
-	public abstract class ModelObjectBase : IModelObject {
+	public abstract class ModelObjectBase : IModelObject, IEntity {
 
 		protected internal ModelObjectBase(ModelObjectBase source) {
 			id = null;
 			modelObjectType = source.Type;
 			name = modelObjectType.GetDefaultName();
-
-			// do not clone these properties:
-			//Parent = source.Parent;
+			parent = source.Parent;
 		}
 
 
@@ -566,9 +564,17 @@ namespace Dataweb.NShape.Advanced {
 		/// temporary objects have no parent and are therefore orphaned. E.g. when cloning
 		/// model objects the clones do not have parents.
 		/// </summary>
+		[Browsable(false)]
 		public virtual IModelObject Parent {
 			get { return parent; }
 			set { parent = value; }
+		}
+
+
+		/// <override></override>
+		[Browsable(false)]
+		public IEnumerable<Shape> Shapes {
+			get { return shapes.Keys; }
 		}
 
 
@@ -600,12 +606,6 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
-		public IEnumerable<Shape> Shapes {
-			get { return shapes.Keys; }
-		}
-
-
-		/// <override></override>
 		public void AttachShape(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			if (shapes.ContainsKey(shape)) throw new NShapeException("{0} '{1}' is already attached to this shape.", Type.Name, Name);
@@ -632,45 +632,45 @@ namespace Dataweb.NShape.Advanced {
 
 
 		// unique id of object, does never change
-		public object Id { 
+		object IEntity.Id {
 			get { return id; } 
 		}
 
 
-		public void AssignId(object id) {
+		void IEntity.AssignId(object id) {
 			if (id == null) throw new ArgumentNullException("id");
 			if (this.id != null) throw new InvalidOperationException("Model object has already an id.");
 			this.id = id;
 		}
 
 
-		public virtual void LoadFields(IRepositoryReader reader, int version) {
+		void IEntity.LoadFields(IRepositoryReader reader, int version) {
 			if (reader == null) throw new ArgumentNullException("reader");
-			name = reader.ReadString();
+			LoadFieldsCore(reader, version);
 		}
 
 
-		public virtual void LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
+		void IEntity.LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
 			if (propertyName == null) throw new ArgumentNullException("propertyName");
 			if (reader == null) throw new ArgumentNullException("reader");
-			// nothing to do
+			LoadInnerObjectsCore(propertyName, reader, version);
 		}
 
 
-		public virtual void SaveFields(IRepositoryWriter writer, int version) {
+		void IEntity.SaveFields(IRepositoryWriter writer, int version) {
 			if (writer == null) throw new ArgumentNullException("writer");
-			writer.WriteString(name);
+			SaveFieldsCore(writer, version);
 		}
 
 
-		public virtual void SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
+		void IEntity.SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
 			if (propertyName == null) throw new ArgumentNullException("propertyName");
 			if (writer == null) throw new ArgumentNullException("writer");
-			// nothing to do
+			SaveInnerObjectsCore(propertyName, writer, version);
 		}
 
 
-		public virtual void Delete(IRepositoryWriter writer, int version) {
+		void IEntity.Delete(IRepositoryWriter writer, int version) {
 			if (writer == null) throw new ArgumentNullException("writer");
 			foreach (EntityPropertyDefinition pi in GetPropertyDefinitions(version)) {
 				if (pi is EntityInnerObjectsDefinition) {
@@ -694,6 +694,30 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		#region [Protected] IEntity implementation
+
+		protected virtual void LoadFieldsCore(IRepositoryReader reader, int version) {
+			name = reader.ReadString();
+		}
+
+
+		protected virtual void LoadInnerObjectsCore(string propertyName, IRepositoryReader reader, int version) {
+			// nothing to do here
+		}
+
+
+		protected virtual void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			writer.WriteString(name);
+		}
+
+
+		protected virtual void SaveInnerObjectsCore(string propertyName, IRepositoryWriter writer, int version) {
+			// nothing to do here
+		}
+
+		#endregion
+
+
 		#region Fields
 		private const string persistentTypeName = "ModelObject";
 
@@ -706,13 +730,14 @@ namespace Dataweb.NShape.Advanced {
 		private Dictionary<Shape, object> shapes = new Dictionary<Shape, object>(1);
 
 		#endregion
+
 	}
 
 
 	/// <summary>
 	/// ModelObjectTypes object with configurable number and type of properties.
 	/// </summary>
-	public class GenericModelObject : ModelObjectBase, IEntity {
+	public class GenericModelObject : ModelObjectBase {
 
 		public static GenericModelObject CreateInstance(ModelObjectType modelObjectType) {
 			if (modelObjectType == null) throw new ArgumentNullException("modelObjectType");
@@ -804,37 +829,6 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
-		public override void LoadFields(IRepositoryReader reader, int version) {
-			base.LoadFields(reader, version);
-			integerValue = reader.ReadInt32();
-			floatValue = reader.ReadFloat();
-			stringValue = reader.ReadString();
-		}
-
-
-		public override void LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
-			base.LoadInnerObjects(propertyName, reader, version);
-		}
-
-
-		public override void SaveFields(IRepositoryWriter writer, int version) {
-			base.SaveFields(writer, version);
-			writer.WriteInt32(integerValue);
-			writer.WriteFloat(floatValue);
-			writer.WriteString(stringValue);
-		}
-
-
-		public override void SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
-			base.SaveInnerObjects(propertyName, writer, version);
-		}
-
-
-		public override void Delete(IRepositoryWriter writer, int version) {
-			base.Delete(writer, version);
-		}
-
-
 		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition pi in ModelObjectBase.GetPropertyDefinitions(version))
 				yield return pi;
@@ -842,6 +836,23 @@ namespace Dataweb.NShape.Advanced {
 			yield return new EntityFieldDefinition("FloatValue", typeof(float));
 			yield return new EntityFieldDefinition("StringValue", typeof(string));
 		}
+
+
+		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
+			base.LoadFieldsCore(reader, version);
+			integerValue = reader.ReadInt32();
+			floatValue = reader.ReadFloat();
+			stringValue = reader.ReadString();
+		}
+
+
+		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
+			base.SaveFieldsCore(writer, version);
+			writer.WriteInt32(integerValue);
+			writer.WriteFloat(floatValue);
+			writer.WriteString(stringValue);
+		}
+
 
 		#endregion
 

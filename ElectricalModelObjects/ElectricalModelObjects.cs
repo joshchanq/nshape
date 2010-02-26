@@ -333,6 +333,6 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 
 		private const string namespaceName = "ElectricalModelObjects";
 		private const string categoryTitle = "Electrical";
-		private const int preferredRepositoryVersion = 2;
+		private const int preferredRepositoryVersion = 3;
 	}
 }

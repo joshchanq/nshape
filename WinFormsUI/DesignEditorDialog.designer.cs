@@ -13,9 +13,8 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(DesignEditorDialog));
 			this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
-			this.designPresenter = new Dataweb.NShape.WinFormsUI.DesignPresenter();
+			this.designController = new Dataweb.NShape.Controllers.DesignController();
 			this.toolStrip2 = new System.Windows.Forms.ToolStrip();
 			this.designsComboBox = new System.Windows.Forms.ToolStripComboBox();
 			this.activateButton = new System.Windows.Forms.ToolStripButton();
@@ -27,7 +26,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.deleteStyleButton = new System.Windows.Forms.ToolStripButton();
 			this.panel1 = new System.Windows.Forms.Panel();
 			this.closeButton = new System.Windows.Forms.Button();
-			this.designController = new Dataweb.NShape.Controllers.DesignController();
+			this.designPresenter = new Dataweb.NShape.WinFormsUI.DesignPresenter();
 			this.toolStripContainer1.ContentPanel.SuspendLayout();
 			this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
 			this.toolStripContainer1.SuspendLayout();
@@ -53,24 +52,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.toolStrip2);
 			// 
-			// designPresenter
+			// designController
 			// 
-			this.designPresenter.DesignController = this.designController;
-			this.designPresenter.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.designPresenter.FocusBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(220)))));
-			this.designPresenter.FocusedItemColor = System.Drawing.Color.Beige;
-			this.designPresenter.HighlightedItemColor = System.Drawing.SystemColors.ControlLightLight;
-			this.designPresenter.HighlightItems = true;
-			this.designPresenter.InactiveItemBackgroundColor = System.Drawing.SystemColors.Control;
-			this.designPresenter.InactiveItemBorderColor = System.Drawing.SystemColors.Window;
-			this.designPresenter.InactiveItemTextColor = System.Drawing.SystemColors.ControlDarkDark;
-			this.designPresenter.Location = new System.Drawing.Point(0, 0);
-			this.designPresenter.Name = "designPresenter";
-			this.designPresenter.SelectedDesign = null;
-			this.designPresenter.SelectedItemColor = System.Drawing.SystemColors.Window;
-			this.designPresenter.SelectedItemTextColor = System.Drawing.SystemColors.ControlText;
-			this.designPresenter.Size = new System.Drawing.Size(602, 372);
-			this.designPresenter.TabIndex = 0;
+			this.designController.Project = null;
 			// 
 			// toolStrip2
 			// 
@@ -174,9 +158,24 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.closeButton.UseVisualStyleBackColor = true;
 			this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
 			// 
-			// designController
+			// designPresenter
 			// 
-			this.designController.Project = null;
+			this.designPresenter.DesignController = this.designController;
+			this.designPresenter.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.designPresenter.FocusBorderColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(245)))), ((int)(((byte)(245)))), ((int)(((byte)(220)))));
+			this.designPresenter.FocusedItemColor = System.Drawing.Color.Beige;
+			this.designPresenter.HighlightedItemColor = System.Drawing.SystemColors.ControlLightLight;
+			this.designPresenter.HighlightItems = true;
+			this.designPresenter.InactiveItemBackgroundColor = System.Drawing.SystemColors.Control;
+			this.designPresenter.InactiveItemBorderColor = System.Drawing.SystemColors.Window;
+			this.designPresenter.InactiveItemTextColor = System.Drawing.SystemColors.ControlDarkDark;
+			this.designPresenter.Location = new System.Drawing.Point(0, 0);
+			this.designPresenter.Name = "designPresenter";
+			this.designPresenter.SelectedDesign = null;
+			this.designPresenter.SelectedItemColor = System.Drawing.SystemColors.Window;
+			this.designPresenter.SelectedItemTextColor = System.Drawing.SystemColors.ControlText;
+			this.designPresenter.Size = new System.Drawing.Size(602, 372);
+			this.designPresenter.TabIndex = 0;
 			// 
 			// DesignEditorDialog
 			// 
@@ -186,10 +185,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.Controls.Add(this.toolStripContainer1);
 			this.Controls.Add(this.panel1);
 			this.DoubleBuffered = true;
-			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.SizableToolWindow;
-			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "DesignEditorDialog";
-			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Design Editor";

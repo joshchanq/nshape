@@ -23,9 +23,12 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+	[ToolboxItem(true)]
+	[ToolboxBitmap(typeof(ModelController), "ModelController.bmp")]
 	public class ModelController : Component {
 
-		public ModelController() {
+		public ModelController()
+			: base() {
 		}
 
 
@@ -64,6 +67,12 @@ namespace Dataweb.NShape.Controllers {
 
 
 		#region [Public] Properties
+
+		[Category("NShape")]
+		public string ProductVersion {
+			get { return this.GetType().Assembly.GetName().Version.ToString(); }
+		}
+
 
 		[ReadOnly(true)]
 		[Category("NShape")]
@@ -172,7 +181,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		public IEnumerable<MenuItemDef> GetActions(IReadOnlyCollection<IModelObject> modelObjects) {
+		public IEnumerable<MenuItemDef> GetMenuItemDefs(IReadOnlyCollection<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			
 			// New...
@@ -331,25 +340,26 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private void repository_TemplateShapeReplaced(object sender, RepositoryTemplateShapeReplacedEventArgs e) {
-			//ToDo: Refresh TreeView icon
-			if (Changed != null) Changed(this, new EventArgs());
+			if (e.OldTemplateShape.ModelObject != null || e.NewTemplateShape.ModelObject != null)
+				if (Changed != null) Changed(this, new EventArgs());
 		}
 
 
 		private void repository_TemplateInserted(object sender, RepositoryTemplateEventArgs e) {
-			// nothing to do
-			if (Changed != null) Changed(this, new EventArgs());
+			if (e.Template.Shape.ModelObject != null)
+				if (Changed != null) Changed(this, new EventArgs());
 		}
 
 
 		private void repository_TemplateUpdated(object sender, RepositoryTemplateEventArgs e) {
-			//ToDo: Refresh TreeView icon
-			if (Changed != null) Changed(this, new EventArgs());
+			if (e.Template.Shape.ModelObject != null)
+				if (Changed != null) Changed(this, new EventArgs());
 		}
 
 
 		private void repository_TemplateDeleted(object sender, RepositoryTemplateEventArgs e) {
-			//ToDo: Refresh TreeView icon
+			if (e.Template.Shape.ModelObject != null)
+				if (Changed != null) Changed(this, new EventArgs());
 		}
 
 		#endregion
@@ -462,10 +472,4 @@ namespace Dataweb.NShape.Controllers {
 		private bool ensureVisibility;
 	}
 
-
-	#region ModelTree Actions
-
-	// ToDo: Define Actions for FindShape, DeleteModel, AddModel, RenameModel
-	
-	#endregion
 }

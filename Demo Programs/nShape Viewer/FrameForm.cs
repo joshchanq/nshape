@@ -1,15 +1,15 @@
 ﻿/******************************************************************************
   Copyright 2009 dataweb GmbH
-  This file is part of the nShape framework.
-  nShape is free software: you can redistribute it and/or modify it under the 
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
   Foundation, either version 3 of the License, or (at your option) any later 
   version.
-  nShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
   WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
-  nShape. If not, see <http://www.gnu.org/licenses/>.
+  NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
 using System;
@@ -22,14 +22,15 @@ using Dataweb.NShape;
 using Dataweb.NShape.Advanced;
 
 
-namespace nShapeViewer {
+namespace NShapeViewer {
 
 	public partial class FrameForm : Form {
 		
 		public FrameForm() {
 			InitializeComponent();
 
-			((DefaultSecurity)project.SecurityManager).CurrentRole = StandardRole.Guest;
+			((RoleBasedSecurityManager)project.SecurityManager).CurrentRole = StandardRole.Guest;
+			project.LibrarySearchPaths.Add(Application.StartupPath);
 		}
 
 		
@@ -147,12 +148,10 @@ namespace nShapeViewer {
 
 		private void openMenuItem_Click(object sender, EventArgs e) {
 			if (project.IsOpen) project.Close();
-			openFileDialog.InitialDirectory = Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\..\..\..\Demo Projects"));
+			openFileDialog.InitialDirectory = Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\Demo Projects"));
 			if (openFileDialog.ShowDialog(this) == DialogResult.OK) {
 				xmlStore.DirectoryName = Path.GetDirectoryName(openFileDialog.FileName);
 				project.Name = Path.GetFileNameWithoutExtension(openFileDialog.FileName);
-				if (project.LibrarySearchPaths.Count == 0)
-					project.LibrarySearchPaths.Add(Path.GetFullPath(Path.Combine(Application.StartupPath, @"..\..\..\Libraries")));
 				project.Open();
 			}
 		}
@@ -204,4 +203,5 @@ namespace nShapeViewer {
 
 		private Dictionary<string, DisplayChildForm> displayChildForms = new Dictionary<string, DisplayChildForm>();
 	}
+
 }

@@ -21,17 +21,65 @@ namespace WebVisists {
 		}
 
 
+		private void MainForm_Load(object sender, EventArgs e) {
+			// Set User Acceess Rights
+			RoleBasedSecurityManager sec = new RoleBasedSecurityManager();
+			sec.CurrentRole = StandardRole.SuperUser;
+			project.SecurityManager = sec;
+
+			xmlStore.DirectoryName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"WebVisits");
+
+			project.Name = "Webvisits Project";
+			project.Create();
+			project.LibrarySearchPaths.Add(Application.StartupPath);
+			project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
+			project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
+
+			CreateLineStyles();
+
+			// Delete default tools
+			toolBoxAdapter.ToolSetController.Clear();
+			toolBoxAdapter.ListView.ShowGroups = false;
+
+			// Add desired tools
+			toolBoxAdapter.ToolSetController.AddTool(new PointerTool());
+
+			Template t = new Template("Web Page", project.ShapeTypes["Ellipse"].CreateInstance());
+			((RectangleBase)t.Shape).FillStyle = project.Design.FillStyles["Green"];
+			project.Repository.InsertTemplate(t);
+			pageTemplate = t;
+
+			t = new Template("Label", project.ShapeTypes["Label"].CreateInstance());
+			((RectangleBase)t.Shape).CharacterStyle = project.Design.CharacterStyles.Normal;
+			project.Repository.InsertTemplate(t);
+
+			t = new Template("Annotation", project.ShapeTypes["Annotation"].CreateInstance());
+			((RectangleBase)t.Shape).FillStyle = project.Design.FillStyles.Yellow;
+			project.Repository.InsertTemplate(t);
+		}
+
+
+		private void MainForm_Shown(object sender, EventArgs e) {
+			if (MessageBox.Show(this, "Do you want to load a web statistics file now?", "Load web statistics file",
+				MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1) == DialogResult.Yes)
+				loadWebStatisticsToolStripMenuItem_Click(this, null);
+		}
+
+
 		private void loadWebStatisticsToolStripMenuItem_Click(object sender, EventArgs e) {
-			openFileDialog.InitialDirectory = @"..\..\Sample Web Statistics";
+			string statsDir = Path.Combine("WebVisits", "Sample Web Statistics");
+			openFileDialog.Filter = "Web Statistics|*.xml|All files|*.*";
+			openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, statsDir);
+			openFileDialog.FileName = string.Empty;
 			if (openFileDialog.ShowDialog() == DialogResult.OK) {
-				// Neues Diagramm erzeugen
+				// Create a new diagram
 				ShapeType boxType = project.ShapeTypes["Ellipse"];
 				ShapeType multiLineType = project.ShapeTypes["Polyline"];
 				
 				Dictionary<int, RectangleBase> boxes = new Dictionary<int, RectangleBase>();
 				List<Polyline> lines = new List<Polyline>();
 				//
-				// Die Web-Seiten eintragen und verbinden
+				// Create shapes for the web pages and connect them with lines
 				XmlScanner scanner = new XmlScanner(openFileDialog.FileName);
 				scanner.ReadElement();
 				scanner.ReadElement("WebVisits");
@@ -65,7 +113,7 @@ namespace WebVisists {
 				scanner.ReadParent();
 				scanner.Close();
 				//
-				// Alle Shapes ins Diagramm eintragen
+				// Insert all shapes into the diagram
 				int cnt = 0;
 				foreach (Diagram d in project.Repository.GetDiagrams())
 					++cnt;
@@ -81,11 +129,12 @@ namespace WebVisists {
 				boxes.Clear();
 				lines.Clear();
 				//
-				// Alle ins Repository eintragen
+				// Insert the diagram (including all shapes) into the repository
 				project.Repository.InsertDiagram(diagram);
 				//
-				// Layouten
-				RepulsionLayouter layouter = new RepulsionLayouter(project);
+				// Layout the shapes
+				if (layouter == null)
+					layouter = new RepulsionLayouter(project);
 				layouter.SpringRate = 8;
 				layouter.Repulsion = 3;
 				layouter.RepulsionRange = 500;
@@ -97,69 +146,41 @@ namespace WebVisists {
 				layouter.Execute(10);
 				layouter.Fit(50, 50, diagram.Width- 100, diagram.Height-100);
 				//
-				// Anzeigen
+				// Display the result
 				display.Diagram = diagram;
+			}
+		}
+
+
+		private void loadDiagramToolStripMenuItem_Click(object sender, EventArgs e) {
+			using (OpenFileDialog openFileDlg = new OpenFileDialog()) {
+				if (openFileDlg.ShowDialog(this) == DialogResult.OK) {
+					project.Close();
+					xmlStore.DirectoryName = Path.GetDirectoryName(openFileDlg.FileName);
+					xmlStore.FileExtension = Path.GetExtension(openFileDlg.FileName);
+					project.Name = Path.GetFileNameWithoutExtension(openFileDlg.FileName);
+					project.Open();
+					foreach (Diagram d in project.Repository.GetDiagrams()) {
+						display.Diagram = d;
+						break;
+					}
+					display.Refresh();
+				}
 			}
 		}
 
 
 		private void saveDiagramToolStripMenuItem_Click(object sender, EventArgs e) {
 			using (SaveFileDialog dlg = new SaveFileDialog()) {
-				dlg.InitialDirectory = xmlStore.DirectoryName;
+				if (Directory.Exists(xmlStore.DirectoryName))
+					dlg.InitialDirectory = xmlStore.DirectoryName;
+				else dlg.FileName = Path.GetFileName(xmlStore.ProjectFilePath);
 				if (dlg.ShowDialog() == DialogResult.OK) {
 					xmlStore.DirectoryName = Path.GetDirectoryName(dlg.FileName);
 					project.Name = Path.GetFileNameWithoutExtension(dlg.FileName);
 					project.Repository.SaveChanges();
 				}
 			}
-		}
-
-
-		private void Form1_Load(object sender, EventArgs e) {
-			// Set User Acceess Rights
-			DefaultSecurity sec = new DefaultSecurity();
-			sec.CurrentRole = StandardRole.SuperUser;
-			project.SecurityManager = sec;
-
-			xmlStore.DirectoryName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), @"dataweb\WebVisits");
-			if (!Directory.Exists(xmlStore.DirectoryName)) Directory.CreateDirectory(xmlStore.DirectoryName);
-
-			project.Name = "Webvisits Project";
-			project.Create();
-			project.LibrarySearchPaths.Add(Application.StartupPath);
-			project.AddLibraryByName("Dataweb.nShape.GeneralShapes");
-			project.AddLibraryByName("Dataweb.nShape.SoftwareArchitectureShapes");
-
-			CreateLineStyles();
-
-			// Delete default tools
-			toolBoxAdapter.ToolSetController.Clear();
-			toolBoxAdapter.ListView.ShowGroups = false;
-			
-			// Add desired tools
-			toolBoxAdapter.ToolSetController.AddTool(new PointerTool());
-			
-			Template t = new Template("Web Page", project.ShapeTypes["Ellipse"].CreateInstance());
-			((RectangleBase)t.Shape).FillStyle = project.Design.FillStyles["Green"];
-			project.Repository.InsertTemplate(t);
-			pageTemplate = t;
-			
-			t = new Template("Label", project.ShapeTypes["Label"].CreateInstance());
-			((RectangleBase)t.Shape).CharacterStyle = project.Design.CharacterStyles.Normal;
-			project.Repository.InsertTemplate(t);
-			
-			t = new Template("Annotation", project.ShapeTypes["Annotation"].CreateInstance());
-			((RectangleBase)t.Shape).FillStyle = project.Design.FillStyles.Yellow;
-			project.Repository.InsertTemplate(t);
-		}
-
-
-		private void loadDiagramToolStripMenuItem_Click(object sender, EventArgs e) {
-			foreach (Diagram d in project.Repository.GetDiagrams()) {
-				display.Diagram = d;
-				break;
-			}
-			display.Refresh();
 		}
 
 
@@ -171,12 +192,18 @@ namespace WebVisists {
 		private void toolBoxAdapter_ToolSelected(object sender, EventArgs e) {
 		}
 
-		
-		private void display_Load(object sender, EventArgs e) {
 
+		private void showLayoutWindowToolStripMenuItem_Click(object sender, EventArgs e) {
+			// ToDo: Show layout dialog
+			Dataweb.NShape.WinFormsUI.LayoutDialog layoutWindow;
+			if (layouter != null)
+				layoutWindow = new Dataweb.NShape.WinFormsUI.LayoutDialog(layouter);
+			else layoutWindow = new Dataweb.NShape.WinFormsUI.LayoutDialog();
+			layoutWindow.Diagram = display.Diagram;
+			layoutWindow.Show(this);
 		}
-
-
+		
+		
 		private void selectAllToolStripMenuItem_Click(object sender, EventArgs e) {
 			display.SelectAll();
 		}
@@ -240,6 +267,6 @@ namespace WebVisists {
 
 
 		private Template pageTemplate;
-
+		private RepulsionLayouter layouter = null;
 	}
 }
