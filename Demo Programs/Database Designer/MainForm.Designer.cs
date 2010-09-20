@@ -392,7 +392,7 @@
 			// toolSetController
 			// 
 			this.toolSetController.DiagramSetController = this.diagramSetController;
-			this.toolSetController.TemplateEditorSelected += new Dataweb.NShape.Controllers.TemplateEditorSelectedEventHandler(this.toolSetController_TemplateEditorSelected);
+			this.toolSetController.TemplateEditorSelected += new System.EventHandler<Dataweb.NShape.Controllers.TemplateEditorEventArgs>(toolSetController_TemplateEditorSelected);
 			this.toolSetController.DesignEditorSelected += new System.EventHandler(this.toolSetController_DesignEditorSelected);
 			// 
 			// propertyPresenter
@@ -471,7 +471,6 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.ToolStripDropDownButton diagramsDropDownButton;
 		private Dataweb.NShape.WinFormsUI.PropertyPresenter propertyPresenter;
-		private System.Windows.Forms.ToolStripMenuItem testToolStripMenuItem;
 		private Dataweb.NShape.Controllers.DiagramSetController diagramSetController;
 		private Dataweb.NShape.Controllers.ToolSetController toolSetController;
 		private Dataweb.NShape.Controllers.PropertyController propertyController;

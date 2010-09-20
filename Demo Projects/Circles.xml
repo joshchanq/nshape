@@ -340,7 +340,7 @@
       </template>
     </templates>
     <diagrams>
-      <diagram id="2a2791ee-b17e-4ad9-9d20-985bbd948abb" name="Diagram 1" width="3000" height="3000" background_color="-4144960" background_gradient_end_color="-657931" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="2a2791ee-b17e-4ad9-9d20-985bbd948abb" name="Diagram 1" width="3000" height="3000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers />
         <shapes>
           <circle id="27ab9553-1d94-41bc-aea3-5e46603ff8c9" template="d3d0bbf7-59c2-43a2-b62c-bd9ec5fee4b1" model_object="00000000-0000-0000-0000-000000000000" x="300" y="320" z_order="10" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="320">

@@ -16,8 +16,9 @@ using System.Windows.Forms;
 
 
 namespace Database_Designer {
+	
 	public partial class ToolBoxWindow : Form {
-		private DatabaseDesignerForm parent;
+		//private DatabaseDesignerForm parent;
 
 
 		public ToolBoxWindow() {

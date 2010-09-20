@@ -435,7 +435,7 @@ namespace ArchiSketch {
 		#endregion
 
 
-		private void toolBox_ShowTemplateEditorDialog(object sender, ShowTemplateEditorEventArgs e) {
+		private void toolBox_ShowTemplateEditorDialog(object sender, TemplateEditorEventArgs e) {
 			TemplateEditorDialog dlg = new TemplateEditorDialog(e.Project, e.Template);
 			dlg.Show();
 		}

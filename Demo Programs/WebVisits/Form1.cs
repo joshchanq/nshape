@@ -69,7 +69,7 @@ namespace WebVisists {
 		private void loadWebStatisticsToolStripMenuItem_Click(object sender, EventArgs e) {
 			string statsDir = Path.Combine("WebVisits", "Sample Web Statistics");
 			openFileDialog.Filter = "Web Statistics|*.xml|All files|*.*";
-			openFileDialog.InitialDirectory = Path.Combine(Application.StartupPath, statsDir);
+			openFileDialog.InitialDirectory = Path.Combine(Path.GetDirectoryName(Application.StartupPath), statsDir);
 			openFileDialog.FileName = string.Empty;
 			if (openFileDialog.ShowDialog() == DialogResult.OK) {
 				// Create a new diagram
@@ -199,6 +199,7 @@ namespace WebVisists {
 			if (layouter != null)
 				layoutWindow = new Dataweb.NShape.WinFormsUI.LayoutDialog(layouter);
 			else layoutWindow = new Dataweb.NShape.WinFormsUI.LayoutDialog();
+			layoutWindow.Project = project;
 			layoutWindow.Diagram = display.Diagram;
 			layoutWindow.Show(this);
 		}

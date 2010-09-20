@@ -32,23 +32,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Dataweb.NShape, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\bin\Dataweb.NShape.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\bin\Dataweb.NShape.GeneralShapes.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="Dataweb.NShape.SoftwareArchitectureShapes, Version=0.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\bin\Dataweb.NShape.SoftwareArchitectureShapes.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="Dataweb.NShape.WinFormsUI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\bin\Dataweb.NShape.WinFormsUI.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />

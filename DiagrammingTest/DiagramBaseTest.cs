@@ -599,6 +599,7 @@ namespace NShapeTest {
 
 			BoundingRectangleTestCore(diagram.Shapes, 0, 100, 0);
 			BoundingRectangleTestCore(diagram.Shapes, 200, 100, 300);
+			BoundingRectangleTestCore(diagram.Shapes, 100, 2, 600);
 
 			project.Close();
 		}
@@ -622,14 +623,13 @@ namespace NShapeTest {
 					((DiamondBase)s).Height = shapeSize;
 				} else if (s is CircleBase)
 					((CircleBase)s).Diameter = shapeSize;
-				else if (s is SquareBase)
+				else if (s is SquareBase) {
 					((SquareBase)s).Size = shapeSize;
-				//else if (s is PolygonBase) {
-				//   s.MoveControlPointTo(1, -shapeSize / 2, -shapeSize / 2, ResizeModifiers.None);
-				//   s.MoveControlPointTo(2, -shapeSize / 2, shapeSize / 2, ResizeModifiers.None);
-				//   s.MoveControlPointTo(3, shapeSize / 2, shapeSize / 2, ResizeModifiers.None);
-				//} 
-				else if (s is PolylineBase) {
+				} else if (s is ImageBasedShape) {
+					Rectangle r = s.GetBoundingRectangle(true);	// Get current size
+					Point p = s.GetControlPointPosition(8);		// Get current control point pos
+					((ImageBasedShape)s).MoveControlPointTo(8, 0, r.Bottom + (shapeSize - r.Height), ResizeModifiers.None);
+				} else if (s is PolylineBase) {
 					s.MoveControlPointTo(ControlPointId.FirstVertex, -shapeSize / 2, -shapeSize / 2, ResizeModifiers.None);
 					s.MoveControlPointTo(ControlPointId.LastVertex, shapeSize / 2, shapeSize / 2, ResizeModifiers.None);
 				} else if (s is CircularArcBase) {
@@ -638,7 +638,7 @@ namespace NShapeTest {
 					s.MoveControlPointTo(ControlPointId.LastVertex, shapeSize / 2, shapeSize / 2, ResizeModifiers.None);
 				} else if (s is ShapeGroup) {
 					s.Children.Add(shapes.TopMost);
-				} //else s.Fit(-shapeSize / 2, -shapeSize / 2, shapeSize, shapeSize);
+				} else throw new Exception(string.Format("Untested {0} '{1}'!", s.Type.GetType().Name, s.Type.FullName));
 
 				// rotate shape
 				if (shapeAngle != 0 && s is IPlanarShape)
@@ -661,6 +661,10 @@ namespace NShapeTest {
 				Assert.IsTrue(tightBounds.Y >= looseBounds.Y);
 				Assert.IsTrue(tightBounds.Width <= looseBounds.Width);
 				Assert.IsTrue(tightBounds.Height <= looseBounds.Height);
+
+				// ToDo: Add more precise tests
+				// - Calculate expected (rotated) size of the shape and compare with tightBounds
+				// - Calculate expected (rotated) size of the shape's control points and compare with looseBounds
 			}
 		}
 

@@ -15,14 +15,14 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Windows.Forms;
+
 using Dataweb.NShape;
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.GeneralShapes;
 using Dataweb.NShape.SoftwareArchitectureShapes;
-using Dataweb.Utilities;
 using Dataweb.NShape.WinFormsUI;
-using System.IO;
 
 
 namespace Database_Designer {
@@ -172,7 +172,6 @@ namespace Database_Designer {
 		private void CreateTools() {
 			toolSetPresenter.ToolSetController.Clear();
 			toolSetPresenter.ToolSetController.AddTool(new PointerTool(), true);
-			Template template;
 
 			string category = "Database Entities";
 			DatabaseSymbol databaseShape = (DatabaseSymbol)project.ShapeTypes["Database"].CreateInstance();
@@ -547,7 +546,7 @@ namespace Database_Designer {
 		}
 
 
-		private void toolSetController_TemplateEditorSelected(object sender, Dataweb.NShape.Controllers.ShowTemplateEditorEventArgs e) {
+		private void toolSetController_TemplateEditorSelected(object sender, Dataweb.NShape.Controllers.TemplateEditorEventArgs e) {
 			TemplateEditorDialog dlg = new TemplateEditorDialog(e.Project, e.Template);
 			dlg.Show(this);
 		}

@@ -143,7 +143,6 @@ namespace WebVisists {
 			this.display.SelectionInactiveColor = System.Drawing.Color.Gray;
 			this.display.SelectionInteriorColor = System.Drawing.Color.WhiteSmoke;
 			this.display.SelectionNormalColor = System.Drawing.Color.DarkGreen;
-			this.display.ShowCellOccupation = false;
 			this.display.ShowGrid = true;
 			this.display.ShowScrollBars = true;
 			this.display.Size = new System.Drawing.Size(996, 708);

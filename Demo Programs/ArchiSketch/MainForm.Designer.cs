@@ -403,11 +403,11 @@ namespace ArchiSketch {
 			// toolSetController
 			// 
 			this.toolSetController.DiagramSetController = this.diagramSetController;
-			this.toolSetController.TemplateEditorSelected += new Dataweb.NShape.Controllers.TemplateEditorSelectedEventHandler(this.toolBox_ShowTemplateEditorDialog);
-			this.toolSetController.ToolAdded += new Dataweb.NShape.Controllers.ToolEventHandler(this.toolSetController_ToolAdded);
-			this.toolSetController.ToolRemoved += new Dataweb.NShape.Controllers.ToolEventHandler(this.toolSetController_ToolRemoved);
-			this.toolSetController.ToolSelected += new Dataweb.NShape.Controllers.ToolEventHandler(this.toolSetController_ToolSelected);
-			this.toolSetController.ToolChanged += new Dataweb.NShape.Controllers.ToolEventHandler(this.toolSetController_ToolChanged);
+			this.toolSetController.TemplateEditorSelected += new System.EventHandler<Dataweb.NShape.Controllers.TemplateEditorEventArgs>(this.toolBox_ShowTemplateEditorDialog);
+			this.toolSetController.ToolAdded += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolAdded);
+			this.toolSetController.ToolRemoved += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolRemoved);
+			this.toolSetController.ToolSelected += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolSelected);
+			this.toolSetController.ToolChanged += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolChanged);
 			// 
 			// propertiesToolStripMenuItem1
 			// 
