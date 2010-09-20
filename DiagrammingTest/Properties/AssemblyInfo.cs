@@ -26,7 +26,7 @@ using System.Runtime.InteropServices;
 //
 //      Major Version
 //      Minor Version 
-//      Build Numeric
+//      Build Number
 //      Revision
 //
 // You can specify all the values or you can default the Revision and Build Numbers 

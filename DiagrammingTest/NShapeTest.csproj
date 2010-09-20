@@ -46,7 +46,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Comparer.cs" />
+    <Compile Include="RepositoryComparer.cs" />
+    <Compile Include="RepositoryTest.cs" />
     <Compile Include="DiagramBaseTest.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

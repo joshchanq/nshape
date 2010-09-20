@@ -16,14 +16,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Reflection;
 using Dataweb.NShape;
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.GeneralShapes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Data.SqlClient;
-using Dataweb.Utilities;
-using System.Drawing;
-using System.IO;
 
 
 namespace NShapeTest {
@@ -86,7 +83,7 @@ namespace NShapeTest {
 			Project project = new Project();
 			project.Name = "Test";
 			project.Repository = new CachedRepository();
-			((CachedRepository)project.Repository).Store = CreateXmlStore();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
 			project.Repository.Erase();
 			project.Create();
 
@@ -176,7 +173,7 @@ namespace NShapeTest {
 			Project project = new Project();
 			project.Name = "Test";
 			project.Repository = new CachedRepository();
-			((CachedRepository)project.Repository).Store = CreateXmlStore();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
 			project.Repository.Erase();
 			project.Create();
 			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
@@ -292,7 +289,7 @@ namespace NShapeTest {
 			Project project = new Project();
 			project.Name = "Test";
 			project.Repository = new CachedRepository();
-			((CachedRepository)project.Repository).Store = CreateXmlStore();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
 			project.Repository.Erase();
 			project.Create();
 			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
@@ -350,7 +347,7 @@ namespace NShapeTest {
 			Project project = new Project();
 			project.Name = "Test";
 			project.Repository = new CachedRepository();
-			((CachedRepository)project.Repository).Store = CreateXmlStore();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
 			project.Repository.Erase();
 			project.Create();
 			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
@@ -380,7 +377,7 @@ namespace NShapeTest {
 			// Initialize the project
 			Project project = new Project();
 			project.Repository = new CachedRepository();
-			((CachedRepository)project.Repository).Store = CreateXmlStore();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
 			project.Name = "Test";
 			project.Repository.Erase();
 			project.Create();
@@ -411,7 +408,7 @@ namespace NShapeTest {
 		public void StylesTest() {
 			Project project = new Project();
 			project.Repository = new CachedRepository();
-			((CachedRepository)project.Repository).Store = CreateXmlStore();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
 			project.Name = "Test";
 			project.Repository.Erase();
 			project.Create();
@@ -424,6 +421,145 @@ namespace NShapeTest {
 			project.Open();
 			colorStyle = (ColorStyle)project.Design.ColorStyles.Blue;
 			Assert.AreEqual(Color.LightBlue.ToArgb(), colorStyle.Color.ToArgb());
+			project.Close();
+		}
+
+
+		[TestMethod]
+		public void ModelMappingTest() {
+			Project project = new Project();
+			project.Repository = new CachedRepository();
+			((CachedRepository)project.Repository).Store = RepositoryHelper.CreateXmlStore();
+			project.Name = "ModelMappingTest";
+			project.Repository.Erase();
+			project.Create();
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
+
+			// Create test data
+			object[] floatTestData = CreateFloatTestData();
+			object[] intTestData = CreateIntTestData();
+			object[] stringTestData = CreateStringTestData();
+
+			// Create model object and retrieve all properties
+			GenericModelObject templateModelObject = (GenericModelObject)project.ModelObjectTypes["GenericModelObject"].CreateInstance();
+			// Define property lists
+			List<PropertyInfo> modelProperties = new List<PropertyInfo>();
+			List<PropertyInfo> shapeProperties = new List<PropertyInfo>();
+			GetPropertyInfos(templateModelObject.GetType(), modelProperties);
+			
+			// Test a shape of each shapeType
+			foreach (ShapeType shapeType in project.ShapeTypes) {
+				using (Shape templateShape = shapeType.CreateInstance()) {
+					if (templateShape is IShapeGroup) continue;
+					templateShape.ModelObject = templateModelObject;
+
+					// Get mappable shape and model properties
+					GetPropertyInfos(templateShape.GetType(), shapeProperties);
+
+					Template template = new Template(shapeType.Name, templateShape);
+					foreach (PropertyInfo modelProperty in modelProperties) {
+						foreach (PropertyInfo shapeProperty in shapeProperties) {
+							IModelMapping modelMapping = CreateModelMapping(shapeProperty, modelProperty);
+							if (modelMapping == null) continue;
+							//
+							// Assign suitable test data
+							object[] testValues = null;
+							if (modelMapping.CanSetFloat) testValues = floatTestData;
+							else if (modelMapping.CanSetInteger) testValues = intTestData;
+							else if (modelMapping.CanSetString) testValues = stringTestData;
+							//
+							// Fill Model mappings and set expected results
+							object[] testResults = null;
+							if (modelMapping is NumericModelMapping)
+								testResults = GetNumericMappingResults((NumericModelMapping)modelMapping, testValues);
+							else if (modelMapping is FormatModelMapping)
+								testResults = GetFormatMappingResults((FormatModelMapping)modelMapping, testValues);
+							else if (modelMapping is StyleModelMapping)
+								testResults = GetStyleMappingResults((StyleModelMapping)modelMapping, shapeProperty.PropertyType, testValues, project);
+							//
+							// Map properties
+							template.UnmapAllProperties();
+							template.MapProperties(modelMapping);
+
+							// Test property mapping
+							using (Shape testShape = template.CreateShape()) {
+								IModelObject testModel = testShape.ModelObject;
+
+								// Assign all test values to the model object and check the mapped shape property value.
+								object templateShapePropValue = shapeProperty.GetValue(testShape, null);
+								int cnt = testValues.Length;
+								for (int i = 0; i < cnt; ++i) {
+									try {
+										// Assign the current test value to the model object's property value.
+										// The shape's property has to be changed by the ModelMapping.
+										object shapeValue = shapeProperty.GetValue(testShape, null);
+										modelProperty.SetValue(testModel, testValues[i], null);
+										object resultValue = shapeProperty.GetValue(testShape, null);
+										object expectedValue = testResults[i] ?? templateShapePropValue;
+										// 
+										if (testShape is IPlanarShape && modelMapping.ShapePropertyId == 2) {
+											// Angle property: All values are vonverted to positive angles < 360° (0 <= value <= 3600)
+											if (expectedValue is int)
+												expectedValue = ((3600 + (int)expectedValue) % 3600);
+											else if (expectedValue is float)
+												expectedValue = ((3600 + (float)expectedValue) % 3600);
+										}
+										//
+										// Check mapping result
+										bool areEqual = false;
+										if (IsIntegerType(resultValue.GetType()) && IsIntegerType(expectedValue.GetType()))
+											areEqual = object.Equals(Convert.ToInt64(resultValue), Convert.ToInt64(expectedValue));
+										else if (IsFloatType(resultValue.GetType()) && IsFloatType(expectedValue.GetType()))
+											areEqual = object.Equals(Convert.ToDouble(resultValue), Convert.ToDouble(expectedValue));
+										else
+											areEqual = object.Equals(resultValue, expectedValue);
+										// Error reporting
+										if (!areEqual) {
+											if (object.Equals(shapeValue, resultValue))
+												Assert.Fail(
+													"Assigning '{0}' to {1} had no effect on {2}'s property '{3}': Property value '{4}' did not change.",
+													testValues[i],
+													testModel.Type.Name,
+													testShape.Type.Name,
+													shapeProperty.Name,
+													shapeValue);
+											else
+												Assert.Fail(
+													"Assigning '{0}' to {1} had not the expected effect on {2}'s property '{3}': Property value '{4}' changed to '{5}' instead of '{6}'.",
+													testValues[i],
+													testModel.Type.Name,
+													testShape.Type.Name,
+													shapeProperty.Name,
+													shapeValue,
+													resultValue,
+													expectedValue);
+										}
+									} catch (TargetInvocationException exc) {
+										bool throwInnerException = true;
+										if (exc.InnerException is OverflowException && modelMapping is NumericModelMapping) {
+											double testValue = Convert.ToDouble(testValues[i]);
+											if (double.IsNaN(testValue))
+												throwInnerException = false;
+											else {
+												double resultValue = (double)(((NumericModelMapping)modelMapping).Intercept + (testValue * ((NumericModelMapping)modelMapping).Slope));
+												double minValue, maxValue;
+												GetMinAndMaxValue(shapeProperty.PropertyType, out minValue, out maxValue);
+												if (resultValue < minValue || resultValue > maxValue)
+													throwInnerException = false;
+											}
+										} else if (exc.InnerException is ArgumentOutOfRangeException)
+											throwInnerException = false;
+
+										// throw inner exception if the exception was not handled.
+										if (throwInnerException) throw exc.InnerException;
+									}
+								}	// foreach test value
+							}	// using block (Shape testShape)
+						}	// foreach Shape property
+					}	// foreach IModelObject property
+				}	// using block (Shape templateShape)
+			}	// foreach ShapeType (...)
+
 			project.Close();
 		}
 
@@ -467,132 +603,10 @@ namespace NShapeTest {
 			project.Close();
 		}
 
-
-		[TestMethod]
-		public void XMLRepositoryTest() {
-			string timerName;
-
-			// Test inserting, modifying and deleting objects from repository
-			timerName = "RepositoryTest XMLStore Timer";
-			TestContext.BeginTimer(timerName);
-			RepositoryTestCore(CreateXmlStore(), CreateXmlStore());
-			TestContext.EndTimer(timerName);
-
-			// Test inserting large diagrams
-			timerName = "LargeDiagramTest XMLStore Timer";
-			TestContext.BeginTimer(timerName);
-			LargeDiagramCore(CreateXmlStore());
-			TestContext.EndTimer(timerName);
-		}
-
-
-		[TestMethod]
-		public void SQLRepositoryTest() {
-			string server = Environment.MachineName + databaseServerType;
-			string timerName;
-
-			try {
-				SQLCreateDatabase();
-
-				// Test inserting, modifying and deleting objects from repository
-				timerName = "RepositoryTest SqlStore Timer";
-				TestContext.BeginTimer(timerName);
-				RepositoryTestCore(CreateSqlStore(), CreateSqlStore());
-				TestContext.EndTimer(timerName);
-
-				// Test inserting large diagrams
-				timerName = "LargeDiagramTest SqlStore Timer";
-				TestContext.BeginTimer(timerName);
-				LargeDiagramCore(CreateSqlStore());
-				TestContext.EndTimer(timerName);
-
-			} finally {
-				SQLDropDatabase();
-			}
-		}
-
 		#endregion
 
 
-		#region Repository test core methods
-
-		private void RepositoryTestCore(Store store1, Store store2) {
-			const string projectName = "Repository Test";
-			const int shapesPerRow = 10;
-
-			Project project1 = new Project();
-			Project project2 = new Project();
-			try {
-				// Create two projects and repositories, one for modifying and 
-				// saving, one for loading and comparing the result
-				project1.Name =
-				project2.Name = projectName;
-				project1.Repository = new CachedRepository();
-				project2.Repository = new CachedRepository();
-				((CachedRepository)project1.Repository).Store = store1;
-				((CachedRepository)project2.Repository).Store = store2;
-
-				// Delete the current project (if it exists)
-				project1.Repository.Erase();
-				project1.Create();
-				project1.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
-
-				// Create test data, populate repository and save repository
-				string diagramName = "Diagram";
-				CreateDiagram(project1, diagramName, shapesPerRow, shapesPerRow, true, true, true, true);
-				project1.Repository.SaveChanges();
-
-				// Compare the saved data with the loaded data
-				project2.Open();
-				Comparer.Compare(project1, project2);
-				project2.Close();
-
-				// Modify (and insert) content of the repository and save it
-				ModifyContent(project1);
-				InsertContent(project1);
-				project1.Repository.SaveChanges();
-
-				// Compare the saved data with the loaded data
-				project2.Open();
-				Comparer.Compare(project1, project2);
-				project2.Close();
-
-				// Delete various data from project
-				DeleteContent(project1);
-				project1.Repository.SaveChanges();
-
-				// Compare the saved data with the loaded data
-				project2.Open();
-				Comparer.Compare(project1, project2);
-				project2.Close();
-			} finally {
-				project1.Close();
-				project2.Close();
-			}
-		}
-
-
-		private void LargeDiagramCore(Store store) {
-			string projectName = "Large Diagram Test";
-			Project project = new Project();
-			try {
-				project.Name = projectName;
-				project.Repository = new CachedRepository();
-				((CachedRepository)project.Repository).Store = store;
-				project.Repository.Erase();
-				project.Create();
-				project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
-
-				string diagramName = "Large Diagram";
-				CreateLargeDiagram(project, diagramName);
-
-				project.Repository.SaveChanges();
-				Trace.WriteLine("Saved!");
-			} finally {
-				project.Close();
-			}
-		}
-
+		#region Test core methods
 
 		private void BoundingRectangleTestCore(IShapeCollection shapes, int shapePos, int shapeSize, int shapeAngle) {
 			foreach (Shape s in shapes) {
@@ -653,1053 +667,398 @@ namespace NShapeTest {
 		#endregion
 
 
-		#region Repository test helper methods
+		#region ModelMappingTest helper methods
 
-		private void CreateLargeDiagram(Project project, string diagramName) {
-			const int shapesPerSide = 100;
-			CreateDiagram(project, diagramName, shapesPerSide, shapesPerSide, true, false, false, true);
+		private object[] CreateFloatTestData() {
+			object[] result = new object[16];
+			result[0] = float.NaN;
+			result[1] = float.NegativeInfinity;
+			result[2] = int.MinValue;
+			result[3] = int.MinValue + 1;
+			result[4] = short.MinValue - 0.00001f;
+			result[5] = short.MinValue;
+			result[6] = short.MinValue + 0.00001f;
+			result[7] = -float.Epsilon;
+			result[8] = 0;
+			result[9] = float.Epsilon;
+			result[10] = short.MaxValue - 0.00001f;
+			result[11] = short.MaxValue;
+			result[12] = short.MaxValue + 0.00001f;
+			result[13] = int.MaxValue - 1;
+			result[14] = int.MaxValue;
+			result[15] = float.PositiveInfinity;
+			return result;
 		}
 
 
-		private void CreateDiagram(Project project, string diagramName, int shapesPerRow, int shapesPerColumn, bool connectShapes, bool withModels, bool withModelMappings, bool withLayers) {
-			const int shapeSize = 80;
-			int lineLength = shapeSize / 2;
-			//
-			// Create ModelMappings
-			NumericModelMapping numericModelMapping = null;
-			FormatModelMapping formatModelMapping = null;
-			StyleModelMapping styleModelMapping = null;
-			if (withModelMappings) {
-				// Create numeric- and format model mappings
-				numericModelMapping = new NumericModelMapping(2, 4, NumericModelMapping.MappingType.FloatInteger, 10, 0);
-				formatModelMapping = new FormatModelMapping(4, 2, FormatModelMapping.MappingType.StringString, "{0}");
-				// Create style model mapping
-				float range = (shapesPerRow * shapesPerColumn) / 15f;
-				styleModelMapping = new StyleModelMapping(1, 4, StyleModelMapping.MappingType.FloatStyle);
-				for (int i = 0; i < 15; ++i) {
-					IStyle style = null;
-					switch (i) {
-						case 0: style = project.Design.LineStyles.None; break;
-						case 1: style = project.Design.LineStyles.Dotted; break;
-						case 2: style = project.Design.LineStyles.Dashed; break;
-						case 3: style = project.Design.LineStyles.Special1; break;
-						case 4: style = project.Design.LineStyles.Special2; break;
-						case 5: style = project.Design.LineStyles.Normal; break;
-						case 6: style = project.Design.LineStyles.Blue; break;
-						case 7: style = project.Design.LineStyles.Green; break;
-						case 8: style = project.Design.LineStyles.Yellow; break;
-						case 9: style = project.Design.LineStyles.Red; break;
-						case 10: style = project.Design.LineStyles.HighlightDotted; break;
-						case 11: style = project.Design.LineStyles.HighlightDashed; break;
-						case 12: style = project.Design.LineStyles.Highlight; break;
-						case 13: style = project.Design.LineStyles.HighlightThick; break;
-						case 14: style = project.Design.LineStyles.Thick; break;
-						default: style = null; break;
-					}
-					if (style != null) styleModelMapping.AddValueRange(i * range, style);
-				}
-			}
-			//
-			// Create model obejct for the planar shape's template
-			IModelObject planarModel = null;
-			if (withModels) planarModel = project.ModelObjectTypes["Core.GenericModelObject"].CreateInstance();
-			//
-			// Create a shape for the planar shape's template
-			Circle circleShape = (Circle)project.ShapeTypes["Circle"].CreateInstance();
-			circleShape.Diameter = shapeSize;
-			//
-			// Create a template for the planar shapes
-			Template planarTemplate = new Template("PlanarShape Template", circleShape);
-			if (withModels) {
-				planarTemplate.Shape.ModelObject = planarModel;
-				if (withModelMappings) {
-					planarTemplate.MapProperties(numericModelMapping);
-					planarTemplate.MapProperties(formatModelMapping);
-					planarTemplate.MapProperties(styleModelMapping);
-				}
-			}
-			// 
-			// Create a template for the linear shapes
-			Template linearTemplate = null;
-			if (connectShapes)
-				linearTemplate = new Template("LinearShape Template", project.ShapeTypes["Polyline"].CreateInstance());
-			//
-			// Insert the created templates into the repository
-			project.Repository.InsertTemplate(planarTemplate);
-			foreach (IModelMapping modelMapping in planarTemplate.GetPropertyMappings())
-				project.Repository.InsertModelMapping(modelMapping, planarTemplate);
-			if (connectShapes) {
-				project.Repository.InsertTemplate(linearTemplate);
-				foreach (IModelMapping modelMapping in linearTemplate.GetPropertyMappings())
-					project.Repository.InsertModelMapping(modelMapping, linearTemplate);
-			}
-			//
-			// Prepare the connection points
-			ControlPointId leftPoint = withModels ? ControlPointId.Reference : 4;
-			ControlPointId rightPoint = withModels ? ControlPointId.Reference : 5;
-			ControlPointId topPoint = withModels ? ControlPointId.Reference : 2;
-			ControlPointId bottomPoint = withModels ? ControlPointId.Reference : 7;
-			//
-			// Create the diagram
-			Diagram diagram = new Diagram(diagramName);
-			//
-			// Create and add layers
-			LayerIds planarLayer = LayerIds.None, linearLayer = LayerIds.None, oddRowLayer = LayerIds.None,
-				evenRowLayer = LayerIds.None, oddColLayer = LayerIds.None, evenColLayer = LayerIds.None;
-			if (withLayers) {
-				const string planarLayerName = "PlanarShapesLayer";
-				const string linearLayerName = "LinearShapesLayer";
-				const string oddRowsLayerName = "OddRowsLayer";
-				const string evenRowsLayerName = "EvenRowsLayer";
-				const string oddColsLayerName = "OddColsLayer";
-				const string evenColsLayerName = "EvenColsLayer";
-				// Create Layers
-				Layer planarShapesLayer = new Layer(planarLayerName);
-				planarShapesLayer.Title = "Planar Shapes";
-				planarShapesLayer.LowerZoomThreshold = 5;
-				planarShapesLayer.UpperZoomThreshold = 750;
-				diagram.Layers.Add(planarShapesLayer);
-				Layer linearShapesLayer = new Layer(linearLayerName);
-				linearShapesLayer.Title = "Linear Shapes";
-				linearShapesLayer.LowerZoomThreshold = 10;
-				linearShapesLayer.UpperZoomThreshold = 500;
-				diagram.Layers.Add(linearShapesLayer);
-				Layer oddRowsLayer = new Layer(oddRowsLayerName);
-				oddRowsLayer.Title = "Odd Rows";
-				oddRowsLayer.LowerZoomThreshold = 2;
-				oddRowsLayer.UpperZoomThreshold = 1000;
-				diagram.Layers.Add(oddRowsLayer);
-				Layer evenRowsLayer = new Layer(evenRowsLayerName);
-				evenRowsLayer.Title = "Even Rows";
-				evenRowsLayer.LowerZoomThreshold = 2;
-				evenRowsLayer.UpperZoomThreshold = 1000;
-				diagram.Layers.Add(evenRowsLayer);
-				Layer oddColsLayer = new Layer(oddColsLayerName);
-				oddColsLayer.Title = "Odd Columns";
-				oddColsLayer.LowerZoomThreshold = 2;
-				oddColsLayer.UpperZoomThreshold = 1000;
-				diagram.Layers.Add(oddColsLayer);
-				Layer evenColsLayer = new Layer(evenColsLayerName);
-				evenColsLayer.Title = "Even Columns";
-				evenColsLayer.LowerZoomThreshold = 2;
-				evenColsLayer.UpperZoomThreshold = 1000;
-				diagram.Layers.Add(evenColsLayer);
-				// Assign LayerIds
-				planarLayer = diagram.Layers.FindLayer(planarLayerName).Id;
-				linearLayer = diagram.Layers.FindLayer(linearLayerName).Id;
-				oddRowLayer = diagram.Layers.FindLayer(oddRowsLayerName).Id;
-				evenRowLayer = diagram.Layers.FindLayer(evenRowsLayerName).Id;
-				oddColLayer = diagram.Layers.FindLayer(oddColsLayerName).Id;
-				evenColLayer = diagram.Layers.FindLayer(evenColsLayerName).Id;
-			}
-
-			for (int rowIdx = 0; rowIdx < shapesPerRow; ++rowIdx) {
-				LayerIds rowLayer = ((rowIdx + 1) % 2 == 0) ? evenRowLayer : oddRowLayer;
-				for (int colIdx = 0; colIdx < shapesPerRow; ++colIdx) {
-					LayerIds colLayer = ((colIdx + 1) % 2 == 0) ? evenColLayer : oddColLayer;
-					int shapePosX = shapeSize + colIdx * (lineLength + shapeSize);
-					int shapePosY = shapeSize + rowIdx * (lineLength + shapeSize);
-
-					circleShape = (Circle)planarTemplate.CreateShape();
-					circleShape.Text = string.Format("{0} / {1}", rowIdx + 1, colIdx + 1);
-					circleShape.MoveTo(shapePosX, shapePosY);
-					if (withModels) {
-						project.Repository.InsertModelObject(circleShape.ModelObject);
-						((GenericModelObject)circleShape.ModelObject).IntegerValue = rowIdx;
-					}
-
-					diagram.Shapes.Add(circleShape, project.Repository.ObtainNewTopZOrder(diagram));
-					if (withLayers) diagram.AddShapeToLayers(circleShape, planarLayer | rowLayer | colLayer);
-					if (connectShapes) {
-						if (rowIdx > 0) {
-							Shape lineShape = linearTemplate.CreateShape();
-							lineShape.Connect(ControlPointId.FirstVertex, circleShape, topPoint);
-							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.FirstVertex, circleShape));
-
-							Shape otherShape = diagram.Shapes.FindShape(shapePosX, shapePosY - shapeSize, ControlPointCapabilities.None, 0, null);
-							lineShape.Connect(ControlPointId.LastVertex, otherShape, bottomPoint);
-							diagram.Shapes.Add(lineShape, project.Repository.ObtainNewBottomZOrder(diagram));
-							if (withLayers) diagram.AddShapeToLayers(lineShape, linearLayer);
-							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.LastVertex, otherShape));
-						}
-						if (colIdx > 0) {
-							Shape lineShape = linearTemplate.CreateShape();
-							lineShape.Connect(1, circleShape, leftPoint);
-							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.FirstVertex, circleShape));
-
-							Shape otherShape = diagram.Shapes.FindShape(shapePosX - shapeSize, shapePosY, ControlPointCapabilities.None, 0, null);
-							lineShape.Connect(2, otherShape, rightPoint);
-							diagram.Shapes.Add(lineShape, project.Repository.ObtainNewBottomZOrder(diagram));
-							if (withLayers) diagram.AddShapeToLayers(lineShape, linearLayer);
-							Assert.AreNotEqual(ControlPointId.None, lineShape.IsConnected(ControlPointId.LastVertex, otherShape));
-						}
-					}
-				}
-			}
-			diagram.Width = (lineLength + shapeSize) * shapesPerRow + 2 * shapeSize;
-			diagram.Height = (lineLength + shapeSize) * shapesPerColumn + 2 * shapeSize;
-			project.Repository.InsertDiagram(diagram);
+		private object[] CreateIntTestData() {
+			object[] result = new object[13];
+			result[0] = int.MinValue;
+			result[1] = int.MinValue + 1;
+			result[2] = short.MinValue - 1;
+			result[3] = short.MinValue;
+			result[4] = short.MinValue + 1;
+			result[5] = -1;
+			result[6] = 0;
+			result[7] = 1;
+			result[8] = short.MaxValue - 1;
+			result[9] = short.MaxValue;
+			result[10] = short.MaxValue + 1;
+			result[11] = int.MaxValue - 1;
+			result[12] = int.MaxValue;
+			return result;
 		}
 
 
-		private SqlStore CreateSqlStore() {
-			string server = Environment.MachineName + databaseServerType;
-			return new SqlStore(server, databaseName);
+		private object[] CreateStringTestData() {
+			object[] result = new object[4];
+			result[0] = null;
+			result[1] = string.Empty;
+			result[2] = "abcÄÖÜäöüß";
+			result[3] = new string('ä', short.MaxValue);
+			return result;
 		}
 
 
-		private XmlStore CreateXmlStore() {
-			return new XmlStore(Path.GetTempPath(), ".xml");
-		}
-
-
-		private void SQLCreateDatabase() {
-			using (SqlStore sqlStore = CreateSqlStore()) {
-				// Create database
-				string connectionString = string.Format("server={0};Integrated Security=True", sqlStore.ServerName);
-				using (SqlConnection conn = new SqlConnection(connectionString)) {
-					conn.Open();
-					try {
-						SqlCommand command = conn.CreateCommand();
-						command.CommandText = string.Format("CREATE DATABASE {0}", databaseName);
-						command.ExecuteNonQuery();
-					} catch (SqlException exc) {
-						// Ignore "Database already exists" error
-						if (exc.ErrorCode != sqlErrDatabaseExists) throw exc;
-					}
-				}
-
-				// Create Repository
-				CachedRepository repository = new CachedRepository();
-				repository.Store = CreateSqlStore();
-
-				// Create project
-				Project project = new Project();
-				project.Name = "NShape SQL Test";
-				project.Repository = repository;
-
-				// Add and register libraries
-				project.RemoveAllLibraries();
-				project.AddLibraryByName("Dataweb.NShape.GeneralModelObjects");
-				project.AddLibrary(typeof(Circle).Assembly);
-				project.RegisterEntityTypes();
-
-				// Create schema
-				sqlStore.CreateDbCommands(repository);
-				sqlStore.CreateDbSchema(repository);
-
-				// Close project
-				project.Close();
-			}
-		}
-
-
-		private void SQLDropDatabase() {
-			string connectionString = string.Empty;
-			using (SqlStore sqlStore = CreateSqlStore()) {
-				connectionString = string.Format("server={0};Integrated Security=True", sqlStore.ServerName);
-				sqlStore.DropDbSchema();
-			}
-
-			// Drop database
-			if (!string.IsNullOrEmpty(connectionString)) {
-				using (SqlConnection conn = new SqlConnection(connectionString)) {
-					conn.Open();
-					try {
-						using (SqlCommand command = conn.CreateCommand()) {
-							command.CommandText = string.Format("DROP DATABASE {0}", databaseName);
-							command.ExecuteNonQuery();
-						}
-					} catch (SqlException exc) {
-						if (exc.ErrorCode != sqlErrDatabaseExists) throw exc;
-					}
-				}
-			}
-		}
-
-
-		#region Insert methods
-
-		private void InsertContent(Project project) {
-			IRepository repository = project.Repository;
-
-			// Insert styles into the project's design
-			// Insert new color styles at least in order to prevent other styles from using them (they will be deleted later)
-			Design design = project.Design;
-			List<ICapStyle> capStyles = new List<ICapStyle>(design.CapStyles);
-			foreach (ICapStyle style in capStyles)
-				InsertStyle(style, design, repository);
-			List<ICharacterStyle> characterStyles = new List<ICharacterStyle>(design.CharacterStyles);
-			foreach (ICharacterStyle style in characterStyles)
-				InsertStyle(style, design, repository);
-			List<IFillStyle> fillStyles = new List<IFillStyle>(design.FillStyles);
-			foreach (IFillStyle style in fillStyles)
-				InsertStyle(style, design, repository);
-			List<ILineStyle> lineStyles = new List<ILineStyle>(design.LineStyles);
-			foreach (ILineStyle style in lineStyles)
-				InsertStyle(style, design, repository);
-			List<IParagraphStyle> paragraphStyles = new List<IParagraphStyle>(design.ParagraphStyles);
-			foreach (IParagraphStyle style in paragraphStyles)
-				InsertStyle(style, design, repository);
-			List<IColorStyle> colorStyles = new List<IColorStyle>(design.ColorStyles);
-			foreach (IColorStyle style in colorStyles)
-				InsertStyle(style, design, repository);
-
-			// ToDo: Currently, the XML repository does not support more than one design. Insert additionsal designs later.
-			//List<Design> designs = new List<Design>(repository.GetDesigns());
-			//foreach (Design design in designs)
-			//   InsertContent(design, repository);
-
-			// Insert templates
-			List<Template> templates = new List<Template>(repository.GetTemplates());
-			foreach (Template template in templates)
-				InsertTemplate(template, repository);
-
-			// Insert model objects
-			List<IModelObject> modelObjects = new List<IModelObject>(repository.GetModelObjects(null));
-			foreach (IModelObject modelObject in modelObjects)
-				InsertModelObject(modelObject, repository);
-
-			// Modify diagrams and shapes
-			List<Diagram> diagrams = new List<Diagram>(repository.GetDiagrams());
-			foreach (Diagram diagram in diagrams)
-				InsertDiagram(diagram, repository);
-		}
-
-
-		private void InsertDesign(Design sourceDesign, IRepository repository) {
-			Design newDesign = new Design(GetName(sourceDesign.Name, EditContentMode.Insert));
-			repository.InsertDesign(newDesign);
-			foreach (IColorStyle style in sourceDesign.ColorStyles)
-				InsertStyle(style, newDesign, repository);
-			foreach (ICapStyle style in sourceDesign.CapStyles)
-				InsertStyle(style, newDesign, repository);
-			foreach (ICharacterStyle style in sourceDesign.CharacterStyles)
-				InsertStyle(style, newDesign, repository);
-			foreach (IFillStyle style in sourceDesign.FillStyles)
-				InsertStyle(style, newDesign, repository);
-			foreach (ILineStyle style in sourceDesign.LineStyles)
-				InsertStyle(style, newDesign, repository);
-			foreach (IParagraphStyle style in sourceDesign.ParagraphStyles)
-				InsertStyle(style, newDesign, repository);
-		}
-
-
-		private void InsertStyle(ICapStyle sourceStyle, Design design, IRepository repository) {
-			if (sourceStyle == null) throw new ArgumentNullException("baseStyle");
-			string newName = GetNewStyleName(sourceStyle, design, EditContentMode.Insert);
-			CapStyle newStyle = new CapStyle(newName);
-			newStyle.Title = GetName(sourceStyle.Title, EditContentMode.Insert);
-			newStyle.CapShape = sourceStyle.CapShape;
-			newStyle.CapSize = sourceStyle.CapSize;
-			if (sourceStyle.ColorStyle != null) {
-				string colorStyleName = GetName(sourceStyle.ColorStyle.Name, EditContentMode.Insert);
-				if (!design.ColorStyles.Contains(colorStyleName))
-					InsertStyle(sourceStyle.ColorStyle, design, repository);
-				newStyle.ColorStyle = design.ColorStyles[colorStyleName];
-			}
-			design.AddStyle(newStyle);
-			repository.InsertStyle(design, newStyle);
-		}
-
-
-		private void InsertStyle(IColorStyle sourceStyle, Design design, IRepository repository) {
-			if (sourceStyle == null) throw new ArgumentNullException("baseStyle");
-			string newName = GetNewStyleName(sourceStyle, design, EditContentMode.Insert);
-			ColorStyle newStyle = new ColorStyle(newName);
-			newStyle.Title = GetName(sourceStyle.Title, EditContentMode.Insert);
-			newStyle.Color = sourceStyle.Color;
-			newStyle.Transparency = sourceStyle.Transparency;
-			newStyle.ConvertToGray = sourceStyle.ConvertToGray;
-			design.AddStyle(newStyle);
-			repository.InsertStyle(design, newStyle);
-		}
-
-
-		private void InsertStyle(IFillStyle sourceStyle, Design design, IRepository repository) {
-			if (sourceStyle == null) throw new ArgumentNullException("baseStyle");
-			string newName = GetNewStyleName(sourceStyle, design, EditContentMode.Insert);
-			FillStyle newStyle = new FillStyle(newName);
-			newStyle.Title = GetName(sourceStyle.Title, EditContentMode.Insert);
-			if (sourceStyle.AdditionalColorStyle != null) {
-				string colorStyleName = GetName(sourceStyle.AdditionalColorStyle.Name, EditContentMode.Insert);
-				if (!design.ColorStyles.Contains(colorStyleName))
-					InsertStyle(sourceStyle.AdditionalColorStyle, design, repository);
-				newStyle.AdditionalColorStyle = design.ColorStyles[colorStyleName];
-			}
-			if (sourceStyle.BaseColorStyle != null) {
-				string colorStyleName = GetName(sourceStyle.BaseColorStyle.Name, EditContentMode.Insert);
-				if (!design.ColorStyles.Contains(colorStyleName))
-					InsertStyle(sourceStyle.BaseColorStyle, design, repository);
-				else newStyle.BaseColorStyle = design.ColorStyles[colorStyleName];
-			}
-			newStyle.ConvertToGrayScale = sourceStyle.ConvertToGrayScale;
-			newStyle.FillMode = sourceStyle.FillMode;
-			newStyle.FillPattern = sourceStyle.FillPattern;
-			if (sourceStyle.Image != null) {
-				NamedImage namedImg = new NamedImage((Image)sourceStyle.Image.Image.Clone(),
-					GetName(sourceStyle.Image.Name, EditContentMode.Insert));
-				newStyle.Image = namedImg;
-			} else newStyle.Image = sourceStyle.Image;
-			newStyle.ImageGammaCorrection = sourceStyle.ImageGammaCorrection;
-			newStyle.ImageLayout = sourceStyle.ImageLayout;
-			newStyle.ImageTransparency = sourceStyle.ImageTransparency;
-			design.AddStyle(newStyle);
-			repository.InsertStyle(design, newStyle);
-		}
-
-
-		private void InsertStyle(ICharacterStyle sourceStyle, Design design, IRepository repository) {
-			if (sourceStyle == null) throw new ArgumentNullException("baseStyle");
-			string newName = GetNewStyleName(sourceStyle, design, EditContentMode.Insert);
-			CharacterStyle newStyle = new CharacterStyle(newName);
-			newStyle.Title = GetName(sourceStyle.Title, EditContentMode.Insert);
-			if (sourceStyle.ColorStyle != null) {
-				string colorStyleName = GetName(sourceStyle.ColorStyle.Name, EditContentMode.Insert);
-				if (!design.ColorStyles.Contains(colorStyleName))
-					InsertStyle(sourceStyle.ColorStyle, design, repository);
-				newStyle.ColorStyle = design.ColorStyles[colorStyleName];
-			}
-			newStyle.FontName = sourceStyle.FontName;
-			newStyle.SizeInPoints = sourceStyle.SizeInPoints;
-			newStyle.Style = sourceStyle.Style;
-			design.AddStyle(newStyle);
-			repository.InsertStyle(design, newStyle);
-		}
-
-
-		private void InsertStyle(ILineStyle sourceStyle, Design design, IRepository repository) {
-			if (sourceStyle == null) throw new ArgumentNullException("baseStyle");
-			string newName = GetNewStyleName(sourceStyle, design, EditContentMode.Insert);
-			LineStyle newStyle = new LineStyle(newName);
-			newStyle.Title = GetName(sourceStyle.Title, EditContentMode.Insert);
-			if (sourceStyle.ColorStyle != null) {
-				string colorStyleName = GetName(sourceStyle.ColorStyle.Name, EditContentMode.Insert);
-				if (!design.ColorStyles.Contains(colorStyleName))
-					InsertStyle(sourceStyle.ColorStyle, design, repository);
-				newStyle.ColorStyle = design.ColorStyles[colorStyleName];
-			}
-			newStyle.DashCap = sourceStyle.DashCap;
-			newStyle.DashType = sourceStyle.DashType;
-			newStyle.LineJoin = sourceStyle.LineJoin;
-			newStyle.LineWidth = sourceStyle.LineWidth;
-			design.AddStyle(newStyle);
-			repository.InsertStyle(design, newStyle);
-		}
-
-
-		private void InsertStyle(IParagraphStyle sourceStyle, Design design, IRepository repository) {
-			if (sourceStyle == null) throw new ArgumentNullException("baseStyle");
-			string newName = GetNewStyleName(sourceStyle, design, EditContentMode.Insert);
-			ParagraphStyle newStyle = new ParagraphStyle(newName);
-			newStyle.Title = GetName(sourceStyle.Title, EditContentMode.Insert);
-			newStyle.Alignment = sourceStyle.Alignment;
-			newStyle.Padding = sourceStyle.Padding;
-			newStyle.Trimming = sourceStyle.Trimming;
-			design.AddStyle(newStyle);
-			repository.InsertStyle(design, newStyle);
-		}
-
-
-		private void InsertTemplate(Template sourceTemplate, IRepository repository) {
-			Template newTemplate = sourceTemplate.Clone();
-			newTemplate.Description = GetName(sourceTemplate.Description, EditContentMode.Insert);
-			newTemplate.Name = GetName(sourceTemplate.Name, EditContentMode.Insert);
-			// Clone ModelObject and insert terminal mappings
-			if (sourceTemplate.Shape.ModelObject != null) {
-				foreach (ControlPointId pointId in sourceTemplate.Shape.GetControlPointIds(ControlPointCapabilities.All)) {
-					if (newTemplate.Shape.HasControlPointCapability(pointId, ControlPointCapabilities.Connect)) {
-						TerminalId terminalId = sourceTemplate.GetMappedTerminalId(pointId);
-						if (terminalId != TerminalId.Invalid) newTemplate.MapTerminal(terminalId, pointId);
-					}
-				}
-			}
-			repository.InsertTemplate(newTemplate);
-
-			// Insert property mappings
-			foreach (IModelMapping sourceModelMapping in sourceTemplate.GetPropertyMappings())
-				InsertModelMapping(sourceModelMapping, newTemplate, repository);
-		}
-
-
-		private void InsertModelMapping(IModelMapping sourceModelMapping, Template template, IRepository repository) {
-			IModelMapping newModelMapping = null;
-			if (sourceModelMapping is NumericModelMapping) {
-				NumericModelMapping source = (NumericModelMapping)sourceModelMapping;
-				NumericModelMapping numericMapping = new NumericModelMapping(
-					source.ShapePropertyId,
-					source.ModelPropertyId,
-					source.Type);
-				numericMapping.Intercept = source.Intercept;
-				numericMapping.Slope = source.Slope;
-				newModelMapping = numericMapping;
-			} else if (sourceModelMapping is FormatModelMapping) {
-				FormatModelMapping source = (FormatModelMapping)sourceModelMapping;
-				FormatModelMapping formatMapping = new FormatModelMapping(
-					source.ShapePropertyId,
-					source.ModelPropertyId,
-					source.Type);
-				formatMapping.Format = source.Format;
-				newModelMapping = formatMapping;
-			} else if (sourceModelMapping is StyleModelMapping) {
-				StyleModelMapping source = (StyleModelMapping)sourceModelMapping;
-				StyleModelMapping styleMapping = new StyleModelMapping(
-					source.ShapePropertyId,
-					source.ModelPropertyId,
-					source.Type);
-				foreach (object range in styleMapping.ValueRanges) {
-					if (range is float)
-						styleMapping.AddValueRange((float)range, styleMapping[(float)range]);
-					else if (range is int)
-						styleMapping.AddValueRange((int)range, styleMapping[(int)range]);
-				}
-				newModelMapping = styleMapping;
-			}
-			if (newModelMapping != null) {
-				template.MapProperties(newModelMapping);
-				repository.InsertModelMapping(newModelMapping, template);
-			}
-		}
-
-
-		private void InsertDiagram(Diagram sourceDiagram, IRepository repository) {
-			Diagram newDiagram = new Diagram(GetName(sourceDiagram.Name, EditContentMode.Insert));
-			// Insert properties
-			newDiagram.BackgroundColor = sourceDiagram.BackgroundColor;
-			newDiagram.BackgroundGradientColor = sourceDiagram.BackgroundGradientColor;
-			newDiagram.BackgroundImageGamma = sourceDiagram.BackgroundImageGamma;
-			newDiagram.BackgroundImageGrayscale = sourceDiagram.BackgroundImageGrayscale;
-			newDiagram.BackgroundImageLayout = sourceDiagram.BackgroundImageLayout;
-			newDiagram.BackgroundImageTransparency = sourceDiagram.BackgroundImageTransparency;
-			newDiagram.BackgroundImageTransparentColor = sourceDiagram.BackgroundImageTransparentColor;
-			newDiagram.Height = sourceDiagram.Height;
-			newDiagram.Width = sourceDiagram.Width;
-			newDiagram.Title = GetName(sourceDiagram.Title, EditContentMode.Insert);
-
-			// Insert layers
-			foreach (Layer sourceLayer in sourceDiagram.Layers) {
-				Layer newLayer = new Layer(GetName(sourceLayer.Name, EditContentMode.Insert));
-				newLayer.Title = GetName(sourceLayer.Title, EditContentMode.Insert);
-				newLayer.UpperZoomThreshold = sourceLayer.UpperZoomThreshold;
-				newLayer.LowerZoomThreshold = sourceLayer.LowerZoomThreshold;
-				newDiagram.Layers.Add(newLayer);
-			}
-			repository.InsertDiagram(newDiagram);
-
-			// Insert shapes
-			foreach (Shape sourceShape in sourceDiagram.Shapes.BottomUp)
-				InsertShape(sourceShape, newDiagram, repository);
-		}
-
-
-		private void InsertShape(Shape sourceShape, Diagram diagram, IRepository repository) {
-			Shape newShape = sourceShape.Clone();
-			diagram.Shapes.Add(newShape);
-			diagram.AddShapeToLayers(newShape, sourceShape.Layers);
-			repository.InsertShape(newShape, diagram);
-		}
-
-
-		private void InsertModelObject(IModelObject sourceModelObject, IRepository repository) {
-			IModelObject newModelObject = sourceModelObject.Clone();
-			newModelObject.Name = GetName(sourceModelObject.Name, EditContentMode.Insert);
-			repository.InsertModelObject(newModelObject);
-		}
-
-		#endregion
-
-
-		#region Modify methods
-
-		private void ModifyContent(Project project) {
-			IRepository repository = project.Repository;
-
-			// Modify designs and styles
-			foreach (Design design in repository.GetDesigns())
-				ModifyDesign(design, repository);
-
-			// Modify templates
-			foreach (Template template in repository.GetTemplates())
-				ModifyTemplate(template, repository);
-
-			// Modify model objects
-			foreach (IModelObject modelObject in repository.GetModelObjects(null))
-				ModifyModelObject(modelObject, repository);
-
-			// Modify diagrams and shapes
-			foreach (Diagram diagram in repository.GetDiagrams())
-				ModifyDiagram(diagram, repository);
-		}
-
-
-		private void ModifyDesign(Design design, IRepository repository) {
-			foreach (CapStyle style in design.CapStyles) ModifyStyle(style, design, repository);
-			foreach (CharacterStyle style in design.CharacterStyles) ModifyStyle(style, design, repository);
-			foreach (FillStyle style in design.FillStyles) ModifyStyle(style, design, repository);
-			foreach (LineStyle style in design.LineStyles) ModifyStyle(style, design, repository);
-			foreach (ParagraphStyle style in design.ParagraphStyles) ModifyStyle(style, design, repository);
-			foreach (ColorStyle style in design.ColorStyles) ModifyStyle(style, design, repository);
-		}
-
-
-		private void ModifyStyle(Style style, IRepository repository) {
-			if (!repository.GetDesign(null).IsStandardStyle(style))
-				style.Name = GetName(style.Name, EditContentMode.Modify);
-			style.Title = GetName(style.Title, EditContentMode.Modify);
-			repository.UpdateStyle(style);
-		}
-
-
-		private void ModifyStyle(CapStyle style, Design design, IRepository repository) {
-			style.CapShape = Enum<CapShape>.GetNextValue(style.CapShape);
-			style.CapSize += 1;
-			style.ColorStyle = GetNextValue(design.ColorStyles, style.ColorStyle);
-			ModifyStyle(style, repository);
-		}
-
-
-		private void ModifyStyle(CharacterStyle style, Design design, IRepository repository) {
-			style.ColorStyle = GetNextValue(design.ColorStyles, style.ColorStyle);
-			style.FontFamily = GetNextValue(FontFamily.Families, style.FontFamily);
-			style.Size += 1;
-			style.Style = Enum<FontStyle>.GetNextValue(style.Style);
-			ModifyStyle(style, repository);
-		}
-
-
-		private void ModifyStyle(ColorStyle style, Design design, IRepository repository) {
-			int r = style.Color.R;
-			int g = style.Color.G;
-			int b = style.Color.B;
-			style.Color = Color.FromArgb(g, b, r);
-			style.ConvertToGray = !style.ConvertToGray;
-			style.Transparency = (style.Transparency <= 50) ? (byte)75 : (byte)25;
-			ModifyStyle(style, repository);
-		}
-
-
-		private void ModifyStyle(FillStyle style, Design design, IRepository repository) {
-			style.AdditionalColorStyle = GetNextValue(design.ColorStyles, style.AdditionalColorStyle);
-			style.BaseColorStyle = GetNextValue(design.ColorStyles, style.BaseColorStyle);
-			style.ConvertToGrayScale = !style.ConvertToGrayScale;
-			style.FillMode = Enum<FillMode>.GetNextValue(style.FillMode);
-			style.FillPattern = Enum<System.Drawing.Drawing2D.HatchStyle>.GetNextValue(style.FillPattern);
-			style.ImageGammaCorrection += 0.1f;
-			style.ImageLayout = Enum<ImageLayoutMode>.GetNextValue(style.ImageLayout);
-			style.ImageTransparency = (style.ImageTransparency < 100) ?
-				(byte)(style.ImageTransparency + 1) : (byte)(style.ImageTransparency - 1);
-			ModifyStyle(style, repository);
-		}
-
-
-		private void ModifyStyle(LineStyle style, Design design, IRepository repository) {
-			style.ColorStyle = GetNextValue(design.ColorStyles, style.ColorStyle);
-			style.DashCap = Enum<System.Drawing.Drawing2D.DashCap>.GetNextValue(style.DashCap);
-			style.DashType = Enum<DashType>.GetNextValue(style.DashType);
-			style.LineJoin = Enum<System.Drawing.Drawing2D.LineJoin>.GetNextValue(style.LineJoin);
-			style.LineWidth += 1;
-			ModifyStyle(style, repository);
-		}
-
-
-		private void ModifyStyle(ParagraphStyle style, Design design, IRepository repository) {
-			style.Alignment = Enum<ContentAlignment>.GetNextValue(style.Alignment);
-			style.Padding = new TextPadding(style.Padding.Left + 1, style.Padding.Top + 1, style.Padding.Right + 1, style.Padding.Bottom + 1);
-			style.Trimming = Enum<StringTrimming>.GetNextValue(style.Trimming);
-			style.WordWrap = !style.WordWrap;
-			ModifyStyle(style, repository);
-		}
-
-
-		private void ModifyTemplate(Template template, IRepository repository) {
-			template.Description = GetName(template.Description, EditContentMode.Modify);
-			template.Name = GetName(template.Name, EditContentMode.Modify);
-
-			// Assign a new child shape with a new child modelObject
-			Shape newShape = template.Shape.Clone();
-			template.Shape.Children.Add(newShape);
-			repository.InsertShape(newShape, template.Shape);
-			if (template.Shape.ModelObject != null) {
-				// ToDo: ModelObjects of child shapes and child model objects are not supported in the current version
-				//newShape.ModelObject = template.Shape.ModelObject.Clone();
-				//newShape.ModelObject.Parent = template.Shape.ModelObject;
-				//repository.InsertModelObject(newShape.ModelObject);
-			}
-
-			// Modify property mappings
-			foreach (IModelMapping modelMapping in template.GetPropertyMappings())
-				ModifyModelMapping(modelMapping, repository);
-			repository.UpdateModelMappings(template.GetPropertyMappings());
-
-			// Modify terminal mappings
-			if (template.Shape.ModelObject != null) {
-				// Get all mapped point- and terminal ids
-				List<ControlPointId> pointIds = new List<ControlPointId>();
-				List<TerminalId> terminalIds = new List<TerminalId>();
-				foreach (ControlPointId pointId in template.Shape.GetControlPointIds(ControlPointCapabilities.All)) {
-					TerminalId terminalId = template.GetMappedTerminalId(pointId);
-					if (terminalId != TerminalId.Invalid) {
-						pointIds.Add(pointId);
-						terminalIds.Add(terminalId);
-					}
-				}
-				// Now reverse the mappings
-				Assert.AreEqual(pointIds.Count, terminalIds.Count);
-				for (int i = 0; i < terminalIds.Count; ++i)
-					template.MapTerminal(terminalIds[i], pointIds[pointIds.Count - i]);
-			}
-			repository.UpdateTemplate(template);
-		}
-
-
-		private void ModifyModelMapping(IModelMapping modelMapping, IRepository repository) {
-			if (modelMapping is NumericModelMapping) {
-				NumericModelMapping numericMapping = (NumericModelMapping)modelMapping;
-				numericMapping.Intercept += 10;
-				numericMapping.Slope += 1;
-			} else if (modelMapping is FormatModelMapping) {
-				FormatModelMapping formatMapping = (FormatModelMapping)modelMapping;
-				formatMapping.Format = GetName(formatMapping.Format, EditContentMode.Modify);
-			} else if (modelMapping is StyleModelMapping) {
-				StyleModelMapping styleMapping = (StyleModelMapping)modelMapping;
-				List<object> ranges = new List<object>(styleMapping.ValueRanges);
-				Design design = repository.GetDesign(null);
-				foreach (object range in ranges) {
-					IStyle currentStyle = null;
-					if (range is float)
-						currentStyle = styleMapping[(float)range];
-					else if (range is int)
-						currentStyle = styleMapping[(int)range];
-
-					IStyle newStyle = null;
-					if (currentStyle is CapStyle)
-						newStyle = GetNextValue(design.CapStyles, (CapStyle)currentStyle);
-					else if (currentStyle is CharacterStyle)
-						newStyle = GetNextValue(design.CharacterStyles, (CharacterStyle)currentStyle);
-					else if (currentStyle is ColorStyle)
-						newStyle = GetNextValue(design.ColorStyles, (ColorStyle)currentStyle);
-					else if (currentStyle is FillStyle)
-						newStyle = GetNextValue(design.FillStyles, (FillStyle)currentStyle);
-					else if (currentStyle is LineStyle)
-						newStyle = GetNextValue(design.LineStyles, (LineStyle)currentStyle);
-					else if (currentStyle is ParagraphStyle)
-						newStyle = GetNextValue(design.ParagraphStyles, (ParagraphStyle)currentStyle);
-
-					if (range is float) {
-						styleMapping.RemoveValueRange((float)range);
-						styleMapping.AddValueRange((float)range, newStyle);
-					} else if (range is int) {
-						styleMapping.RemoveValueRange((int)range);
-						styleMapping.AddValueRange((int)range, newStyle);
-					}
-				}
-			}
-		}
-
-
-		private void ModifyDiagram(Diagram diagram, IRepository repository) {
-			// Modify "base" properties
-			Color backColor = diagram.BackgroundColor;
-			Color gradientColor = diagram.BackgroundGradientColor;
-			diagram.BackgroundGradientColor = backColor;
-			diagram.BackgroundColor = gradientColor;
-			diagram.BackgroundImageGamma += 0.1f;
-			diagram.BackgroundImageGrayscale = !diagram.BackgroundImageGrayscale;
-			diagram.BackgroundImageLayout = Enum<ImageLayoutMode>.GetNextValue(diagram.BackgroundImageLayout);
-			diagram.BackgroundImageTransparency = (diagram.BackgroundImageTransparency <= 50) ? (byte)75 : (byte)25;
-			diagram.BackgroundImageTransparentColor = Color.FromArgb(
-				diagram.BackgroundImageTransparentColor.G,
-				diagram.BackgroundImageTransparentColor.B,
-				diagram.BackgroundImageTransparentColor.R);
-			diagram.Height += 200;
-			diagram.Width += 200;
-			diagram.Title = GetName(diagram.Title, EditContentMode.Modify);
-			diagram.Name = GetName(diagram.Name, EditContentMode.Modify);
-
-			// Modify layers
-			foreach (Layer layer in diagram.Layers) {
-				layer.LowerZoomThreshold += 1;
-				layer.Title = GetName(layer.Title, EditContentMode.Modify);
-				layer.UpperZoomThreshold += 1;
-			}
-			repository.UpdateDiagram(diagram);
-
-			// Modify shapes
-			foreach (Shape shape in diagram.Shapes)
-				ModifyShape(shape, repository);
-		}
-
-
-		private void ModifyModelObject(IModelObject modelObject, IRepository repository) {
-			IModelObject child = modelObject.Clone();
-			child.Parent = modelObject;
-			if (modelObject is GenericModelObject)
-				ModifyModelObject((GenericModelObject)modelObject, repository);
-			repository.UpdateModelObject(modelObject);
-		}
-
-
-		private void ModifyModelObject(GenericModelObject modelObject, IRepository repository) {
-			modelObject.FloatValue += 1.1f;
-			modelObject.IntegerValue += 1;
-			modelObject.StringValue += " Modified";
-		}
-
-
-		private void ModifyShape(Shape shape, IRepository repository) {
-			shape.Children.Add(shape.Clone());
-			shape.LineStyle = GetNextValue(repository.GetDesign(null).LineStyles, shape.LineStyle);
-			shape.MoveBy(100, 100);
-			shape.SecurityDomainName = (char)(((int)shape.SecurityDomainName) + 1);
-			if (shape is ILinearShape) ModifyShape((ILinearShape)shape, repository);
-			else if (shape is IPlanarShape) ModifyShape((IPlanarShape)shape, repository);
-			else if (shape is ICaptionedShape) ModifyShape((ICaptionedShape)shape, repository);
-			repository.UpdateShape(shape);
-		}
-
-
-		private void ModifyShape(ILinearShape shape, IRepository repository) {
-			// ToDo: Modify lines
-		}
-
-
-		private void ModifyShape(IPlanarShape shape, IRepository repository) {
-			shape.Angle += 10;
-			shape.FillStyle = GetNextValue(repository.GetDesign(null).FillStyles, shape.FillStyle);
-		}
-
-
-		private void ModifyShape(ICaptionedShape shape, IRepository repository) {
-			Design design = repository.GetDesign(null);
-			int cnt = shape.CaptionCount;
+		private object[] GetNumericMappingResults(NumericModelMapping mapping, object[] testData) {
+			if (mapping == null) throw new ArgumentNullException("maping");
+			if (testData == null) throw new ArgumentNullException("testData");
+			// Define mapping
+			const float intercept = 100;
+			const float slope = 2;
+	
+			// Fill mapping
+			mapping.Intercept = intercept;
+			mapping.Slope = slope;
+
+			// Set expected results
+			int cnt = testData.Length;
+			object[] result = new object[cnt];
 			for (int i = 0; i < cnt; ++i) {
-				string txt = shape.GetCaptionText(i);
-				shape.SetCaptionText(i, txt + "Modified");
-				ICharacterStyle characterStyle = shape.GetCaptionCharacterStyle(i);
-				shape.SetCaptionCharacterStyle(i, GetNextValue(design.CharacterStyles, characterStyle));
-				IParagraphStyle paragraphStyle = shape.GetCaptionParagraphStyle(i);
-				shape.SetCaptionParagraphStyle(i, GetNextValue(design.ParagraphStyles, paragraphStyle));
-			}
-		}
-
-		#endregion
-
-
-		#region Delete methods
-
-		private void DeleteContent(Project project) {
-			IRepository repository = project.Repository;
-
-			// Delete all additional designs
-			DeleteDesigns(repository);
-
-			// Delete all non-standard styles
-			DeleteStyles(project.Design, repository);
-
-			// Delete templates
-			DeleteTemplates(repository);
-
-			// Modify diagrams and shapes
-			DeleteDiagrams(repository);
-
-			// ToDo: Delete the whole model
-			//DeleteModel(repository);
-		}
-
-
-		private void DeleteDesigns(IRepository repository) {
-			Design projectDesign = repository.GetDesign(null);
-			List<Design> designs = new List<Design>(repository.GetDesigns());
-			foreach (Design d in designs) {
-				if (d == projectDesign) continue;
-				repository.DeleteDesign(d);
-			}
-		}
-
-
-		private void DeleteStyles(Design design, IRepository repository) {
-			DeleteStyles(design, design.CapStyles, repository);
-			DeleteStyles(design, design.CharacterStyles, repository);
-			DeleteStyles(design, design.FillStyles, repository);
-			DeleteStyles(design, design.LineStyles, repository);
-			DeleteStyles(design, design.ParagraphStyles, repository);
-			DeleteStyles(design, design.ColorStyles, repository);
-		}
-
-
-		private void DeleteStyles<TStyle>(Design design, IEnumerable<TStyle> styles, IRepository repository) where TStyle : IStyle {
-			List<TStyle> styleList = new List<TStyle>(styles);
-			foreach (TStyle style in styleList) {
-				if (!design.IsStandardStyle(style)) {
-					design.RemoveStyle(style);
-					repository.DeleteStyle(style);
-				}
-			}
-		}
-
-
-		private void DeleteTemplates(IRepository repository) {
-			List<Template> templates = new List<Template>(repository.GetTemplates());
-			foreach (Template t in templates) {
-				if (IsNameOf(EditContentMode.Insert, t.Name)) {
-					// If the template was inserted, delete it
-					repository.DeleteTemplate(t);
-				} else if (IsNameOf(EditContentMode.Modify, t.Name)) {
-					// If the template was modified, delete some of it's content 
-					//
-					// Delete child model objects
-					if (t.Shape.ModelObject != null) {
-						DeleteChildModelObjects(t.Shape.ModelObject, repository);
-						t.UnmapAllTerminals();
-
-						// Delete ModelMappings
-						List<IModelMapping> modelMappings = new List<IModelMapping>(t.GetPropertyMappings());
-						t.UnmapAllProperties();
-						repository.DeleteModelMappings(modelMappings);
-					}
-
-					// Delete child shapes
-					if (t.Shape.Children.Count > 0) {
-						List<Shape> children = new List<Shape>(t.Shape.Children);
-						t.Shape.Children.Clear();
-						repository.DeleteShapes(children);
-					}
-					repository.UpdateTemplate(t);
-				}
-			}
-		}
-
-
-		private void DeleteChildModelObjects(IModelObject parent, IRepository repository) {
-			List<IModelObject> children = new List<IModelObject>(repository.GetModelObjects(parent));
-			for (int i = children.Count - 1; i >= 0; --i)
-				DeleteChildModelObjects(children[i], repository);
-			repository.DeleteModelObjects(children);
-		}
-
-
-		private void DeleteDiagrams(IRepository repository) {
-			List<Diagram> diagrams = new List<Diagram>(repository.GetDiagrams());
-			for (int i = diagrams.Count - 1; i >= 0; --i) {
-				if (IsNameOf(EditContentMode.Insert, diagrams[i].Name)) {
-					repository.DeleteDiagram(diagrams[i]);
-				} else if (IsNameOf(EditContentMode.Modify, diagrams[i].Name)) {
-					// Delete every second shapes
-					DeleteShapes(diagrams[i].Shapes.TopDown, repository);
-
-					// Delete layers
-					List<Layer> layers = new List<Layer>();
-					for (int j = layers.Count - 1; j >= 0; --j) {
-						if (j % 2 == 0) diagrams[j].Layers.Remove(layers[j]);
-					}
-				}
-			}
-		}
-
-
-		private void DeleteShapes(IEnumerable<Shape> shapes, IRepository repository) {
-			List<Shape> shapeList = new List<Shape>(shapes);
-			for (int i = shapeList.Count - 1; i >= 0; --i) {
-				if (i % 2 == 0) {
-					DoDeleteShape(shapeList[i], repository);
-					if (shapeList[i].Diagram != null)
-						shapeList[i].Diagram.Shapes.Remove(shapeList[i]);
-					else if (shapeList[i].Parent != null)
-						shapeList[i].Parent.Children.Remove(shapeList[i]);
-				}
-			}
-		}
-
-
-		private void DoDeleteShape(Shape shape, IRepository repository) {
-			// Delete shape from repository (connections will be deleted automatically)
-			repository.DeleteShape(shape);
-			// Disconnect shape
-			if (shape.IsConnected(ControlPointId.Any, null) != ControlPointId.None) {
-				List<ShapeConnectionInfo> connections = new List<ShapeConnectionInfo>(shape.GetConnectionInfos(ControlPointId.Any, null));
-				foreach (ShapeConnectionInfo ci in connections) {
-					Assert.IsFalse(ci == ShapeConnectionInfo.Empty);
-					shape.Disconnect(ci.OwnPointId);
-				}
-			}
-		}
-
-		#endregion
-
-
-		private T GetNextValue<T>(IEnumerable<T> collection, T currentValue)
-			where T : class {
-			T result = null;
-			IEnumerator<T> enumerator = collection.GetEnumerator();
-			while (enumerator.MoveNext()) {
-				if (result == null) result = enumerator.Current;
-				if (enumerator.Current == currentValue) {
-					if (enumerator.MoveNext()) {
-						result = enumerator.Current;
+				float value = Convert.ToSingle(testData[i]);
+				switch (mapping.Type) {
+					case NumericModelMapping.MappingType.FloatFloat:
+					case NumericModelMapping.MappingType.IntegerFloat:
+						result[i] = intercept + (value * slope);
 						break;
-					}
+					case NumericModelMapping.MappingType.FloatInteger:
+					case NumericModelMapping.MappingType.IntegerInteger:
+						result[i] = (int)Math.Round(mapping.Intercept + (value * mapping.Slope));
+						break;
+					default: throw new NShapeUnsupportedValueException(mapping.Type);
 				}
 			}
 			return result;
 		}
 
 
-		private string GetNewStyleName<TStyle>(TStyle style, Design design, EditContentMode mode)
-			where TStyle : IStyle {
-			string result = GetName(style.Name, mode);
-			if (design.ColorStyles.Contains(result)) {
-				result = result + " ({0})";
-				int i = 1;
-				while (design.ColorStyles.Contains(string.Format(result, i))) ++i;
-				result = string.Format(result, i);
+		private object[] GetFormatMappingResults(FormatModelMapping mapping, object[] testData) {
+			if (mapping == null) throw new ArgumentNullException("maping");
+			if (testData == null) throw new ArgumentNullException("testData");
+			// Define mapping
+			string formatString = modelMappingFormatPrefix + "{0}" + modelMappingFormatSuffix;
+			
+			// Fill mapping
+			mapping.Format = formatString;
+			
+			// Set expected results
+			int cnt = testData.Length;
+			object[] result = new object[cnt];
+			for (int i = 0; i < cnt; ++i) {
+				if (mapping.CanSetFloat) {
+					float value = Convert.ToSingle(testData[i]);
+					result[i] = string.Format(formatString, value);
+				} else if (mapping.CanSetInteger) {
+					int value = Convert.ToInt32(testData[i]);
+					result[i] = string.Format(formatString, value);
+				} else
+					result[i] = string.Format(formatString, testData[i]);
 			}
 			return result;
 		}
 
 
-		private string GetName(string name, EditContentMode mode) {
-			string result;
-			switch (mode) {
-				case EditContentMode.Insert:
-					result = NewNamePrefix + " " + name; break;
-				case EditContentMode.Modify:
-					result = ModifiedNamePrefix + " " + name; break;
-				default:
-					Debug.Fail(string.Format("Unexpected {0} value '{1}'", typeof(EditContentMode).Name, mode));
-					result = name; break;
+		private object[] GetStyleMappingResults(StyleModelMapping mapping, Type propertyType, object[] testData, Project project) {
+			if (mapping == null) throw new ArgumentNullException("maping");
+			if (testData == null) throw new ArgumentNullException("testData");
+			// Define mapping
+			int valueCnt = 5;
+			int[] values = new int[valueCnt];
+			values[0] = int.MinValue;
+			values[1] = -1000;
+			values[2] = 0;
+			values[3] = 1000;
+			values[4] = int.MaxValue;
+			IStyle[] styles = new IStyle[valueCnt];
+			if (IsOfType(propertyType, typeof(ICapStyle))) {
+				styles[0] = project.Design.CapStyles.Arrow;
+				styles[1] = project.Design.CapStyles.Special1;
+				styles[2] = project.Design.CapStyles.None;
+				styles[3] = project.Design.CapStyles.Special2;
+				styles[4] = project.Design.CapStyles.Arrow;
+			} else if (IsOfType(propertyType, typeof(ICharacterStyle))) {
+				styles[0] = project.Design.CharacterStyles.Caption;
+				styles[1] = project.Design.CharacterStyles.Heading1;
+				styles[2] = project.Design.CharacterStyles.Heading2;
+				styles[3] = project.Design.CharacterStyles.Heading3;
+				styles[4] = project.Design.CharacterStyles.Normal;
+			} else if (IsOfType(propertyType, typeof(IColorStyle))) {
+				styles[0] = project.Design.ColorStyles.Black;
+				styles[1] = project.Design.ColorStyles.Red;
+				styles[2] = project.Design.ColorStyles.Yellow;
+				styles[3] = project.Design.ColorStyles.Green;
+				styles[4] = project.Design.ColorStyles.White;
+			} else if (IsOfType(propertyType, typeof(IFillStyle))) {
+				styles[0] = project.Design.FillStyles.Black;
+				styles[1] = project.Design.FillStyles.Red;
+				styles[2] = project.Design.FillStyles.Yellow;
+				styles[3] = project.Design.FillStyles.Green;
+				styles[4] = project.Design.FillStyles.White;
+			} else if (IsOfType(propertyType, typeof(ILineStyle))) {
+				styles[0] = project.Design.LineStyles.Special1;
+				styles[1] = project.Design.LineStyles.Red;
+				styles[2] = project.Design.LineStyles.Yellow;
+				styles[3] = project.Design.LineStyles.Green;
+				styles[4] = project.Design.LineStyles.Special2;
+			} else if (IsOfType(propertyType, typeof(IParagraphStyle))) {
+				styles[0] = project.Design.ParagraphStyles.Label;
+				styles[1] = project.Design.ParagraphStyles.Text;
+				styles[2] = project.Design.ParagraphStyles.Title;
+				styles[3] = project.Design.ParagraphStyles.Text;
+				styles[4] = project.Design.ParagraphStyles.Label;
+			}
+
+			// Fill mapping
+			mapping.ClearValueRanges();
+			for (int i = 0; i < valueCnt; ++i) {
+				if (mapping.CanSetInteger) mapping.AddValueRange(values[i], styles[i]);
+				else if (mapping.CanSetFloat) mapping.AddValueRange((float)values[i], styles[i]);
+			}
+
+			// Set expected results
+			int cnt = testData.Length;
+			object[] result = new object[cnt];
+			for (int i = 0; i < cnt; ++i) {
+				double value;
+				if (mapping.CanSetFloat)
+					value = Convert.ToSingle(testData[i]);
+				else value = Convert.ToDouble(testData[i]);
+
+				if (double.IsNaN(value) || double.IsNegativeInfinity(value))
+					result[i] = null;
+				else if (value < values[1])
+					result[i] = styles[0];
+				else if (value >= values[1] && value < values[2])
+					result[i] = styles[1];
+				else if (value >= values[2] && value < values[3])
+					result[i] = styles[2];
+				else if (value >= values[3] && value < values[4])
+					result[i] = styles[3];
+				else if (value >= values[4])
+					result[i] = styles[4];
+				else 
+					result[i] = null;
 			}
 			return result;
 		}
 
 
-		private bool IsNameOf(EditContentMode mode, string name) {
-			bool result;
-			switch (mode) {
-				case EditContentMode.Insert:
-					result = name.StartsWith(NewNamePrefix); break;
-				case EditContentMode.Modify:
-					result = name.StartsWith(ModifiedNamePrefix);
+		private int? GetPropertyId(PropertyInfo propertyInfo) {
+			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
+			object[] idAttribs = propertyInfo.GetCustomAttributes(typeof(PropertyMappingIdAttribute), true);
+			if (idAttribs.Length == 1) {
+				Debug.Assert(idAttribs[0] is PropertyMappingIdAttribute);
+				return ((PropertyMappingIdAttribute)idAttribs[0]).Id;
+			} else if (idAttribs.Length == 0) return null;
+			else throw new NShapeException("Property {0} of {1} has more than 1 {2}.", propertyInfo.Name, propertyInfo.DeclaringType.Name, typeof(PropertyMappingIdAttribute).Name);
+		}
+
+
+		private void GetPropertyInfos(Type type, IList<PropertyInfo> propertyInfos) {
+			propertyInfos.Clear();
+			PropertyInfo[] piArray = type.GetProperties(bindingFlags);
+			for (int i = 0; i < piArray.Length; ++i) {
+				if (GetPropertyId(piArray[i]).HasValue)
+					propertyInfos.Add(piArray[i]);
+			}
+		}
+
+
+		// Find PropertyInfo with the given name
+		private PropertyInfo FindPropertyInfo(IList<PropertyInfo> propertyInfos, string propertyName) {
+			PropertyInfo result = null;
+			for (int i = 0; i < propertyInfos.Count; ++i) {
+				if (propertyInfos[i].Name == propertyName) {
+					result = propertyInfos[i];
 					break;
-				default:
-					Debug.Fail(string.Format("Unexpected {0} value '{1}'", typeof(EditContentMode).Name, mode));
-					result = false; break;
+				}
 			}
 			return result;
 		}
 
 
+		// Find propertyInfo with the given PropertyId
+		private PropertyInfo FindPropertyInfo(IList<PropertyInfo> propertyInfos, int propertyId) {
+			PropertyInfo result = null;
+			for (int i = 0; i < propertyInfos.Count; ++i) {
+				int? id = GetPropertyId(propertyInfos[i]);
+				if (id.HasValue && id.Value == propertyId) {
+					result = propertyInfos[i];
+					break;
+				}
+			}
+			return result;
+		}
+
+
+		// Create a ModelMapping from the given PropertyInfos
+		private IModelMapping CreateModelMapping(PropertyInfo shapePropertyInfo, PropertyInfo modelPropertyInfo) {
+			// Get PropertyId's
+			int? shapePropertyId = GetPropertyId(shapePropertyInfo);
+			int? modelPropertyId = GetPropertyId(modelPropertyInfo);
+			if (!shapePropertyId.HasValue || !modelPropertyId.HasValue)
+				return null;
+			//
+			// Determine property types
+			MappedPropertyType shapePropType;
+			if (IsIntegerType(shapePropertyInfo.PropertyType)) shapePropType = MappedPropertyType.Int;
+			else if (IsFloatType(shapePropertyInfo.PropertyType)) shapePropType = MappedPropertyType.Float;
+			else if (IsStringType(shapePropertyInfo.PropertyType)) shapePropType = MappedPropertyType.String;
+			else if (IsStyleType(shapePropertyInfo.PropertyType)) shapePropType = MappedPropertyType.Style;
+			else return null;
+			//
+			MappedPropertyType modelPropType;
+			if (IsIntegerType(modelPropertyInfo.PropertyType)) modelPropType = MappedPropertyType.Int;
+			else if (IsFloatType(modelPropertyInfo.PropertyType)) modelPropType = MappedPropertyType.Float;
+			else if (IsStringType(modelPropertyInfo.PropertyType)) modelPropType = MappedPropertyType.String;
+			else return null;
+			//
+			// Create a suitable ModelMapping:
+			IModelMapping result = null;
+			switch (modelPropType) {
+				case MappedPropertyType.Float:
+					switch (shapePropType) {
+						case MappedPropertyType.Float: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.FloatFloat); break;
+						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.FloatInteger); break;
+						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.FloatString); break;
+						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMapping.MappingType.FloatStyle); break;
+						default: break;
+					}
+					break;
+				case MappedPropertyType.Int:
+					switch (shapePropType) {
+						case MappedPropertyType.Float: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.IntegerFloat); break;
+						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.IntegerInteger); break;
+						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.IntegerString); break;
+						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMapping.MappingType.IntegerStyle); break;
+						default: break;
+					}
+					break;
+				case MappedPropertyType.String:
+					if (shapePropType == MappedPropertyType.String)
+						result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.StringString);
+					break;
+				default: throw new NotSupportedException();
+			}
+			return result;
+		}
+
+
+		/// <summary>
+		/// Gets the min and max values of a numeric type
+		/// </summary>
+		private void GetMinAndMaxValue(Type type, out double minValue, out double maxValue) {
+			minValue = maxValue = double.NaN;
+			if (type == typeof(Byte)) {
+				minValue = Byte.MinValue;
+				maxValue = Byte.MaxValue;
+			} else if (type == typeof(Int16)) {
+				minValue = Int16.MinValue;
+				maxValue = Int16.MaxValue;
+			} else if (type == typeof(Int32)) {
+				minValue = Int32.MinValue;
+				maxValue = Int32.MaxValue;
+			} else if (type == typeof(Int64)) {
+				minValue = Int64.MinValue;
+				maxValue = Int64.MaxValue;
+			} else if (type == typeof(SByte)) {
+				minValue = SByte.MinValue;
+				maxValue = SByte.MaxValue;
+			} else if (type == typeof(UInt16)) {
+				minValue = UInt16.MinValue;
+				maxValue = UInt16.MaxValue;
+			} else if (type == typeof(UInt32)
+				|| type == typeof(Enum)) {
+				minValue = UInt32.MinValue;
+				maxValue = UInt32.MaxValue;
+			} else if (type == typeof(UInt64)) {
+				minValue = UInt64.MinValue;
+				maxValue = UInt64.MaxValue;
+			} else if (type == typeof(Single)) {
+				minValue = Single.MinValue;
+				maxValue = Single.MaxValue;
+			} else if (type == typeof(Double)) {
+				minValue = Double.MinValue;
+				maxValue = Double.MaxValue;
+			} else if (type == typeof(Decimal)) {
+				minValue = (double)Decimal.MinValue;
+				maxValue = (double)Decimal.MaxValue;
+			}
+		}
+		
+		
+		// Check if the given Type is an integer type (byte, int16, int32, int64, enum)
+		private bool IsIntegerType(Type type) {
+			return (type == typeof(Byte)
+				|| type == typeof(Int16)
+				|| type == typeof(Int32)
+				|| type == typeof(Int64)
+				|| type == typeof(SByte)
+				|| type == typeof(UInt16)
+				|| type == typeof(UInt32)
+				|| type == typeof(UInt64)
+				|| type == typeof(Enum));
+		}
+
+
+		// Check if the given Type is a float type (single, double or decimal)
+		private bool IsFloatType(Type type) {
+			return (type == typeof(Single)
+				|| type == typeof(Double)
+				|| type == typeof(Decimal));
+		}
+
+
+		// Check if the given Type is a string type (char or string)
+		private bool IsStringType(Type type) {
+			return (type == typeof(String)
+				|| type == typeof(Char));
+		}
+
+
+		// Check if the given type is based on IStyle
+		private bool IsStyleType(Type type) {
+			return IsOfType(type, typeof(IStyle));
+		}
+
+
+		// Check if the given type is based on targetType
+		private bool IsOfType(Type type, Type targetType) {
+			return (type == targetType || type.IsSubclassOf(targetType) || type.GetInterface(targetType.Name, true) != null);
+		}
+
+		
+		private enum MappedPropertyType { Int, Float, String, Style };
+		
 		#endregion
 
 
 		private TestContext testContextInstance;
 
-		private enum EditContentMode { Insert, Modify };
-		private const int sqlErrDatabaseExists = -2146232060;
-		private const string databaseServerType = "\\SQLEXPRESS";
-		private const string databaseName = "NShapeSQLTest";
-
-		private const string NewNamePrefix = "Copy of";
-		private const string ModifiedNamePrefix = "Modified";
+		// Stuff for ModelMapping Test
+		private const string modelMappingFormatPrefix = "Property Value = '";
+		private const string modelMappingFormatSuffix = "'.";
+		private const BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty;
 	}
 
 }
