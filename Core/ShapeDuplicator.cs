@@ -7,6 +7,9 @@ using System.Diagnostics;
 
 namespace Dataweb.NShape {
 
+	/// <summary>
+	/// Helper class used for cloning shapes including model object(s), all children and their model object(s).
+	/// </summary>
 	public class ShapeDuplicator {
 
 		static ShapeDuplicator() {
@@ -62,7 +65,7 @@ namespace Dataweb.NShape {
 		public static void CloneModelObjectOnly(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			modelObjectClones.Clear();
-			DoCloneModelObject(shape);
+			DoCloneShapeModelObject(shape);
 		}
 
 
@@ -73,18 +76,22 @@ namespace Dataweb.NShape {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			modelObjectClones.Clear();
 			foreach (Shape shape in shapes)
-				DoCloneModelObject(shape);
+				DoCloneShapeModelObject(shape);
 		}
 
 
 		private static Shape DoCloneShape(Shape shape, bool cloneModelObject) {
 			Shape result = shape.Clone();
-			if (cloneModelObject) DoCloneModelObject(result);
+			if (cloneModelObject) DoCloneShapeModelObject(result);
+			else {
+				// ToDo: For now, we delete assigned model objects. Resolve this issue later ("Cannot delete modelObject if there is a copied shape referencing the model object")
+				if (result.ModelObject != null) result.ModelObject = null;
+			}
 			return result;
 		}
 		
 		
-		private static void DoCloneModelObject(Shape shape) {
+		private static void DoCloneShapeModelObject(Shape shape) {
 			if (shape.Children.Count == 0 && shape.ModelObject != null) {
 #if DEBUG
 				IModelObject clone = shape.ModelObject.Clone(); 
@@ -108,10 +115,17 @@ namespace Dataweb.NShape {
 				Debug.Assert(modelObjectClones[shape.ModelObject].Parent == shape.ModelObject.Parent);
 				Debug.Assert(modelObjectClones[shape.ModelObject].Id == null);
 			}
+#if DEBUG
 			foreach (Shape childShape in shape.Children) {
-				if (childShape.ModelObject != null && !modelObjectClones.ContainsKey(childShape.ModelObject))
-					CreateModelObjectClones(childShape);
+				if (shape is IShapeGroup) {
+					if (childShape.ModelObject != null && !modelObjectClones.ContainsKey(childShape.ModelObject))
+						CreateModelObjectClones(childShape);
+				} else {
+					// Child shapes of aggregated shapes may not have model objects!
+					Debug.Assert(childShape.ModelObject == null);
+				}
 			}
+#endif
 		}
 
 
@@ -127,8 +141,10 @@ namespace Dataweb.NShape {
 				Debug.Print("Replacing shape's model object {0} with {1}", shape.ModelObject.Name, mo.Name);
 				shape.ModelObject = mo;
 			}
-			foreach (Shape childShape in shape.Children)
-				AssignModelObjectClones(childShape);
+			if (shape is IShapeGroup) {
+				foreach (Shape childShape in shape.Children)
+					AssignModelObjectClones(childShape);
+			}
 		}
 
 

@@ -13,37 +13,32 @@
 ******************************************************************************/
 
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
-using Dataweb.NShape;
 using System.IO;
-using System.Diagnostics;
-using System.ComponentModel;
 
 
 namespace Dataweb.NShape.Advanced {
 
+	/// <summary>
+	/// Defines the rendering quality of a <see cref="T:Dataweb.NShape.Controllers.IDiagramPresenters" />.
+	/// </summary>
 	public enum RenderingQuality {
-		/// <summary>
-		/// Best rendering Quality, lowest rendering speed.
-		/// </summary>
+		/// <summary>Best rendering Quality, lowest rendering speed.</summary>
 		MaximumQuality,
-		/// <summary>
-		/// High quality rendering with acceptable performance loss.
-		/// </summary>
+		/// <summary>High quality rendering with acceptable performance loss.</summary>
 		HighQuality,
-		/// <summary>
-		/// Rendering with system default settings.
-		/// </summary>
+		/// <summary>Rendering with system default settings.</summary>
 		DefaultQuality,
-		/// <summary>
-		/// Low Quality, high rendering speed.
-		/// </summary>
+		/// <summary>Low Quality, high rendering speed.</summary>
 		LowQuality
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public static class GdiHelpers {
 
 		/// <summary>
@@ -94,6 +89,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Visualizing lines - used for debugging purposes
+		/// </summary>
 		public static void DrawLine(Graphics graphics, Pen pen, PointF p1, PointF p2) {
 			float a, b, c;
 			Geometry.CalcLine(p1.X, p1.Y, p2.X, p2.Y, out a, out b, out c);
@@ -101,6 +99,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Visualizing lines - used for debugging purposes
+		/// </summary>
 		public static void DrawLine(Graphics graphics, Pen pen, float a, float b, float c) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (pen == null) throw new ArgumentNullException("pen");
@@ -232,8 +233,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		///  Copy all parameters that affect rendering quality / rendering speed from the given infoGraphics.
 		/// </summary>
-		/// <param name="graphics"></param>
-		/// <param name="renderingQuality"></param>
 		public static void ApplyGraphicsSettings(Graphics graphics, Graphics infoGraphics) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (infoGraphics == null) throw new ArgumentNullException("infoGraphics");
@@ -251,6 +250,28 @@ namespace Dataweb.NShape.Advanced {
 		#region Drawing images
 
 		/// <summary>
+		/// Copies the given image. The given oldColor will be replaced by the given newColor (used for icon rendering).
+		/// </summary>
+		public static Bitmap GetIconBitmap(Bitmap sourceImg, Color oldBackgroundColor, Color newBackgroundColor) {
+			if (sourceImg == null) throw new ArgumentNullException("sourceImg");
+			Bitmap result = new Bitmap(sourceImg.Width, sourceImg.Height, sourceImg.PixelFormat);
+			result.SetResolution(sourceImg.HorizontalResolution, sourceImg.VerticalResolution);
+			using (Graphics gfx = Graphics.FromImage(result)) {
+				using (ImageAttributes imgAttr = new ImageAttributes()) {
+					ColorMap colorMap = new ColorMap();
+					colorMap.OldColor = oldBackgroundColor;
+					colorMap.NewColor = newBackgroundColor;
+					imgAttr.SetRemapTable(new ColorMap[] { colorMap });
+
+					gfx.Clear(Color.Transparent);
+					gfx.DrawImage(sourceImg, new Rectangle(0, 0, result.Width, result.Height), 0, 0, sourceImg.Width, sourceImg.Height, GraphicsUnit.Pixel, imgAttr);
+				}
+			}
+			return result;
+		}
+
+
+		/// <summary>
 		/// Get a suitable GDI+ WrapMode out of the given NShapeImageLayout.
 		/// </summary>
 		public static WrapMode GetWrapMode(ImageLayoutMode imageLayout) {
@@ -263,7 +284,7 @@ namespace Dataweb.NShape.Advanced {
 				case ImageLayoutMode.CenterTile:
 				case ImageLayoutMode.Tile:
 					return WrapMode.Tile;
-				case ImageLayoutMode.FilpTile:
+				case ImageLayoutMode.FlipTile:
 					return WrapMode.TileFlipXY;
 				default: throw new NShapeUnsupportedValueException(imageLayout);
 			}
@@ -378,7 +399,7 @@ namespace Dataweb.NShape.Advanced {
 			// transform image bounds
 			switch (imageLayout) {
 				case ImageLayoutMode.Tile:
-				case ImageLayoutMode.FilpTile:
+				case ImageLayoutMode.FlipTile:
 					destinationBounds = dstBounds;
 					break;
 				case ImageLayoutMode.Original:
@@ -420,7 +441,7 @@ namespace Dataweb.NShape.Advanced {
 			int srcX, srcY, srcWidth, srcHeight;
 			switch (imageLayout) {
 				case ImageLayoutMode.CenterTile:
-				case ImageLayoutMode.FilpTile:
+				case ImageLayoutMode.FlipTile:
 				case ImageLayoutMode.Tile:
 					int startX, startY, endX, endY;
 					if (imageLayout == ImageLayoutMode.CenterTile) {
@@ -459,7 +480,7 @@ namespace Dataweb.NShape.Advanced {
 							else
 								srcHeight = r.Height = image.Height - srcY;
 
-							if (imageLayout == ImageLayoutMode.FilpTile) {
+							if (imageLayout == ImageLayoutMode.FlipTile) {
 								int modX = (x / image.Width) % 2;
 								int modY = (y / image.Height) % 2;
 								if (modX != 0) {
@@ -545,18 +566,21 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static TextureBrush CreateTextureBrush(Image image, int width, int height, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			return CreateTextureBrush(image, width, height, GetImageAttributes(imageLayout, gamma, transparency, grayScale));
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static TextureBrush CreateTextureBrush(Image image, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			return CreateTextureBrush(image, GetImageAttributes(imageLayout, gamma, transparency, grayScale));
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static TextureBrush CreateTextureBrush(Image image, ImageAttributes imageAttribs) {
 			if (image == null) throw new ArgumentNullException("image");
 			Rectangle brushBounds = Rectangle.Empty;
@@ -568,13 +592,15 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static TextureBrush CreateTextureBrush(Image image, int desiredWidth, int desiredHeight, ImageAttributes imageAttribs) {
 			if (image == null) throw new ArgumentNullException("image");
 			if (!(image is Bitmap)) throw new ArgumentException(string.Format("{0} are not supported for this operation.", image.GetType().Name));
 			return CreateTextureBrush(GetBrushImage(image, desiredWidth, desiredHeight), imageAttribs);
 		}
-		
-		
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void TransformLinearGradientBrush(LinearGradientBrush brush, float gradientAngleDeg, Rectangle unrotatedBounds, Point center, float angleDeg) {
 			if (brush == null) throw new ArgumentNullException("brush");
 			// move brush higher than needed  and make the brush larger than needed
@@ -589,11 +615,28 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
+		public static void TransformLinearGradientBrush(LinearGradientBrush brush, float gradientAngleDeg, RectangleF unrotatedBounds, PointF center, float angleDeg) {
+			if (brush == null) throw new ArgumentNullException("brush");
+			// move brush higher than needed  and make the brush larger than needed
+			// (ensure that there are no false color pixels from antialiasing inside the gradient)
+			float gradientSize = (CalculateGradientSize(angleDeg, gradientAngleDeg, center.X - unrotatedBounds.Left, Math.Max(center.Y - unrotatedBounds.Top, unrotatedBounds.Bottom - center.Y))) + 2;
+			float scaleFactor = ((float)Math.Sqrt((gradientSize * gradientSize) * 2) + 1f) / ((LinearGradientBrush)brush).Rectangle.Width;
+
+			brush.ResetTransform();
+			brush.TranslateTransform(center.X, center.Y - gradientSize);
+			brush.RotateTransform(gradientAngleDeg);
+			brush.ScaleTransform(scaleFactor, scaleFactor);
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void TransformPathGradientBrush(PathGradientBrush brush, Rectangle unrotatedBounds, Point center, float angleDeg) {
 			throw new NotImplementedException();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void TransformTextureBrush(TextureBrush brush, ImageLayoutMode imageLayout, Rectangle unrotatedBounds, Point center, float angleDeg) {
 			if (brush == null) throw new ArgumentNullException("brush");
 			// scale image
@@ -607,7 +650,7 @@ namespace Dataweb.NShape.Advanced {
 			// scale image
 			switch (imageLayout) {
 				case ImageLayoutMode.Tile:
-				case ImageLayoutMode.FilpTile:
+				case ImageLayoutMode.FlipTile:
 					// nothing to do
 					break;
 				case ImageLayoutMode.Center:
@@ -658,7 +701,7 @@ namespace Dataweb.NShape.Advanced {
 						break;
 					case ImageLayoutMode.CenterTile:
 					case ImageLayoutMode.Tile:
-					case ImageLayoutMode.FilpTile:
+					case ImageLayoutMode.FlipTile:
 						// nothing to do
 						break;
 					default:
@@ -670,6 +713,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		// calculate gradient size dependent of the shape's rotation
+		/// <ToBeCompleted></ToBeCompleted>
 		private static float CalculateGradientSize(float angle, float gradientAngle, int leftToCenter, int topToCenter) {
 			float result = 0f;
 
@@ -699,16 +743,50 @@ namespace Dataweb.NShape.Advanced {
 			return result;
 		}
 
+
+		// calculate gradient size dependent of the shape's rotation
+		/// <ToBeCompleted></ToBeCompleted>
+		private static float CalculateGradientSize(float angle, float gradientAngle, float leftToCenter, float topToCenter) {
+			float result = 0f;
+
+			double a = angle;
+			float r = leftToCenter;
+			float o = topToCenter;
+
+			if (a < 0) a = 360 + a;
+			a = a % 180;
+			if (a / 90 >= 1 && a / 90 < 2) {
+				r = topToCenter;
+				o = leftToCenter;
+				a = a % 90;
+			}
+			if (a > 45)
+				a = (a - ((a % 45) * 2)) * (Math.PI / 180);
+			else
+				a = a * (Math.PI / 180);
+			double cos = Math.Cos(a);
+			double sin = Math.Sin(a);
+
+			// calculate offset 
+			double dR = (r * sin) + (r * cos);
+			double dO = Math.Abs((o * cos) - (o * sin));
+			result = (float)Math.Round(dR + dO, 6);
+
+			return result;
+		}
+
 		#endregion
 
 
 		#region Exporting Images
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void SaveImageToFile(Image image, string filePath, ImageFileFormat imageFormat) {
 			SaveImageToFile(image, filePath, imageFormat, 75);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void SaveImageToFile(Image image, string filePath, ImageFileFormat imageFormat, int compressionQuality) {
 			if (image == null) throw new ArgumentNullException("image");
 			if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException("filePath");
@@ -747,6 +825,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CreateMetafile(string filePath, ImageFileFormat imageFormat, int width, int height, DrawCallback callback) {
 			if (callback == null) throw new ArgumentNullException("callback");
 			if (string.IsNullOrEmpty(filePath)) throw new ArgumentNullException("filePath");
@@ -778,6 +857,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static ImageFormat GetGdiImageFormat(ImageFileFormat imageFormat) {
 			ImageFormat result;
 			switch (imageFormat) {
@@ -792,8 +872,9 @@ namespace Dataweb.NShape.Advanced {
 			}
 			return result;
 		}
-		
-		
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static ImageCodecInfo GetEncoderInfo(ImageFileFormat imageFormat) {
 			ImageFormat format = GetGdiImageFormat(imageFormat);
 			ImageCodecInfo result = null;
@@ -807,6 +888,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public delegate void DrawCallback(Graphics graphics, Rectangle bounds);
 
 
@@ -953,7 +1035,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// This structure combines GDI+ images (bitmaps or metafiles) with a projectName (typically the filename withoout path and extension).
 	/// </summary>
-	[TypeConverter("Dataweb.NShape.WinFormsUI.NamedImageConverter, Dataweb.NShape.WinFormsUI")]
+	[TypeConverter("Dataweb.NShape.WinFormsUI.NamedImageTypeConverter, Dataweb.NShape.WinFormsUI")]
 	public class NamedImage : IDisposable {
 
 		/// <summary>
@@ -964,6 +1046,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// Indicates wether the specified <see cref="T:Dataweb.NShape.Advanced.NamedImage" /> is null or has neither an <see cref="T:System.Drawing.Imaging.Image" /> nor an existing file to load from.
 		public static bool IsNullOrEmpty(NamedImage namedImage) {
 			if (namedImage != null) {
 				if (namedImage.image != null)
@@ -981,6 +1064,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
+		/// </summary>
 		public NamedImage() {
 			image = null;
 			name = string.Empty;
@@ -992,9 +1078,8 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Creates a NamedImage from the given file.
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
 		/// </summary>
-		/// <param name="pathName"></param>
 		public NamedImage(string fileName)
 			: this() {
 			if (fileName == null) throw new ArgumentNullException("fileName");
@@ -1004,7 +1089,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Creates a NamedImage
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
 		/// </summary>
 		public NamedImage(Image image, string name)
 			: this() {
@@ -1016,19 +1101,22 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Creates a NamedImage
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
 		/// </summary>
 		public NamedImage(Image image, string fileName, string name)
 			: this() {
 			if (image == null) throw new ArgumentNullException("image");
 			if (fileName == null) throw new ArgumentNullException("fileName");
 			if (name == null) throw new ArgumentNullException("name");
-			this.name = name;
-			this.filePath = fileName;
-			this.image = (Image)image.Clone();
+			Name = name;
+			FilePath = fileName;
+			Image = (Image)image.Clone();
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
+		/// </summary>
 		public NamedImage(NamedImage source) {
 			if (source == null) throw new ArgumentNullException("source");
 			Name = source.Name;
@@ -1046,6 +1134,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Finalizer of <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
+		/// </summary>
 		~NamedImage() {
 			Dispose();
 		}
@@ -1053,16 +1144,20 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Releases all resources.
+		/// </summary>
 		public void Dispose() {
-			if (image != null) {
-				image.Dispose();
-				image = null;
-			}
+			if (image != null) image.Dispose();
+			image = null;
 		}
 
 		#endregion
 
 
+		/// <summary>
+		/// Creates a copy of this <see cref="T:Dataweb.NShape.Advanced.NamedImage" />.
+		/// </summary>
 		public NamedImage Clone() {
 			return new NamedImage(this);
 		}
@@ -1104,7 +1199,7 @@ namespace Dataweb.NShape.Advanced {
 			set {
 				if (string.IsNullOrEmpty(value))
 					name = string.Empty;
-				else name = value; 
+				else name = value;
 			}
 		}
 
@@ -1169,7 +1264,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Loads the imagefile into this NamedImage.
 		/// </summary>
-		/// <param name="pathName"></param>
 		public void Load(string fileName) {
 			if (!File.Exists(fileName)) throw new FileNotFoundException("File not found or access denied.", fileName);
 			// GDI+ only reads the file header and keeps the image file locked for loading the 
@@ -1214,14 +1308,335 @@ namespace Dataweb.NShape.Advanced {
 			return result;
 		}
 
-
 		#region Fields
+		
 		private Image image = null;
 		private string name = string.Empty;
 		private string filePath = string.Empty;
 		private Size imageSize = Size.Empty;
 		private bool canLoadFromFile = false;
 		private Type imageType = typeof(Image);
+		private System.Text.ASCIIEncoding asciiEncoder = new System.Text.ASCIIEncoding();
+		
 		#endregion
 	}
+
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public enum ExifPropertyTags {
+		/// <ToBeCompleted></ToBeCompleted>
+		ImageWidth = 0x100,
+		/// <ToBeCompleted></ToBeCompleted>
+		ImageLength = 0x101,
+		/// <ToBeCompleted></ToBeCompleted>
+		BitsPerSample = 0x102,
+		/// <ToBeCompleted></ToBeCompleted>
+		Compression = 0x103,
+		/// <ToBeCompleted></ToBeCompleted>
+		PhotometricInterpretation = 0x106,
+		/// <ToBeCompleted></ToBeCompleted>
+		FillOrder = 0x10A,
+		/// <ToBeCompleted></ToBeCompleted>
+		DocumentName = 0x10D,
+		/// <ToBeCompleted></ToBeCompleted>
+		ImageDescription = 0x10E,
+		/// <ToBeCompleted></ToBeCompleted>
+		Make = 0x10F,
+		/// <ToBeCompleted></ToBeCompleted>
+		Model = 0x110,
+		/// <ToBeCompleted></ToBeCompleted>
+		StripOffsets = 0x111,
+		/// <ToBeCompleted></ToBeCompleted>
+		Orientation = 0x112,
+		/// <ToBeCompleted></ToBeCompleted>
+		SamplesPerPixel = 0x115,
+		/// <ToBeCompleted></ToBeCompleted>
+		RowsPerStrip = 0x116,
+		/// <ToBeCompleted></ToBeCompleted>
+		StripByteCounts = 0x117,
+		/// <ToBeCompleted></ToBeCompleted>
+		XResolution = 0x11A,
+		/// <ToBeCompleted></ToBeCompleted>
+		YResolution = 0x11B,
+		/// <ToBeCompleted></ToBeCompleted>
+		PlanarConfiguration = 0x11C,
+		/// <ToBeCompleted></ToBeCompleted>
+		ResolutionUnit = 0x128,
+		/// <ToBeCompleted></ToBeCompleted>
+		TransferFunction = 0x12D,
+		/// <ToBeCompleted></ToBeCompleted>
+		Software = 0x131,
+		/// <ToBeCompleted></ToBeCompleted>
+		DateTime = 0x132,
+		/// <ToBeCompleted></ToBeCompleted>
+		Artist = 0x13B,
+		/// <ToBeCompleted></ToBeCompleted>
+		WhitePoint = 0x13E,
+		/// <ToBeCompleted></ToBeCompleted>
+		PrimaryChromaticities = 0x13F,
+		/// <ToBeCompleted></ToBeCompleted>
+		TransferRange = 0x156,
+		/// <ToBeCompleted></ToBeCompleted>
+		JPEGProc = 0x200,
+		/// <ToBeCompleted></ToBeCompleted>
+		JPEGInterchangeFormat = 0x201,
+		/// <ToBeCompleted></ToBeCompleted>
+		JPEGInterchangeFormatLength = 0x202,
+		/// <ToBeCompleted></ToBeCompleted>
+		YCbCrCoefficients = 0x211,
+		/// <ToBeCompleted></ToBeCompleted>
+		YCbCrSubSampling = 0x212,
+		/// <ToBeCompleted></ToBeCompleted>
+		YCbCrPositioning = 0x213,
+		/// <ToBeCompleted></ToBeCompleted>
+		ReferenceBlackWhite = 0x214,
+		/// <ToBeCompleted></ToBeCompleted>
+		BatteryLevel = 0x828F,
+		/// <ToBeCompleted></ToBeCompleted>
+		Copyright = 0x8298,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExposureTime = 0x829A,
+		/// <ToBeCompleted></ToBeCompleted>
+		FNumber = 0x829D,
+		/// <ToBeCompleted></ToBeCompleted>
+		IPTC_NAA = 0x83BB,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExifIFDPointer = 0x8769,
+		/// <ToBeCompleted></ToBeCompleted>
+		InterColorProfile = 0x8773,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExposureProgram = 0x8822,
+		/// <ToBeCompleted></ToBeCompleted>
+		SpectralSensitivity = 0x8824,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSInfoIFDPointer = 0x8825,
+		/// <ToBeCompleted></ToBeCompleted>
+		ISOSpeedRatings = 0x8827,
+		/// <ToBeCompleted></ToBeCompleted>
+		OECF = 0x8828,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExifVersion = 0x9000,
+		/// <ToBeCompleted></ToBeCompleted>
+		DateTimeOriginal = 0x9003,
+		/// <ToBeCompleted></ToBeCompleted>
+		DateTimeDigitized = 0x9004,
+		/// <ToBeCompleted></ToBeCompleted>
+		ComponentsConfiguration = 0x9101,
+		/// <ToBeCompleted></ToBeCompleted>
+		CompressedBitsPerPixel = 0x9102,
+		/// <ToBeCompleted></ToBeCompleted>
+		ShutterSpeedValue = 0x9201,
+		/// <ToBeCompleted></ToBeCompleted>
+		ApertureValue = 0x9202,
+		/// <ToBeCompleted></ToBeCompleted>
+		BrightnessValue = 0x9203,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExposureBiasValue = 0x9204,
+		/// <ToBeCompleted></ToBeCompleted>
+		MaxApertureValue = 0x9205,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubjectDistance = 0x9206,
+		/// <ToBeCompleted></ToBeCompleted>
+		MeteringMode = 0x9207,
+		/// <ToBeCompleted></ToBeCompleted>
+		LightSource = 0x9208,
+		/// <ToBeCompleted></ToBeCompleted>
+		Flash = 0x9209,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalLength = 0x920A,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubjectArea = 0x9214,
+		/// <ToBeCompleted></ToBeCompleted>
+		MakerNote = 0x927C,
+		/// <ToBeCompleted></ToBeCompleted>
+		UserComment = 0x9286,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubSecTime = 0x9290,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubSecTimeOriginal = 0x9291,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubSecTimeDigitized = 0x9292,
+		/// <ToBeCompleted></ToBeCompleted>
+		FlashPixVersion = 0xA000,
+		/// <ToBeCompleted></ToBeCompleted>
+		ColorSpace = 0xA001,
+		/// <ToBeCompleted></ToBeCompleted>
+		PixelXDimension = 0xA002,
+		/// <ToBeCompleted></ToBeCompleted>
+		PixelYDimension = 0xA003,
+		/// <ToBeCompleted></ToBeCompleted>
+		RelatedSoundFile = 0xA004,
+		/// <ToBeCompleted></ToBeCompleted>
+		InteroperabilityIFDPointer = 0xA005,
+		/// <ToBeCompleted></ToBeCompleted>
+		FlashEnergy = 0xA20B,
+		/// <ToBeCompleted></ToBeCompleted>
+		FlashEnergy_TIFF = 0x920B,
+		/// <ToBeCompleted></ToBeCompleted>
+		SpatialFrequencyResponse = 0xA20C,
+		/// <ToBeCompleted></ToBeCompleted>
+		SpatialFrequencyResponse_TIFF = 0x920C,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalPlaneXResolution = 0xA20E,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalPlaneXResolution_TIFF = 0x920E,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalPlaneYResolution = 0xA20F,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalPlaneYResolution_TIFF = 0x920F,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalPlaneResolutionUnit = 0xA210,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalPlaneResolutionUnit_TIFF = 0x9210,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubjectLocation = 0xA214,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubjectLocation_TIFF = 0x9214,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExposureIndex = 0xA215,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExposureIndex_TIFF = 0x9215,
+		/// <ToBeCompleted></ToBeCompleted>
+		SensingMethod = 0xA217,
+		/// <ToBeCompleted></ToBeCompleted>
+		SensingMethod_TIFF = 0x9217,
+		/// <ToBeCompleted></ToBeCompleted>
+		FileSource = 0xA300,
+		/// <ToBeCompleted></ToBeCompleted>
+		SceneType = 0xA301,
+		/// <ToBeCompleted></ToBeCompleted>
+		CFAPattern = 0xA302,
+		/// <ToBeCompleted></ToBeCompleted>
+		CFAPattern_TIFF = 0x828E,
+		/// <ToBeCompleted></ToBeCompleted>
+		CustomRendered = 0xA401,
+		/// <ToBeCompleted></ToBeCompleted>
+		ExposureMode = 0xA402,
+		/// <ToBeCompleted></ToBeCompleted>
+		WhiteBalance = 0xA403,
+		/// <ToBeCompleted></ToBeCompleted>
+		DigitalZoomRatio = 0xA404,
+		/// <ToBeCompleted></ToBeCompleted>
+		FocalLengthIn35mmFilm = 0xA405,
+		/// <ToBeCompleted></ToBeCompleted>
+		SceneCaptureType = 0xA406,
+		/// <ToBeCompleted></ToBeCompleted>
+		GainControl = 0xA407,
+		/// <ToBeCompleted></ToBeCompleted>
+		Contrast = 0xA408,
+		/// <ToBeCompleted></ToBeCompleted>
+		Saturation = 0xA409,
+		/// <ToBeCompleted></ToBeCompleted>
+		Sharpness = 0xA40A,
+		/// <ToBeCompleted></ToBeCompleted>
+		DeviceSettingDescription = 0xA40B,
+		/// <ToBeCompleted></ToBeCompleted>
+		SubjectDistanceRange = 0xA40C,
+		/// <ToBeCompleted></ToBeCompleted>
+		ImageUniqueID = 0xA420
+	}
+
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public enum ExifPropertyTypes {
+		/// <ToBeCompleted></ToBeCompleted>
+		Byte = 0x1,
+		/// <ToBeCompleted></ToBeCompleted>
+		ASCII = 0x2,
+		/// <ToBeCompleted></ToBeCompleted>
+		Short = 0x3,
+		/// <ToBeCompleted></ToBeCompleted>
+		Long = 0x4,
+		/// <ToBeCompleted></ToBeCompleted>
+		Rational = 0x5,
+		/// <ToBeCompleted></ToBeCompleted>
+		Undefined = 0x7,
+		/// <ToBeCompleted></ToBeCompleted>
+		SLONG = 0x9,
+		/// <ToBeCompleted></ToBeCompleted>
+		SRational = 0xA
+	}
+
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public enum ExifIntrTags {
+		/// <ToBeCompleted></ToBeCompleted>
+		InteroperabilityIndex = 0x0001,
+		/// <ToBeCompleted></ToBeCompleted>
+		InteroperabilityVersion = 0x0002,
+		/// <ToBeCompleted></ToBeCompleted>
+		RelatedImageFileFormat = 0x1000,
+		/// <ToBeCompleted></ToBeCompleted>
+		RelatedImageWidth = 0x1001,
+		/// <ToBeCompleted></ToBeCompleted>
+		RelatedImageLength = 0x1002,
+	}
+
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public enum ExifGpsTags {
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSVersionID = 0x0,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSLatitudeRef = 0x1,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSLatitude = 0x2,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSLongitudeRef = 0x3,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSLongitude = 0x4,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSAltitudeRef = 0x5,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSAltitude = 0x6,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSTimeStamp = 0x7,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSSatellites = 0x8,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSStatus = 0x9,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSMeasureMode = 0xA,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDOP = 0xB,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSSpeedRef = 0xC,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSSpeed = 0xD,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSTrackRef = 0xE,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSTrack = 0xF,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSImgDirectionRef = 0x10,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSImgDirection = 0x11,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSMapDatum = 0x12,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestLatitudeRef = 0x13,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestLatitude = 0x14,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestLongitudeRef = 0x15,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestLongitude = 0x16,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestBearingRef = 0x17,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestBearing = 0x18,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestDistanceRef = 0x19,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDestDistance = 0x1A,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSProcessingMethod = 0x1B,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSAreaInformation = 0x1C,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDateStamp = 0x1D,
+		/// <ToBeCompleted></ToBeCompleted>
+		GPSDifferential = 0x1E
+	}
+
 }

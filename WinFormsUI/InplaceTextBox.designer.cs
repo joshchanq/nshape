@@ -24,13 +24,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// </summary>
 		private void InitializeComponent() {
 			this.SuspendLayout();
-			// 
-			// InplaceTexteditor
-			// 
 			this.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.Size = new System.Drawing.Size(353, 311);
 			this.ResumeLayout(false);
-
 		}
 
 		#endregion

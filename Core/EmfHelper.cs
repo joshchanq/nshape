@@ -20,7 +20,11 @@ using System.Runtime.InteropServices;
 namespace Dataweb.NShape.Advanced {
 
 	// Based on code from http://www.dotnet247.com/247reference/msgs/23/118514.aspx
+	/// <summary>
+	/// Helper class for copying and deleting EMF files.
+	/// </summary>
 	public static class EmfHelper {
+
 		[DllImport("user32.dll")]
 		static extern bool OpenClipboard(IntPtr hWndNewOwner);
 
@@ -39,7 +43,10 @@ namespace Dataweb.NShape.Advanced {
 		[DllImport("gdi32.dll")]
 		static extern bool DeleteEnhMetaFile(IntPtr hemf);
 
-		// Metafile mf is set to an invalid State inside this function
+		/// <summary>
+		/// Copies the given <see cref="T:System.Drawing.Imaging.MetaFile" /> to the clipboard.
+		/// The given <see cref="T:System.Drawing.Imaging.MetaFile" /> is set to an invalid state inside this function.
+		/// </summary>
 		static public bool PutEnhMetafileOnClipboard(IntPtr hWnd, Metafile metafile) {
 			if (metafile == null) throw new ArgumentNullException("metafile");
 			bool bResult = false;
@@ -62,7 +69,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		// Metafile mf is set to an invalid State inside this function
+		/// <summary>
+		/// Copies the given <see cref="T:System.Drawing.Imaging.MetaFile" /> to the specified file. If the file does not exist, it will be created.
+		/// The given <see cref="T:System.Drawing.Imaging.MetaFile" /> is set to an invalid state inside this function.
+		/// </summary>
 		static public bool SaveEnhMetaFile(string fileName, Metafile metafile){
 			if (metafile == null) throw new ArgumentNullException("metafile");
 			bool result = false;

@@ -24,17 +24,23 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// RichTextBox control used for editing captions of shapes on the diagram.
+	/// </summary>
 	[ToolboxItem(false)]
 	public partial class InPlaceTextBox : RichTextBox {
 
 		/// <summary>
-		/// Creates a new InPlaceTextBox instance
+		/// Creates a new instance of Dataweb.NShape.WinFormsUI.InPlaceTextBox.
 		/// </summary>
 		public InPlaceTextBox(IDiagramPresenter owner, ICaptionedShape shape, int captionIndex, string currentText)
 			: this(owner, shape, captionIndex, currentText, null) {
 		}
 
 
+		/// <summary>
+		/// Creates a new instance of Dataweb.NShape.WinFormsUI.InPlaceTextBox.
+		/// </summary>
 		public InPlaceTextBox(IDiagramPresenter owner, ICaptionedShape shape, int captionIndex, string currentText, string newText) {
 			Construct(owner, shape, captionIndex, currentText, newText);
 			// Set Text
@@ -51,25 +57,54 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		#region [Public] Properties
+
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
-			get { 
-				//return this.GetType().Assembly.GetName().Version.ToString();
-				return base.ProductVersion;
-			}
+			get { return base.ProductVersion; }
 		}
+
+
+		///// <override></override>
+		//public new Rectangle Bounds {
+		//   get { return drawBounds; }
+		//   private set {
+		//      drawBounds = value;
+				
+		//      // RichTextbox ignores the Padding property, 
+		//      // so we shrink the whole control to maintain the correct padding
+		//      value.Inflate(-paragraphStyle.Padding.Horizontal, 0); //-paragraphStyle.Padding.Vertical);
+		//      value.Offset(paragraphStyle.Padding.Left, 0); //paragraphStyle.Padding.Top);
+
+		//      SuspendLayout();
+		//      this.Size = value.Size;
+		//      this.Location = value.Location;
+		//      ResumeLayout();
+		//   }
+		//}
+
+
+		///// <override></override>
+		//public new int Width {
+		//   get { return drawBounds.Width; }
+		//   private set { base.Width = value - paragraphStyle.Padding.Horizontal; }
+		//}
+
+
+		///// <override></override>
+		//public new int Height {
+		//   get { return drawBounds.Height; }
+		//   private set { base.Height = value - paragraphStyle.Padding.Vertical; }
+		//}
 
 
 		/// <summary>
-		/// The maximum Size of the Control (in Control coordinates), equivivalent to the text's layout area.
+		/// Specifies the text's alignment
 		/// </summary>
-		public Rectangle BoundsLimit {
-			get { return boundsLimit; }
-			set { boundsLimit = value; }
-		}
-		
-		
 		public ContentAlignment TextAlignment {
 			get { return ConvertToContentAlignment(SelectionAlignment); }
 			set {
@@ -84,6 +119,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the initial, unmodified text.
+		/// </summary>
 		public string OriginalText {
 			get { return originalText; }
 			set {
@@ -94,6 +132,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 		
 		
+		/// <summary>
+		/// Specifies the text to be edited.
+		/// </summary>
 		public override string Text {
 			get { return base.Text; }
 			set {
@@ -104,19 +145,24 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+		#endregion
 
+
+		#region [Protected] Methods
+
+		/// <summary>
+		/// Extended version of the Invalidate method, invalidates the control itself and its parent control.
+		/// </summary>
 		protected void InvalidateEx() {
 			if (Parent != null) {
-				Rectangle rect = Rectangle.Empty;
-				rect = Bounds;
-				rect.Inflate(1, 1);
-				owner.ControlToDiagram(rect, out rect);
+				Rectangle rect = Bounds;
+				rect.Inflate(SystemInformation.Border3DSize.Width, SystemInformation.Border3DSize.Height);
 				Parent.Invalidate(rect, true);
-			}
-			else Invalidate();
+			} else Invalidate();
 		}
 
 
+		/// <override></override>
 		protected override CreateParams CreateParams {
 			get {
 				CreateParams cp = base.CreateParams;
@@ -126,261 +172,187 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		protected override void OnTextChanged(EventArgs e) {
-			// measure the current Size of the text
-			sizeBuffer = TextMeasurer.MeasureText(Text, Font, layoutArea.Size, paragraphStyle);
-
-			owner.DiagramToControl(sizeBuffer, out sizeBuffer);
-			// check if the (layouted) text fits into the TextEditor
-			if (Height < sizeBuffer.Height) {
-				// grow textEditor
-				if (sizeBuffer.Height > boundsLimit.Height)
-					Height = boundsLimit.Height;
-				else 
-					Height = sizeBuffer.Height;
-			}
-			else if (Height > sizeBuffer.Height) {
-				// shrink TextEditor
-				if (sizeBuffer.Height < lineHeight)
-					Height = lineHeight;
-				else
-					Height = sizeBuffer.Height;
-			}
-			base.OnTextChanged(e);
-			InvalidateEx();
-		}
-
-
-		protected override void OnResize(EventArgs eventargs) {
-			InvalidateEx();
-			if (paragraphStyle != null) {
-				// move textEditor depending on the vertical text alignment
-				switch (paragraphStyle.Alignment) {
-					case ContentAlignment.BottomCenter:
-					case ContentAlignment.BottomLeft:
-					case ContentAlignment.BottomRight:
-						Top = boundsLimit.Bottom - Height;
-						break;
-					case ContentAlignment.MiddleCenter:
-					case ContentAlignment.MiddleLeft:
-					case ContentAlignment.MiddleRight:
-						Top = boundsLimit.Top + (int)Math.Round((boundsLimit.Height / 2f) - (Height / 2f));
-						break;
-					case ContentAlignment.TopCenter:
-					case ContentAlignment.TopLeft:
-					case ContentAlignment.TopRight:
-						Top = boundsLimit.Top;
-						break;
-				}
-			} else Debug.Print("ParagraphStyle not found!");
-			base.OnResize(eventargs);
-			InvalidateEx();
-		}
-
-
-		protected override void NotifyInvalidate(Rectangle invalidatedArea) {
-			base.NotifyInvalidate(invalidatedArea);
-		}
-
-
-		protected override void OnInvalidated(InvalidateEventArgs e) {
-			base.OnInvalidated(e);
-		}
-
-
-		protected override void OnSelectionChanged(EventArgs e) {
-			base.OnSelectionChanged(e);
-			InvalidateEx();
-		}
-
-
-		protected override void OnVisibleChanged(EventArgs e) {
-			base.OnVisibleChanged(e);
-			InvalidateEx();
-		}
-
-
+		/// <override></override>
 		protected override void OnMove(EventArgs e) {
-			Invalidate();
+			InvalidateEx();
 			base.OnMove(e);
 			InvalidateEx();
 		}
 
 
+		/// <override></override>
+		protected override void OnResize(EventArgs eventargs) {
+			InvalidateEx();
+			base.OnResize(eventargs);
+			InvalidateEx();
+		}
+
+
+		/// <override></override>
 		protected override void OnHScroll(EventArgs e) {
 			base.OnHScroll(e);
 			InvalidateEx();
 		}
 
 
+		/// <override></override>
 		protected override void OnVScroll(EventArgs e) {
 			base.OnVScroll(e);
 			InvalidateEx();
 		}
 
 
-		// The Paint-Methods are not called until the "UserPaint" style is set with the 
-		// SetStyle() / UpdateStyles() methods in the constructer
-		protected override void OnPaintBackground(PaintEventArgs pevent) {
-			Parent.Update();
-			//base.OnPaintBackground(pevent);
+		/// <override></override>
+		protected override void NotifyInvalidate(Rectangle invalidatedArea) {
+			base.NotifyInvalidate(invalidatedArea);
 		}
 
 
-		// The Paint-Methods are not called until the "UserPaint" style is set with the 
-		// SetStyle() / UpdateStyles() methods in the constructor
-		protected override void OnPaint(PaintEventArgs e) {
-			//e.Graphics.SmoothingMode = infoGfx.SmoothingMode;
-			//e.Graphics.TextRenderingHint = infoGfx.TextRenderingHint;
-			//e.Graphics.CompositingQuality = infoGfx.CompositingQuality;
-			
-			Font font = ToolCache.GetFont(characterStyle);
-			StringFormat formatter = ToolCache.GetStringFormat(paragraphStyle);
-			float fontSize = (characterStyle.SizeInPoints / 72f) * e.Graphics.DpiY;
-			System.Drawing.Drawing2D.GraphicsPath textPath = new System.Drawing.Drawing2D.GraphicsPath();
-
-			textPath.Reset();
-			textPath.StartFigure();
-			textPath.AddString(Text, font.FontFamily, (int)font.Style, fontSize, ClientRectangle, formatter);
-			textPath.CloseAllFigures();
-
-			e.Graphics.FillPath(Brushes.Black, textPath);
+		/// <override></override>
+		protected override void OnInvalidated(InvalidateEventArgs e) {
+			base.OnInvalidated(e);
 		}
 
+
+		/// <override></override>
+		protected override void OnTextChanged(EventArgs e) {
+			owner.SuspendUpdate();
+			base.OnTextChanged(e);
+
+			shape.SetCaptionText(captionIndex, Text);
+			DoUpdateBounds();
+
+			InvalidateEx();
+			owner.ResumeUpdate();
+		}
+
+
+		/// <override></override>
+		protected override void OnSelectionChanged(EventArgs e) {
+			base.OnSelectionChanged(e);
+			InvalidateEx();
+		}
+
+
+		/// <override></override>
+		protected override void OnVisibleChanged(EventArgs e) {
+			base.OnVisibleChanged(e);
+			InvalidateEx();
+		}
+
+		#endregion
+
+
+		#region [Private] Methods
 
 		private void Construct(IDiagramPresenter owner, ICaptionedShape shape, int captionIndex, string currentText, string newText) {
 			if (owner == null) throw new ArgumentNullException("owner");
 			if (shape == null) throw new ArgumentNullException("shape");
 			if (captionIndex < 0 || captionIndex >= shape.CaptionCount) throw new ArgumentOutOfRangeException("captionIndex");
-			// Set Caontrol Styles
-			SetStyle(ControlStyles.ResizeRedraw
-				| ControlStyles.ResizeRedraw
-				| ControlStyles.SupportsTransparentBackColor
-				//| ControlStyles.OptimizedDoubleBuffer
-				//| ControlStyles.AllPaintingInWmPaint
-				//| ControlStyles.UserPaint			// uncomment this line to activateConnectionPoints the OnPaint-Method (see below)
-				, true);
+			// Set control styles
+			SetStyle(ControlStyles.ResizeRedraw | ControlStyles.SupportsTransparentBackColor, true);
 			UpdateStyles();
 
+			// Set general properties
+			this.BackColor = Color.Transparent;	// Does not matter - see CreateParams()
+			this.AutoScrollOffset = Point.Empty;
+			this.ScrollBars = RichTextBoxScrollBars.None;
+			this.BorderStyle = BorderStyle.None;
+
+			// Set caption / style specific properties
 			this.owner = owner;
 			this.shape = shape;
 			this.captionIndex = captionIndex;
-			
 			// Set Styles here because the ParagraphStyle is needed for resizing
 			characterStyle = shape.GetCaptionCharacterStyle(captionIndex);
 			paragraphStyle = shape.GetCaptionParagraphStyle(captionIndex);
+
+			// set base' members
+			SuspendLayout();
+			try {
+				this.WordWrap = paragraphStyle.WordWrap;
+				this.Font = ToolCache.GetFont(characterStyle);
+				this.ZoomFactor = owner.ZoomLevel / 100f;
+
+				DoUpdateBounds();
+
+				// get line height
+				Size textSize = TextRenderer.MeasureText(((IDisplayService)owner).InfoGraphics, "Ig", Font);
+				owner.DiagramToControl(textSize, out textSize);
+				lineHeight = textSize.Height;
+
+				SelectAll();
+				SelectionAlignment = ConvertToHorizontalAlignment(paragraphStyle.Alignment);
+				DeselectAll();
+			} finally {
+				ResumeLayout();
+			}
+		}
+
+
+		private void DoUpdateBounds() {
+			Debug.Assert(shape != null);
+			Debug.Assert(paragraphStyle != null);
+			Debug.Assert(captionIndex >= 0);
+
+			// Get rotated caption bounds from the shape
 			Point tl = Point.Empty, tr = Point.Empty, bl = Point.Empty, br = Point.Empty;
 			shape.GetCaptionBounds(captionIndex, out tl, out tr, out br, out bl);
-
-			// calculate unrotated captionBounds
+			// Calculate unrotated caption bounds
 			float angle;
 			Point center = Geometry.VectorLinearInterpolation(tl, br, 0.5f);
 			angle = Geometry.RadiansToDegrees(Geometry.Angle(tl.X, tl.Y, tr.X, tr.Y));
 			tl = Geometry.RotatePoint(center, -angle, tl);
 			br = Geometry.RotatePoint(center, -angle, br);
-			Rectangle captionBounds = Rectangle.Empty;
-			captionBounds.Location = tl;
-			captionBounds.Width = br.X - tl.X;
-			captionBounds.Height = br.Y - tl.Y;
+			
+			// Calculate unrotated layout area for the text
+			Rectangle layoutArea  = Rectangle.Empty;
+			layoutArea.Location = tl;
+			layoutArea.Width = br.X - tl.X;
+			layoutArea.Height = br.Y - tl.Y;
+			// Measure the current size of the text
+			Size textSize = TextMeasurer.MeasureText(Text, Font, layoutArea.Size, paragraphStyle);
 
-			// Set members
-			this.layoutArea = captionBounds;
-			owner.DiagramToControl(captionBounds, out boundsLimit);
-
-			// set base' members
+			// Transform layout area and text size to control coordinates
+			owner.DiagramToControl(layoutArea, out layoutArea);
+			owner.DiagramToControl(textSize, out textSize);
+			
+			// Calculate new bounds for the text editor based on the shape's caption layout rectangle
+			Rectangle newBounds = Rectangle.Empty;
+			newBounds.X = layoutArea.X;
+			newBounds.Width = layoutArea.Width;
+			newBounds.Height = Math.Max(textSize.Height, lineHeight);
+			// Move text editor depending on the vertical text alignment
+			switch (paragraphStyle.Alignment) {
+				case ContentAlignment.BottomCenter:
+				case ContentAlignment.BottomLeft:
+				case ContentAlignment.BottomRight:
+					newBounds.Y = layoutArea.Bottom - textSize.Height;
+					break;
+				case ContentAlignment.MiddleCenter:
+				case ContentAlignment.MiddleLeft:
+				case ContentAlignment.MiddleRight:
+					newBounds.Y = layoutArea.Y + (int)Math.Round((layoutArea.Height - textSize.Height) / 2f);
+					break;
+				case ContentAlignment.TopCenter:
+				case ContentAlignment.TopLeft:
+				case ContentAlignment.TopRight:
+					newBounds.Y = layoutArea.Y;
+					break;
+				default:
+					newBounds.Y = layoutArea.Y;
+					Debug.Fail(string.Format("Unhandled {0} '{1}'.", paragraphStyle.Alignment.GetType().Name, paragraphStyle.Alignment));
+					break;
+			}
+			
+			// Update control bounds 
+			// (No need to Invalidate here, this is done by OnResize())
 			SuspendLayout();
-			Font = ToolCache.GetFont(characterStyle);
-			this.MaximumSize = boundsLimit.Size;
-			this.Bounds = boundsLimit;
-			this.BackColor = Color.Transparent;
-			this.BorderStyle = BorderStyle.None;
-			this.WordWrap = paragraphStyle.WordWrap;
-			this.Font = ToolCache.GetFont(characterStyle);
-			this.ScrollBars = RichTextBoxScrollBars.None;
-			this.ZoomFactor = owner.ZoomLevel / 100f;
-
-			// get line height
-			sizeBuffer = TextRenderer.MeasureText(((IDisplayService)owner).InfoGraphics, "Ig", Font);
-			owner.DiagramToControl(sizeBuffer, out sizeBuffer);
-			lineHeight = sizeBuffer.Height;
-
-			SelectAll();
-			SelectionAlignment = ConvertToHorizontalAlignment(paragraphStyle.Alignment);
-			DeselectAll();
+			Bounds = newBounds;
 			ResumeLayout();
 		}
 
 
-		/// <summary>
-		/// Returns TextformatFlags used for measuring Text with TextRenderer class.
-		/// </summary>
-		private TextFormatFlags GetTextFormatFlags(IParagraphStyle paragraphStyle) {
-			Debug.Assert(paragraphStyle != null);
-
-			// The flag 'TextBoxControl' ensures that WordBreak behaves exactly like the StringFormat class' WordWrap
-			TextFormatFlags result = TextFormatFlags.TextBoxControl;
-			//result |= TextFormatFlags.NoPadding;
-			//result |= TextFormatFlags.LeftAndRightPadding;
-
-			// set Alignment
-			switch (paragraphStyle.Alignment) {
-				case ContentAlignment.BottomCenter:
-					result |= TextFormatFlags.Bottom | TextFormatFlags.HorizontalCenter;
-					break;
-				case ContentAlignment.BottomLeft:
-					result |= TextFormatFlags.Bottom | TextFormatFlags.Left;
-					break;
-				case ContentAlignment.BottomRight:
-					result |= TextFormatFlags.Bottom | TextFormatFlags.Right;
-					break;
-				case ContentAlignment.MiddleCenter:
-					result |= TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter;
-					break;
-				case ContentAlignment.MiddleLeft:
-					result |= TextFormatFlags.VerticalCenter | TextFormatFlags.Left;
-					break;
-				case ContentAlignment.MiddleRight:
-					result |= TextFormatFlags.VerticalCenter | TextFormatFlags.Right;
-					break;
-				case ContentAlignment.TopCenter:
-					result |= TextFormatFlags.Top | TextFormatFlags.HorizontalCenter;
-					break;
-				case ContentAlignment.TopLeft:
-					result |= TextFormatFlags.Top | TextFormatFlags.Left;
-					break;
-				case ContentAlignment.TopRight:
-					result |= TextFormatFlags.Top | TextFormatFlags.Right;
-					break;
-				default: throw new NShapeUnsupportedValueException(paragraphStyle.Alignment);
-			}
-			// set WordWrap
-			if (paragraphStyle.WordWrap)
-				result |= TextFormatFlags.WordBreak;
-			// set Trimming
-			switch (paragraphStyle.Trimming) {
-				case StringTrimming.Character:
-					result |= TextFormatFlags.EndEllipsis;		// ToDo: Find out what's suitable here
-					break;
-				case StringTrimming.EllipsisCharacter:
-					result |= TextFormatFlags.EndEllipsis;
-					break;
-				case StringTrimming.EllipsisPath:
-					result |= TextFormatFlags.PathEllipsis;
-					break;
-				case StringTrimming.EllipsisWord:
-					result |= TextFormatFlags.WordEllipsis;
-					break;
-				case StringTrimming.None:
-					result |= TextFormatFlags.NoClipping;
-					break;
-				case StringTrimming.Word:
-					result |= TextFormatFlags.WordEllipsis;		// ToDo: Find out what's suitable here
-					break;
-			}
-			return result;
-		}
-
-	
 		private HorizontalAlignment ConvertToHorizontalAlignment(ContentAlignment contentAlignment) {
 			switch (contentAlignment) {
 				case ContentAlignment.BottomCenter:
@@ -436,6 +408,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+		#endregion
+
 
 		#region Fields
 		private IDiagramPresenter owner;
@@ -446,12 +420,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		private IParagraphStyle paragraphStyle;
 		private ICharacterStyle characterStyle;
 
-		private Rectangle boundsLimit = Rectangle.Empty;
-		private Rectangle layoutArea = Rectangle.Empty;
 		private int lineHeight;
 		
-		private Size sizeBuffer = Size.Empty;
 		private ContentAlignment contentAlignment;
+		private TextPaddingTypeConverter paddingConverter = new TextPaddingTypeConverter();
 		#endregion
 	}
+
 }

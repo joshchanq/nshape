@@ -30,41 +30,51 @@ namespace Dataweb.NShape.Layouters {
 	/// each shape and large enough to look tidy.</remarks>
 	public class GridLayouter : LayouterBase, ILayouter {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Layouters.GridLayouter" />.
+		/// </summary>
 		public GridLayouter(Project project)
 			: base(project) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int CoarsenessX {
 			get { return coarsenessX; }
 			set { coarsenessX = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int CoarsenessY {
 			get { return coarsenessY; }
 			set { coarsenessY = value; }
 		}
 
 
+		/// <override></override>
 		public override string InvariantName {
 			get { return "GridLayouter"; }
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get { return Resources.GetString("GridLayouter_Description"); }
 		}
 
 
+		/// <override></override>
 		public override void Prepare() {
 		}
 
 
+		/// <override></override>
 		public override void Unprepare() {
 		}
 
 
+		/// <override></override>
 		public override bool ExecuteStep() {
 			// If executing multiple times in a row, we want the layouter to restart from the
 			// original situation.
@@ -85,18 +95,25 @@ namespace Dataweb.NShape.Layouters {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected struct GridPosition {
+			/// <ToBeCompleted></ToBeCompleted>
 			public int col;
+			/// <ToBeCompleted></ToBeCompleted>
 			public int row;
+			/// <ToBeCompleted></ToBeCompleted>
 			public int dir; // -1: unknown, 0: node, 1: eastbound edge, 2: northbound edge
+			/// <ToBeCompleted></ToBeCompleted>
 			public int idx; // > 0, if there are multiple shapes for that position
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected class GridPositionComparer : IComparer, IComparer<GridPosition> {
 
 			#region IComparer Members
 
+			/// <override></override>
 			public int Compare(object x, object y) {
 				return Compare((GridPosition)x, (GridPosition)y);
 			}
@@ -106,6 +123,7 @@ namespace Dataweb.NShape.Layouters {
 
 			#region IComparer<GridPosition> Members
 
+			/// <override></override>
 			public int Compare(GridPosition x, GridPosition y) {
 				if (x.col == y.col)
 					if (x.row == y.row)
@@ -115,9 +133,11 @@ namespace Dataweb.NShape.Layouters {
 			}
 
 			#endregion
+
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void FindSpacing2(ref int origin, ref int spacing, int center, bool horizontal) {
 			int bestEnergy = int.MaxValue;
 			for (int s = 1; s < 1000; ++s) {
@@ -132,18 +152,21 @@ namespace Dataweb.NShape.Layouters {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual int CalcEnergy(out int origin, ref int spacing, int center, bool horizontal) {
 			origin = OptimizeOrigin(center, spacing, horizontal);
 			return CalcDistanceSum(origin, spacing, horizontal) / selectedShapes.Count + (horizontal? CoarsenessX: CoarsenessY) / spacing;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void FindSpacing1(ref int origin, ref int spacing, int center, bool horizontal) {
 			FindNextLocalMinimum(ref origin, ref spacing, center, horizontal);
 			spacing = ReduceLocalMinimum(origin, spacing, 40, horizontal);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual int FindNextLocalMinimum(ref int origin, ref int spacing, int avgOrigin, bool horizontal) {
 			int newOrigin = OptimizeOrigin(avgOrigin, spacing, horizontal);
 			int newSpacing = spacing;
@@ -172,6 +195,7 @@ namespace Dataweb.NShape.Layouters {
 		// Searches a quotient, by which the spacing is divided to lead to a distance
 		// sum which is almost the distance sum of the current spacing divided by the quotient.
 		// The spacing must be larger than the average shape size.
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int ReduceLocalMinimum(int origin, int spacing, int minSpacing, bool horizontal) {
 			int distanceSum = CalcDistanceSum(origin, spacing, horizontal);
 			int q = 2;
@@ -187,6 +211,7 @@ namespace Dataweb.NShape.Layouters {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual int OptimizeOrigin(int origin, int spacing, bool horizontal) {
 			// int result = maxOrigin;
 			// First, we optimize the origin for this spacing
@@ -202,12 +227,14 @@ namespace Dataweb.NShape.Layouters {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual int CalcDistance(int position, int origin, int spacing) {
 			int rest = Math.Abs((position - origin) % spacing);
 			return Math.Min(rest, spacing - rest);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual int CalcDistanceSum(int origin, int spacing, bool horizontal) {
 			int distanceSum = 0;
 			foreach (Shape s in selectedShapes)
@@ -217,6 +244,7 @@ namespace Dataweb.NShape.Layouters {
 
 
 		// Add all seleced shapes into the grid
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void ArrangeShapes(int ox, int oy, int sx, int sy) {
 			lastCommand = new MoveShapesCommand();
 			SortedList<GridPosition, Shape> positionAssignments 
@@ -330,16 +358,19 @@ namespace Dataweb.NShape.Layouters {
 
 		#region ILayouter Members
 
+		/// <override></override>
 		public override string InvariantName {
 			get { return "Positioning"; }
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get { return Resources.GetString("GridLayouter_Description"); }
 		}
 
 
+		/// <override></override>
 		public override void Prepare() {
 			if (selectedShapes.Count <= 0) throw new NShapeException("There are no shapes.");
 			// Wir mache die Gitterlinien soweit auseinander, das das durchschnittliche 
@@ -363,11 +394,13 @@ namespace Dataweb.NShape.Layouters {
 		}
 
 
+		/// <override></override>
 		public override void Unprepare() {
 			// Nichts zu tun.
 		}
 
 
+		/// <override></override>
 		public override bool ExecuteStep() {
 			bool result = true; // false, wenn die nächste Position außerhalb des Bereichs liegt
 			bool done = false; // true, wenn ein Shape bewegt wurde

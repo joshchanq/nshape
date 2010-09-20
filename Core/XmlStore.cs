@@ -35,12 +35,18 @@ namespace Dataweb.NShape {
 	[ToolboxBitmap(typeof(XmlStore), "XmlStore.bmp")]
 	public class XmlStore : Store {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.XmlStore" />.
+		/// </summary>
 		public XmlStore() {
 			this.DirectoryName = string.Empty;
 			this.FileExtension = ".xml";
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.XmlStore" />.
+		/// </summary>
 		public XmlStore(string directoryName, string fileExtension) {
 			if (directoryName == null) throw new ArgumentNullException("directoryName");
 			if (fileExtension == null) throw new ArgumentNullException("fileExtension");
@@ -49,6 +55,11 @@ namespace Dataweb.NShape {
 		}
 
 
+		#region [Public] Properties
+
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -126,9 +137,12 @@ namespace Dataweb.NShape {
 			}
 		}
 
+		#endregion
 
-		#region Store Implementation
 
+		#region [Public] Store Implementation
+
+		/// <override></override>
 		public override string ProjectName {
 			get { return projectName; }
 			set {
@@ -140,11 +154,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override bool Exists() {
 			return File.Exists(ProjectFilePath);
 		}
 
 
+		/// <override></override>
 		public override void ReadVersion(IStoreCache cache) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			version = DoReadVersion(cache, false);
@@ -152,16 +168,19 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Create(IStoreCache cache) {
 			DoOpen(cache, true);
 		}
 
 
+		/// <override></override>
 		public override void Open(IStoreCache cache) {
 			DoOpen(cache, false);
 		}
 
 
+		/// <override></override>
 		public override void Close(IStoreCache storeCache) {
 			isOpen = false;
 			isOpenComplete = false;
@@ -170,6 +189,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Erase() {
 			File.Delete(ProjectFilePath);
 			// The if prevents exceptions during debugging. The catch concurrency problems.
@@ -183,6 +203,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void LoadProjects(IStoreCache cache, IEntityType entityType, params object[] parameters) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			if (entityType == null) throw new ArgumentNullException("entityType");
@@ -277,6 +298,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected internal override int Version {
 			get { return version; }
 			set { version = value; }
@@ -285,15 +307,20 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		#region Implementation
+		#region [Protected] Methods: Implementation
 
-		/// <override></override>
+		/// <summary>
+		/// Loads connections between <see cref="T:Dataweb.NShape.Advanced.Shapes" /> instances.
+		/// </summary>
 		protected void LoadShapeConnections(IStoreCache cache, Diagram diagram) {
 			Debug.Assert(isOpen);
 			OpenComplete(cache);
 		}
 
 
+		/// <summary>
+		/// Reads the save version from the XML file.
+		/// </summary>
 		protected int DoReadVersion(IStoreCache cache, bool keepFileOpen) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			if (isOpen) throw new InvalidOperationException(string.Format("{0} is already open.", GetType().Name));
@@ -309,6 +336,9 @@ namespace Dataweb.NShape {
 		}
 		
 		
+		/// <summary>
+		/// Opens the XML file and read the project settings. The rest of the file is loaded on the first request of data.
+		/// </summary>
 		protected void DoOpen(IStoreCache cache, bool create) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			if (isOpen) throw new InvalidOperationException(string.Format("{0} is already open.", GetType().Name));
@@ -332,10 +362,544 @@ namespace Dataweb.NShape {
 			isOpen = true;
 		}
 
+
+		/// <summary>
+		/// Calculates the directory for the images given the complete file path.
+		/// </summary>
+		protected string CalcImageDirectoryName() {
+			string result = Path.GetDirectoryName(ProjectFilePath);
+			if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
+			result = UnifyPath(Path.Combine(result, ProjectName + " Images"));
+			return result;
+		}
+
+
+		/// <summary>
+		/// Create a path with slashes ('/') instead of back slashes ('\') as path delimiter in order to ensure that xml repositories can be loaded from both, Windows and Linux operating systems.
+		/// </summary>
+		protected string UnifyPath(string path) {
+			Uri resultUri;
+			if (Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out resultUri))
+				return Uri.UnescapeDataString(resultUri.AbsolutePath);
+			return path;
+		}
+
+
+		/// <summary>
+		/// Indicates wether the given id is interpreted as empty.
+		/// </summary>
+		protected internal bool IsNullOrEmpty<T>(object id) {
+			if (object.ReferenceEquals(id, null)) return true;
+			else return object.Equals(id, default(T));
+		}
+
 		#endregion
 
 
-		#region Read from XML file
+		#region [Protected] Types: XmlStoreReader and XmlStoreWriter
+
+		/// <summary>
+		/// Writes fields and inner objects to XML.
+		/// </summary>
+		protected class XmlStoreWriter : RepositoryWriter {
+
+			/// <summary>
+			/// Initializes a new instance of <see cref="T:Dataweb.NShape.XmlStore.XmlStoreWriter" />.
+			/// </summary>
+			public XmlStoreWriter(XmlWriter xmlWriter, XmlStore store, IStoreCache cache)
+				: base(cache) {
+				if (xmlWriter == null) throw new ArgumentNullException("xmlWriter");
+				if (store == null) throw new ArgumentNullException("store");
+				this.store = store;
+				this.xmlWriter = xmlWriter;
+			}
+
+
+			#region RepositoryWriter Members
+
+			/// <override></override>
+			protected override void DoWriteId(object id) {
+				++PropertyIndex;
+				string fieldName = GetXmlAttributeName(PropertyIndex);
+				if (id == null)
+					XmlAddAttributeString(fieldName, Guid.Empty.ToString());
+				else
+					XmlAddAttributeString(fieldName, id.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteBool(bool value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteByte(byte value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt16(short value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt32(int value) {
+				++PropertyIndex;
+				string fieldName = GetXmlAttributeName(PropertyIndex);
+				XmlAddAttributeString(fieldName, value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt64(long value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteFloat(float value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteDouble(double value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteChar(char value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteString(string value) {
+				if (string.IsNullOrEmpty(value)) value = string.Empty;
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteDate(DateTime value) {
+				++PropertyIndex;
+				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToUniversalTime().ToString(datetimeFormat));
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteImage(Image image) {
+				++PropertyIndex;
+				if (image == null) {
+					XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), "");
+				} else {
+					// Retrieve image directory name and image name
+					string filePath = store.ImageDirectory;
+					string fileName = GetImageFileName(image);
+
+					// Create directory if it does not exist
+					if (!System.IO.Directory.Exists(filePath))
+						System.IO.Directory.CreateDirectory(filePath);
+
+					// Build image file path and set file extension
+					filePath = store.UnifyPath(Path.Combine(filePath, fileName));
+
+					if (image is Metafile) {
+						using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
+							IntPtr hdc = gfx.GetHdc();
+							Metafile metaFile = new Metafile(filePath, hdc);
+							gfx.ReleaseHdc(hdc);
+							using (Graphics metaFileGfx = Graphics.FromImage(metaFile)) {
+								Rectangle bounds = Rectangle.Empty;
+								bounds.Width = image.Width;
+								bounds.Height = image.Height;
+								ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
+								GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, ImageLayoutMode.Original, bounds, bounds);
+							}
+						}
+					} else image.Save(filePath, image.RawFormat);
+
+					string currentDirName = Path.GetDirectoryName(store.ProjectFilePath);
+					if (!string.IsNullOrEmpty(currentDirName))
+						filePath = filePath.Replace(currentDirName, ".");
+					else
+						filePath = filePath.Replace(Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath)), ".");
+					XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), filePath);
+				}
+			}
+
+
+			/// <override></override>
+			protected override void DoBeginWriteInnerObjects() {
+				// Sanity checks
+				if (propertyInfos == null)
+					throw new InvalidOperationException("EntityType is not set.");
+				if (Entity == null)
+					throw new InvalidOperationException("InnerObject's parent object is not set to an instance of an object.");
+				if (!(propertyInfos[PropertyIndex + 1] is EntityInnerObjectsDefinition))
+					throw new InvalidOperationException(string.Format("The current property info for '{0}' does not refer to inner objects. Check whether the writing methods fit the PropertyInfos property.", propertyInfos[PropertyIndex + 1]));
+				// Advance to next inner objects property
+				++PropertyIndex;
+				innerObjectsWriter = new XmlStoreWriter(xmlWriter, store, Cache);
+				innerObjectsWriter.Reset(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
+				xmlWriter.WriteStartElement(Cache.CalculateElementName(propertyInfos[PropertyIndex].Name));
+			}
+
+
+			/// <override></override>
+			protected override void DoEndWriteInnerObjects() {
+				xmlWriter.WriteEndElement();
+			}
+
+
+			/// <override></override>
+			protected override void DoBeginWriteInnerObject() {
+				Debug.Assert(Entity != null && innerObjectsWriter != null);
+				xmlWriter.WriteStartElement(Cache.CalculateElementName(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName));
+				innerObjectsWriter.Prepare(null);
+				// Skip the property index for the id since inner objects do not have one.
+				++InnerObjectsWriter.PropertyIndex;
+			}
+
+
+			/// <override></override>
+			protected override void DoEndWriteInnerObject() {
+				Debug.Assert(Entity != null && innerObjectsWriter != null);
+				xmlWriter.WriteEndElement();
+			}
+
+
+			/// <override></override>
+			protected override void DoDeleteInnerObjects() {
+				throw new NotImplementedException();
+			}
+
+
+			/// <override></override>
+			protected internal override void Prepare(IEntity entity) {
+				base.Prepare(entity);
+			}
+
+			#endregion
+
+
+			#region [Private] Methods
+
+			private string GetXmlAttributeName(int propertyIndex) {
+				/* Not required for inner objects
+				 * if (Entity == null) 
+					throw new NShapeException("Persistable object to store is not set. Please assign an IEntity object to the property Object before calling a save method.");*/
+				if (propertyInfos == null)
+					throw new NShapeException("EntityType is not set. Please assign an EntityType to the property EntityType before calling a save method.");
+				return propertyIndex == -1 ? "id" : propertyInfos[propertyIndex].ElementName;
+			}
+
+
+			private string GetImageFileName(Image image) {
+				string imageName = image.Tag.ToString();
+				return GetImageFileName(image, imageName);
+			}
+
+
+			private string GetImageFileName(Image image, string imageName) {
+				if (string.IsNullOrEmpty(imageName)) imageName = "Image";
+				imageName += string.Format(" ({0})", Entity.Id.ToString());
+
+				if (image.RawFormat.Guid == ImageFormat.Bmp.Guid) imageName += ".bmp";
+				else if (image.RawFormat.Guid == ImageFormat.Emf.Guid) imageName += ".emf";
+				else if (image.RawFormat.Guid == ImageFormat.Exif.Guid) imageName += ".exif";
+				else if (image.RawFormat.Guid == ImageFormat.Gif.Guid) imageName += ".gif";
+				else if (image.RawFormat.Guid == ImageFormat.Icon.Guid) imageName += ".ico";
+				else if (image.RawFormat.Guid == ImageFormat.Jpeg.Guid) imageName += ".jpeg";
+				else if (image.RawFormat.Guid == ImageFormat.MemoryBmp.Guid) imageName += ".bmp";
+				else if (image.RawFormat.Guid == ImageFormat.Png.Guid) imageName += ".png";
+				else if (image.RawFormat.Guid == ImageFormat.Tiff.Guid) imageName += ".tiff";
+				else if (image.RawFormat.Guid == ImageFormat.Wmf.Guid) imageName += ".wmf";
+				else Debug.Fail("Unsupported image format.");
+
+				return imageName;
+			}
+
+
+			private void XmlAddAttributeString(string name, string value) {
+				xmlWriter.WriteAttributeString(name, value);
+			}
+
+
+			private XmlStoreWriter InnerObjectsWriter {
+				get { return (XmlStoreWriter)innerObjectsWriter; }
+			}
+
+			#endregion
+
+
+			#region Fields
+
+			private XmlStore store;
+
+			private XmlWriter xmlWriter;
+
+			#endregion
+		}
+
+
+		/// <summary>
+		/// Implements a cache repositoryReader for XML.
+		/// </summary>
+		protected class XmlStoreReader : RepositoryReader {
+
+			/// <summary>
+			/// Initializes a new instance of <see cref="T:Dataweb.NShape.XmlStore.XmlStoreReader" />.
+			/// </summary>
+			public XmlStoreReader(XmlReader xmlReader, XmlStore store, IStoreCache cache)
+				: base(cache) {
+				if (xmlReader == null) throw new ArgumentNullException("xmlReader");
+				if (store == null) throw new ArgumentNullException("store");
+				this.store = store;
+				this.xmlReader = xmlReader;
+			}
+
+
+			#region [Public] Methods: RepositoryReader Implementation
+
+			/// <override></override>
+			public override void BeginReadInnerObjects() {
+				if (propertyInfos == null) throw new NShapeException("Property EntityType is not set.");
+				if (innerObjectsReader != null) throw new InvalidOperationException("EndReadInnerObjects was not called.");
+				++PropertyIndex;
+				string elementName = Cache.CalculateElementName(propertyInfos[PropertyIndex].Name);
+				if (!xmlReader.IsStartElement(elementName)) throw new InvalidOperationException(string.Format("Element '{0}' expected.", elementName));
+				if (!xmlReader.IsEmptyElement) xmlReader.Read();
+				innerObjectsReader = new XmlStoreReader(xmlReader, store, Cache);
+				// Set a marker to detect wrong call sequence
+				InnerObjectsReader.PropertyIndex = int.MinValue;
+				InnerObjectsReader.ResetFieldReading(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
+			}
+
+
+			/// <override></override>
+			public override void EndReadInnerObjects() {
+				if (innerObjectsReader == null) throw new InvalidOperationException("BeginReadInnerObjects was not called.");
+				Debug.Assert(xmlReader.IsEmptyElement || xmlReader.NodeType == XmlNodeType.EndElement);
+				xmlReader.Read(); // read end tag of collection
+				innerObjectsReader = null;
+			}
+
+
+			/// <override></override>
+			public override void EndReadInnerObject() {
+				xmlReader.Read(); // Read out of the attributes
+				// Previous version: XmlSkipEndElement(store.CalculateElementName(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).Name));
+				InnerObjectsReader.PropertyIndex = int.MinValue;
+			}
+
+
+			/// <override></override>
+			protected override bool DoReadBool() {
+				bool result = bool.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override byte DoReadByte() {
+				byte result = byte.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override short DoReadInt16() {
+				short result = short.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override int DoReadInt32() {
+				int result = int.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override long DoReadInt64() {
+				long result = long.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override float DoReadFloat() {
+				float result = float.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override double DoReadDouble() {
+				double result = double.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override char DoReadChar() {
+				char result = char.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override string DoReadString() {
+				string result = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override DateTime DoReadDate() {
+				System.Globalization.DateTimeFormatInfo info = new System.Globalization.DateTimeFormatInfo();
+				string attrValue = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
+				DateTime dateTime;
+				if (!DateTime.TryParseExact(attrValue, datetimeFormat, null, System.Globalization.DateTimeStyles.AssumeUniversal, out dateTime))
+					dateTime = Convert.ToDateTime(attrValue);	// ToDo: This is for compatibility with older file versions - Remove later
+				return dateTime.ToLocalTime();
+			}
+
+
+			/// <override></override>
+			protected override Image DoReadImage() {
+				Image result = null;
+				string filePath = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
+				xmlReader.MoveToNextAttribute();
+				if (!string.IsNullOrEmpty(filePath)) {
+					string fileName = store.UnifyPath(Path.Combine(store.ImageDirectory, Path.GetFileName(filePath)));
+					byte[] buffer = null;
+					using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
+						buffer = new byte[fileStream.Length];
+						fileStream.Read(buffer, 0, buffer.Length);
+						fileStream.Close();
+					}
+					if (buffer != null) {
+						MemoryStream memStream = new MemoryStream(buffer);
+						result = Image.FromStream(memStream);
+					}
+				}
+				return result;
+			}
+
+			#endregion
+
+
+			#region [Protected] Methods: Implementation
+
+			/// <override></override>
+			protected internal override object ReadId() {
+				++PropertyIndex;
+				ValidatePropertyIndex();
+				object result = null;
+				string resultString = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
+				if (!string.IsNullOrEmpty(resultString)) {
+					result = new Guid(resultString);
+					if (result.Equals(Guid.Empty))
+						result = null;
+				}
+				xmlReader.MoveToNextAttribute();
+				return result;
+			}
+
+
+			// Assumes that the current tag is of the expected type or the end element of 
+			// the enclosing element. Moves to the first attribute for subsequent reading.
+			/// <override></override>
+			protected internal override bool DoBeginObject() {
+				// If the enclosing element is empty, it is still the current tag and indicates 
+				// an empty inner objects list.
+				if (xmlReader.NodeType == XmlNodeType.EndElement || (xmlReader.IsEmptyElement && !xmlReader.HasAttributes))
+					return false;
+				else {
+					xmlReader.MoveToFirstAttribute();
+					PropertyIndex = -2;
+					return true;
+				}
+			}
+
+
+			/// <override></override>
+			protected internal override void DoEndObject() {
+				// Read over the end tag of the object.
+			}
+
+
+			/// <override></override>
+			protected override void ValidatePropertyIndex() {
+				base.ValidatePropertyIndex();
+				if (PropertyIndex + xmlAttributeOffset >= xmlReader.AttributeCount)
+					throw new NShapeException("An entity tries to read {0} properties although there are only {1} properties stored in the repository. Check whether the repository is valid and/or up-to-date.", PropertyIndex + xmlAttributeOffset + 1, xmlReader.AttributeCount);
+			}
+
+
+			internal override void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos) {
+				base.ResetFieldReading(propertyInfos);
+			}
+
+			#endregion
+
+
+			private XmlStoreReader InnerObjectsReader {
+				get { return (XmlStoreReader)innerObjectsReader; }
+			}
+
+
+			#region Fields
+
+			// There is always one more XML attribute (the id) than there are properties 
+			// in the entity type.
+			private const int xmlAttributeOffset = 1;
+
+			private XmlStore store;
+
+			private XmlReader xmlReader;
+
+			#endregion
+		}
+
+		#endregion
+
+
+		internal string ImageDirectory {
+			get {
+				if (string.IsNullOrEmpty(imageDirectory))
+					imageDirectory = CalcImageDirectoryName();
+				return imageDirectory;
+			}
+		}
+
+
+		#region [Private] Methods: Read from XML file
 
 		private void ReadProjectSettings(IStoreCache cache, XmlReader xmlReader) {
 			if (!XmlSkipToElement(projectTag)) throw new NShapeException("Invalid XML file. Project tag not found.");
@@ -417,7 +981,10 @@ namespace Dataweb.NShape {
 			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(FillStyle.EntityTypeName));
 			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(LineStyle.EntityTypeName));
 			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName));
-			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(ShapeStyle.EntityTypeName));
+			if (xmlReader.Name == shapeStyleTag) {
+				xmlReader.Read();
+				XmlReadEndElement(shapeStyleTag);
+			}
 		}
 
 
@@ -684,7 +1251,7 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		#region Write to XML file
+		#region [Private] Methods: Write to XML file
 
 		private void CreateFile(IStoreCache cache, string pathName, bool overwrite) {
 			Debug.Assert(repositoryWriter == null);
@@ -821,7 +1388,6 @@ namespace Dataweb.NShape {
 			WriteStyles<FillStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), design);
 			WriteStyles<LineStyle>(cache, cache.FindEntityTypeByName(LineStyle.EntityTypeName), design);
 			WriteStyles<ParagraphStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), design);
-			WriteStyles<ShapeStyle>(cache, cache.FindEntityTypeByName(ShapeStyle.EntityTypeName), design);
 		}
 
 
@@ -976,7 +1542,7 @@ namespace Dataweb.NShape {
 
 
 		private void WriteModelObject(IStoreCache cache, IModelObject modelObject, XmlStoreWriter writer) {
-			IEntityType modelObjectEntityType = cache.FindEntityTypeByName(modelObject.Type.Name);
+			IEntityType modelObjectEntityType = cache.FindEntityTypeByName(modelObject.Type.FullName);
 			string modelObjectTag = GetElementTag(modelObjectEntityType);
 			XmlOpenElement(modelObjectTag);
 			writer.Reset(modelObjectEntityType.PropertyDefinitions);
@@ -1090,433 +1656,7 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		//-------------------------------------------------------------------------
-		/// <summary>
-		/// Writes fields and inner objects to XML.
-		/// </summary>
-		protected class XmlStoreWriter : RepositoryWriter {
-
-			public XmlStoreWriter(XmlWriter xmlWriter, XmlStore store, IStoreCache cache)
-				: base(cache) {
-				if (xmlWriter == null) throw new ArgumentNullException("xmlWriter");
-				if (store == null) throw new ArgumentNullException("store");
-				this.store = store;
-				this.xmlWriter = xmlWriter;
-			}
-
-
-			internal protected override void Prepare(IEntity entity) {
-				base.Prepare(entity);
-			}
-
-
-			private string GetXmlAttributeName(int propertyIndex) {
-				/* Not required for inner objects
-				 * if (Entity == null) 
-					throw new NShapeException("Persistable object to store is not set. Please assign an IEntity object to the property Object before calling a save method.");*/
-				if (propertyInfos == null)
-					throw new NShapeException("EntityType is not set. Please assign an EntityType to the property EntityType before calling a save method.");
-				return propertyIndex == -1 ? "id" : propertyInfos[propertyIndex].ElementName;
-			}
-
-
-			#region RepositoryWriter Members
-
-			protected override void DoWriteId(object id) {
-				++PropertyIndex;
-				string fieldName = GetXmlAttributeName(PropertyIndex);
-				if (id == null)
-					XmlAddAttributeString(fieldName, Guid.Empty.ToString());
-				else
-					XmlAddAttributeString(fieldName, id.ToString());
-			}
-
-
-			protected override void DoWriteBool(bool value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteByte(byte value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteInt16(short value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteInt32(int value) {
-				++PropertyIndex;
-				string fieldName = GetXmlAttributeName(PropertyIndex);
-				XmlAddAttributeString(fieldName, value.ToString());
-			}
-
-
-			protected override void DoWriteInt64(long value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteFloat(float value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteDouble(double value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteChar(char value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToString());
-			}
-
-
-			protected override void DoWriteString(string value) {
-				if (string.IsNullOrEmpty(value)) value = string.Empty;
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value);
-			}
-
-
-			protected override void DoWriteDate(DateTime value) {
-				++PropertyIndex;
-				XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), value.ToUniversalTime().ToString(datetimeFormat));
-			}
-
-
-			protected override void DoWriteImage(Image image) {
-				++PropertyIndex;
-				if (image == null) {
-					XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), "");
-				} else {
-					string filePath = store.ImageDirectory;
-					if (!System.IO.Directory.Exists(filePath))
-						System.IO.Directory.CreateDirectory(filePath);
-					filePath = store.UnifyPath(Path.Combine(filePath, Entity.Id.ToString() + " (" + (++imageCount).ToString() + ")"));
-					if (image.RawFormat.Guid == ImageFormat.Bmp.Guid) filePath += ".bmp";
-					else if (image.RawFormat.Guid == ImageFormat.Emf.Guid) filePath += ".emf";
-					else if (image.RawFormat.Guid == ImageFormat.Exif.Guid) filePath += ".exif";
-					else if (image.RawFormat.Guid == ImageFormat.Gif.Guid) filePath += ".gif";
-					else if (image.RawFormat.Guid == ImageFormat.Icon.Guid) filePath += ".ico";
-					else if (image.RawFormat.Guid == ImageFormat.Jpeg.Guid) filePath += ".jpeg";
-					else if (image.RawFormat.Guid == ImageFormat.MemoryBmp.Guid) filePath += ".bmp";
-					else if (image.RawFormat.Guid == ImageFormat.Png.Guid) filePath += ".png";
-					else if (image.RawFormat.Guid == ImageFormat.Tiff.Guid) filePath += ".tiff";
-					else if (image.RawFormat.Guid == ImageFormat.Wmf.Guid) filePath += ".wmf";
-					else Debug.Fail("Unsupported image format.");
-
-					if (image is Metafile) {
-						using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
-							IntPtr hdc = gfx.GetHdc();
-							Metafile metaFile = new Metafile(filePath, hdc);
-							gfx.ReleaseHdc(hdc);
-							using (Graphics metaFileGfx = Graphics.FromImage(metaFile)) {
-								Rectangle bounds = Rectangle.Empty;
-								bounds.Width = image.Width;
-								bounds.Height = image.Height;
-								ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
-								GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, ImageLayoutMode.Original, bounds, bounds);
-							}
-						}
-					} else image.Save(filePath, image.RawFormat);
-
-					string currentDirName = Path.GetDirectoryName(store.ProjectFilePath);
-					if (!string.IsNullOrEmpty(currentDirName))
-						filePath = filePath.Replace(currentDirName, ".");
-					else
-						filePath = filePath.Replace(Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath)), ".");
-					XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), filePath);
-				}
-			}
-
-
-			protected override void DoBeginWriteInnerObjects() {
-				// Sanity checks
-				if (propertyInfos == null)
-					throw new InvalidOperationException("EntityType is not set.");
-				if (Entity == null)
-					throw new InvalidOperationException("InnerObject's parent object is not set to an instance of an object.");
-				if (!(propertyInfos[PropertyIndex + 1] is EntityInnerObjectsDefinition))
-					throw new InvalidOperationException(string.Format("The current property info for '{0}' does not refer to inner objects. Check whether the writing methods fit the PropertyInfos property.", propertyInfos[PropertyIndex + 1]));
-				// Advance to next inner objects property
-				++PropertyIndex;
-				innerObjectsWriter = new XmlStoreWriter(xmlWriter, store, Cache);
-				innerObjectsWriter.Reset(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
-				xmlWriter.WriteStartElement(Cache.CalculateElementName(propertyInfos[PropertyIndex].Name));
-			}
-
-
-			protected override void DoEndWriteInnerObjects() {
-				xmlWriter.WriteEndElement();
-			}
-
-
-			protected override void DoBeginWriteInnerObject() {
-				Debug.Assert(Entity != null && innerObjectsWriter != null);
-				xmlWriter.WriteStartElement(Cache.CalculateElementName(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName));
-				innerObjectsWriter.Prepare(null);
-				// Skip the property index for the id since inner objects do not have one.
-				++InnerObjectsWriter.PropertyIndex;
-			}
-
-
-			protected override void DoEndWriteInnerObject() {
-				Debug.Assert(Entity != null && innerObjectsWriter != null);
-				xmlWriter.WriteEndElement();
-			}
-
-
-			protected override void DoDeleteInnerObjects() {
-				throw new NotImplementedException();
-			}
-
-			#endregion
-
-
-			private void XmlAddAttributeString(string name, string value) {
-				xmlWriter.WriteAttributeString(name, value);
-			}
-
-
-			private XmlStoreWriter InnerObjectsWriter {
-				get { return (XmlStoreWriter)innerObjectsWriter; }
-			}
-
-
-			#region Fields
-
-			private XmlStore store;
-
-			private XmlWriter xmlWriter;
-
-			private int imageCount = 0;
-
-			#endregion
-		}
-
-
-		/// <summary>
-		/// Implements a cache repositoryReader for XML.
-		/// </summary>
-		protected class XmlStoreReader : RepositoryReader {
-
-			public XmlStoreReader(XmlReader xmlReader, XmlStore store, IStoreCache cache)
-				: base(cache) {
-				if (xmlReader == null) throw new ArgumentNullException("xmlReader");
-				if (store == null) throw new ArgumentNullException("store");
-				this.store = store;
-				this.xmlReader = xmlReader;
-			}
-
-
-			#region Implementation
-
-			internal protected override object ReadId() {
-				++PropertyIndex;
-				ValidatePropertyIndex();
-				object result = null;
-				string resultString = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
-				if (!string.IsNullOrEmpty(resultString)) {
-					result = new Guid(resultString);
-					if (result.Equals(Guid.Empty))
-						result = null;
-				}
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			internal override void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos) {
-				base.ResetFieldReading(propertyInfos);
-			}
-
-
-			// Assumes that the current tag is of the expected type or the end element of 
-			// the enclosing element. Moves to the first attribute for subsequent reading.
-			protected internal override bool DoBeginObject() {
-				// If the enclosing element is empty, it is still the current tag and indicates 
-				// an empty inner objects list.
-				if (xmlReader.NodeType == XmlNodeType.EndElement || (xmlReader.IsEmptyElement && !xmlReader.HasAttributes))
-					return false;
-				else {
-					xmlReader.MoveToFirstAttribute();
-					PropertyIndex = -2;
-					return true;
-				}
-			}
-
-
-			protected internal override void DoEndObject() {
-				// Read over the end tag of the object.
-			}
-
-			#endregion
-
-
-			#region RepositoryReader Implementation
-
-			public override void BeginReadInnerObjects() {
-				if (propertyInfos == null) throw new NShapeException("Property EntityType is not set.");
-				if (innerObjectsReader != null) throw new InvalidOperationException("EndReadInnerObjects was not called.");
-				++PropertyIndex;
-				string elementName = Cache.CalculateElementName(propertyInfos[PropertyIndex].Name);
-				if (!xmlReader.IsStartElement(elementName)) throw new InvalidOperationException(string.Format("Element '{0}' expected.", elementName));
-				if (!xmlReader.IsEmptyElement) xmlReader.Read();
-				innerObjectsReader = new XmlStoreReader(xmlReader, store, Cache);
-				// Set a marker to detect wrong call sequence
-				InnerObjectsReader.PropertyIndex = int.MinValue;
-				InnerObjectsReader.ResetFieldReading(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
-			}
-
-
-			public override void EndReadInnerObjects() {
-				if (innerObjectsReader == null) throw new InvalidOperationException("BeginReadInnerObjects was not called.");
-				Debug.Assert(xmlReader.IsEmptyElement || xmlReader.NodeType == XmlNodeType.EndElement);
-				xmlReader.Read(); // read end tag of collection
-				innerObjectsReader = null;
-			}
-
-
-			public override void EndReadInnerObject() {
-				xmlReader.Read(); // Read out of the attributes
-				// Previous version: XmlSkipEndElement(store.CalculateElementName(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).Name));
-				InnerObjectsReader.PropertyIndex = int.MinValue;
-			}
-
-
-			protected override bool DoReadBool() {
-				bool result = bool.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override byte DoReadByte() {
-				byte result = byte.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override short DoReadInt16() {
-				short result = short.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override int DoReadInt32() {
-				int result = int.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override long DoReadInt64() {
-				long result = long.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override float DoReadFloat() {
-				float result = float.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override double DoReadDouble() {
-				double result = double.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override char DoReadChar() {
-				char result = char.Parse(xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset));
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override string DoReadString() {
-				string result = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
-				xmlReader.MoveToNextAttribute();
-				return result;
-			}
-
-
-			protected override DateTime DoReadDate() {
-				System.Globalization.DateTimeFormatInfo info = new System.Globalization.DateTimeFormatInfo();
-				string attrValue = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
-				DateTime dateTime;
-				if (!DateTime.TryParseExact(attrValue, datetimeFormat, null, System.Globalization.DateTimeStyles.AssumeUniversal, out dateTime))
-					dateTime = Convert.ToDateTime(attrValue);	// ToDo: This is for compatibility with older file versions - Remove later
-				return dateTime.ToLocalTime();
-			}
-
-
-			protected override Image DoReadImage() {
-				Image result = null;
-				string filePath = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
-				xmlReader.MoveToNextAttribute();
-				if (!string.IsNullOrEmpty(filePath)) {
-					string fileName = store.UnifyPath(Path.Combine(store.ImageDirectory, Path.GetFileName(filePath)));
-					byte[] buffer = null;
-					using (FileStream fileStream = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
-						buffer = new byte[fileStream.Length];
-						fileStream.Read(buffer, 0, buffer.Length);
-						fileStream.Close();
-					}
-					if (buffer != null) {
-						MemoryStream memStream = new MemoryStream(buffer);
-						result = Image.FromStream(memStream);
-					}
-				}
-				return result;
-			}
-
-			#endregion
-
-
-			protected override void ValidatePropertyIndex() {
-				base.ValidatePropertyIndex();
-				if (PropertyIndex + xmlAttributeOffset >= xmlReader.AttributeCount)
-					throw new NShapeException("An entity tries to read {0} properties although there are only {1} properties stored in the repository. Check whether the repository is valid and/or up-to-date.", PropertyIndex + xmlAttributeOffset + 1, xmlReader.AttributeCount);
-			}
-
-
-			private XmlStoreReader InnerObjectsReader {
-				get { return (XmlStoreReader)innerObjectsReader; }
-			}
-
-
-			#region Fields
-
-			// There is always one more XML attribute (the id) than there are properties 
-			// in the entity type.
-			private const int xmlAttributeOffset = 1;
-
-			private XmlStore store;
-
-			private XmlReader xmlReader;
-
-			#endregion
-		}
-
-
-		#region Obtain object tags and field structure
+		#region [Private] Methods: Obtain object tags and field structure
 
 		// TODO 2: Replace this access in place.
 		private string GetElementTag(IEntityType entityType) {
@@ -1528,47 +1668,10 @@ namespace Dataweb.NShape {
 			return GetElementTag(entityType) + "s";
 		}
 
-
-		internal string ImageDirectory {
-			get {
-				if (string.IsNullOrEmpty(imageDirectory))
-					imageDirectory = CalcImageDirectoryName();
-				return imageDirectory;
-			}
-		}
-
 		#endregion
 
 
-		/// <summary>
-		/// Calculates the directory for the images given the complete file path.
-		/// </summary>
-		/// <param name="pathName"></param>
-		/// <returns></returns>
-		protected string CalcImageDirectoryName() {
-			string result = Path.GetDirectoryName(ProjectFilePath);
-			if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
-			result = UnifyPath(Path.Combine(result, ProjectName + " Images"));
-			return result;
-		}
-
-
-		// Create a path with / instead of \ in order to ensure that xml repositories can be loaded from both windows and linux
-		protected string UnifyPath(string path) {
-			Uri resultUri;
-			if (Uri.TryCreate(path, UriKind.RelativeOrAbsolute, out resultUri))
-			   return Uri.UnescapeDataString(resultUri.AbsolutePath);
-			return path;
-		}
-
-
-		#region XML helper functions
-
-		protected internal bool IsNullOrEmpty<T>(object id) {
-			if (id == null) return true;
-			else return id.Equals(default(T));
-		}
-
+		#region [Private] Methods: XML helper functions
 
 		private void XmlOpenElement(string name) {
 			xmlWriter.WriteStartElement(name);
@@ -1652,6 +1755,7 @@ namespace Dataweb.NShape {
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const string ProjectFileExtension = ".xml";
 
 		// Predefined XML Element Tags
@@ -1668,6 +1772,7 @@ namespace Dataweb.NShape {
 		private const string passiveShapeTag = "passive_shape";
 		private const string connectionPointIdTag = "connection_point";
 		private const string childrenTag = "children";
+		private const string shapeStyleTag = "shape_styles";
 		// Format string for DateTimes
 		private const string datetimeFormat = "yyyy-MM-dd HH:mm:ss";
 		// Indicates the highest supported cache version of the built-in entities.

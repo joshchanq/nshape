@@ -23,6 +23,9 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// Helper class implementing methods for converting NShape classes and types to WinForms specific classes and types.
+	/// </summary>
 	public static class WinFormHelpers {
 
 		#region Convert EventArgs
@@ -113,6 +116,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region Build ContextMenus from actions
 
+		/// <summary>
+		/// Creates a collection of ToolStripMenuItems from a collection of MenuItemDefs. Actions that are not allowed will be skipped.
+		/// </summary>
 		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromAllowedActions(IEnumerable<MenuItemDef> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
@@ -135,6 +141,10 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Creates a collection of ToolStripMenuItems from a collection of MenuItemDefs. 
+		/// Actions that are not allowed will disabled and their tool tip displays the reason.
+		/// </summary>
 		public static IEnumerable<ToolStripItem> GetContextMenuItemsFromActions(IEnumerable<MenuItemDef> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
@@ -149,6 +159,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Fills the given ContextMenuStrip with ToolStripItems created from the given collection of MenuItemDefs.
+		/// </summary>
 		public static void BuildContextMenu(ContextMenuStrip contextMenuStrip, IEnumerable<MenuItemDef> actions, Project project, bool skipIfNotGranted) {
 			if (contextMenuStrip == null) throw new ArgumentNullException("contextMenuStrip");
 			if (actions == null) throw new ArgumentNullException("actions");
@@ -164,6 +177,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Fills the given ContextMenuStrip with ToolStripItems created from the given collection of MenuItemDefs.
+		/// </summary>
 		public static void BuildContextMenu(ContextMenuStrip contextMenu, IEnumerable<ToolStripItem> menuItems) {
 			if (contextMenu == null) throw new ArgumentNullException("contextMenu");
 			if (menuItems == null) throw new ArgumentNullException("menuItems");
@@ -175,10 +191,16 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Removes all ToolStripItems formerly created from MenuItemDefs.
+		/// </summary>
 		public static void CleanUpContextMenu(ContextMenuStrip contextMenuStrip) {
 			if (contextMenuStrip == null) throw new ArgumentNullException("contextMenuStrip");
 			// Do not dispose the items here because the execute method of the attached action will be called later!
-			contextMenuStrip.Items.Clear();
+			for (int i = contextMenuStrip.Items.Count-1; i>=0;--i) {
+				if (contextMenuStrip.Items[i].Tag is MenuItemDef)
+					contextMenuStrip.Items.RemoveAt(i);
+			}
 		}
 
 
@@ -297,5 +319,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private static HelperKeyEventArgs keyEventArgs = new HelperKeyEventArgs();
 		
 		#endregion
+	
 	}
+
 }

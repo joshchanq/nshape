@@ -21,8 +21,15 @@ using System.Windows.Forms;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// A vertical tab control component.
+	/// </summary>
 	[ToolboxItem(false)]
 	public partial class VerticalTabControl : ListBox {
+		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.VerticalTabControl" />.
+		/// </summary>
 		public VerticalTabControl() {
 			InitializeComponent();
 			SetStyle(ControlStyles.AllPaintingInWmPaint |
@@ -39,6 +46,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
@@ -46,8 +56,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		#region Colors
+		#region [Public] Properties: Colors
 
+		/// <summary>
+		/// Specifies the background color for inactive items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color InactiveItemBackgroundColor {
 			get { return BackColor; }
@@ -61,6 +74,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the fill color of highlighted items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color HighlightedItemColor {
 			get { return highlightedItemColor; }
@@ -74,6 +90,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the fill color of selected items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color SelectedItemColor {
 			get { return selectedItemColor; }
@@ -87,6 +106,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the border color of inactive items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color InactiveItemBorderColor {
 			get { return itemBorderColor; }
@@ -100,6 +122,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the background color of focussed items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color FocusedItemColor {
 			get { return focusBackgroundColor; }
@@ -113,6 +138,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the border color of focussed items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color FocusBorderColor {
 			get { return focusBorderColor; }
@@ -126,6 +154,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the text color of selected items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color SelectedItemTextColor {
 			get { return selectedTextColor; }
@@ -139,6 +170,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the text color of inactive items.
+		/// </summary>
 		[Category("Appearance")]
 		public Color InactiveItemTextColor {
 			get { return itemTextColor; }
@@ -154,6 +188,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
+		#region [Protected] Overridden Methods
+
+		/// <override></override>
 		protected override void OnMeasureItem(MeasureItemEventArgs e) {
 			base.OnMeasureItem(e);
 			e.ItemWidth = Width;
@@ -161,6 +198,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnDrawItem(DrawItemEventArgs e) {
 			base.OnDrawItem(e);
 
@@ -195,18 +233,22 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnPaintBackground(PaintEventArgs pevent) {
 			base.OnPaintBackground(pevent);
 		}
 
 
+		/// <override></override>
 		protected override void OnPaint(PaintEventArgs e) {
 			//e.Graphics.FillRectangle(BackgroundBrush, Bounds);
 			base.OnPaint(e);
 		}
 
+		#endregion
 
-		#region Pens and Brushes
+
+		#region [Private] Properties: Pens and Brushes
 
 		private Brush BackgroundBrush {
 			get {

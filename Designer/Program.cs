@@ -32,8 +32,12 @@ namespace Dataweb.NShape.Designer {
 
 
 		static void Application_ThreadException(object sender, System.Threading.ThreadExceptionEventArgs e) {
-			if (MessageBox.Show(e.Exception.Message + Environment.NewLine + "Do you want to terminate the application?", "Unhandled Exception", MessageBoxButtons.YesNo) == DialogResult.Yes)
-				Application.Exit();
+			if (e.Exception is System.ComponentModel.WarningException) throw e.Exception;
+			else {
+				string errorMessage = e.Exception.Message + Environment.NewLine + "Do you want to terminate the application?";
+				if (MessageBox.Show(errorMessage, "Unhandled Exception", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+					Application.Exit();
+			}
 		}
 	}
 }

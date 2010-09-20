@@ -32,6 +32,9 @@ namespace Dataweb.NShape.Advanced {
 	[ToolboxBitmap(typeof(CachedRepository), "CachedRepository.bmp")]
 	public class CachedRepository : Component, IRepository, IStoreCache {
 
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.Advanced.Store" /> containing the persistent data for this <see cref="T:Dataweb.NShape.Advanced.CachedRepository" />
+		/// </summary>
 		public Store Store {
 			get { return store; }
 			set {
@@ -43,6 +46,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -79,6 +85,9 @@ namespace Dataweb.NShape.Advanced {
 
 
 #if DEBUG
+		/// <summary>
+		/// Finds the owner of the given shape. For debugging purposes only!
+		/// </summary>
 		public IEntity FindOwner(Shape shape) {
 			foreach (Diagram d in GetCachedEntities<Diagram>(diagrams, newDiagrams))
 				if (d.Shapes.Contains(shape)) return d;
@@ -93,6 +102,8 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IRepository Members
 
+		
+		/// <override></override>
 		public int Version {
 			get { return version; }
 			set {
@@ -259,7 +270,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		#region Project
+		#region [Public] Project
 
 		/// <override></override>
 		public ProjectSettings GetProject() {
@@ -284,21 +295,16 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		//public void UndeleteProject() {
-		//   AssertOpen();
-		//   UndeleteEntity<ProjectSettings>(this.projects, this.settings);
-		//   if (ProjectUpdated != null) ProjectUpdated(this, GetProjectEventArgs(settings));
-		//}
-
-
+		/// <override></override>
 		public event EventHandler<RepositoryProjectEventArgs> ProjectUpdated;
 
+		/// <override></override>
 		public event EventHandler<RepositoryProjectEventArgs> ProjectDeleted;
 
 		#endregion
 
 
-		#region Model
+		#region [Public] Model
 
 		/// <override></override>
 		public Model GetModel() {
@@ -336,6 +342,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UndeleteModel(Model model) {
 			AssertOpen();
 			UndeleteEntity<Model>(models, model);
@@ -343,10 +350,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public event EventHandler<RepositoryModelEventArgs> ModelInserted;
 
+		/// <override></override>
 		public event EventHandler<RepositoryModelEventArgs> ModelUpdated;
 
+		/// <override></override>
 		public event EventHandler<RepositoryModelEventArgs> ModelDeleted;
 
 		#endregion
@@ -354,8 +364,8 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Templates
 
-		/// <override></override>
 		// We assume that this is only called once to load all existing templates.
+		/// <override></override>
 		public IEnumerable<Template> GetTemplates() {
 			AssertOpen();
 			if (store != null && ((IEntity)settings).Id != null && templates.Count <= 0)
@@ -374,7 +384,7 @@ namespace Dataweb.NShape.Advanced {
 			InsertEntity<Template>(newTemplates, template, GetProject());
 			DoInsertShape(template.Shape, template);	// insert with children
 			if (template.Shape.ModelObject != null)
-			   InsertEntity<IModelObject>(newModelObjects, template.Shape.ModelObject, template);
+				DoInsertModelObject(template.Shape.ModelObject, template);
 			
 			if (TemplateInserted != null) TemplateInserted(this, GetTemplateEventArgs(template));
 		}
@@ -415,26 +425,28 @@ namespace Dataweb.NShape.Advanced {
 			UpdateEntity<Template>(templates, newTemplates, template);
 			
 			// Insert / undelete / update shape
-			IEntity shapeEntity = template.Shape;
-			if (shapeEntity.Id == null && !newShapes.ContainsKey((Shape)shapeEntity))
-				DoInsertShape((Shape)shapeEntity, template);
-			else {
-				if (CanUndelete<Shape>(template.Shape, shapes))
-					DoUndeleteShape((Shape)shapeEntity, template);
-				DoUpdateShape(template.Shape);
-			}
+			DoUpdateTemplateShape(template);
+			//IEntity shapeEntity = template.Shape;
+			//if (shapeEntity.Id == null && !newShapes.ContainsKey(template.Shape))
+			//   DoInsertShape((Shape)shapeEntity, template);
+			//else {
+			//   if (CanUndelete<Shape>(template.Shape, shapes))
+			//      DoUndeleteShape(template.Shape, template);
+			//   DoUpdateShape(template.Shape);
+			//}
 			
 			// Insert / undelete / update model object
-			if (template.Shape.ModelObject != null) {
-				IModelObject modelObject = template.Shape.ModelObject;
-				if (modelObject.Id == null && !newModelObjects.ContainsKey(modelObject))
-					DoInsertModelObject(template.Shape.ModelObject, template);
-				else {
-					if (CanUndelete<IModelObject>(modelObject, modelObjects))
-						DoUndeleteModelObject(modelObject);
-					DoUpdateModelObject(template.Shape.ModelObject);
-				}
-			}
+			DoUpdateTemplateModelObject(template);
+			//if (template.Shape.ModelObject != null) {
+			//   IModelObject modelObject = template.Shape.ModelObject;
+			//   if (modelObject.Id == null && !newModelObjects.ContainsKey(modelObject))
+			//      DoInsertModelObject(template.Shape.ModelObject, template);
+			//   else {
+			//      if (CanUndelete<IModelObject>(modelObject, modelObjects))
+			//         DoUndeleteModelObject(modelObject);
+			//      DoUpdateModelObject(template.Shape.ModelObject);
+			//   }
+			//}
 			
 			if (TemplateUpdated != null) TemplateUpdated(this, GetTemplateEventArgs(template));
 		}
@@ -446,10 +458,44 @@ namespace Dataweb.NShape.Advanced {
 			if (oldShape == null) throw new ArgumentNullException("oldShape");
 			if (newShape == null) throw new ArgumentNullException("newShape");
 			AssertOpen();
-			InsertShape(newShape, template);
+			//DoInsertShape(newShape, template);
 			UpdateEntity<Template>(templates, newTemplates, template);
-			DeleteShape(oldShape);
+			// Insert/Undelete new shape
+			DoUpdateTemplateShape(template);
+			DoUpdateTemplateModelObject(template);
+			// Delete old shape
+			DoDeleteShape(oldShape);
+
 			if (TemplateShapeReplaced != null) TemplateShapeReplaced(this, GetTemplateShapeExchangedEventArgs(template, oldShape, newShape));
+		}
+
+
+		// Insert / undelete / update shape
+		private void DoUpdateTemplateShape(Template template) {
+			IEntity shapeEntity = template.Shape;
+			if (shapeEntity.Id == null && !newShapes.ContainsKey(template.Shape))
+				DoInsertShape((Shape)shapeEntity, template);
+			else {
+				if (CanUndelete<Shape>(template.Shape, shapes))
+					DoUndeleteShape(template.Shape, template);
+				DoUpdateShape(template.Shape);
+			}
+		}
+
+
+		// Insert / undelete / update model object
+		private void DoUpdateTemplateModelObject(Template template) {
+			// Insert / undelete / update model object
+			if (template.Shape.ModelObject != null) {
+				IModelObject modelObject = template.Shape.ModelObject;
+				if (modelObject.Id == null && !newModelObjects.ContainsKey(modelObject))
+					DoInsertModelObject(template.Shape.ModelObject, template);
+				else {
+					if (CanUndelete<IModelObject>(modelObject, modelObjects))
+						DoUndeleteModelObject(modelObject);
+					DoUpdateModelObject(template.Shape.ModelObject);
+				}
+			}
 		}
 
 
@@ -458,12 +504,15 @@ namespace Dataweb.NShape.Advanced {
 			if (template == null) throw new ArgumentNullException("template");
 			AssertOpen();
 			// Delete the template's shape
-			DeleteEntity<Shape>(shapes, newShapes, template.Shape);
 			DeleteEntity<Template>(templates, newTemplates, template);
+			DoDeleteShape(template.Shape);
+			if (template.Shape.ModelObject != null)
+				DoDeleteModelObject(template.Shape.ModelObject);
 			if (TemplateDeleted != null) TemplateDeleted(this, GetTemplateEventArgs(template));
 		}
 
 
+		/// <override></override>
 		public void UndeleteTemplate(Template template) {
 			if (template == null) throw new ArgumentNullException("template");
 			AssertOpen();
@@ -491,6 +540,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region ModelMappings
 
+		/// <override></override>
 		public void InsertModelMapping(IModelMapping modelMapping, Template template) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
 			if (template == null) throw new ArgumentNullException("template");
@@ -499,6 +549,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void InsertModelMappings(IEnumerable<IModelMapping> modelMappings, Template template) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMappings");
 			if (template == null) throw new ArgumentNullException("template");
@@ -508,6 +559,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UpdateModelMapping(IModelMapping modelMapping) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
 			DoUpdateModelMapping(modelMapping);
@@ -516,6 +568,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UpdateModelMappings(IEnumerable<IModelMapping> modelMappings) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
 			Template owner = null;
@@ -529,6 +582,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void DeleteModelMapping(IModelMapping modelMapping) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
 			Template owner = GetModelMappingOwner(modelMapping);
@@ -537,6 +591,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void DeleteModelMappings(IEnumerable<IModelMapping> modelMappings) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
 			Template owner = null;
@@ -550,6 +605,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UndeleteModelMapping(IModelMapping modelMapping, Template template) {
 			if (modelMapping == null) throw new ArgumentNullException("modelMapping");
 			DoUndeleteModelMapping(modelMapping, template);
@@ -557,6 +613,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UndeleteModelMappings(IEnumerable<IModelMapping> modelMappings, Template template) {
 			if (modelMappings == null) throw new ArgumentNullException("modelMapping");
 			foreach (IModelMapping modelMapping in modelMappings)
@@ -565,10 +622,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public event EventHandler<RepositoryTemplateEventArgs> ModelMappingsInserted;
 
+		/// <override></override>
 		public event EventHandler<RepositoryTemplateEventArgs> ModelMappingsUpdated;
 
+		/// <override></override>
 		public event EventHandler<RepositoryTemplateEventArgs> ModelMappingsDeleted;
 
 		#endregion
@@ -656,6 +716,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UndeleteDiagram(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			AssertOpen();
@@ -913,6 +974,8 @@ namespace Dataweb.NShape.Advanced {
 			connection.TargetPointId = connectionPointId;
 			newShapeConnections.Add(connection);
 			isModified = true;
+
+			if (ShapeConnectionInserted != null) ShapeConnectionInserted(this, GetShapeConnectionEventArgs(connection));
 		}
 
 
@@ -930,7 +993,16 @@ namespace Dataweb.NShape.Advanced {
 			if (!newShapeConnections.Remove(connection))
 				deletedShapeConnections.Add(connection);
 			isModified = true;
+
+			if (ShapeConnectionDeleted != null) ShapeConnectionDeleted(this, GetShapeConnectionEventArgs(connection));
 		}
+
+
+		/// <override></override>
+		public event EventHandler<RepositoryShapeConnectionEventArgs> ShapeConnectionInserted;
+
+		/// <override></override>
+		public event EventHandler<RepositoryShapeConnectionEventArgs> ShapeConnectionDeleted;
 
 		#endregion
 
@@ -946,8 +1018,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <override></override>
 		// TODO 2: Should be similar to GetShape. Unify?
+		/// <override></override>
 		public IModelObject GetModelObject(object id) {
 			if (id == null) throw new ArgumentNullException("id");
 			AssertOpen();
@@ -967,6 +1039,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public IEnumerable<IModelObject> GetModelObjects(IModelObject parent) {
 			AssertOpen();
 			if (store != null && ((IEntity)settings).Id != null) {
@@ -991,6 +1064,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void InsertModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			AssertOpen();
@@ -1000,6 +1074,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void InsertModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			AssertOpen();
@@ -1011,6 +1086,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UpdateModelObjectParent(IModelObject modelObject, IModelObject parent) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			DoUpdateModelObjectParent(modelObject, parent);
@@ -1018,6 +1094,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UpdateModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			AssertOpen();
@@ -1030,6 +1107,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UpdateModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			AssertOpen();
@@ -1040,6 +1118,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void DeleteModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			AssertOpen();
@@ -1052,6 +1131,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void DeleteModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			AssertOpen();
@@ -1062,6 +1142,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UndeleteModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			AssertOpen();
@@ -1071,6 +1152,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UndeleteModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			AssertOpen();
@@ -1081,6 +1163,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public void UnloadModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			AssertOpen();
@@ -1092,10 +1175,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsInserted;
 
+		/// <override></override>
 		public event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsUpdated;
 
+		/// <override></override>
 		public event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsDeleted;
 
 		#endregion
@@ -1176,10 +1262,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public event EventHandler<RepositoryDesignEventArgs> DesignInserted;
 
+		/// <override></override>
 		public event EventHandler<RepositoryDesignEventArgs> DesignUpdated;
 
+		/// <override></override>
 		public event EventHandler<RepositoryDesignEventArgs> DesignDeleted;
 
 		#endregion
@@ -1224,10 +1313,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public event EventHandler<RepositoryStyleEventArgs> StyleInserted;
 
+		/// <override></override>
 		public event EventHandler<RepositoryStyleEventArgs> StyleUpdated;
 
+		/// <override></override>
 		public event EventHandler<RepositoryStyleEventArgs> StyleDeleted;
 
 		#endregion
@@ -1235,8 +1327,9 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
-		#region IStoreCache Members
+		#region [Explicit] IStoreCache Members Implementation
 
+		
 		ProjectSettings IStoreCache.Project {
 			get { return settings; }
 		}
@@ -1429,8 +1522,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Calculates an XML tag name for the given entity name.
 		/// </summary>
-		/// <param name="elementTag"></param>
-		/// <returns></returns>
 		static private string CalcElementName(string entityName) {
 			string result;
 			// We remove the prefixes Core. and GeneralShapes.
@@ -1666,21 +1757,20 @@ namespace Dataweb.NShape.Advanced {
 				InsertEntity<IStyle>(newStyles, style, design);
 			foreach (IStyle style in styleSet.LineStyles)
 				InsertEntity<IStyle>(newStyles, style, design);
-			//foreach (IStyle style in styleSetProvider.StyleSet.ShapeStyles)
-			//   InsertEntity<IStyle>(styles, newStyles, style, design);
 			foreach (IStyle style in styleSet.ParagraphStyles)
 				InsertEntity<IStyle>(newStyles, style, design);
 			isModified = true;
 		}
 
 
-		#region ProjectOwner
+		#region [Protected] ProjectOwner
 
 		/// <summary>
 		/// Serves as a parent entity for the project info.
 		/// </summary>
 		protected class ProjectOwner : IEntity {
 
+			/// <override></override>
 			public object Id;
 
 			#region IEntity Members
@@ -1720,7 +1810,7 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
-		#region Implementation
+		#region [Private] Implementation
 
 		private void ClearBuffers() {
 			projectDesign = null;
@@ -1956,7 +2046,7 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
-		#region Methods for retrieving EventArgs
+		#region [Private] Methods for retrieving EventArgs
 
 		private RepositoryProjectEventArgs GetProjectEventArgs(ProjectSettings projectData) {
 			projectEventArgs.Project = projectData;
@@ -2051,6 +2141,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		private RepositoryShapeConnectionEventArgs GetShapeConnectionEventArgs(ShapeConnection connection) {
+			shapeConnectionEventArgs.SetShapeConnection(connection);
+			return shapeConnectionEventArgs;
+		}
+
 		#endregion
 
 
@@ -2133,6 +2228,7 @@ namespace Dataweb.NShape.Advanced {
 		private RepositoryTemplateEventArgs templateEventArgs = new RepositoryTemplateEventArgs();
 		private RepositoryTemplateShapeReplacedEventArgs templateShapeExchangedEventArgs = new RepositoryTemplateShapeReplacedEventArgs();
 		private RepositoryShapesEventArgs shapeEventArgs = new RepositoryShapesEventArgs();
+		private RepositoryShapeConnectionEventArgs shapeConnectionEventArgs = new RepositoryShapeConnectionEventArgs();
 		private RepositoryModelObjectsEventArgs modelObjectEventArgs = new RepositoryModelObjectsEventArgs();
 
 		#endregion
@@ -2141,25 +2237,54 @@ namespace Dataweb.NShape.Advanced {
 
 	#region EntityBucket<TObject> Class
 
-	public enum ItemState { Original, Modified, OwnerChanged, Deleted, New };
+	/// <summary>
+	/// Specifies the state of a persistent entity stored in a <see cref="T:Dataweb.NShape.Advanced.CachedRepository" />
+	/// </summary>
+	public enum ItemState { 
+		/// <summary>The entity was not modified.</summary>
+		Original, 
+		/// <summary>The entity was modified and not yet saved.</summary>
+		Modified, 
+		/// <summary>The owner of the entity changed.</summary>
+		OwnerChanged, 
+		/// <summary>The entity was deleted from the repository but not yet saved.</summary>
+		Deleted, 
+		/// <summary>The entity is new.</summary>
+		New 
+	};
 
+
+	// EntityBucket is a reference type, because it is entered into dictionaries.
+	// Modifying a field of a value type in a dictionary is not possible during
+	// an enumeration, but we have to modify at least the State.
 	/// <summary>
 	/// Stores a reference to a loaded object together with its state.
 	/// </summary>
 	/// <typeparam projectName="Type">Type of the object to store</typeparam>
-	// EntityBucket is a reference type, because it is entered into dictionaries.
-	// Modifying a field of a value type in a dictionary is not possible during
-	// an enumeration, but we have to modify at least the State.
 	public class EntityBucket<TObject> {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.EntityBucket`1" />
+		/// </summary>
 		public EntityBucket(TObject obj, IEntity owner, ItemState state) {
 			this.ObjectRef = obj;
 			this.Owner = owner;
 			this.State = state;
 		}
 
+		/// <summary>
+		/// Gets the object stored in the <see cref="T:Dataweb.NShape.Advanced.EntityBucket`1" />
+		/// </summary>
 		public TObject ObjectRef;
+		
+		/// <summary>
+		/// Gets the owner <see cref="T:Dataweb.NShape.Advanced.IEntity" />.
+		/// </summary>
 		public IEntity Owner;
+
+		/// <summary>
+		/// Gets the <see cref="T:Dataweb.NShape.Advanced.ItemState" />.
+		/// </summary>
 		public ItemState State;
 	}
 
@@ -2168,8 +2293,10 @@ namespace Dataweb.NShape.Advanced {
 
 	#region ShapeConnection Struct
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public struct ShapeConnection {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool operator ==(ShapeConnection x, ShapeConnection y) {
 			return (
 				x.ConnectorShape == y.ConnectorShape
@@ -2178,10 +2305,12 @@ namespace Dataweb.NShape.Advanced {
 				&& x.TargetPointId == y.TargetPointId);
 		}
 
-
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool operator !=(ShapeConnection x, ShapeConnection y) { return !(x == y); }
 
-
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.ShapeConnection" />.
+		/// </summary>
 		public ShapeConnection(Diagram diagram, Shape connectorShape, ControlPointId gluePointId, Shape targetShape, ControlPointId targetPointId) {
 			this.ConnectorShape = connectorShape;
 			this.GluePointId = gluePointId;
@@ -2189,12 +2318,12 @@ namespace Dataweb.NShape.Advanced {
 			this.TargetPointId = targetPointId;
 		}
 
-
+		/// <override></override>
 		public override bool Equals(object obj) {
 			return obj is ShapeConnection && this == (ShapeConnection)obj;
 		}
 
-
+		/// <override></override>
 		public override int GetHashCode() {
 			int result = GluePointId.GetHashCode() ^ TargetPointId.GetHashCode();
 			if (ConnectorShape != null) result ^= ConnectorShape.GetHashCode();
@@ -2202,12 +2331,19 @@ namespace Dataweb.NShape.Advanced {
 			return result;
 		}
 
-
+		/// <ToBeCompleted></ToBeCompleted>
 		public static readonly ShapeConnection Empty;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape ConnectorShape;
+		
+		/// <ToBeCompleted></ToBeCompleted>
 		public ControlPointId GluePointId;
+		
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape TargetShape;
+		
+		/// <ToBeCompleted></ToBeCompleted>
 		public ControlPointId TargetPointId;
 
 
@@ -2251,20 +2387,32 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public abstract class RepositoryReader : IRepositoryReader, IDisposable {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.RepositoryReader" />.
+		/// </summary>
 		protected RepositoryReader(IStoreCache cache) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			this.cache = cache;
 		}
 
 
-		#region IRepositoryReader Members
+		#region [Public] IRepositoryReader Members
 
+		/// <summary>
+		/// Fetches the next set of inner objects and prepares them for reading.
+		/// </summary>
 		public abstract void BeginReadInnerObjects();
 
 
+		/// <summary>
+		/// Finishes reading the current set of inner objects.
+		/// </summary>
 		public abstract void EndReadInnerObjects();
 
 
+		/// <summary>
+		/// Fetches the next inner object in a set of inner object.
+		/// </summary>
 		public bool BeginReadInnerObject() {
 			if (innerObjectsReader == null)
 				return DoBeginObject();
@@ -2272,9 +2420,15 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Finishes reading an inner object.
+		/// </summary>
 		public abstract void EndReadInnerObject();
 
 
+		/// <summary>
+		/// Reads a boolean value from the data source.
+		/// </summary>
 		public bool ReadBool() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2284,6 +2438,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a byte value from the data source.
+		/// </summary>
 		public byte ReadByte() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2293,6 +2450,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a 16 bit integer value from the data source.
+		/// </summary>
+		/// <returns></returns>
 		public short ReadInt16() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2302,6 +2463,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a 32 bit integer value from the data source.
+		/// </summary>
+		/// <returns></returns>
 		public int ReadInt32() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2311,6 +2476,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a 64 bit integer value from the data source.
+		/// </summary>
+		/// <returns></returns>
 		public long ReadInt64() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2320,6 +2489,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a single precision floating point number from the data source.
+		/// </summary>
+		/// <returns></returns>
 		public float ReadFloat() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2329,6 +2502,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a double precision floating point number from the data source.
+		/// </summary>
+		/// <returns></returns>
 		public double ReadDouble() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2338,6 +2515,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a character value.
+		/// </summary>
 		public char ReadChar() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2347,6 +2527,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a string value from the data source.
+		/// </summary>
 		public string ReadString() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2356,6 +2539,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a date and time value from the data source.
+		/// </summary>
 		public DateTime ReadDate() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2365,6 +2551,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads an image value from the data source.
+		/// </summary>
 		public System.Drawing.Image ReadImage() {
 			if (innerObjectsReader == null) {
 				++PropertyIndex;
@@ -2374,6 +2563,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a template from the data source.
+		/// </summary>
 		public Template ReadTemplate() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2381,6 +2573,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a shape from the data source.
+		/// </summary>
+		/// <returns></returns>
 		public Shape ReadShape() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2388,6 +2584,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a model object from the data source.
+		/// </summary>
 		public IModelObject ReadModelObject() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2395,6 +2594,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a design from the data source.
+		/// </summary>
 		public Design ReadDesign() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2402,6 +2604,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a cap style from the data source.
+		/// </summary>
 		public ICapStyle ReadCapStyle() {
 			if (innerObjectsReader == null) {
 				object id = ReadId();
@@ -2411,6 +2616,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a character style from the data source.
+		/// </summary>
 		public ICharacterStyle ReadCharacterStyle() {
 			if (innerObjectsReader == null) {
 			object id = ReadId();
@@ -2420,6 +2628,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a color style from the data source.
+		/// </summary>
 		public IColorStyle ReadColorStyle() {
 			if (innerObjectsReader == null) {
 			object id = ReadId();
@@ -2429,6 +2640,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a fill style from the data source.
+		/// </summary>
 		public IFillStyle ReadFillStyle() {
 			if (innerObjectsReader == null) {
 			object id = ReadId();
@@ -2438,6 +2652,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a line style from the data source.
+		/// </summary>
 		public ILineStyle ReadLineStyle() {
 			if (innerObjectsReader == null) {
 			object id = ReadId();
@@ -2449,6 +2666,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Reads a paragraph stylefrom the data source.
+		/// </summary>
 		public IParagraphStyle ReadParagraphStyle() {
 			if (innerObjectsReader == null) {
 			object id = ReadId();
@@ -2457,20 +2677,14 @@ namespace Dataweb.NShape.Advanced {
 			} else return innerObjectsReader.ReadParagraphStyle();
 		}
 
-
-		//public IShapeStyle ReadShapeStyle() {
-		//   if (innerObjectsReader == null) {
-		//      object id = ReadId();
-		//      if (id == null) return null;
-		//      return (IShapeStyle)cache.GetProjectStyle(id);
-		//   } else return innerObjectsReader.ReadShapeStyle();
-		//}
-
 		#endregion
 
 
-		#region IDisposable Members
+		#region [Public] IDisposable Members
 
+		/// <summary>
+		/// Releases all allocated unmanaged or persistent resources.
+		/// </summary>
 		public void Dispose() {
 			Dispose(true);
 			GC.SuppressFinalize(this);
@@ -2479,9 +2693,55 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
-		#region Implementation
+		#region [Protected] Properties
 
-		// Resets the repositoryReader for a sequence of reads of entities of the same type.
+		/// <summary>
+		/// Indicates the current index in the list of property info of the entity type.
+		/// </summary>
+		protected internal int PropertyIndex {
+			get { return propertyIndex; }
+			set { propertyIndex = value; }
+		}
+
+
+		/// <summary>
+		/// The IStoreCache that contains the data to read.
+		/// </summary>
+		protected IStoreCache Cache {
+			get { return cache; }
+		}
+
+
+		/// <summary>
+		/// A read only collection of property info of the entity type to read.
+		/// </summary>
+		protected IEnumerable<EntityPropertyDefinition> PropertyInfos {
+			get { return propertyInfos; }
+		}
+
+
+		/// <summary>
+		/// When reading inner objects, this property stores the owner entity of the inner objects. Otherwise, this property is null/Nothing.
+		/// </summary>
+		protected IEntity Object {
+			get { return entity; }
+			set { entity = value; }
+		}
+
+		#endregion
+
+
+		#region [Protected] Methods: Implementation
+
+		/// <summary>
+		/// Implementation of reading an id value. Reads an id or null, if no id exists.
+		/// </summary>
+		protected internal abstract object ReadId();
+
+
+		/// <summary>
+		/// Resets the repositoryReader for a sequence of reads of entities of the same type.
+		/// </summary>
 		internal virtual void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos) {
 			if (propertyInfos == null) throw new ArgumentNullException("propertyInfos");
 			this.propertyInfos.Clear();
@@ -2495,73 +2755,83 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		protected internal abstract bool DoBeginObject();
 
+
 		/// <summary>
 		/// Finishes reading an object.
 		/// </summary>
 		protected internal abstract void DoEndObject();
 
 
-		// Reads an id or null, if no id exists.
-		protected internal abstract object ReadId();
-
 		/// <summary>
-		/// Indicates the current index in the list of property infos of the entity type.
+		/// Implementation of reading a boolean value.
 		/// </summary>
-		protected internal int PropertyIndex {
-			get { return propertyIndex; }
-			set { propertyIndex = value; }
-		}
-
-
-		protected IStoreCache Cache {
-			get { return cache; }
-		}
-
-
-		protected IEnumerable<EntityPropertyDefinition> PropertyInfos {
-			get { return propertyInfos; }
-		}
-
-
-		protected IEntity Object {
-			get { return entity; }
-			set { entity = value; }
-		}
-
-
 		protected abstract bool DoReadBool();
 
 
+		/// <summary>
+		/// Implementation of reading a byte value.
+		/// </summary>
 		protected abstract byte DoReadByte();
 
 
+		/// <summary>
+		/// Implementation of reading a 16 bit integer number.
+		/// </summary>
 		protected abstract short DoReadInt16();
 
 
+		/// <summary>
+		/// Implementation of reading a 32 bit integer number.
+		/// </summary>
 		protected abstract int DoReadInt32();
 
 
+		/// <summary>
+		/// Implementation of reading a 64 bit integer number.
+		/// </summary>
 		protected abstract long DoReadInt64();
 
 
+		/// <summary>
+		/// Implementation of reading a single precision floating point number.
+		/// </summary>
 		protected abstract float DoReadFloat();
 
 
+		/// <summary>
+		/// Implementation of reading a double precision floating point number.
+		/// </summary>
 		protected abstract double DoReadDouble();
 
 
+		/// <summary>
+		/// Implementation of reading a character value.
+		/// </summary>
 		protected abstract char DoReadChar();
 
 
+		/// <summary>
+		/// Implementation of reading a string value.
+		/// </summary>
+		/// <returns></returns>
 		protected abstract string DoReadString();
 
 
+		/// <summary>
+		/// Implementation of reading a date and time value.
+		/// </summary>
 		protected abstract DateTime DoReadDate();
 
 
+		/// <summary>
+		/// Implementation of reading an image.
+		/// </summary>
 		protected abstract System.Drawing.Image DoReadImage();
 
 
+		/// <summary>
+		/// Implementation of reading a template.
+		/// </summary>
 		protected Template DoReadTemplate() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2569,6 +2839,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a shape.
+		/// </summary>
 		protected Shape DoReadShape() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2576,6 +2849,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a model object.
+		/// </summary>
 		protected IModelObject DoReadModelObject() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2583,6 +2859,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a design.
+		/// </summary>
 		protected Design DoReadDesign() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2590,6 +2869,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a cap style.
+		/// </summary>
 		protected ICapStyle DoReadCapStyle() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2597,6 +2879,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a character style.
+		/// </summary>
 		protected ICharacterStyle DoReadCharacterStyle() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2604,6 +2889,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a color style.
+		/// </summary>
 		protected IColorStyle DoReadColorStyle() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2611,6 +2899,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a fill style.
+		/// </summary>
 		protected IFillStyle DoReadFillStyle() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2618,6 +2909,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a line style.
+		/// </summary>
 		protected ILineStyle DoReadLineStyle() {
 			object id = ReadId();
 			if (id == null) return null;
@@ -2625,18 +2919,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Implementation of reading a paragraph style.
+		/// </summary>
 		protected IParagraphStyle DoReadParagraphStyle() {
 			object id = ReadId();
 			if (id == null) return null;
 			else return (IParagraphStyle)cache.GetProjectStyle(id);
 		}
-
-
-		//protected IShapeStyle DoReadShapeStyle() {
-		//   object id = ReadId();
-		//   if (id == null) return null;
-		//   else return (IShapeStyle)cache.GetProjectStyle(id);
-		//}
 
 
 		/// <summary>
@@ -2649,6 +2939,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected virtual void Dispose(bool disposing) {
 			// Nothing to do
 		}
@@ -2658,10 +2949,18 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
-		private IStoreCache cache;
+		/// <summary>
+		/// A list of property info of the entity type to read.
+		/// </summary>
 		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
-		private int propertyIndex;
+		
+		/// <summary>
+		/// When reading inner objects, this field holds the reader used for reading these inner objects.
+		/// </summary>
 		protected RepositoryReader innerObjectsReader;
+
+		private IStoreCache cache;
+		private int propertyIndex;
 		// used for loading innerObjects
 		private IEntity entity;
 
@@ -2678,86 +2977,179 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public abstract class RepositoryWriter : IRepositoryWriter {
 
+		/// <summary>
+		/// Initializes a new Iinstance of RepositoryWriter
+		/// </summary>
 		protected RepositoryWriter(IStoreCache cache) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			this.cache = cache;
 		}
 
 
-		#region IRepositoryWriter Members
+		#region [Public] IRepositoryWriter Members
 
+		/// <summary>
+		/// Fetches the next inner object in a set of inner object.
+		/// </summary>
+		public void BeginWriteInnerObject() {
+			// Must be executed by the outer writer. Currently there is only one inner 
+			// and one outer.
+			DoBeginWriteInnerObject();
+		}
+
+
+		/// <summary>
+		/// Fetches the next set of inner objects and prepares them for writing.
+		/// </summary>
+		public void BeginWriteInnerObjects() {
+			if (innerObjectsWriter != null)
+				throw new InvalidOperationException("Call EndWriteInnerObjects before a new call to BeginWriteInnerObjects.");
+			DoBeginWriteInnerObjects();
+		}
+
+
+		/// <summary>
+		/// Finishes writing an inner object.
+		/// </summary>
+		public void EndWriteInnerObject() {
+			// Must be executed by the outer writer. Currently there is only one inner 
+			// and one outer.
+			DoEndWriteInnerObject();
+		}
+
+
+		/// <summary>
+		/// Finishes writing the current set of inner objects.
+		/// </summary>
+		public void EndWriteInnerObjects() {
+			if (innerObjectsWriter == null)
+				throw new InvalidOperationException("BeginWriteInnerObjects has not been called.");
+			DoEndWriteInnerObjects();
+			innerObjectsWriter = null;
+		}
+
+
+		/// <summary>
+		/// Deletes the current set of inner objects.
+		/// </summary>
+		public void DeleteInnerObjects() {
+			BeginWriteInnerObjects();
+			EndWriteInnerObjects();
+		}
+
+		
+		/// <summary>
+		/// Writes an IEntity.Id value.
+		/// </summary>
+		/// <param name="id"></param>
 		public void WriteId(object id) {
 			if (innerObjectsWriter == null) DoWriteId(id);
 			else innerObjectsWriter.WriteId(id);
 		}
 
 
+		/// <summary>
+		/// Writes a boolean value.
+		/// </summary>
 		public void WriteBool(bool value) {
 			if (innerObjectsWriter == null) DoWriteBool(value);
 			else innerObjectsWriter.WriteBool(value);
 		}
 
 
+		/// <summary>
+		/// Writes a byte value.
+		/// </summary>
 		public void WriteByte(byte value) {
 			if (innerObjectsWriter == null) DoWriteByte(value);
 			else innerObjectsWriter.WriteByte(value);
 		}
 
 
+		/// <summary>
+		/// Writes a 16 bit integer value.
+		/// </summary>
 		public void WriteInt16(short value) {
 			if (innerObjectsWriter == null) DoWriteInt16(value);
 			else innerObjectsWriter.WriteInt16(value);
 		}
 
 
+		/// <summary>
+		/// Writes a 32 bit integer value.
+		/// </summary>
 		public void WriteInt32(int value) {
 			if (innerObjectsWriter == null) DoWriteInt32(value);
 			else innerObjectsWriter.WriteInt32(value);
 		}
 
 
+		/// <summary>
+		/// Writes a 64 bit integer value.
+		/// </summary>
 		public void WriteInt64(long value) {
 			if (innerObjectsWriter == null) DoWriteInt64(value);
 			else innerObjectsWriter.WriteInt64(value);
 		}
 
 
+		/// <summary>
+		/// Writes a single precision floating point number.
+		/// </summary>
 		public void WriteFloat(float value) {
 			if (innerObjectsWriter == null) DoWriteFloat(value);
 			else innerObjectsWriter.WriteFloat(value);
 		}
 
 
+		/// <summary>
+		/// Writes a double precision floating point number.
+		/// </summary>
 		public void WriteDouble(double value) {
 			if (innerObjectsWriter == null) DoWriteDouble(value);
 			else innerObjectsWriter.WriteDouble(value);
 		}
 
 
+		/// <summary>
+		/// Writes a character value.
+		/// </summary>
 		public void WriteChar(char value) {
 			if (innerObjectsWriter == null) DoWriteChar(value);
 			else innerObjectsWriter.WriteChar(value);
 		}
 
 
+		/// <summary>
+		/// Writes a string value.
+		/// </summary>
 		public void WriteString(string value) {
 			if (innerObjectsWriter == null) DoWriteString(value);
 			else innerObjectsWriter.WriteString(value);
 		}
 
 
+		/// <summary>
+		/// Writes a date and time value.
+		/// </summary>
 		public void WriteDate(DateTime value) {
 			if (innerObjectsWriter == null) DoWriteDate(value);
 			else innerObjectsWriter.WriteDate(value);
 		}
 
 
+		/// <summary>
+		/// Writes an image value.
+		/// </summary>
 		public void WriteImage(System.Drawing.Image image) {
 			if (innerObjectsWriter == null) DoWriteImage(image);
 			else innerObjectsWriter.WriteImage(image);
 		}
 
 
+		/// <summary>
+		/// Writes a template.
+		/// </summary>
 		public void WriteTemplate(Template template) {
 			if (template != null && template.Id == null) throw new InvalidOperationException(
 				string.Format("Template '{0}' is not registered with repository.", template.Name));
@@ -2768,6 +3160,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Writes a style.
+		/// </summary>
 		public void WriteStyle(IStyle style) {
 			if (style != null && style.Id == null) throw new InvalidOperationException(
 				 string.Format("{0} '{1}' is not registered with the repository.", style.GetType().Name, style.Name));
@@ -2778,6 +3173,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Writes a model object.
+		/// </summary>
 		public void WriteModelObject(IModelObject modelObject) {
 			if (modelObject != null && modelObject.Id == null) 
 				throw new InvalidOperationException(
@@ -2790,83 +3188,125 @@ namespace Dataweb.NShape.Advanced {
 			} else innerObjectsWriter.WriteModelObject(modelObject);
 		}
 
+		#endregion
 
-		public void BeginWriteInnerObjects() {
-			if (innerObjectsWriter != null)
-				throw new InvalidOperationException("Call EndWriteInnerObjects before a new call to BeginWriteInnerObjects.");
-			DoBeginWriteInnerObjects();
+
+		#region [Protected] Properties
+
+		/// <summary>
+		/// Indicates the current index in the list of property info of the entity type.
+		/// </summary>
+		protected internal int PropertyIndex {
+			get { return propertyIndex; }
+			set { propertyIndex = value; }
 		}
 
 
-		public void EndWriteInnerObjects() {
-			if (innerObjectsWriter == null)
-				throw new InvalidOperationException("BeginWriteInnerObjects has not been called.");
-			DoEndWriteInnerObjects();
-			innerObjectsWriter = null;
+		/// <summary>
+		/// When reading inner objects, this property stores the owner entity of the inner objects. Otherwise, this property is null/Nothing.
+		/// </summary>
+		protected IEntity Entity {
+			get { return entity; }
 		}
 
 
-		public void BeginWriteInnerObject() {
-			// Must be executed by the outer writer. Currently there is only one inner 
-			// and one outer.
-			DoBeginWriteInnerObject();
-		}
-
-
-		public void EndWriteInnerObject() {
-			// Must be executed by the outer writer. Currently there is only one inner 
-			// and one outer.
-			DoEndWriteInnerObject();
-		}
-
-
-		public void DeleteInnerObjects() {
-			BeginWriteInnerObjects();
-			EndWriteInnerObjects();
+		/// <summary>
+		/// The IStoreCache that contains the data to read.
+		/// </summary>
+		protected IStoreCache Cache {
+			get { return cache; }
 		}
 
 		#endregion
 
 
-		protected IStoreCache Cache {
-			get { return cache; }
-		}
+		#region [Protected] Methods: Implementation
 
-
+		/// <summary>
+		/// Implementation of writing an IEntity.Id value.
+		/// </summary>
 		protected abstract void DoWriteId(object id);
 
+		/// <summary>
+		/// Implementation of writing a boolean value.
+		/// </summary>
 		protected abstract void DoWriteBool(bool value);
 
+		/// <summary>
+		/// Implementation of writing a byte value.
+		/// </summary>
 		protected abstract void DoWriteByte(byte value);
 
+		/// <summary>
+		/// Implementation of writing a 16 bit integer number.
+		/// </summary>
 		protected abstract void DoWriteInt16(short value);
 
+		/// <summary>
+		/// Implementation of writing a 32 bit integer number.
+		/// </summary>
 		protected abstract void DoWriteInt32(int value);
 
+		/// <summary>
+		/// Implementation of writing a 64 bit integer number.
+		/// </summary>
 		protected abstract void DoWriteInt64(long value);
 
+		/// <summary>
+		/// Implementation of writing a single precision floating point number.
+		/// </summary>
 		protected abstract void DoWriteFloat(float value);
 
+		/// <summary>
+		/// Implementation of writing a double precision floating point number.
+		/// </summary>
 		protected abstract void DoWriteDouble(double value);
 
+		/// <summary>
+		/// Implementation of writing a character value.
+		/// </summary>
 		protected abstract void DoWriteChar(char value);
 
+		/// <summary>
+		/// Implementation of writing a string value.
+		/// </summary>
 		protected abstract void DoWriteString(string value);
 
+		/// <summary>
+		/// Implementation of writing a date value.
+		/// </summary>
 		protected abstract void DoWriteDate(DateTime date);
 
+		/// <summary>
+		/// Implementation of writing an image.
+		/// </summary>
 		protected abstract void DoWriteImage(System.Drawing.Image image);
 
+		/// <summary>
+		/// Implementation of BeginWriteInnerObjects.
+		/// </summary>
 		protected abstract void DoBeginWriteInnerObjects();
 
+		/// <summary>
+		/// Implementation of EndWriteInnerObjects.
+		/// </summary>
 		protected abstract void DoEndWriteInnerObjects();
 
 		// Must be called upon the outer cache writer.
+		/// <summary>
+		/// Implementation of BeginWriteInnerObject.
+		/// </summary>
 		protected abstract void DoBeginWriteInnerObject();
 
 		// Must be called upon the outer cache writer.
+		/// <summary>
+		/// Implementation of EndWriteInnerObject.
+		/// </summary>
 		protected abstract void DoEndWriteInnerObject();
 
+		/// <summary>
+		/// Implementation of DeleteInnerObjects.
+		/// </summary>
 		protected abstract void DoDeleteInnerObjects();
 
 
@@ -2891,38 +3331,35 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Commits inner object data to the data store.
+		/// </summary>
 		protected internal virtual void Finish() {
 			// Nothing to do
 		}
 
-
-		protected internal int PropertyIndex {
-			get { return propertyIndex; }
-			set { propertyIndex = value; }
-		}
-
-
-		protected IEntity Entity {
-			get { return entity; }
-		}
+		#endregion
 
 
 		#region Fields
 
-		private IStoreCache cache;
-
-		// Current entity to write. Null when writing an inner object
-		private IEntity entity;
-
-		// Description of the entity type currently writting
-		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
-
-		// Index of property currently being written
-		private int propertyIndex;
-
 		// When writing inner objects, reference to the responsible writer
+		/// <summary>
+		/// When reading inner objects, this field holds the reader used for reading these inner objects.
+		/// </summary>
 		protected RepositoryWriter innerObjectsWriter;
 
+		// Description of the entity type currently writting
+		/// <summary>
+		/// A list of <see cref="T:Dataweb.NShape.Advanced.EntityPropertyDefinition" /> for the entity type.
+		/// </summary>
+		protected List<EntityPropertyDefinition> propertyInfos = new List<EntityPropertyDefinition>(20);
+
+		private IStoreCache cache;
+		// Current entity to write. Null when writing an inner object
+		private IEntity entity;
+		// Index of property currently being written
+		private int propertyIndex;
 		#endregion
 	}
 

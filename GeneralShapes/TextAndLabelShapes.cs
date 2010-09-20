@@ -13,6 +13,7 @@
 ******************************************************************************/
 
 using Dataweb.NShape.Advanced;
+using System;
 
 
 namespace Dataweb.NShape.GeneralShapes {
@@ -24,6 +25,7 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new Text(Type, (Template)null);
 			result.CopyFrom(this);
@@ -44,6 +46,7 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new Label(Type, (Template)null);
 			result.CopyFrom(this);

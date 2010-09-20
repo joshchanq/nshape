@@ -30,6 +30,7 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new Polyline(Type, (Template)null);
 			result.CopyFrom(this);
@@ -38,7 +39,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's beginning.")]
+		[Description("Defines the line cap appearance of the line's beginning.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdStartCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle StartCapStyle {
@@ -53,7 +54,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's ending.")]
+		[Description("Defines the line cap appearance of the line's ending.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdEndCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle EndCapStyle {
@@ -92,6 +93,7 @@ namespace Dataweb.NShape.GeneralShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CircularArc(Type, (Template)null);
 			result.CopyFrom(this);
@@ -100,7 +102,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's beginning.")]
+		[Description("Defines the line cap appearance of the line's beginning.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdStartCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle StartCapStyle {
@@ -115,7 +117,7 @@ namespace Dataweb.NShape.GeneralShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's ending.")]
+		[Description("Defines the line cap appearance of the line's ending.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdEndCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle EndCapStyle {

@@ -1,4 +1,5 @@
 namespace Dataweb.NShape.WinFormsUI {
+	
 	partial class VerticalTabControl {
 		/// <summary> 
 		/// Required designer variable.
@@ -39,4 +40,5 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#endregion
 	}
+
 }

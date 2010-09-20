@@ -24,20 +24,31 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+
+	/// <ToBeCompleted></ToBeCompleted>
 	[ToolboxItem(true)]
 	[ToolboxBitmap(typeof(PropertyController), "PropertyController.bmp")]
 	public class PropertyController : Component, IPropertyController {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.PropertyController" />.
+		/// </summary>
 		public PropertyController() {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.PropertyController" />.
+		/// </summary>
 		public PropertyController(Project project) {
 			if (project == null) throw new ArgumentNullException("project");
 			Project = project;
 		}
 
 
+		/// <summary>
+		/// Finalizer of <see cref="T:Dataweb.NShape.Controllers.PropertyController" />.
+		/// </summary>
 		~PropertyController() {
 			Project = null;
 		}
@@ -45,12 +56,16 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] IPropertyController Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<PropertyControllerEventArgs> ObjectsSet;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<PropertyControllerPropertyChangedEventArgs> PropertyChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<PropertyControllerEventArgs> ObjectsModified;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler ProjectClosing;
 
 		#endregion
@@ -58,6 +73,9 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] IPropertyController Properties
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return project; }
@@ -75,6 +93,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -85,41 +106,53 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] IPropertyController Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetPropertyValue(object obj, string propertyName, object oldValue, object newValue) {
-			AssertProjectExists();
-			if (propertySetBuffer != null
-				&& propertySetBuffer.Objects.Count > 0
-				&& !IsOfType(obj.GetType(), propertySetBuffer.ObjectType))
-				throw new InvalidOperationException("Another transaction is pending.");
-			if (propertySetBuffer == null) {
-				PropertyInfo propertyInfo = obj.GetType().GetProperty(propertyName);
-				if (obj is Shape)
-					propertySetBuffer = new PropertySetInfo<Shape>(propertyInfo, newValue);
-				else if (obj is IModelObject)
-					propertySetBuffer = new PropertySetInfo<IModelObject>(propertyInfo, newValue);
-				else if (obj is Diagram)
-					propertySetBuffer = new PropertySetInfo<Diagram>(propertyInfo, newValue);
-				else if (obj is Layer)
-					propertySetBuffer = new PropertySetInfo<Layer>(propertyInfo, newValue);
-				else if (obj is Design)
-					propertySetBuffer = new PropertySetInfo<Design>(propertyInfo, newValue);
-				else if (obj is Style)
-					propertySetBuffer = new PropertySetInfo<Style>(propertyInfo, newValue);
-				else throw new NotSupportedException();
-			}
-			propertySetBuffer.Objects.Add(obj);
-			propertySetBuffer.OldValues.Add(oldValue);
+			try {
+				try {
+					AssertProjectExists();
+					if (propertySetBuffer != null
+						&& propertySetBuffer.Objects.Count > 0
+						&& !IsOfType(obj.GetType(), propertySetBuffer.ObjectType))
+						throw new InvalidOperationException("Another transaction is pending.");
+					if (propertySetBuffer == null) {
+						PropertyInfo propertyInfo = obj.GetType().GetProperty(propertyName);
+						if (obj is Shape)
+							propertySetBuffer = new PropertySetInfo<Shape>(propertyInfo, newValue);
+						else if (obj is IModelObject)
+							propertySetBuffer = new PropertySetInfo<IModelObject>(propertyInfo, newValue);
+						else if (obj is Diagram)
+							propertySetBuffer = new PropertySetInfo<Diagram>(propertyInfo, newValue);
+						else if (obj is Layer)
+							propertySetBuffer = new PropertySetInfo<Layer>(propertyInfo, newValue);
+						else if (obj is Design)
+							propertySetBuffer = new PropertySetInfo<Design>(propertyInfo, newValue);
+						else if (obj is Style)
+							propertySetBuffer = new PropertySetInfo<Style>(propertyInfo, newValue);
+						else throw new NotSupportedException();
+					}
+					propertySetBuffer.Objects.Add(obj);
+					propertySetBuffer.OldValues.Add(oldValue);
 
-			// If all properties are set, commit changes.
-			if (selectedPrimaryObjects.Contains(obj)
-				&& propertySetBuffer.Objects.Count == selectedPrimaryObjects.Count)
-				CommitSetProperty();
-			else if (selectedSecondaryObjects.Contains(obj)
-				&& propertySetBuffer.Objects.Count == selectedSecondaryObjects.Count)
-				CommitSetProperty();
+					// If all properties are set, commit changes.
+					if (selectedPrimaryObjects.Contains(obj)
+						&& propertySetBuffer.Objects.Count == selectedPrimaryObjects.Count)
+						CommitSetProperty();
+					else if (selectedSecondaryObjects.Contains(obj)
+						&& propertySetBuffer.Objects.Count == selectedSecondaryObjects.Count)
+						CommitSetProperty();
+				} catch (TargetInvocationException exc) {
+					if (exc.InnerException != null)
+						throw exc.InnerException;
+				}
+			} catch (Exception) {
+				CancelSetProperty();
+				throw;
+			}
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CancelSetProperty() {
 			AssertProjectExists();
 			// Discard buffer
@@ -127,6 +160,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CommitSetProperty() {
 			AssertProjectExists();
 			if (propertySetBuffer != null) {
@@ -186,12 +220,14 @@ namespace Dataweb.NShape.Controllers {
 								if (design != null) break;
 							}
 						} else design = project.Design;
-						command = new StylePropertySetCommand(
-							design,
-							ConvertEnumerator<Style>.Create(propertySetBuffer.Objects),
-							propertySetBuffer.PropertyInfo,
-							propertySetBuffer.OldValues,
-							propertySetBuffer.NewValue);
+						if (design != null) {
+							command = new StylePropertySetCommand(
+								design,
+								ConvertEnumerator<Style>.Create(propertySetBuffer.Objects),
+								propertySetBuffer.PropertyInfo,
+								propertySetBuffer.OldValues,
+								propertySetBuffer.NewValue);
+						}
 					} else throw new NotSupportedException();
 				}
 
@@ -213,7 +249,8 @@ namespace Dataweb.NShape.Controllers {
 							PropertyChanged(this, e);
 						}
 					}
-				}
+				} else 
+					CancelSetProperty();
 			}
 			propertySetBuffer = null;
 		}
@@ -223,12 +260,14 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetObject(int pageIndex, object selectedObject) {
 			AssertProjectExists();
 			SetObject(pageIndex, selectedObject, true);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetObject(int pageIndex, object selectedObject, bool isPersistent) {
 			AssertProjectExists();
 
@@ -246,12 +285,14 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetObjects(int pageIndex, IEnumerable selectedObjects) {
 			AssertProjectExists();
 			SetObjects(pageIndex, selectedObjects, true);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetObjects(int pageIndex, IEnumerable selectedObjects, bool arePersistent) {
 			if (selectedObjects == null) throw new ArgumentNullException("selectedObjects");
 			AssertProjectExists();
@@ -274,6 +315,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public object GetSelectedObject(int pageIndex) {
 			object result = null;
 			Hashtable selectedObjects;
@@ -288,6 +330,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<object> GetSelectedObjects(int pageIndex) {
 			Hashtable selectedObjects;
 			GetSelectedObjectList(pageIndex, out selectedObjects);
@@ -296,6 +339,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int GetSelectedObjectsCount(int pageIndex) {
 			Hashtable selectedObjects;
 			GetSelectedObjectList(pageIndex, out selectedObjects);
@@ -585,16 +629,19 @@ namespace Dataweb.NShape.Controllers {
 			}
 
 
+			/// <override></override>
 			public override IList Objects {
 				get { return objects; }
 			}
 
 
+			/// <override></override>
 			public override Type ObjectType {
 				get { return typeof(TObject); }
 			}
 
 
+			/// <override></override>
 			public override PropertyInfo PropertyInfo {
 				get { return propertyInfo; }
 			}
@@ -617,17 +664,22 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 	}
 
-	
+
+	/// <ToBeCompleted></ToBeCompleted>
 	public interface IPropertyController {
 		
 		#region Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<PropertyControllerEventArgs> ObjectsSet;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<PropertyControllerPropertyChangedEventArgs> PropertyChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<PropertyControllerEventArgs> ObjectsModified;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler ProjectClosing;
 
 		#endregion
@@ -635,6 +687,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Properties
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Project Project { get; }
 
 		#endregion
@@ -642,20 +695,14 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void SetPropertyValue(object obj, string propertyName, object oldValue, object newValue);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void CancelSetProperty();
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void CommitSetProperty();
-
-		///// <summary>
-		///// Creates and executes all necessary commands to perform the changes against the repository.
-		///// </summary>
-		///// <param name="modifiedObjects">The modified objects</param>
-		///// <param name="propertyInfo">PropertyInfo of the changed property</param>
-		///// <param name="oldValues">The modifiedObject's original property value. This can be one common value or a value for each modifiedObject</param>
-		///// <param name="newValue">The new value of the modified property</param>
-		//void SelectedObjectsChanged(int pageIndex, IEnumerable<object> modifiedObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue);
 
 		#endregion
 
@@ -664,8 +711,10 @@ namespace Dataweb.NShape.Controllers {
 
 	#region EventArgs
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class PropertyControllerEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PropertyControllerEventArgs(int pageIndex, IEnumerable objects) {
 			if (objects == null) throw new ArgumentNullException("objects");
 			SetObjects(objects);
@@ -673,16 +722,19 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IReadOnlyCollection<object> Objects {
 			get { return objects; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public object[] GetObjectArray() {
 			return objects.ToArray();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int PageIndex {
 			get { return pageIndex; }
 			internal set { pageIndex = value; }
@@ -697,9 +749,11 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal PropertyControllerEventArgs() { }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetObjects(IEnumerable objects) {
 			this.objects.Clear();
 			foreach (object obj in objects)
@@ -708,6 +762,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetObjects(IEnumerable<Shape> objects) {
 			this.objects.Clear();
 			foreach (Shape s in objects)
@@ -716,6 +771,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetObjects(IEnumerable<IModelObject> objects) {
 			this.objects.Clear();
 			foreach (IModelObject m in objects)
@@ -724,6 +780,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetObject(object obj) {
 			this.objects.Clear();
 			if (obj != null) this.objects.Add(obj);
@@ -753,10 +810,12 @@ namespace Dataweb.NShape.Controllers {
 		private int pageIndex = -1;
 		private Type commonType = null;
 	}
-	
 
+
+	/// <ToBeCompleted></ToBeCompleted>
 	public class PropertyControllerPropertyChangedEventArgs : PropertyControllerEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PropertyControllerPropertyChangedEventArgs(int pageIndex, IEnumerable modifiedObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base(pageIndex, modifiedObjects) {
 			if (modifiedObjects == null) throw new ArgumentNullException("modifiedObjects");
@@ -767,10 +826,13 @@ namespace Dataweb.NShape.Controllers {
 			this.propertyInfo = propertyInfo;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<object> OldValues { get { return oldValues; } }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public object NewValue { get { return newValue; } }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PropertyInfo PropertyInfo { get { return propertyInfo; } }
 
 		private List<object> oldValues;
@@ -781,6 +843,7 @@ namespace Dataweb.NShape.Controllers {
 	#endregion
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public delegate void SelectedObjectsChangedCallback(PropertyControllerPropertyChangedEventArgs propertyChangedEventArgs);
 
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="Windows-1252"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -12,7 +12,7 @@
     <ApplicationIcon>Dataweb.NShape.ico</ApplicationIcon>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
-    <OldToolsVersion>2.0</OldToolsVersion>
+    <OldToolsVersion>3.5</OldToolsVersion>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -34,18 +34,18 @@
     </Win32Resource>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Dataweb.nShape.snk</AssemblyOriginatorKeyFile>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Demo Programs\bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>
-    </DocumentationFile>
+    <DocumentationFile>..\Demo Programs\bin\Dataweb.NShape.XML</DocumentationFile>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -93,6 +93,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Buffers.cs" />
     <Compile Include="FreeHandTool.cs" />
     <Compile Include="MenuItemDef.cs" />
@@ -190,7 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
+      <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -210,9 +213,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Project.bmp" />
-    <Content Include="..\Dataweb.NShape.ico">
+    <EmbeddedResource Include="..\Dataweb.NShape.ico">
       <Link>Resources\Dataweb.NShape.ico</Link>
-    </Content>
+    </EmbeddedResource>
     <EmbeddedResource Include="AdoNetStore.bmp" />
     <EmbeddedResource Include="Advanced.CachedRepository.bmp" />
     <EmbeddedResource Include="Controllers.DesignController.bmp" />
@@ -222,35 +225,39 @@
     <EmbeddedResource Include="Controllers.ModelController.bmp" />
     <EmbeddedResource Include="Controllers.PropertyController.bmp" />
     <Content Include="Dataweb.NShape.ico" />
-    <Content Include="Resources\ActionDeniedCursor.cur" />
-    <Content Include="Resources\AggregateShapeBtn.bmp" />
+    <EmbeddedResource Include="Resources\PenPlusCursor.cur" />
+    <EmbeddedResource Include="Resources\FindShapes.bmp" />
+    <EmbeddedResource Include="Resources\ActionDeniedCursor.cur" />
+    <EmbeddedResource Include="Resources\AddToLayer.bmp" />
+    <EmbeddedResource Include="Resources\AggregateShapeBtn.bmp" />
     <None Include="..\Dataweb.NShape.snk">
       <Link>Dataweb.NShape.snk</Link>
     </None>
-    <None Include="Resources\FreehandIconLarge.bmp" />
-    <None Include="Resources\FreehandIconSmall.bmp" />
-    <Content Include="Resources\CopyBtn.bmp" />
-    <Content Include="Resources\CrossCursor.cur" />
-    <Content Include="Resources\CutBtn.bmp" />
+    <EmbeddedResource Include="Resources\FreehandIconLarge.bmp" />
+    <EmbeddedResource Include="Resources\FreehandIconSmall.bmp" />
+    <EmbeddedResource Include="Resources\CopyBtn.bmp" />
+    <EmbeddedResource Include="Resources\CrossCursor.cur" />
+    <EmbeddedResource Include="Resources\CutBtn.bmp" />
     <EmbeddedResource Include="Resources\DefaultBitmapSmall.bmp" />
     <EmbeddedResource Include="Resources\DefaultBitmapLarge.bmp" />
-    <Content Include="Resources\DiagramPropertiesBtn.bmp" />
-    <Content Include="Resources\EditTextCursor.cur" />
-    <Content Include="Resources\GroupBtn.bmp" />
-    <None Include="Resources\PointerIconLarge.bmp" />
-    <None Include="Resources\PointerIconSmall.bmp" />
-    <Content Include="Resources\HandCursor.cur" />
-    <Content Include="Resources\MovePointCursor.cur" />
-    <Content Include="Resources\MoveShapeCursor.cur" />
-    <Content Include="Resources\PasteBtn.bmp" />
-    <Content Include="Resources\PenCursor.cur" />
-    <Content Include="Resources\RedoBtn.bmp" />
-    <Content Include="Resources\RotateCursor.cur" />
-    <Content Include="Resources\SplitShapeAggregationBtn.bmp" />
-    <Content Include="Resources\ToBackground.bmp" />
-    <Content Include="Resources\ToForeground.bmp" />
-    <Content Include="Resources\UndoBtn.bmp" />
-    <Content Include="Resources\UngroupBtn.bmp" />
+    <EmbeddedResource Include="Resources\DiagramPropertiesBtn.bmp" />
+    <EmbeddedResource Include="Resources\EditTextCursor.cur" />
+    <EmbeddedResource Include="Resources\GroupBtn.bmp" />
+    <EmbeddedResource Include="Resources\PointerIconLarge.bmp" />
+    <EmbeddedResource Include="Resources\PointerIconSmall.bmp" />
+    <EmbeddedResource Include="Resources\HandCursor.cur" />
+    <EmbeddedResource Include="Resources\MovePointCursor.cur" />
+    <EmbeddedResource Include="Resources\MoveShapeCursor.cur" />
+    <EmbeddedResource Include="Resources\PasteBtn.bmp" />
+    <EmbeddedResource Include="Resources\PenCursor.cur" />
+    <EmbeddedResource Include="Resources\RedoBtn.bmp" />
+    <EmbeddedResource Include="Resources\RemoveFromLayer.bmp" />
+    <EmbeddedResource Include="Resources\RotateCursor.cur" />
+    <EmbeddedResource Include="Resources\SplitShapeAggregationBtn.bmp" />
+    <EmbeddedResource Include="Resources\ToBackground.bmp" />
+    <EmbeddedResource Include="Resources\ToForeground.bmp" />
+    <EmbeddedResource Include="Resources\UndoBtn.bmp" />
+    <EmbeddedResource Include="Resources\UngroupBtn.bmp" />
     <EmbeddedResource Include="Controllers.TemplateController.bmp" />
     <EmbeddedResource Include="Controllers.ToolSetController.bmp" />
     <EmbeddedResource Include="SqlStore.bmp" />

@@ -106,11 +106,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#endregion
 
-		/// <summary>
-		/// Required designer variable.
-		/// </summary>
-		private System.ComponentModel.IContainer components = null;
-
 		private System.Windows.Forms.Button applyButton;
 		private System.Windows.Forms.Button cancelButton;
 		private System.Windows.Forms.Panel buttonPanel;

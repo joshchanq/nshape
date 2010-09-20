@@ -24,8 +24,14 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// A DesignPresenter user control.
+	/// </summary>
 	public partial class DesignPresenter : UserControl, IDisplayService {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.DesignPresenter" />.
+		/// </summary>
 		public DesignPresenter() {
 			SetStyle(ControlStyles.ResizeRedraw
 				| ControlStyles.AllPaintingInWmPaint
@@ -38,13 +44,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			InitializeComponent();
 			infoGraphics = Graphics.FromHwnd(Handle);
 			
-			//if (!this.project.SecurityManager.IsGranted(Permission.Designs)) {
-			//   int cnt = Controls.Count;
-			//   for (int i = 0; i < cnt; ++i)
-			//      Controls[i].Enabled = false;
-			//}
-			//RegisterRepositoryEventHandlers();
-
 			this.matrix = new Matrix();
 			this.formatterFlags = 0 | StringFormatFlags.NoWrap;
 			this.formatter = new StringFormat(formatterFlags);
@@ -57,6 +56,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Finalizer of Dataweb.NShape.WinFormsUI.DesignPresenter
+		/// </summary>
 		~DesignPresenter() {
 			infoGraphics.Dispose();
 			infoGraphics = null;
@@ -102,8 +104,14 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Events
 
+		/// <summary>
+		/// Raised when a design was selected.
+		/// </summary>
 		public event EventHandler DesignSelected;
 
+		/// <summary>
+		/// Raised when a style was selected.
+		/// </summary>
 		public event EventHandler StyleSelected;
 
 		#endregion
@@ -112,7 +120,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region [Public] Properties: DesignPresenter
 
 		/// <summary>
-		/// Specifies the version of the component.
+		/// Specifies the version of the assembly containing the component.
 		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
@@ -121,12 +129,18 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return (designController == null) ? null : designController.Project; }
 		}
 
 
+		/// <summary>
+		/// The design controller component
+		/// </summary>
 		[Category("NShape")]
 		public DesignController DesignController {
 			get { return designController; }
@@ -138,6 +152,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// The selected design.
+		/// </summary>
 		[Browsable(false)]
 		public Design SelectedDesign {
 			get { return selectedDesign; }
@@ -146,14 +163,51 @@ namespace Dataweb.NShape.WinFormsUI {
 					SelectedStyle = null;
 					selectedDesign = value;
 					
-					StyleEditor.Design = selectedDesign;
+					StyleUITypeEditor.Design = selectedDesign;
 					InitializeStyleCollectionList();
-					if (DesignSelected != null) DesignSelected(this, eventArgs);
+				}
+				if (DesignSelected != null) DesignSelected(this, eventArgs);
+			}
+		}
+
+
+		/// <summary>
+		/// The selected style
+		/// </summary>
+		[Browsable(false)]
+		public StyleCategory SelectedStyleCategory {
+			get { return styleListBox.StyleCategory; }
+			set {
+				if (styleListBox.StyleCategory != value) {
+					switch (value) {
+						case StyleCategory.CapStyle:
+							styleCollectionListBox.SelectedIndex = capStylesItemIdx;
+							break;
+						case StyleCategory.CharacterStyle:
+							styleCollectionListBox.SelectedIndex = charStylesItemIdx;
+							break;
+						case StyleCategory.ColorStyle:
+							styleCollectionListBox.SelectedIndex = colorStylesItemIdx;
+							break;
+						case StyleCategory.FillStyle:
+							styleCollectionListBox.SelectedIndex = fillStylesItemIdx;
+							break;
+						case StyleCategory.LineStyle:
+							styleCollectionListBox.SelectedIndex = lineStylesItemIdx;
+							break;
+						case StyleCategory.ParagraphStyle:
+							styleCollectionListBox.SelectedIndex = paragraphStylesItemIdx;
+							break;
+						default: throw new NShapeUnsupportedValueException(value);
+					}
 				}
 			}
 		}
 
 
+		/// <summary>
+		/// The selected style
+		/// </summary>
 		[Browsable(false)]
 		public Style SelectedStyle {
 			get { return selectedStyle; }
@@ -171,6 +225,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties: Visuals
 
+		/// <summary>
+		/// Background color of inactive items
+		/// </summary>
 		public Color InactiveItemBackgroundColor {
 			get {
 				return backgroundColor;
@@ -185,6 +242,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Fill color of highlighted items
+		/// </summary>
 		public Color HighlightedItemColor {
 			get { return highlightedItemColor; }
 			set {
@@ -197,6 +257,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Fill color of selected items
+		/// </summary>
 		public Color SelectedItemColor {
 			get { return selectedItemColor; }
 			set {
@@ -209,6 +272,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Border color of inactive items
+		/// </summary>
 		public Color InactiveItemBorderColor {
 			get { return itemBorderColor; }
 			set {
@@ -221,6 +287,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Fill color of focused items
+		/// </summary>
 		public Color FocusedItemColor {
 			get { return focusBackgroundColor; }
 			set {
@@ -233,6 +302,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Border color of focused items
+		/// </summary>
 		public Color FocusBorderColor {
 			get { return focusBorderColor; }
 			set {
@@ -245,6 +317,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Text color of selected items
+		/// </summary>
 		public Color SelectedItemTextColor {
 			get { return selectedTextColor; }
 			set {
@@ -257,6 +332,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Text color of selected items
+		/// </summary>
 		public Color InactiveItemTextColor {
 			get { return itemTextColor; }
 			set {
@@ -269,6 +347,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies if Items should be highlighted.
+		/// </summary>
 		public bool HighlightItems {
 			get { return highlightItems; }
 			set { highlightItems = value; }
@@ -279,11 +360,17 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Methods
 
+		/// <summary>
+		/// Creates a new design.
+		/// </summary>
 		public void CreateDesign() {
 			designController.CreateDesign();
 		}
 
 
+		/// <summary>
+		/// Deletes the selected design.
+		/// </summary>
 		public void DeleteSelectedDesign() {
 			if (selectedDesign != Project.Design) {
 				designController.DeleteDesign(selectedDesign);
@@ -292,13 +379,28 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Create an new style.
+		/// </summary>
 		public void CreateStyle() {
 			designController.CreateStyle(selectedDesign, styleListBox.StyleCategory);
 		}
 
 
+		/// <summary>
+		/// Delete the selected style.
+		/// </summary>
 		public void DeleteSelectedStyle() {
 			designController.DeleteStyle(selectedDesign, selectedStyle);
+		}
+
+
+		/// <summary>
+		///  Activates the selected design as the project's design.
+		/// </summary>
+		/// <param name="design"></param>
+		public void ActivateDesign(Design design) {
+			if (Project.Design != design) Project.ApplyDesign(design);
 		}
 
 		#endregion
@@ -325,7 +427,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			styleCollectionListBox.Items.Insert(capStylesItemIdx, "Line Cap Styles");
 			styleCollectionListBox.Items.Insert(charStylesItemIdx, "Character Styles");
 			styleCollectionListBox.Items.Insert(paragraphStylesItemIdx, "Paragraph Styles");
-			//styleCollectionListBox.Items.Insert(shapeStylesItemIdx, "Shape Styles");
 
 			styleCollectionListBox.SelectedIndex = 0;
 			styleCollectionListBox.Invalidate();
@@ -382,7 +483,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void designController_StyleCreated(object sender, StyleEventArgs e) {
-			if (styleListBox.Design.ContainsStyle(e.Style)) {
+			if (!styleListBox.Items.Contains(e.Style)) {
 				styleListBox.SuspendLayout();
 				styleListBox.SelectedIndex = styleListBox.Items.Add(e.Style);
 				styleListBox.ResumeLayout();
@@ -401,7 +502,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				} else styleListBox.Invalidate();
 			}
 
-			StyleEditor.Design = e.Design;
+			StyleUITypeEditor.Design = e.Design;
 			if (propertyGrid.SelectedObject == e.Style)
 				propertyGrid.Refresh();
 		}
@@ -457,7 +558,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			styleListBox.SelectedItem = null;
 			styleListBox.Items.Clear();
 			// Assigning a Design here results in items beeing created
-			styleListBox.Design = selectedDesign;
+			styleListBox.StyleSet = selectedDesign;
 			switch (styleCollectionListBox.SelectedIndex) {
 				case -1:
 					//nothing to do
@@ -468,7 +569,6 @@ namespace Dataweb.NShape.WinFormsUI {
 				case fillStylesItemIdx: styleListBox.StyleCategory = StyleCategory.FillStyle; break;
 				case lineStylesItemIdx: styleListBox.StyleCategory = StyleCategory.LineStyle; break;
 				case paragraphStylesItemIdx: styleListBox.StyleCategory = StyleCategory.ParagraphStyle; break;
-				//case shapeStylesItemIdx: styleListBox.StyleCategory = StyleCategory.ShapeStyle; break;
 				default: throw new NShapeException("Unexpected value.");
 			}
 			if (styleListBox.Items.Count > 0) styleListBox.SelectedIndex = 0;
@@ -483,11 +583,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void propertyGrid_PropertyValueChanged(object s, PropertyValueChangedEventArgs e) {
 		}
 
-
-		public void ActivateDesign(Design design) {
-			if (Project.Design != design) Project.ApplyDesign(design);
-		}
-		
 		#endregion
 
 
@@ -533,7 +628,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		const int capStylesItemIdx = 3;
 		const int charStylesItemIdx = 4;
 		const int paragraphStylesItemIdx = 5;
-		const int shapeStylesItemIdx = 6;
 		#endregion
 	}
 }

@@ -80,23 +80,45 @@ namespace Dataweb.NShape {
 	}
 
 
+	/// <summary>
+	/// An exception that is thrown when an AdoNetStore encounters an error.
+	/// </summary>
 	public class AdoNetStoreException : NShapeException {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException" />.
+		/// </summary>
 		internal protected AdoNetStoreException(string message) : base(message) { }
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException" />.
+		/// </summary>
 		internal protected AdoNetStoreException(string format, params object[] args) : base(format, args) { }
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException" />.
+		/// </summary>
 		internal protected AdoNetStoreException(string format, Exception innerException, params object[] args) : base(format, innerException, args) { }
+
 	}
 
 
+	/// <summary>
+	/// An exception that is thrown when a IDbCommand required for a AdoNetStore method was not set.
+	/// </summary>
 	public class MissingCommandException : AdoNetStoreException {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.MissingCommandException" />.
+		/// </summary>
 		internal protected MissingCommandException(string entityTypeName)
 			: base("Not all required commands exist for loading and/or saving entities of type '{0}'.", entityTypeName) {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.MissingCommandException" />.
+		/// </summary>
 		internal protected MissingCommandException(RepositoryCommandType commandType, string entityTypeName)
 			: base("Command for {0} entities of type '{1}' does not exist.",
 				commandType == RepositoryCommandType.Delete ? "deleting" :
@@ -108,6 +130,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.MissingCommandException" />.
+		/// </summary>
 		internal protected MissingCommandException(string entityTypeName, string filterEntityTypeName)
 			: base("Command for loading entities of type '{1}' filtered by Id of '{1}' does not exist.", entityTypeName, filterEntityTypeName) {
 		}
@@ -120,7 +145,11 @@ namespace Dataweb.NShape {
 	[ToolboxBitmap(typeof(AdoNetStore))]
 	public abstract class AdoNetStore : Store {
 
-		#region Store Implementation
+		internal const char CompositionFieldSeperatorChar = ',';
+		internal const char CompositionSeperatorChar = ';';
+		
+		
+		#region [Public] Store Implementation
 
 		/// <override></override>
 		public override string ProjectName {
@@ -222,6 +251,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void SaveChanges(IStoreCache cache) {
 			if (cache == null) throw new ArgumentNullException("cache");
 			AssertOpen();
@@ -627,6 +657,11 @@ namespace Dataweb.NShape {
 		#endregion
 
 
+		#region [Public] Properties
+
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -653,83 +688,14 @@ namespace Dataweb.NShape {
 			set { connectionString = value; }
 		}
 
+		#endregion
+
+
+		#region [Public] Methods: Obtaining Commands
 
 		/// <summary>
-		/// Override this method to create the actual SQL commands for your database.
+		/// Retrieves a command text for inserting a command into the database.
 		/// </summary>
-		public virtual void CreateDbCommands(IStoreCache cache) {
-			if (cache == null) throw new ArgumentNullException("cache");
-			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
-				item.Value.Dispose();
-			commands.Clear();
-			Version = cache.RepositoryBaseVersion;
-		}
-
-
-		/// <summary>
-		/// Creates a schema for the database based on the current DB commands.
-		/// </summary>
-		/// <remarks>This function has to be regarded more as a testing feature. Real life 
-		/// application will usually provide their specialized database schemas and generation
-		/// scripts.</remarks>
-		public virtual void CreateDbSchema(IStoreCache cache) {
-			if (cache == null) throw new ArgumentNullException("cache");
-			AssertClosed();
-			EnsureDataSourceOpen();
-			try {
-				Version = cache.RepositoryBaseVersion;
-				// Create the actual schema
-				GetCreateTablesCommand().ExecuteNonQuery();
-				// Insert the SQL statements into the SysCommand table.
-				IDbCommand cmdCmd = GetInsertSysCommandCommand();
-				IDbCommand paramCmd = GetInsertSysParameterCommand();
-				try {
-					cmdCmd.Prepare();
-					paramCmd.Prepare();
-					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands) {
-						((IDbDataParameter)cmdCmd.Parameters[0]).Value = item.Key.Kind;
-						((IDbDataParameter)cmdCmd.Parameters[1]).Value = item.Key.EntityTypeName;
-						((IDbDataParameter)cmdCmd.Parameters[2]).Value = item.Value.CommandText;
-						int cmdId = (int)cmdCmd.ExecuteScalar();
-						for (int i = 0; i < item.Value.Parameters.Count; ++i) {
-							IDataParameter p = (IDataParameter)item.Value.Parameters[i];
-							((IDbDataParameter)paramCmd.Parameters[0]).Value = cmdId;
-							((IDbDataParameter)paramCmd.Parameters[1]).Value = i + 1;
-							((IDbDataParameter)paramCmd.Parameters[2]).Value = p.ParameterName;
-							((IDbDataParameter)paramCmd.Parameters[3]).Value = p.DbType.ToString();
-							paramCmd.ExecuteNonQuery();
-						}
-					}
-				} finally {
-					paramCmd.Dispose();
-					cmdCmd.Dispose();
-				}
-			} finally {
-				EnsureDataSourceClosed();
-			}
-		}
-
-
-		public virtual void DropDbSchema() {
-			AssertClosed();
-			EnsureDataSourceOpen();
-			try {
-				try {
-					LoadSysCommands();
-				} catch (DbException exc) {
-					Debug.Print(exc.Message);
-					// Assumption: No SysCommand table available, i.e. no NShape tables present
-					return;
-				}
-				IDbCommand dropCommand = GetCommand("All", RepositoryCommandType.Delete);
-				dropCommand.Connection = connection;
-				dropCommand.ExecuteNonQuery();
-			} finally {
-				EnsureDataSourceClosed();
-			}
-		}
-
-
 		public virtual IDbCommand GetInsertSysCommandCommand() {
 			IDbCommand result = CreateCommand(
 				"INSERT INTO SysCommand (Kind, EntityType, Text) VALUES (@Kind, @EntityType, @Text); "
@@ -742,6 +708,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Retrieves a command for inserting command parameters into the database.
+		/// </summary>
 		public virtual IDbCommand GetInsertSysParameterCommand() {
 			IDbCommand result = CreateCommand("INSERT INTO SysParameter (Command, No, Name, Type) VALUES (@Command, @No, @Name, @Type)",
 				CreateParameter("Command", DbType.Int32),
@@ -753,6 +722,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Retrieves a command for reading the specified command.
+		/// </summary>
 		public IDbCommand GetSelectSysCommandsCommand() {
 			IDbCommand result = CreateCommand("SELECT * FROM SysCommand");
 			result.Connection = Connection;
@@ -760,121 +732,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Retrieves a command for reading the specified command parameter.
+		/// </summary>
 		public IDbCommand GetSelectSysParameterCommand() {
 			IDbCommand result = CreateCommand("SELECT Name, Type FROM SysParameter WHERE Command = @Command ORDER BY No",
 				CreateParameter("Command", DbType.Int32));
 			result.Connection = Connection;
-			return result;
-		}
-
-
-		/// <override></override>
-		protected override void Dispose(bool disposing) {
-			if (disposing) {
-				// Close and dispose connection
-				if (connection.State != ConnectionState.Closed) connection.Close();
-				if (connection != null) connection.Dispose();
-				// Dispose and delete commands
-				if (commands != null) {
-					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
-						if (item.Value != null) item.Value.Dispose();
-					commands.Clear();
-				}
-				if (createTablesCommand != null) createTablesCommand.Dispose();
-				if (transaction != null) transaction.Dispose();
-			}
-			base.Dispose(disposing);
-		}
-
-
-		protected virtual void LoadSysCommands() {
-			ClearCommands();
-			IDbCommand cmdCmd = GetSelectSysCommandsCommand();
-			IDbCommand paramCmd = GetSelectSysParameterCommand();
-			CommandKey ck;
-			using (IDataReader reader = cmdCmd.ExecuteReader()) {
-				while (reader.Read()) {
-					ck.Kind = (RepositoryCommandType)Enum.Parse(typeof(RepositoryCommandType), reader.GetString(1));
-					ck.EntityTypeName = reader.GetString(2);
-					IDbCommand command = CreateCommand(reader.GetString(3));
-					// Read parameters
-					((IDataParameter)paramCmd.Parameters[0]).Value = reader.GetInt32(0);
-					using (IDataReader paramReader = paramCmd.ExecuteReader()) {
-						while (paramReader.Read()) {
-							command.Parameters.Add(CreateParameter(paramReader.GetString(0),
-								(DbType)Enum.Parse(typeof(DbType), paramReader.GetString(1))));
-						}
-					}
-					commands.Add(ck, command);
-				}
-			}
-		}
-
-
-		/// <override></override>
-		protected void LoadShapeConnections(IStoreCache cache, Diagram diagram) {
-			// If shape is new, there cannot be any connections in the database.
-			if (((IEntity)diagram).Id == null) return;
-			//
-			bool connectionOpened = EnsureDataSourceOpen();
-			try {
-				IDbCommand cmd = GetCommand("Core.ShapeConnection", RepositoryCommandType.SelectByOwnerId);
-				((IDbDataParameter)cmd.Parameters[0]).Value = ((IEntity)diagram).Id;
-				using (IDataReader dataReader = cmd.ExecuteReader()) {
-					ShapeConnection sc;
-					while (dataReader.Read()) {
-						sc.ConnectorShape = cache.GetShape(dataReader.GetInt32(0));
-						sc.GluePointId = dataReader.GetInt32(1);
-						sc.TargetShape = cache.GetShape(dataReader.GetInt32(2)); // TODO 3: Error handling?
-						sc.TargetPointId = dataReader.GetInt32(3);
-						sc.ConnectorShape.Connect(sc.GluePointId, sc.TargetShape, sc.TargetPointId);
-					}
-				}
-			} finally {
-				if (connectionOpened) EnsureDataSourceClosed();
-			}
-		}
-
-
-		private void LoadChildShapes(IStoreCache cache, Shape s) {
-			foreach (EntityType et in cache.EntityTypes) {
-				if (et.Category == EntityCategory.Shape) {
-					foreach (EntityBucket<Shape> sb
-						in LoadEntities<Shape>(cache, et, id => true, pid => s, RepositoryCommandType.SelectChildShapes, ((IEntity)s).Id))
-						s.Children.Add(sb.ObjectRef);
-				}
-			}
-		}
-
-
-		#region Command Obtaining Functions
-
-		// Command setting functions must specify the entity by the entity projectName and 
-		// not by the entity type, because it must be possible to set commands, before 
-		// libraries are loaded. Therefore the entities are usually registered later
-		// than the command.
-		// Another reason is that external clients have no access to the entity type.
-		// They should not even know the interface IEntityType or the type EntityType.
-
-		protected IDbCommand CreateCommand() {
-			if (factory == null)
-				throw new NShapeException("No valid ADO.NET provider specified.");
-			return factory.CreateCommand();
-		}
-
-
-		protected IDbCommand CreateCommand(string cmdText, params IDataParameter[] parameters) {
-			IDbCommand result = CreateCommand();
-			result.CommandText = cmdText;
-			foreach (IDataParameter p in parameters) result.Parameters.Add(p);
-			return result;
-		}
-
-
-		protected IDataParameter CreateParameter(string name, DbType dbType) {
-			IDataParameter result = factory.CreateParameter();
-			result.DbType = dbType;
-			result.ParameterName = name;
 			return result;
 		}
 
@@ -933,792 +797,6 @@ namespace Dataweb.NShape {
 		#endregion
 
 
-		internal IDbTransaction CurrentTransaction {
-			get { return transaction; }
-		}
-
-
-		#region DbParameterReader / DbParameterWriter
-
-		protected class DbParameterReader : RepositoryReader, IDisposable {
-
-			public DbParameterReader(AdoNetStore store, IStoreCache cache)
-				: base(cache) {
-				if (store == null) throw new ArgumentNullException("store");
-				this.store = store;
-			}
-
-
-			~DbParameterReader() {
-				Dispose();
-			}
-
-
-			// Initialisiert den Reader für das Lesen von Feldern einer Entity.
-			// Der DataReader wird von außen verwaltet.
-			internal void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos, IDataReader dataReader) {
-				base.ResetFieldReading(propertyInfos);
-				this.dataReader = dataReader;
-			}
-
-
-			// Initialisiert den Reader für das Lesen von inneren Objekten einer Entity.
-			internal void ResetInnerObjectsReading() {
-				// base.Reset(propertyInfos);
-			}
-
-
-			// Prepares the cache reader for reading of fields. The first fields to 
-			// read internally are the id and the parent id. Therefore we start at index -2.
-			protected internal override bool DoBeginObject() {
-				Debug.Assert(dataReader != null);
-				if (dataReader.Read()) PropertyIndex = -internalPropertyCount - 1;
-				else PropertyIndex = int.MinValue;
-				return PropertyIndex > int.MinValue;
-			}
-
-
-			protected internal override void DoEndObject() {
-				// Nothing to do
-			}
-
-
-			public void PrepareInnerObjectsReading(IEntity persistableObject) {
-				if (persistableObject == null) throw new ArgumentNullException("persistableObject");
-				this.Object = persistableObject;
-				PropertyIndex = 0;
-				foreach (EntityPropertyDefinition pi in PropertyInfos) {
-					if (pi is EntityInnerObjectsDefinition) break;
-					++PropertyIndex;
-				}
-			}
-
-
-			internal IDataReader DataReader {
-				get { return dataReader; }
-				set { dataReader = value; }
-			}
-
-
-			internal protected override object ReadId() {
-				++PropertyIndex;
-				ValidateFieldIndex();
-				object result = dataReader.GetValue(PropertyIndex + internalPropertyCount);
-				return Convert.IsDBNull(result) ? null : result;
-			}
-
-
-			#region RepositoryReader Members
-
-			protected override bool DoReadBool() {
-				return dataReader.GetBoolean(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override byte DoReadByte() {
-				return dataReader.GetByte(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override short DoReadInt16() {
-				return dataReader.GetInt16(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override int DoReadInt32() {
-				return dataReader.GetInt32(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override long DoReadInt64() {
-				return dataReader.GetInt64(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override float DoReadFloat() {
-				return dataReader.GetFloat(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override double DoReadDouble() {
-				return dataReader.GetDouble(PropertyIndex + internalPropertyCount);
-			}
-
-
-			protected override char DoReadChar() {
-				// SqlDataReader.GetChar is not implemented and _always_ throws a NotSupportedException()
-				//return dataReader.GetChar(PropertyIndex + internalPropertyCount);
-				return Char.Parse(dataReader.GetString(PropertyIndex + internalPropertyCount));
-			}
-
-
-			protected override string DoReadString() {
-				string result = string.Empty;
-				if (!dataReader.IsDBNull(PropertyIndex + internalPropertyCount))
-					result = dataReader.GetString(PropertyIndex + internalPropertyCount);
-				return result;
-			}
-
-
-			protected override DateTime DoReadDate() {
-				DateTime result = dataReader.GetDateTime(PropertyIndex + internalPropertyCount).ToLocalTime();
-				return result;
-			}
-
-
-			protected override Image DoReadImage() {
-				Image result = null;
-				if (!dataReader.IsDBNull(PropertyIndex + internalPropertyCount)) {
-					byte[] buffer = new Byte[dataReader.GetBytes(PropertyIndex + internalPropertyCount, 0, null, 0, 0)];
-					dataReader.GetBytes(PropertyIndex + internalPropertyCount, 0, buffer, 0, buffer.Length);
-					if (buffer.Length > 0) {
-						MemoryStream stream = new MemoryStream(buffer, false);
-						result = Image.FromStream(stream);
-					}
-				}
-				return result;
-			}
-
-
-			// This method is called by the persistable object to fetch the next set of 
-			// inner objects.
-			public override void BeginReadInnerObjects() {
-				Debug.Assert(innerObjectsReader == null);
-				++PropertyIndex;
-				EntityInnerObjectsDefinition innerInfo = (EntityInnerObjectsDefinition)propertyInfos[PropertyIndex];
-				// TODO 3: Replace by generic mechanism once the string reader is established
-				if (AdoNetStore.IsComposition(innerInfo)) {
-					innerObjectsReader = new StringReader(Cache);
-					((StringReader)innerObjectsReader).ResetFieldReading(innerInfo.PropertyDefinitions, dataReader.GetString(PropertyIndex + internalPropertyCount));
-				} else {
-					IDbCommand cmd = store.GetCommand(innerInfo.EntityTypeName, RepositoryCommandType.SelectById);
-					cmd.Transaction = store.CurrentTransaction;
-					((IDataParameter)cmd.Parameters[0]).Value = Object.Id;
-					innerObjectsDataReader = cmd.ExecuteReader();
-					cmd.Dispose(); // Geht das?
-					innerObjectsReader = new DbParameterReader(store, Cache);
-					InnerObjectsReader.ResetFieldReading(innerInfo.PropertyDefinitions, innerObjectsDataReader);
-				}
-			}
-
-
-			public override void EndReadInnerObjects() {
-				Debug.Assert(innerObjectsReader != null);
-				if (innerObjectsDataReader != null) {
-					innerObjectsDataReader.Dispose();
-					innerObjectsDataReader = null;
-				}
-				innerObjectsReader.Dispose();
-				innerObjectsReader = null;
-			}
-
-
-			public override void EndReadInnerObject() {
-				innerObjectsReader.DoEndObject();
-			}
-
-
-			protected override void Dispose(bool disposing) {
-				if (innerObjectsDataReader != null) {
-					innerObjectsDataReader.Dispose();
-					innerObjectsDataReader = null;
-				}
-			}
-
-			#endregion
-
-
-			private void ValidateFieldIndex() {
-				if (PropertyIndex >= dataReader.FieldCount)
-					throw new InvalidOperationException("An object tries to load more properties than the entity is defined to have.");
-			}
-
-
-			private DbParameterReader InnerObjectsReader {
-				get { return (DbParameterReader)innerObjectsReader; }
-			}
-
-
-			#region Fields
-
-			// Id and parent id are always inside the cache.
-			private const int internalPropertyCount = 2;
-
-			private AdoNetStore store;
-
-			// Reference to an outside-created data repositoryReader for fields reading
-			private IDataReader dataReader;
-
-			// Owned data repositoryReader for the fields of inner objects read by additional cache repositoryReader.
-			private IDataReader innerObjectsDataReader;
-
-			#endregion
-
-		}
-
-
-		protected class DbParameterWriter : RepositoryWriter {
-
-			internal DbParameterWriter(AdoNetStore store, IStoreCache cache)
-				: base(cache) {
-				this.store = store;
-			}
-
-
-			internal IDbCommand Command {
-				get { return command; }
-				set { command = value; }
-			}
-
-
-			// Resets the repositoryWriter for handling another set of fields
-			internal protected override void Reset(IEnumerable<EntityPropertyDefinition> propertyInfos) {
-				base.Reset(propertyInfos);
-			}
-
-
-			/// <summary>
-			/// This method has to be called before passing the repositoryWriter to the IPeristable object for saving.
-			/// </summary>
-			internal protected override void Prepare(IEntity entity) {
-				if (entity == null) throw new ArgumentNullException("entity");
-				base.Prepare(entity);
-				PropertyIndex = -2;
-			}
-
-
-			protected internal override void Finish() {
-				Flush();
-				base.Finish();
-			}
-
-
-			/// <summary>
-			/// Commits the changes to the database.
-			/// </summary>
-			internal protected void Flush() {
-				if (Entity == null) {
-					// Writing an inner object
-					command.ExecuteNonQuery();
-				} else if (Entity.Id == null) {
-					// Inserting an entity
-					Entity.AssignId(command.ExecuteScalar());
-				} else {
-					// Updating an entity
-					object result = command.ExecuteNonQuery();
-					if (result == null)
-						throw new Exception(string.Format("No Records affected by statement{0}{1}", Environment.NewLine, command.CommandText));
-				}
-			}
-
-
-			/// <summary>
-			/// Prepares the cache repositoryWriter for writing the fields of another entity.
-			/// </summary>
-			internal protected void PrepareFields() {
-				// The first parameter is the parent id, which is automatically inserted and does
-				// therefore not correspond to to a real property. We handle it as property index -1.
-				PropertyIndex = -2;
-			}
-
-
-			#region RepositoryWriter Members
-
-			protected override void DoWriteId(object value) {
-				if (value == null) value = DBNull.Value;
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteBool(bool value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteByte(byte value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteInt16(short value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteInt32(int value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteInt64(long value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteFloat(float value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteDouble(double value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteChar(char value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteString(string value) {
-				if (value == null) DoWriteValue(DBNull.Value);
-				else DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteDate(DateTime value) {
-				DoWriteValue(value);
-			}
-
-
-			protected override void DoWriteImage(Image value) {
-				if (value == null) DoWriteValue(DBNull.Value);
-				else {
-					MemoryStream stream = new MemoryStream();
-					try {
-						if (value != null) value.Save(stream, value.RawFormat);
-						DoWriteValue(stream.GetBuffer());
-					} finally {
-						stream.Close();
-						stream.Dispose();
-						stream = null;
-					}
-				}
-			}
-
-
-			// Advance to the next set of inner objects, erase the previous content, 
-			// get the command and prepare for writing
-			protected override void DoBeginWriteInnerObjects() {
-				++PropertyIndex;
-				ValidateInnerObjectsIndex();
-				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
-				//
-				EntityInnerObjectsDefinition innerInfo = (EntityInnerObjectsDefinition)propertyInfos[PropertyIndex];
-				if (AdoNetStore.IsComposition(innerInfo)) {
-					innerObjectsWriter = new StringWriter(Cache);
-					((StringWriter)innerObjectsWriter).Reset(innerInfo.PropertyDefinitions);
-				} else {
-					DoDeleteInnerObjects();
-					innerObjectsWriter = new DbParameterWriter(store, Cache);
-					InnerObjectsWriter.Reset(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
-					InnerObjectsWriter.Command = store.GetCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName, RepositoryCommandType.Insert);
-					InnerObjectsWriter.Command.Transaction = store.transaction;
-				}
-			}
-
-
-			protected override void DoEndWriteInnerObjects() {
-				if (innerObjectsWriter is StringWriter) {
-					((IDataParameter)command.Parameters[PropertyIndex + 1]).Value = ((StringWriter)innerObjectsWriter).StringData;
-				} else {
-					// Nothing to do
-				}
-			}
-
-
-			protected override void DoBeginWriteInnerObject() {
-				// Advance to next object
-				innerObjectsWriter.Prepare(Entity);
-				// An inner object has no id of its own but stores its parent id in the first property.
-				if (innerObjectsWriter is DbParameterWriter)
-					innerObjectsWriter.WriteId(Entity.Id);
-			}
-
-
-			protected override void DoEndWriteInnerObject() {
-				// Commit inner object to data store
-				innerObjectsWriter.Finish();
-			}
-
-
-			protected override void DoDeleteInnerObjects() {
-				ValidateInnerObjectsIndex();
-				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
-				//
-				// Delete all existing inner objects of the current persistable object			
-				IDbCommand command = store.GetCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName, RepositoryCommandType.Delete);
-				command.Transaction = store.CurrentTransaction;
-				((IDataParameter)command.Parameters[0]).Value = Entity.Id;
-				int count = command.ExecuteNonQuery();
-			}
-
-			#endregion
-
-
-			// Cannot check against the property count, because tables can contain additional 
-			// columns, e.g for the parent id and the id.
-			private void ValidateFieldIndex() {
-				if (PropertyIndex >= command.Parameters.Count)
-					throw new NShapeException("Field '{0}' of entity cannot be written to the repository because the mapping contains less items. Check whether the SQL commands for this entity are correct.", PropertyIndex);
-			}
-
-
-			// Can check against the property count here, becuause there are no hidden inner objects.
-			private void ValidateInnerObjectsIndex() {
-				if (PropertyIndex >= propertyInfos.Count)
-					throw new NShapeException("Inner objects '{0}' of entity cannot be written to the data store because the entity defines less properties.", PropertyIndex);
-			}
-
-
-			private void DoWriteValue(object value) {
-				++PropertyIndex;
-				ValidateFieldIndex();
-				((IDataParameter)command.Parameters[PropertyIndex + 1]).Value = value;
-			}
-
-
-			private DbParameterWriter InnerObjectsWriter {
-				get { return (DbParameterWriter)innerObjectsWriter; }
-			}
-
-
-			#region Fields
-
-			private AdoNetStore store;
-
-			private IDbCommand command;
-
-			#endregion
-		}
-
-		#endregion DbParameterReader/Writer
-
-
-		#region StringReader / StringWriter
-
-		protected class StringReader : RepositoryReader {
-
-			public StringReader(IStoreCache store)
-				: base(store) {
-			}
-
-
-			// Starts reading fields for one type of object
-			public void ResetFieldReading(IEnumerable<EntityPropertyDefinition> fieldInfos, string data) {
-				base.ResetFieldReading(fieldInfos);
-				if (data == null) throw new ArgumentNullException("data");
-				str = data;
-				p = 0;
-			}
-
-
-			#region RepositoryReader Implementation
-
-			public override void BeginReadInnerObjects() {
-				throw new NotSupportedException();
-			}
-
-
-			public override void EndReadInnerObjects() {
-				throw new NotSupportedException();
-			}
-
-
-			protected internal override bool DoBeginObject() {
-				// Current position is either a valid field start or end of string
-				if (p < 0 || p > str.Length) throw new InvalidOperationException("NotSupported string position");
-				return p < str.Length;
-			}
-
-
-			protected internal override void DoEndObject() {
-				if (str[p] != ';') throw new NShapeException("NotSupported string. ';' expected.");
-				++p;
-			}
-
-
-			public override void EndReadInnerObject() {
-				throw new NotSupportedException();
-			}
-
-
-			protected internal override object ReadId() {
-				object result = null;
-				// read id type
-				if (p < str.Length && str[p] == '(') {
-					string typeDesc = string.Empty;
-					++p; // skip '('
-					while (p < str.Length && str[p] != ')') {
-						typeDesc += str[p];
-						++p;
-					}
-					if (p < str.Length && str[p] == ')') ++p;
-
-					if (typeDesc != string.Empty) {
-						if (typeDesc == typeof(int).Name)
-							result = DoReadInt32();
-						else if (typeDesc == typeof(long).Name)
-							result = DoReadInt64();
-						else throw new NotSupportedException();
-					}
-					if (p < str.Length && str[p] == ',') ++p;
-				}
-				return result;
-			}
-
-
-			protected override bool DoReadBool() {
-				return (DoReadInteger() != 0);
-			}
-
-
-			protected override byte DoReadByte() {
-				long value = DoReadInteger();
-				if (value < byte.MinValue || byte.MaxValue < value)
-					throw new NShapeException("Invalid repository format");
-				return (byte)value;
-			}
-
-
-			protected override short DoReadInt16() {
-				long value = DoReadInteger();
-				if (value < short.MinValue || short.MaxValue < value)
-					throw new NShapeException("Invalid repository format");
-				return (short)value;
-			}
-
-
-			protected override int DoReadInt32() {
-				long value = DoReadInteger();
-				if (value < int.MinValue || int.MaxValue < value)
-					throw new NShapeException("Invalid repository format");
-				return (int)value;
-			}
-
-
-			protected override long DoReadInt64() {
-				return DoReadInteger();
-			}
-
-
-			protected override float DoReadFloat() {
-				double value = DoReadDouble();
-				if (value < float.MinValue || float.MaxValue < value)
-					throw new NShapeException("Invalid repository format");
-				return (float)value;
-			}
-
-
-			protected override double DoReadDouble() {
-				double result = DoReadInteger();
-				if (p < str.Length && str[p] == '.') {
-					++p;
-					int frac = 1;
-					while (p < str.Length && str[p] >= '0' && str[p] <= '9') {
-						frac *= 10;
-						result = result + ((double)str[p] - (double)'0') / frac;
-						++p;
-					}
-					if (p < str.Length && str[p] == ',') ++p;
-				}
-				return result;
-			}
-
-
-			protected override char DoReadChar() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override string DoReadString() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override DateTime DoReadDate() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override Image DoReadImage() {
-				throw new NotSupportedException();
-			}
-
-			#endregion
-
-
-			private long DoReadInteger() {
-				long result = 0;
-				bool negative;
-				if (p < str.Length && str[p] == '-') {
-					negative = true;
-					++p;
-				} else {
-					negative = false;
-					if (p < str.Length && str[p] == '+') ++p;
-				}
-
-				while (p < str.Length && str[p] >= '0' && str[p] <= '9') {
-					result = (int)10 * result + (int)str[p] - (int)'0';
-					++p;
-				}
-
-				if (p < str.Length && str[p] == ',') ++p;
-				if (negative) return -result;
-				else return result;
-			}
-
-
-			// String data
-			private string str;
-			// Current position within string data
-			private int p;
-		}
-
-
-		protected class StringWriter : RepositoryWriter {
-
-			public StringWriter(IStoreCache store)
-				: base(store) {
-			}
-
-
-			protected internal override void Reset(IEnumerable<EntityPropertyDefinition> fieldInfos) {
-				base.Reset(fieldInfos);
-			}
-
-
-			protected internal override void Prepare(IEntity entity) {
-				base.Prepare(entity);
-			}
-
-
-			protected internal override void Finish() {
-				str.Append(';');
-				base.Finish();
-			}
-
-
-			public string StringData {
-				get { return str.ToString(); }
-			}
-
-
-			protected override void DoWriteId(object id) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(string.Format("({0}){1}", id.GetType().Name, id));
-			}
-
-
-			protected override void DoWriteBool(bool value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value ? '1' : '0');
-			}
-
-
-			protected override void DoWriteByte(byte value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value.ToString());
-			}
-
-
-			protected override void DoWriteInt16(short value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value.ToString());
-			}
-
-
-			protected override void DoWriteInt32(int value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value.ToString());
-			}
-
-
-			protected override void DoWriteInt64(long value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value.ToString());
-			}
-
-
-			protected override void DoWriteFloat(float value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value.ToString(CultureInfo.InvariantCulture));
-			}
-
-
-			protected override void DoWriteDouble(double value) {
-				++PropertyIndex;
-				if (PropertyIndex >= 0) str.Append(',');
-				str.Append(value.ToString(CultureInfo.InvariantCulture));
-			}
-
-
-			protected override void DoWriteChar(char value) {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoWriteString(string value) {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoWriteDate(DateTime date) {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoWriteImage(Image image) {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoBeginWriteInnerObjects() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoEndWriteInnerObjects() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoBeginWriteInnerObject() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoEndWriteInnerObject() {
-				throw new NotSupportedException();
-			}
-
-
-			protected override void DoDeleteInnerObjects() {
-				throw new NotSupportedException();
-			}
-
-
-			private StringBuilder str = new StringBuilder();
-		}
-
-		#endregion
-
-
-		static protected bool IsComposition(EntityPropertyDefinition propertyInfo) {
-			return propertyInfo.Name == "ConnectionPointMappings"
-				|| propertyInfo.Name == "ValueRanges"
-				|| propertyInfo.Name == "Vertices";
-		}
-
-
 		/// <override></override>
 		protected internal override int Version {
 			get { return version; }
@@ -1726,9 +804,272 @@ namespace Dataweb.NShape {
 		}
 
 
-		// This is the actual reading function and will go into a separate data access 
-		// layer in later versions.
+		internal IDbTransaction CurrentTransaction {
+			get { return transaction; }
+		}
+
+
+		/// <summary>
+		/// Tests wether a inner object entity should be stored as serialized string.
+		/// </summary>
+		static protected bool IsComposition(EntityPropertyDefinition propertyInfo) {
+			return (propertyInfo.Name == "ConnectionPointMappings"
+				|| propertyInfo.Name == "ValueRanges"
+				|| propertyInfo.Name == "Vertices"
+				|| propertyInfo.Name == "ColumnNames");
+		}
+
+
+		#region [Protected] Methods: Creating Commands and Parameters
+
+		// Command setting functions must specify the entity by the entity projectName and 
+		// not by the entity type, because it must be possible to set commands, before 
+		// libraries are loaded. Therefore the entities are usually registered later
+		// than the command.
+		// Another reason is that external clients have no access to the entity type.
+		// They should not even know the interface IEntityType or the type EntityType.
+
+		/// <summary>
+		/// Creates an ADO.NET command.
+		/// </summary>
+		protected IDbCommand CreateCommand() {
+			if (factory == null)
+				throw new NShapeException("No valid ADO.NET provider specified.");
+			return factory.CreateCommand();
+		}
+
+
+		/// <summary>
+		/// Creates an ADO.NET command.
+		/// </summary>
+		protected IDbCommand CreateCommand(string cmdText, params IDataParameter[] parameters) {
+			IDbCommand result = CreateCommand();
+			result.CommandText = cmdText;
+			foreach (IDataParameter p in parameters) result.Parameters.Add(p);
+			return result;
+		}
+
+
+		/// <summary>
+		/// Creates an ADO.NET command parameter.
+		/// </summary>
+		protected IDataParameter CreateParameter(string name, DbType dbType) {
+			IDataParameter result = factory.CreateParameter();
+			result.DbType = dbType;
+			result.ParameterName = name;
+			return result;
+		}
+
+		#endregion
+
+
+		#region [Protected] Methods
+
 		/// <override></override>
+		protected override void Dispose(bool disposing) {
+			if (disposing) {
+				// Close and dispose connection
+				if (connection.State != ConnectionState.Closed) connection.Close();
+				if (connection != null) connection.Dispose();
+				// Dispose and delete commands
+				if (commands != null) {
+					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
+						if (item.Value != null) item.Value.Dispose();
+					commands.Clear();
+				}
+				if (createTablesCommand != null) createTablesCommand.Dispose();
+				if (transaction != null) transaction.Dispose();
+			}
+			base.Dispose(disposing);
+		}
+
+
+		/// <summary>
+		/// Override this method to create the actual SQL commands for your database.
+		/// </summary>
+		public virtual void CreateDbCommands(IStoreCache cache) {
+			if (cache == null) throw new ArgumentNullException("cache");
+			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
+				item.Value.Dispose();
+			commands.Clear();
+			Version = cache.RepositoryBaseVersion;
+		}
+
+
+		/// <summary>
+		/// Creates a schema for the database based on the current DB commands.
+		/// </summary>
+		/// <remarks>
+		/// This function has to be regarded more as a testing feature. Real life application will usually provide 
+		/// their specialized database schemas and generation scripts.
+		/// </remarks>
+		public virtual void CreateDbSchema(IStoreCache cache) {
+			if (cache == null) throw new ArgumentNullException("cache");
+			AssertClosed();
+			EnsureDataSourceOpen();
+			try {
+				Version = cache.RepositoryBaseVersion;
+				// Create the actual schema
+				GetCreateTablesCommand().ExecuteNonQuery();
+				// Insert the SQL statements into the SysCommand table.
+				IDbCommand cmdCmd = GetInsertSysCommandCommand();
+				IDbCommand paramCmd = GetInsertSysParameterCommand();
+				try {
+					cmdCmd.Prepare();
+					paramCmd.Prepare();
+					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands) {
+						((IDbDataParameter)cmdCmd.Parameters[0]).Value = item.Key.Kind;
+						((IDbDataParameter)cmdCmd.Parameters[1]).Value = item.Key.EntityTypeName;
+						((IDbDataParameter)cmdCmd.Parameters[2]).Value = item.Value.CommandText;
+						int cmdId = (int)cmdCmd.ExecuteScalar();
+						for (int i = 0; i < item.Value.Parameters.Count; ++i) {
+							IDataParameter p = (IDataParameter)item.Value.Parameters[i];
+							((IDbDataParameter)paramCmd.Parameters[0]).Value = cmdId;
+							((IDbDataParameter)paramCmd.Parameters[1]).Value = i + 1;
+							((IDbDataParameter)paramCmd.Parameters[2]).Value = p.ParameterName;
+							((IDbDataParameter)paramCmd.Parameters[3]).Value = p.DbType.ToString();
+							paramCmd.ExecuteNonQuery();
+						}
+					}
+				} finally {
+					paramCmd.Dispose();
+					cmdCmd.Dispose();
+				}
+			} finally {
+				EnsureDataSourceClosed();
+			}
+		}
+
+
+		/// <summary>
+		/// Deletes the schema for the database based on the current DB commands.
+		/// </summary>
+		/// <remarks>
+		/// This function has to be regarded more as a testing feature. Real life application will usually provide 
+		/// their specialized database schemas and generation scripts.
+		/// </remarks>
+		public virtual void DropDbSchema() {
+			AssertClosed();
+			EnsureDataSourceOpen();
+			try {
+				try {
+					LoadSysCommands();
+				} catch (DbException exc) {
+					if (exc.ErrorCode == -2146232060) {
+						// Assumption: No SysCommand table available, i.e. no NShape tables present
+						Debug.Print(exc.Message);
+						return;
+					} else throw exc;
+				}
+				IDbCommand dropCommand = GetCommand("All", RepositoryCommandType.Delete);
+				dropCommand.Connection = connection;
+				dropCommand.ExecuteNonQuery();
+			} finally {
+				EnsureDataSourceClosed();
+			}
+		}
+
+
+		/// <summary>
+		/// Loads the commands for loading and saving entities from the data store.
+		/// </summary>
+		protected virtual void LoadSysCommands() {
+			ClearCommands();
+			IDbCommand cmdCmd = GetSelectSysCommandsCommand();
+			IDbCommand paramCmd = GetSelectSysParameterCommand();
+			CommandKey ck;
+			using (IDataReader reader = cmdCmd.ExecuteReader()) {
+				while (reader.Read()) {
+					ck.Kind = (RepositoryCommandType)Enum.Parse(typeof(RepositoryCommandType), reader.GetString(1));
+					ck.EntityTypeName = reader.GetString(2);
+					IDbCommand command = CreateCommand(reader.GetString(3));
+					// Read parameters
+					((IDataParameter)paramCmd.Parameters[0]).Value = reader.GetInt32(0);
+					using (IDataReader paramReader = paramCmd.ExecuteReader()) {
+						while (paramReader.Read()) {
+							command.Parameters.Add(CreateParameter(paramReader.GetString(0),
+								(DbType)Enum.Parse(typeof(DbType), paramReader.GetString(1))));
+						}
+					}
+					commands.Add(ck, command);
+				}
+			}
+		}
+
+
+		/// <summary>
+		/// Loads all shape connections from the data store.
+		/// </summary>
+		protected void LoadShapeConnections(IStoreCache cache, Diagram diagram) {
+			// If shape is new, there cannot be any connections in the database.
+			if (((IEntity)diagram).Id == null) return;
+			//
+			bool connectionOpened = EnsureDataSourceOpen();
+			try {
+				IDbCommand cmd = GetCommand("Core.ShapeConnection", RepositoryCommandType.SelectByOwnerId);
+				((IDbDataParameter)cmd.Parameters[0]).Value = ((IEntity)diagram).Id;
+				using (IDataReader dataReader = cmd.ExecuteReader()) {
+					ShapeConnection sc;
+					while (dataReader.Read()) {
+						sc.ConnectorShape = cache.GetShape(dataReader.GetInt32(0));
+						sc.GluePointId = dataReader.GetInt32(1);
+						sc.TargetShape = cache.GetShape(dataReader.GetInt32(2)); // TODO 3: Error handling?
+						sc.TargetPointId = dataReader.GetInt32(3);
+						sc.ConnectorShape.Connect(sc.GluePointId, sc.TargetShape, sc.TargetPointId);
+					}
+				}
+			} finally {
+				if (connectionOpened) EnsureDataSourceClosed();
+			}
+		}
+
+
+		/// <summary>
+		/// Closes the connection to the database.
+		/// </summary>
+		protected bool EnsureDataSourceOpen() {
+			bool result;
+			if (Connection.State != ConnectionState.Open) {
+				Connection.Open();
+				result = true;
+			} else result = false;
+			return result;
+		}
+
+
+		/// <summary>
+		/// Opens the connection to the database if not yet opened.
+		/// </summary>
+		protected void EnsureDataSourceClosed() {
+			Connection.Close();
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected void OpenCore(IStoreCache cache, bool create) {
+			// Check if store is already open
+			if (commands.Count > 0) throw new InvalidOperationException(string.Format("{0} is already open.", GetType().Name));
+			EnsureDataSourceOpen();
+			try {
+				LoadSysCommands();
+				if (!create) {
+					int ver = DoReadVersion(cache.ProjectName);
+					Debug.Assert(ver == version);
+				}
+			} finally {
+				EnsureDataSourceClosed();
+			}
+		}
+
+		#endregion
+
+
+		#region [Protected] Methods: Load objects from database
+
+		// This is the actual reading function and will go into a separate data access layer in later versions.
+		/// <summary>
+		/// Loads objects of the specified entity type into the given entity buffer using the given command and filter.
+		/// </summary>
 		protected IEnumerable<EntityBucket<TEntity>> LoadEntities<TEntity>(IStoreCache cache,
 			IEntityType entityType, IdFilter idFilter, Resolver parentResolver, RepositoryCommandType cmdType,
 			params object[] parameters) where TEntity : IEntity {
@@ -1796,9 +1137,14 @@ namespace Dataweb.NShape {
 				yield return eb;
 		}
 
+		#endregion
 
-		#region Save objects to database
 
+		#region [Protected] Methods: Save objects to database
+
+		/// <summary>
+		/// Inserts new objects into the data store.
+		/// </summary>
 		protected void InsertEntities<TEntity>(IStoreCache cache, IEntityType entityType,
 			IEnumerable<KeyValuePair<TEntity, IEntity>> newEntities,
 			FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
@@ -1807,6 +1153,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Inserts new objects into the data store.
+		/// </summary>
 		protected virtual void InsertEntities<TEntity>(IStoreCache cache,
 			IEntityType entityType, IEnumerable<KeyValuePair<TEntity, IEntity>> newEntities,
 			IDbCommand dbCommand, FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
@@ -1853,12 +1202,39 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
+		/// Erases the deleted connections from the database.
+		/// </summary>
+		protected virtual void DeleteShapeConnections(IStoreCache cache) {
+			// Delete command need not be defined if no deleted shape connections exist.
+			IDbCommand command = GetCommand(connectionEntityTypeName, RepositoryCommandType.Delete);
+			command.Transaction = transaction;
+			foreach (ShapeConnection sc in cache.DeletedShapeConnections) {
+				((IDataParameter)command.Parameters[0]).Value = ((IEntity)sc.ConnectorShape).Id;
+				((IDataParameter)command.Parameters[1]).Value = sc.GluePointId;
+				command.ExecuteNonQuery();
+			}
+		}
+
+
+		/// <summary>
+		/// Inserts new shape connections into the data store.
+		/// </summary>
+		protected virtual void InsertShapeConnections(IStoreCache storeCache) {
+			IDbCommand command = GetCommand(connectionEntityTypeName, RepositoryCommandType.Insert);
+			command.Transaction = transaction;
+			foreach (ShapeConnection sc in storeCache.NewShapeConnections) {
+				((IDataParameter)command.Parameters[0]).Value = ((IEntity)sc.ConnectorShape).Id;
+				((IDataParameter)command.Parameters[1]).Value = sc.GluePointId;
+				((IDataParameter)command.Parameters[2]).Value = ((IEntity)sc.TargetShape).Id;
+				((IDataParameter)command.Parameters[3]).Value = sc.TargetPointId;
+				command.ExecuteNonQuery();
+			}
+		}
+
+
+		/// <summary>
 		/// Updates the modified entities against the ADO.NET data provider.
 		/// </summary>
-		/// <typeparam projectName="TEntity"></typeparam>
-		/// <param name="entityType"></param>
-		/// <param name="loadedEntities"></param>
-		/// <param name="filterDelegate"></param>
 		protected virtual void UpdateEntities<TEntity>(IStoreCache cache,
 			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities,
 			FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
@@ -1906,9 +1282,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Erases deleted entities of type TEntity from the data store.
 		/// </summary>
-		/// <typeparam projectName="TEntity"></typeparam>
-		/// <param name="entityType"></param>
-		/// <param name="loadedEntities"></param>
 		protected virtual void DeleteEntities<TEntity>(IStoreCache cache,
 			IEntityType entityType, IEnumerable<EntityBucket<TEntity>> loadedEntities,
 			FilterDelegate<TEntity> filterDelegate) where TEntity : IEntity {
@@ -1950,6 +1323,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Updates modified shape owners.
+		/// </summary>
 		protected void UpdateShapeOwners(IStoreCache cache) {
 			foreach (EntityBucket<Shape> eb in cache.LoadedShapes) {
 				if (eb.State == ItemState.OwnerChanged) {
@@ -1971,78 +1347,41 @@ namespace Dataweb.NShape {
 			}
 		}
 
+		#endregion
 
-		protected virtual void InsertShapeConnections(IStoreCache storeCache) {
-			IDbCommand command = GetCommand(connectionEntityTypeName, RepositoryCommandType.Insert);
-			command.Transaction = transaction;
-			foreach (ShapeConnection sc in storeCache.NewShapeConnections) {
-				((IDataParameter)command.Parameters[0]).Value = ((IEntity)sc.ConnectorShape).Id;
-				((IDataParameter)command.Parameters[1]).Value = sc.GluePointId;
-				((IDataParameter)command.Parameters[2]).Value = ((IEntity)sc.TargetShape).Id;
-				((IDataParameter)command.Parameters[3]).Value = sc.TargetPointId;
-				command.ExecuteNonQuery();
+
+		#region [Protected] Types
+
+		/// <summary>
+		/// Defines the type of repository command and the associated entity name.
+		/// </summary>
+		protected struct CommandKey {
+			
+			/// <summary>Specifies the kind of repository action, the command was designed for.</summary>
+			public RepositoryCommandType Kind;
+			
+			/// <summary>Specifies the entity name the associated command is responsible for.</summary>
+			public string EntityTypeName;
+			
+			/// <override></override>
+			public override string ToString() {
+				return EntityTypeName + "." + Kind.ToString();
 			}
+
 		}
 
 
 		/// <summary>
-		/// Erases the deleted connections from the database.
+		/// A set of commands for loading and saving entities from and to the database.
 		/// </summary>
-		protected virtual void DeleteShapeConnections(IStoreCache cache) {
-			// Delete command need not be defined if no deleted shape connections exist.
-			IDbCommand command = GetCommand(connectionEntityTypeName, RepositoryCommandType.Delete);
-			command.Transaction = transaction;
-			foreach (ShapeConnection sc in cache.DeletedShapeConnections) {
-				((IDataParameter)command.Parameters[0]).Value = ((IEntity)sc.ConnectorShape).Id;
-				((IDataParameter)command.Parameters[1]).Value = sc.GluePointId;
-				command.ExecuteNonQuery();
-			}
-		}
-
-		#endregion
-
-
-		protected void OpenCore(IStoreCache cache, bool create) {
-			// Check if store is already open
-			if (commands.Count > 0) throw new InvalidOperationException(string.Format("{0} is already open.", GetType().Name));
-			EnsureDataSourceOpen();
-			try {
-				LoadSysCommands();
-				if (!create) {
-					int ver = DoReadVersion(cache.ProjectName);
-					Debug.Assert(ver == version);
-				}
-			} finally {
-				EnsureDataSourceClosed();
-			}
-		}
-
-
-		protected bool EnsureDataSourceOpen() {
-			bool result;
-			if (Connection.State != ConnectionState.Open) {
-				Connection.Open();
-				result = true;
-			} else result = false;
-			return result;
-		}
-
-
-		protected struct CommandKey {
-			public RepositoryCommandType Kind;
-			public string EntityTypeName;
-			public override string ToString() {
-				return EntityTypeName + "." + Kind.ToString();
-			}
-		}
-
-
 		protected struct CommandSet {
 
+			/// <summary>
+			/// Defines an ampty CommandSet.
+			/// </summary>
 			static public CommandSet Empty {
 				get {
 					CommandSet result;
-					result.CreateTableCommand = null;
 					result.DeleteCommand = null;
 					result.InsertCommand = null;
 					result.SelectByIdCommand = null;
@@ -2054,7 +1393,10 @@ namespace Dataweb.NShape {
 				}
 			}
 
-
+			
+			/// <summary>
+			/// Associates the given command with the given repository action
+			/// </summary>
 			public void SetCommand(RepositoryCommandType type, IDbCommand command) {
 				if (command == null) throw new ArgumentNullException("command");
 				switch (type) {
@@ -2079,6 +1421,9 @@ namespace Dataweb.NShape {
 			}
 
 
+			/// <summary>
+			/// Retrieves the command associated with the given repository action
+			/// </summary>
 			public IDbCommand GetCommand(RepositoryCommandType commandType) {
 				switch (commandType) {
 					case RepositoryCommandType.Delete:
@@ -2101,21 +1446,949 @@ namespace Dataweb.NShape {
 			}
 
 
-			public IDbCommand CreateTableCommand;
-			public IDbCommand SelectIdsCommand;
-			public IDbCommand SelectByIdCommand;
-			public IDbCommand SelectByNameCommand;
-			public IDbCommand SelectByOwnerIdCommand;
-			public IDbCommand InsertCommand;
-			public IDbCommand UpdateCommand;
-			public IDbCommand DeleteCommand;
+			private IDbCommand SelectIdsCommand;
+			private IDbCommand SelectByIdCommand;
+			private IDbCommand SelectByNameCommand;
+			private IDbCommand SelectByOwnerIdCommand;
+			private IDbCommand InsertCommand;
+			private IDbCommand UpdateCommand;
+			private IDbCommand DeleteCommand;
+		}
+
+		#endregion
+
+
+		#region [Protected] Types: DBCommandReader / DBCommandWriter
+
+		/// <summary>
+		/// A repository reader implementation reading data from of ADO.NET command parameters.
+		/// </summary>
+		protected class DbParameterReader : RepositoryReader, IDisposable {
+
+			/// <summary>
+			/// Initialized a new instance of <see cref="T:Dataweb.NShape.AdoNetStore.DBParameterReader" />.
+			/// </summary>
+			public DbParameterReader(AdoNetStore store, IStoreCache cache)
+				: base(cache) {
+				if (store == null) throw new ArgumentNullException("store");
+				this.store = store;
+			}
+
+
+			/// <summary>
+			/// Finalizer of Dataweb.NShape.AdoNetStore.DBParameterReader.
+			/// </summary>
+			~DbParameterReader() {
+				Dispose();
+			}
+
+
+			/// <summary>
+			/// PreparesReading of the inner objects from the given entity.
+			/// </summary>
+			public void PrepareInnerObjectsReading(IEntity entity) {
+				if (entity == null) throw new ArgumentNullException("persistableObject");
+				this.Object = entity;
+				PropertyIndex = 0;
+				foreach (EntityPropertyDefinition pi in PropertyInfos) {
+					if (pi is EntityInnerObjectsDefinition) break;
+					++PropertyIndex;
+				}
+			}
+
+
+			#region [Protected] Methods
+
+			/// <summary>
+			/// Prepares the reader for reading the given properties of an enitity.
+			/// The data reader is managed outside the DBParameterReader.
+			/// </summary>
+			protected internal void ResetFieldReading(IEnumerable<EntityPropertyDefinition> propertyInfos, IDataReader dataReader) {
+				base.ResetFieldReading(propertyInfos);
+				this.dataReader = dataReader;
+			}
+
+
+			/// <summary>
+			/// Prepares the reader for reading inner objects of an enitity.
+			/// </summary>
+			protected internal void ResetInnerObjectsReading() {
+				// base.Reset(propertyInfos);
+			}
+
+
+			/// <summary>
+			/// The IDataReader providing the data.
+			/// </summary>
+			protected internal IDataReader DataReader {
+				get { return dataReader; }
+				set { dataReader = value; }
+			}
+
+			#endregion
+
+
+			#region [Protected][Internal] Methods: RepositoryReader Implementation
+
+			/// <override></override>
+			protected internal override object ReadId() {
+				++PropertyIndex;
+				ValidateFieldIndex();
+				object result = dataReader.GetValue(PropertyIndex + internalPropertyCount);
+				return Convert.IsDBNull(result) ? null : result;
+			}
+
+
+			/// <summary>
+			/// Prepares the reader for reading fields of an entity. The first fields to read internally are the id and the parent id. Therefore we start at index -2.
+			/// </summary>
+			protected internal override bool DoBeginObject() {
+				Debug.Assert(dataReader != null);
+				if (dataReader.Read()) PropertyIndex = -internalPropertyCount - 1;
+				else PropertyIndex = int.MinValue;
+				return PropertyIndex > int.MinValue;
+			}
+
+
+			/// <summary>
+			/// Finishes reading fields of an entity. The first fields to read internally are the id and the parent id. Therefore we start at index -2.
+			/// </summary>
+			protected internal override void DoEndObject() {
+				// Nothing to do
+			}
+
+			#endregion
+
+
+			#region [Protected] Methods: RepositoryReader Implementation
+
+
+			/// <override></override>
+			protected override bool DoReadBool() {
+				return dataReader.GetBoolean(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override byte DoReadByte() {
+				return dataReader.GetByte(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override short DoReadInt16() {
+				return dataReader.GetInt16(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override int DoReadInt32() {
+				return dataReader.GetInt32(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override long DoReadInt64() {
+				return dataReader.GetInt64(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override float DoReadFloat() {
+				return dataReader.GetFloat(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override double DoReadDouble() {
+				return dataReader.GetDouble(PropertyIndex + internalPropertyCount);
+			}
+
+
+			/// <override></override>
+			protected override char DoReadChar() {
+				// SqlDataReader.GetChar is not implemented and _always_ throws a NotSupportedException()
+				//return dataReader.GetChar(PropertyIndex + internalPropertyCount);
+				return Char.Parse(dataReader.GetString(PropertyIndex + internalPropertyCount));
+			}
+
+
+			/// <override></override>
+			protected override string DoReadString() {
+				string result = string.Empty;
+				if (!dataReader.IsDBNull(PropertyIndex + internalPropertyCount))
+					result = dataReader.GetString(PropertyIndex + internalPropertyCount);
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override DateTime DoReadDate() {
+				DateTime result = dataReader.GetDateTime(PropertyIndex + internalPropertyCount).ToLocalTime();
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override Image DoReadImage() {
+				Image result = null;
+				if (!dataReader.IsDBNull(PropertyIndex + internalPropertyCount)) {
+					byte[] buffer = new Byte[dataReader.GetBytes(PropertyIndex + internalPropertyCount, 0, null, 0, 0)];
+					dataReader.GetBytes(PropertyIndex + internalPropertyCount, 0, buffer, 0, buffer.Length);
+					if (buffer.Length > 0) {
+						MemoryStream stream = new MemoryStream(buffer, false);
+						result = Image.FromStream(stream);
+					}
+				}
+				return result;
+			}
+
+
+			/// <override></override>
+			public override void BeginReadInnerObjects() {
+				Debug.Assert(innerObjectsReader == null);
+				++PropertyIndex;
+				EntityInnerObjectsDefinition innerInfo = (EntityInnerObjectsDefinition)propertyInfos[PropertyIndex];
+				// TODO 3: Replace by generic mechanism once the string reader is established
+				if (AdoNetStore.IsComposition(innerInfo)) {
+					innerObjectsReader = new StringReader(Cache);
+					((StringReader)innerObjectsReader).ResetFieldReading(innerInfo.PropertyDefinitions, dataReader.GetString(PropertyIndex + internalPropertyCount));
+				} else {
+					IDbCommand cmd = store.GetCommand(innerInfo.EntityTypeName, RepositoryCommandType.SelectById);
+					cmd.Transaction = store.CurrentTransaction;
+					((IDataParameter)cmd.Parameters[0]).Value = Object.Id;
+					innerObjectsDataReader = cmd.ExecuteReader();
+					cmd.Dispose(); // Geht das?
+					innerObjectsReader = new DbParameterReader(store, Cache);
+					InnerObjectsReader.ResetFieldReading(innerInfo.PropertyDefinitions, innerObjectsDataReader);
+				}
+			}
+
+
+			/// <override></override>
+			public override void EndReadInnerObjects() {
+				Debug.Assert(innerObjectsReader != null);
+				if (innerObjectsDataReader != null) {
+					innerObjectsDataReader.Dispose();
+					innerObjectsDataReader = null;
+				}
+				innerObjectsReader.Dispose();
+				innerObjectsReader = null;
+			}
+
+
+			/// <override></override>
+			public override void EndReadInnerObject() {
+				innerObjectsReader.DoEndObject();
+			}
+
+
+			/// <override></override>
+			protected override void Dispose(bool disposing) {
+				if (innerObjectsDataReader != null) {
+					innerObjectsDataReader.Dispose();
+					innerObjectsDataReader = null;
+				}
+			}
+
+			#endregion
+
+
+			#region [Private] Methods
+
+			private void ValidateFieldIndex() {
+				if (PropertyIndex >= dataReader.FieldCount)
+					throw new InvalidOperationException("An object tries to load more properties than the entity is defined to have.");
+			}
+
+
+			private DbParameterReader InnerObjectsReader {
+				get { return (DbParameterReader)innerObjectsReader; }
+			}
+
+			#endregion
+
+
+			#region Fields
+
+			// Id and parent id are always inside the cache.
+			private const int internalPropertyCount = 2;
+
+			private AdoNetStore store;
+
+			// Reference to an outside-created data repositoryReader for fields reading
+			private IDataReader dataReader;
+
+			// Owned data repositoryReader for the fields of inner objects read by additional cache repositoryReader.
+			private IDataReader innerObjectsDataReader;
+
+			#endregion
 
 		}
 
 
-		protected void EnsureDataSourceClosed() {
-			Connection.Close();
+		/// <summary>
+		/// A repository writer implementation writing data to ADO.NET command parameters.
+		/// </summary>
+		protected class DbParameterWriter : RepositoryWriter {
+
+			/// <summary>
+			/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStore.DBParameterWriter" />.
+			/// </summary>
+			/// <param name="store"></param>
+			/// <param name="cache"></param>
+			public DbParameterWriter(AdoNetStore store, IStoreCache cache)
+				: base(cache) {
+				this.store = store;
+			}
+
+
+			/// <summary>
+			/// Specifies the IDbCommand providing the parameters for the DbParameterWriter.
+			/// </summary>
+			public IDbCommand Command {
+				get { return command; }
+				set { command = value; }
+			}
+
+
+			#region [Protected Internal] Methods
+
+			/// <summary>
+			/// Commits the changes to the database.
+			/// </summary>
+			internal protected void Flush() {
+				if (Entity == null) {
+					// Writing an inner object
+					command.ExecuteNonQuery();
+				} else if (Entity.Id == null) {
+					// Inserting an entity
+					Entity.AssignId(command.ExecuteScalar());
+				} else {
+					// Updating an entity
+					object result = command.ExecuteNonQuery();
+					if (result == null)
+						throw new Exception(string.Format("No Records affected by statement{0}{1}", Environment.NewLine, command.CommandText));
+				}
+			}
+
+
+			/// <summary>
+			/// Prepares the cache repositoryWriter for writing the fields of another entity.
+			/// </summary>
+			internal protected void PrepareFields() {
+				// The first parameter is the parent id, which is automatically inserted and does
+				// therefore not correspond to to a real property. We handle it as property index -1.
+				PropertyIndex = -2;
+			}
+
+
+			/// <override></override>
+			protected internal override void Reset(IEnumerable<EntityPropertyDefinition> propertyInfos) {
+				base.Reset(propertyInfos);
+			}
+
+
+			/// <summary>
+			/// This method has to be called before passing the repositoryWriter to the IPeristable object for saving.
+			/// </summary>
+			protected internal override void Prepare(IEntity entity) {
+				if (entity == null) throw new ArgumentNullException("entity");
+				base.Prepare(entity);
+				PropertyIndex = -2;
+			}
+
+
+			/// <override></override>
+			protected internal override void Finish() {
+				Flush();
+				base.Finish();
+			}
+
+			#endregion
+
+
+			#region [Protected] RepositoryWriter Implementation
+
+			/// <override></override>
+			protected override void DoWriteId(object value) {
+				if (value == null) value = DBNull.Value;
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteBool(bool value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteByte(byte value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt16(short value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt32(int value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt64(long value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteFloat(float value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteDouble(double value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteChar(char value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteString(string value) {
+				if (value == null) DoWriteValue(DBNull.Value);
+				else DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteDate(DateTime value) {
+				DoWriteValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteImage(Image value) {
+				if (value == null) DoWriteValue(DBNull.Value);
+				else {
+					MemoryStream stream = new MemoryStream();
+					try {
+						if (value != null) value.Save(stream, value.RawFormat);
+						DoWriteValue(stream.GetBuffer());
+					} finally {
+						stream.Close();
+						stream.Dispose();
+						stream = null;
+					}
+				}
+			}
+
+
+			// Advance to the next set of inner objects, erase the previous content, 
+			// get the command and prepare for writing
+			/// <override></override>
+			protected override void DoBeginWriteInnerObjects() {
+				++PropertyIndex;
+				ValidateInnerObjectsIndex();
+				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
+				//
+				EntityInnerObjectsDefinition innerInfo = (EntityInnerObjectsDefinition)propertyInfos[PropertyIndex];
+				if (AdoNetStore.IsComposition(innerInfo)) {
+					innerObjectsWriter = new StringWriter(Cache);
+					((StringWriter)innerObjectsWriter).Reset(innerInfo.PropertyDefinitions);
+				} else {
+					DoDeleteInnerObjects();
+					innerObjectsWriter = new DbParameterWriter(store, Cache);
+					InnerObjectsWriter.Reset(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).PropertyDefinitions);
+					InnerObjectsWriter.Command = store.GetCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName, RepositoryCommandType.Insert);
+					InnerObjectsWriter.Command.Transaction = store.transaction;
+				}
+			}
+
+
+			/// <override></override>
+			protected override void DoEndWriteInnerObjects() {
+				if (innerObjectsWriter is StringWriter) {
+					((IDataParameter)command.Parameters[PropertyIndex + 1]).Value = ((StringWriter)innerObjectsWriter).StringData;
+				} else {
+					// Nothing to do
+				}
+			}
+
+
+			/// <override></override>
+			protected override void DoBeginWriteInnerObject() {
+				// Advance to next object
+				innerObjectsWriter.Prepare(Entity);
+				// An inner object has no id of its own but stores its parent id in the first property.
+				if (innerObjectsWriter is DbParameterWriter)
+					innerObjectsWriter.WriteId(Entity.Id);
+			}
+
+
+			/// <override></override>
+			protected override void DoEndWriteInnerObject() {
+				// Commit inner object to data store
+				innerObjectsWriter.Finish();
+			}
+
+
+			/// <override></override>
+			protected override void DoDeleteInnerObjects() {
+				ValidateInnerObjectsIndex();
+				if (!(propertyInfos[PropertyIndex] is EntityInnerObjectsDefinition)) throw new NShapeException("Property is not an inner objects property.");
+				//
+				// Delete all existing inner objects of the current persistable object			
+				IDbCommand command = store.GetCommand(((EntityInnerObjectsDefinition)propertyInfos[PropertyIndex]).EntityTypeName, RepositoryCommandType.Delete);
+				command.Transaction = store.CurrentTransaction;
+				((IDataParameter)command.Parameters[0]).Value = Entity.Id;
+				int count = command.ExecuteNonQuery();
+			}
+
+			#endregion
+
+
+			#region [Private] Properties and Methods
+
+			private DbParameterWriter InnerObjectsWriter {
+				get { return (DbParameterWriter)innerObjectsWriter; }
+			}
+
+
+			// Cannot check against the property count, because tables can contain additional 
+			// columns, e.g for the parent id and the id.
+			private void ValidateFieldIndex() {
+				if (PropertyIndex >= command.Parameters.Count)
+					throw new NShapeException("Field '{0}' of entity cannot be written to the repository because the mapping contains less items. Check whether the SQL commands for this entity are correct.", PropertyIndex);
+			}
+
+
+			// Can check against the property count here, becuause there are no hidden inner objects.
+			private void ValidateInnerObjectsIndex() {
+				if (PropertyIndex >= propertyInfos.Count)
+					throw new NShapeException("Inner objects '{0}' of entity cannot be written to the data store because the entity defines less properties.", PropertyIndex);
+			}
+
+
+			private void DoWriteValue(object value) {
+				++PropertyIndex;
+				ValidateFieldIndex();
+				((IDataParameter)command.Parameters[PropertyIndex + 1]).Value = value;
+			}
+
+			#endregion
+
+
+			#region Fields
+
+			private AdoNetStore store;
+
+			private IDbCommand command;
+
+			#endregion
 		}
+
+		#endregion
+
+
+		#region [Protected] Types: StringReader / StringWriter
+
+		/// <summary>
+		/// A repository reader implementation reading data from a string.
+		/// </summary>
+		protected class StringReader : RepositoryReader {
+
+			/// <summary>
+			/// Initialzes a new instance of <see cref="T:Dataweb.NShape.AdoNetStore.StringReader" />.
+			/// </summary>
+			/// <param name="store"></param>
+			public StringReader(IStoreCache store)
+				: base(store) {
+			}
+
+
+			// Starts reading fields for one type of object
+			/// <override></override>
+			public void ResetFieldReading(IEnumerable<EntityPropertyDefinition> fieldInfos, string data) {
+				base.ResetFieldReading(fieldInfos);
+				if (data == null) throw new ArgumentNullException("data");
+				str = data;
+				p = 0;
+			}
+
+
+			#region RepositoryReader Implementation
+
+			/// <override></override>
+			public override void BeginReadInnerObjects() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			public override void EndReadInnerObjects() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected internal override bool DoBeginObject() {
+				// Current position is either a valid field start or end of string
+				if (p < 0 || p > str.Length) throw new InvalidOperationException("NotSupported string position");
+				return p < str.Length;
+			}
+
+
+			/// <override></override>
+			protected internal override void DoEndObject() {
+				if (str[p] != AdoNetStore.CompositionSeperatorChar) throw new NShapeException("NotSupported string. ';' expected.");
+				++p;
+			}
+
+
+			/// <override></override>
+			public override void EndReadInnerObject() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected internal override object ReadId() {
+				object result = null;
+				// read id type
+				if (p < str.Length && str[p] == '(') {
+					string typeDesc = string.Empty;
+					++p; // skip '('
+					while (p < str.Length && str[p] != ')') {
+						typeDesc += str[p];
+						++p;
+					}
+					if (p < str.Length && str[p] == ')') ++p;
+
+					if (typeDesc != string.Empty) {
+						if (typeDesc == typeof(int).Name)
+							result = DoReadInt32();
+						else if (typeDesc == typeof(long).Name)
+							result = DoReadInt64();
+						else throw new NotSupportedException();
+					}
+					if (p < str.Length && str[p] == AdoNetStore.CompositionFieldSeperatorChar) ++p;
+				}
+				return result;
+			}
+
+
+			/// <override></override>
+			protected override bool DoReadBool() {
+				return (DoReadIntValue() != 0);
+			}
+
+
+			/// <override></override>
+			protected override byte DoReadByte() {
+				long value = DoReadIntValue();
+				if (value < byte.MinValue || byte.MaxValue < value)
+					throw new NShapeException("Invalid repository format");
+				return (byte)value;
+			}
+
+
+			/// <override></override>
+			protected override short DoReadInt16() {
+				long value = DoReadIntValue();
+				if (value < short.MinValue || short.MaxValue < value)
+					throw new NShapeException("Invalid repository format");
+				return (short)value;
+			}
+
+
+			/// <override></override>
+			protected override int DoReadInt32() {
+				long value = DoReadIntValue();
+				if (value < int.MinValue || int.MaxValue < value)
+					throw new NShapeException("Invalid repository format");
+				return (int)value;
+			}
+
+
+			/// <override></override>
+			protected override long DoReadInt64() {
+				return DoReadIntValue();
+			}
+
+
+			/// <override></override>
+			protected override float DoReadFloat() {
+				double value = DoReadDblValue();
+				if (value < float.MinValue || float.MaxValue < value)
+					throw new NShapeException("Invalid repository format");
+				return (float)value;
+			}
+
+
+			/// <override></override>
+			protected override double DoReadDouble() {
+				return DoReadDblValue();
+			}
+
+
+			/// <override></override>
+			protected override char DoReadChar() {
+				char value;
+				if (!char.TryParse(DoReadStringValue(), out value))
+					throw new NShapeException("Invalid repository format");
+				return value;
+			}
+
+
+			/// <override></override>
+			protected override string DoReadString() {
+				return DoReadStringValue();
+			}
+
+
+			/// <override></override>
+			protected override DateTime DoReadDate() {
+				return DateTime.Parse(DoReadStringValue());
+			}
+
+
+			/// <override></override>
+			protected override Image DoReadImage() {
+				throw new NotSupportedException();
+			}
+
+			#endregion
+
+
+			private long DoReadIntValue() {
+				long result = 0;
+				int startPos = p;
+				if (p < str.Length && (str[p] == '-' || str[p] == '+'))
+					++p;
+				while (p < str.Length && str[p] >= '0' && str[p] <= '9')
+					++p;
+				result = long.Parse(str.Substring(startPos, p - startPos), CultureInfo.InvariantCulture);
+				if (p < str.Length && str[p] == AdoNetStore.CompositionFieldSeperatorChar)
+					++p;
+				return result;
+			}
+
+
+			private double DoReadDblValue() {
+				double result = DoReadIntValue();
+				if (p < str.Length && str[p] == '.') {
+					++p;
+					int startPos = p;
+					while (p < str.Length && str[p] >= '0' && str[p] <= '9')
+						++p;
+					string fracValueStr = str.Substring(startPos, p - startPos);
+					result += (long.Parse(fracValueStr, CultureInfo.InvariantCulture) / Math.Pow(10, fracValueStr.Length));
+					if (p < str.Length && str[p] == AdoNetStore.CompositionFieldSeperatorChar)
+						++p;
+				}
+				return result;
+			}
+
+
+			private string DoReadStringValue() {
+				int seperatorPos = str.IndexOfAny(seperators, p);
+				if (seperatorPos < 0) throw new NShapeException("Invalid repository format");
+				string result = Uri.UnescapeDataString(str.Substring(p, seperatorPos - p));
+				p = seperatorPos;
+				return result;
+			}
+
+
+			// String data
+			private string str;
+			// Current position within string data
+			private int p;
+			private char[] seperators = new char[2] { AdoNetStore.CompositionFieldSeperatorChar, AdoNetStore.CompositionSeperatorChar };
+		}
+
+
+		/// <summary>
+		/// A repository writer implementation writing data to a string.
+		/// </summary>
+		protected class StringWriter : RepositoryWriter {
+
+			/// <summary>
+			/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStore.StringWriter" />
+			/// </summary>
+			/// <param name="store"></param>
+			public StringWriter(IStoreCache store)
+				: base(store) {
+			}
+
+
+			/// <override></override>
+			protected internal override void Reset(IEnumerable<EntityPropertyDefinition> fieldInfos) {
+				base.Reset(fieldInfos);
+			}
+
+
+			/// <override></override>
+			protected internal override void Prepare(IEntity entity) {
+				base.Prepare(entity);
+			}
+
+
+			/// <override></override>
+			protected internal override void Finish() {
+				str.Append(AdoNetStore.CompositionSeperatorChar);
+				base.Finish();
+			}
+
+
+			/// <summary>
+			/// Gets the data written by this <see cref="T:Dataweb.NShape.AdoNetStore.StringWriter" />.
+			/// </summary>
+			public string StringData {
+				get { return str.ToString(); }
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteId(object id) {
+				++PropertyIndex;
+				if (PropertyIndex >= 0) str.Append(AdoNetStore.CompositionFieldSeperatorChar);
+				str.Append(string.Format("({0}){1}", id.GetType().Name, id));
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteBool(bool value) {
+				DoWriteIntValue(value ? 1 : 0);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteByte(byte value) {
+				DoWriteIntValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt16(short value) {
+				DoWriteIntValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt32(int value) {
+				DoWriteIntValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteInt64(long value) {
+				DoWriteIntValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteFloat(float value) {
+				DoWriteDblValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteDouble(double value) {
+				DoWriteDblValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteChar(char value) {
+				DoWriteStrValue(value.ToString());
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteString(string value) {
+				DoWriteStrValue(value);
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteDate(DateTime date) {
+				DoWriteStrValue(date.ToString(CultureInfo.InvariantCulture));
+			}
+
+
+			/// <override></override>
+			protected override void DoWriteImage(Image image) {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected override void DoBeginWriteInnerObjects() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected override void DoEndWriteInnerObjects() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected override void DoBeginWriteInnerObject() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected override void DoEndWriteInnerObject() {
+				throw new NotSupportedException();
+			}
+
+
+			/// <override></override>
+			protected override void DoDeleteInnerObjects() {
+				throw new NotSupportedException();
+			}
+
+
+			private void DoWriteDblValue(double value) {
+				++PropertyIndex;
+				if (PropertyIndex >= 0) str.Append(AdoNetStore.CompositionFieldSeperatorChar);
+				str.Append(value.ToString(CultureInfo.InvariantCulture));
+			}
+
+
+			private void DoWriteIntValue(long value) {
+				++PropertyIndex;
+				if (PropertyIndex >= 0) str.Append(AdoNetStore.CompositionFieldSeperatorChar);
+				str.Append(value.ToString(CultureInfo.InvariantCulture));
+			}
+
+
+			private void DoWriteStrValue(string value) {
+				++PropertyIndex;
+				if (PropertyIndex >= 0) str.Append(AdoNetStore.CompositionFieldSeperatorChar);
+				if (!string.IsNullOrEmpty(value)) str.Append(Uri.EscapeDataString(value));
+			}
+
+
+			private StringBuilder str = new StringBuilder();
+		}
+
+		#endregion
 
 
 		private IDbConnection Connection {
@@ -2133,10 +2406,9 @@ namespace Dataweb.NShape {
 		}
 
 
-		private void ClearCommands() {
-			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
-				item.Value.Dispose();
-			commands.Clear();
+		#region [Private] Methods
+
+		private void AssertClosed() {
 		}
 
 
@@ -2150,7 +2422,10 @@ namespace Dataweb.NShape {
 		}
 
 
-		private void AssertClosed() {
+		private void ClearCommands() {
+			foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
+				item.Value.Dispose();
+			commands.Clear();
 		}
 
 
@@ -2165,11 +2440,28 @@ namespace Dataweb.NShape {
 		}
 
 
+		private void LoadChildShapes(IStoreCache cache, Shape s) {
+			foreach (EntityType et in cache.EntityTypes) {
+				if (et.Category == EntityCategory.Shape) {
+					foreach (EntityBucket<Shape> sb
+						in LoadEntities<Shape>(cache, et, id => true, pid => s, RepositoryCommandType.SelectChildShapes, ((IEntity)s).Id))
+						s.Children.Add(sb.ObjectRef);
+				}
+			}
+		}
+
+		#endregion
+
+
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const string projectInfoEntityTypeName = "AdoNetRepository.ProjectInfo";
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const string shapeEntityTypeName = "Core.Shape";
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const string connectionEntityTypeName = "Core.ShapeConnection";
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const string pointEntityTypeName = "Core.Point";
 
 
@@ -2187,4 +2479,5 @@ namespace Dataweb.NShape {
 
 		#endregion
 	}
+
 }

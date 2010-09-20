@@ -24,13 +24,20 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+	/// <ToBeCompleted></ToBeCompleted>
 	[ToolboxItem(true)]
 	[ToolboxBitmap(typeof(DesignController), "DesignController.bmp")]
 	public partial class DesignController : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DesignController" />.
+		/// </summary>
 		public DesignController() { }
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DesignController" />.
+		/// </summary>
 		public DesignController(Project project)
 			: this() {
 			// Set property in order to register event handlers
@@ -41,8 +48,14 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Events
 
+		/// <summary>
+		/// Raised when the <see cref="T:Dataweb.NShape.Controllers.DesignController" /> was initialized.
+		/// </summary>
 		public event EventHandler Initialized;
 
+		/// <summary>
+		/// Raised when the <see cref="T:Dataweb.NShape.Controllers.DesignController" /> was uninitialized.
+		/// </summary>
 		public event EventHandler Uninitialized;
 
 		/// <summary>
@@ -80,6 +93,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Browsable(false)]
 		public IEnumerable<Design> Designs {
 			get {
@@ -89,6 +103,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return project; }
@@ -100,6 +117,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -110,11 +130,13 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanDelete(Design design) {
 			return (design != null && design != project.Design);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanDelete(Design selectedDesign, Style style) {
 			if (style == null) return false;
 			// if the style is owned by an other design (should not happen)
@@ -130,6 +152,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<IStyle> GetOwnerStyles(Design design, IStyle style) {
 			if (design == null) throw new ArgumentNullException("design");
 			if (style == null) throw new ArgumentNullException("style");
@@ -144,13 +167,12 @@ namespace Dataweb.NShape.Controllers {
 						yield return s;
 					else if (s is ILineStyle && ((ILineStyle)s).ColorStyle == style)
 						yield return s;
-					else if (s is IShapeStyle && ((IShapeStyle)s).ShadowColor == style)
-						yield return s;
 				}
 			}
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CreateDesign() {
 			int designCnt = 1;
 			foreach (Design d in Designs)
@@ -162,6 +184,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CreateStyle(Design design, StyleCategory category) {
 			if (design == null) throw new ArgumentNullException("design");
 			Style style;
@@ -202,7 +225,6 @@ namespace Dataweb.NShape.Controllers {
 					((ParagraphStyle)style).Trimming = StringTrimming.EllipsisCharacter;
 					((ParagraphStyle)style).WordWrap = false;
 					break;
-				//case StyleCategory.ShapeStyle: style = new ShapeStyle(GetNewStyleName(design.ShapeStyles)); break;
 				default: throw new NShapeUnsupportedValueException(typeof(StyleCategory), category);
 			}
 			ICommand cmd = new CreateStyleCommand(design, style);
@@ -210,6 +232,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void ReplaceStyle(Design design, Style style, string propertyName, object oldValue, object newValue) {
 			if (design == null) throw new ArgumentNullException("design");
 			if (style == null) throw new ArgumentNullException("style");
@@ -228,6 +251,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void DeleteDesign(Design design) {
 			if (design == null) throw new ArgumentNullException("design");
 			ICommand cmd = new DeleteDesignCommand(design);
@@ -235,6 +259,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void DeleteStyle(Design design, Style style) {
 			if (design == null) throw new ArgumentNullException("design");
 			if (style == null) throw new ArgumentNullException("style");
@@ -407,13 +432,16 @@ namespace Dataweb.NShape.Controllers {
 
 	#region EventArgs
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DesignEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DesignEventArgs(Design design) {
 			if (design == null) throw new ArgumentNullException("design");
 			this.design = design;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Design Design {
 			get { return design; }
 			internal set { design = value; }
@@ -425,14 +453,17 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class StyleEventArgs : DesignEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public StyleEventArgs(Design design, IStyle style)
 			: base(design) {
 			if (style == null) throw new ArgumentNullException("style");
 			this.style = style;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IStyle Style {
 			get { return style; }
 			internal set { style = value; }

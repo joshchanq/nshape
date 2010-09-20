@@ -13,6 +13,7 @@
 ******************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -21,13 +22,11 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
 using Dataweb.NShape.Advanced;
+using System.Diagnostics;
 
 
 namespace Dataweb.NShape.WinFormsUI {
 	
-	public delegate void StyleSelectedEventHandler(object sender, EventArgs e);
-
-		
 	[ToolboxItem(false)]
 	internal partial class StyleListBox : ListBox {
 
@@ -35,13 +34,19 @@ namespace Dataweb.NShape.WinFormsUI {
 			// Initialize Components
 			InitializeComponent();
 			DoubleBuffered = true;
+			Sorted = true;
 
 			this.matrix = new Matrix();
-			this.formatterFlags = 0 | StringFormatFlags.NoWrap;
-			this.formatter = new StringFormat(formatterFlags);
-			this.formatter.Trimming = StringTrimming.Character;
-			this.formatter.Alignment = StringAlignment.Near;
-			this.formatter.LineAlignment = StringAlignment.Center;
+			
+			this.styleItemFormatter = new StringFormat(StringFormatFlags.NoWrap);
+			this.styleItemFormatter.Trimming = StringTrimming.Character;
+			this.styleItemFormatter.Alignment = StringAlignment.Near;
+			this.styleItemFormatter.LineAlignment = StringAlignment.Center;
+			
+			this.specialItemFormatter = new StringFormat(StringFormatFlags.NoWrap);
+			this.specialItemFormatter.Trimming = StringTrimming.Character;
+			this.specialItemFormatter.Alignment = StringAlignment.Center;
+			this.specialItemFormatter.LineAlignment = StringAlignment.Center;
 		}
 
 
@@ -52,45 +57,53 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		public StyleListBox(Design design, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem) :
+		public StyleListBox(IStyleSet styleSet, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem) :
 			this() {
-			if (design == null) throw new ArgumentNullException("design");
+			if (styleSet == null) throw new ArgumentNullException("design");
 			if (style == null) throw new ArgumentNullException("style");
-			Initialize(design, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
+			Initialize(styleSet, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
 		}
 
 
-		public StyleListBox(IWindowsFormsEditorService editorService, Design design, Style style, bool showDefaultStyleItem) :
-			this(editorService, design, style, showDefaultStyleItem, false) {
-		}
-
-
-		public StyleListBox(IWindowsFormsEditorService editorService, Design design, Type selectedStyleType, bool showDefaultStyleItem) :
-			this(editorService, design, selectedStyleType, showDefaultStyleItem, false) {
-		}
-
-
-		// Deactivated at the moment
-		private StyleListBox(IWindowsFormsEditorService editorService, Design design, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem)
+		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSetProvider styleSetProvider, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem)
 			: this(editorService) {
-			if (design == null) throw new ArgumentNullException("design");
+			if (styleSetProvider == null) throw new ArgumentNullException("styleSetProvider");
 			if (style == null) throw new ArgumentNullException("style");
-			Initialize(design, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
+			this.styleSetProvider = styleSetProvider;
+			Initialize(styleSetProvider.StyleSet, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
 		}
 
 
-		// Deactivated at the moment
-		private StyleListBox(IWindowsFormsEditorService editorService, Design design, Type selectedStyleType, bool showDefaultStyleItem, bool showOpenDesignerItem)
+		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSetProvider styleSetProvider, Type selectedStyleType, bool showDefaultStyleItem, bool showOpenDesignerItem)
 			: this(editorService) {
-			if (editorService == null) throw new ArgumentNullException("editorService");
-			if (design == null) throw new ArgumentNullException("design");
+			if (styleSetProvider == null) throw new ArgumentNullException("styleSetProvider");
 			if (selectedStyleType == null) throw new ArgumentNullException("selectedStyleType");
-			Initialize(design, showDefaultStyleItem, showOpenDesignerItem, selectedStyleType, null);
+			this.styleSetProvider = styleSetProvider;
+			Initialize(styleSetProvider.StyleSet, showDefaultStyleItem, showOpenDesignerItem, selectedStyleType, null);
+		}
+
+
+		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSet styleSet, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem)
+			: this(editorService) {
+			if (styleSet == null) throw new ArgumentNullException("styleSet");
+			if (style == null) throw new ArgumentNullException("style");
+			Initialize(styleSet, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
+		}
+
+
+		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSet styleSet, Type selectedStyleType, bool showDefaultStyleItem, bool showOpenDesignerItem)
+			: this(editorService) {
+			if (styleSet == null) throw new ArgumentNullException("styleSet");
+			if (selectedStyleType == null) throw new ArgumentNullException("selectedStyleType");
+			Initialize(styleSet, showDefaultStyleItem, showOpenDesignerItem, selectedStyleType, null);
 		}
 
 
 		#region [Public] Properties and Events
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
@@ -100,14 +113,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		[Browsable(false)]
 		public Style SelectedStyle {
-			get {
-				if (base.SelectedItem == null) return null;
-				if (object.Equals(base.SelectedItem, defaultStyleItemText))
-					return null;
-				if (object.Equals(base.SelectedItem, openDesignerItemText))
-					return null;
-				return base.SelectedItem as Style;
-			}
+			get { return base.SelectedItem as Style; }
 			set { base.SelectedItem = value; }
 		}
 
@@ -133,11 +139,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		[ReadOnly(true)]
 		[Browsable(false)]
-		public Design Design {
-			get { return design; }
+		public IStyleSet StyleSet {
+			get { return styleSet; }
 			set {
-				if (design != value) {
-					design = value;
+				if (styleSet != value) {
+					styleSet = value;
 					Items.Clear();
 				}
 			}
@@ -262,15 +268,48 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Protected] Methods (overridden)
 
-		protected override void OnKeyUp(KeyEventArgs e) {
-			base.OnKeyUp(e);
-			
-			if (e.KeyData == Keys.Return || e.KeyData == Keys.Space) {
-				ExecuteSelection();
+		/// <summary>Sorts the items in the <see cref="T:System.Windows.Forms.ListBox"></see>.</summary>
+		protected override void Sort() {
+			if (defaultStyleItem == null && openDesignerItem == null)
+				base.Sort();
+			else {
+				// ToDo: Optimize this later. 
+				// No need to optimize this right now as runtime is fast enough at the moment.
+				// CAUTION! Avoid the 'Quicksort' algorithm here because the list is pre-sorted
+				// which means that Quicksort's run time will be nearly O(N²) instead of O(N log N).
+				if (Items.Count > 1) {
+					bool swapped;
+					do {
+						int index = Items.Count - 1;
+						swapped = false;
+						while (index > 0) {
+							// Compare the items
+							if (CompareItems(Items[index], Items[index - 1]) < 0) {
+								// Swap the items.
+								object temp = Items[index];
+								Items[index] = Items[index - 1];
+								Items[index - 1] = temp;
+								swapped = true;
+							}
+							// Decrement the counter.
+							index -= 1;
+						}
+					}
+					while ((swapped == true));
+				}
 			}
 		}
 
 
+		/// <override></override>
+		protected override void OnKeyUp(KeyEventArgs e) {
+			base.OnKeyUp(e);
+			if (e.KeyData == Keys.Return || e.KeyData == Keys.Space)
+				ExecuteSelection();
+		}
+
+
+		/// <override></override>
 		protected override void OnMouseUp(MouseEventArgs e) {
 			base.OnMouseUp(e);
 
@@ -285,67 +324,53 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnResize(EventArgs e) {
 			base.OnResize(e);
 		}
 
 
+		/// <override></override>
 		protected override void OnPaintBackground(PaintEventArgs e) {
 		    //base.OnPaintBackground(e);
 		    // do nothing because of DoubleBuffering
 		}
 
 
+		/// <override></override>
 		protected override void OnPaint(PaintEventArgs e) {
 			base.OnPaintBackground(e);
 			base.OnPaint(e);
 		}
 
 
+		/// <override></override>
 		protected override void OnMeasureItem(MeasureItemEventArgs e) {
 			if (Items.Count > 0) {
 				e.ItemWidth = Width;
-				if (object.Equals(Items[e.Index], defaultStyleItemText))
-					base.OnMeasureItem(e);
-				else if (object.Equals(Items[e.Index], openDesignerItemText))
-					base.OnMeasureItem(e);
-				else {
+				if (Items[e.Index] is IStyle) {
 					switch (styleCategory) {
-						// Line Cap Styles
 						case StyleCategory.CapStyle:
-							e.ItemHeight = ((CapStyle)Items[e.Index]).CapSize;
+							e.ItemHeight = ((ICapStyle)Items[e.Index]).CapSize;
 							break;
-
 						case StyleCategory.ColorStyle:
 						case StyleCategory.FillStyle:
-							//case StyleCategory.ShapeStyle:
-							//case StyleCategory.NoStyle:
 							e.ItemHeight = stdItemHeight;
 							break;
-
 						case StyleCategory.CharacterStyle:
-							CharacterStyle characterStyle = (CharacterStyle)Items[e.Index];
+							ICharacterStyle characterStyle = (ICharacterStyle)Items[e.Index];
 							Font font = ToolCache.GetFont(characterStyle);
 							e.ItemHeight = (int)Math.Ceiling(font.GetHeight(e.Graphics));
-
-							//e.ItemHeight = (int)Math.Round((characterStyle.Size / 72) * e.Graphics.DpiY);
-							//Size s = TextRenderer.MeasureText(e.Graphics, "Üp", font);
-							//e.ItemHeight = s.Height;
 							break;
-
 						case StyleCategory.LineStyle:
-							e.ItemHeight = ((LineStyle)Items[e.Index]).LineWidth + 4;
+							e.ItemHeight = ((ILineStyle)Items[e.Index]).LineWidth + 4;
 							break;
-
 						case StyleCategory.ParagraphStyle:
 							e.ItemHeight = dblItemHeight + dblItemHeight;
 							break;
-
-						default:
-							throw new NShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
+						default: throw new NShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
 					}
 				}
-				
 				// correct calculated Height by the Height of the label's font
 				float fontSizeInPixels = Font.GetHeight(e.Graphics);
 				if (fontSizeInPixels > e.ItemHeight)
@@ -357,6 +382,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnDrawItem(DrawItemEventArgs e) {
 			itemBounds.X = e.Bounds.X + 3;
 			itemBounds.Y = e.Bounds.Y + 1;
@@ -395,11 +421,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			e.Graphics.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
 
 			if (Items.Count > 0 && e.Index >= 0) {
-				if (object.Equals(Items[e.Index], defaultStyleItemText)) {
-					e.Graphics.DrawString(defaultStyleItemText, e.Font, TextBrush, lableLayoutRect, formatter);
-				} else if (object.Equals(Items[e.Index], openDesignerItemText)) {
-					e.Graphics.DrawString(openDesignerItemText, e.Font, TextBrush, lableLayoutRect, formatter);
-				} else {
+				if (Items[e.Index] is IStyle) {
 					switch (StyleCategory) {
 						case StyleCategory.CapStyle:
 							DrawCapStyleItem((CapStyle)Items[e.Index], e);
@@ -410,7 +432,7 @@ namespace Dataweb.NShape.WinFormsUI {
 							e.Graphics.FillRectangle(colorBrush, previewRect);
 							e.Graphics.DrawRectangle(ItemBorderPen, previewRect);
 							e.Graphics.DrawRectangle(Pens.Black, previewRect);
-							e.Graphics.DrawString(colorStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
+							e.Graphics.DrawString(colorStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
 							break;
 						case StyleCategory.FillStyle:
 							DrawFillStyleItem((FillStyle)Items[e.Index], e);
@@ -419,14 +441,14 @@ namespace Dataweb.NShape.WinFormsUI {
 							CharacterStyle charStyle = (CharacterStyle)Items[e.Index];
 							Font font = ToolCache.GetFont(charStyle);
 							Brush fontBrush = ToolCache.GetBrush(charStyle.ColorStyle);
-							e.Graphics.DrawString(string.Format("{0} {1} pt", font.FontFamily.Name, font.SizeInPoints), font, fontBrush, previewRect, formatter);
-							e.Graphics.DrawString(charStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
+							e.Graphics.DrawString(string.Format("{0} {1} pt", font.FontFamily.Name, font.SizeInPoints), font, fontBrush, previewRect, styleItemFormatter);
+							e.Graphics.DrawString(charStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
 							break;
 						case StyleCategory.LineStyle:
 							LineStyle lineStyle = (LineStyle)Items[e.Index];
 							Pen linePen = ToolCache.GetPen(lineStyle, null, null);
 							e.Graphics.DrawLine(linePen, previewRect.X, previewRect.Y + (previewRect.Height / 2), previewRect.Right, previewRect.Y + (previewRect.Height / 2));
-							e.Graphics.DrawString(lineStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
+							e.Graphics.DrawString(lineStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
 							break;
 						case StyleCategory.ParagraphStyle:
 							ParagraphStyle paragraphStyle = (ParagraphStyle)Items[e.Index];
@@ -438,12 +460,13 @@ namespace Dataweb.NShape.WinFormsUI {
 							r.Height = previewRect.Height - (paragraphStyle.Padding.Top + paragraphStyle.Padding.Bottom);
 							e.Graphics.DrawString(previewText, e.Font, TextBrush, r, stringFormat);
 							e.Graphics.DrawRectangle(Pens.Black, previewRect);
-							e.Graphics.DrawString(paragraphStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
+							e.Graphics.DrawString(paragraphStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
 							break;
 						default:
 							throw new NShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
 					}
-				}
+				} else
+					e.Graphics.DrawString(Items[e.Index].ToString().Trim(), e.Font, TextBrush, e.Bounds, specialItemFormatter);
 			}
 		}
 
@@ -452,15 +475,15 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Private] Methods
 
-		private void Initialize(Design design, 
-			bool showDefaultStyleItem, bool showOpenDesignerItem, Type styleType, IStyle style) {
-			
-			this.design = design;
-			this.showDefaultStyleItem = showDefaultStyleItem;
-			this.showOpenDesignerItem = showOpenDesignerItem;
+		private void Initialize(IStyleSet styleSet, bool showDefaultStyleItem, bool showOpenDesignerItem, Type styleType, IStyle style) {
+			this.styleSet = styleSet;
+			if (showDefaultStyleItem)
+				defaultStyleItem = new DefaultStyleItem();
+			if (showOpenDesignerItem && styleSetProvider != null)
+				openDesignerItem = new OpenDesignerItem();
 
 			StyleCategoryFromType(styleType);
-			if (style != null) SelectedItem = style;
+			if (style != null) SelectedItem = preselectedStyle = style;
 		}
 
 
@@ -477,8 +500,6 @@ namespace Dataweb.NShape.WinFormsUI {
 				StyleCategory = StyleCategory.LineStyle;
 			else if (styleType == typeof(ParagraphStyle))
 				StyleCategory = StyleCategory.ParagraphStyle;
-			//else if (styleType == typeof(ShapeStyle))
-			//   StyleCategory = StyleCategory.ShapeStyle;
 			else
 				throw new NShapeException("Type StyleListBox does not support Type {0}.", styleType.Name);
 		}
@@ -486,80 +507,52 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void CreateListBoxItems() {
 			SuspendLayout();
+			Sorted = false;
 			if (Items.Count > 0)
 				Items.Clear();
 
-			if (design != null) {
-				if (showDefaultStyleItem)
-					Items.Add(defaultStyleItemText);
-				int cnt;
+			if (styleSet != null) {
+				// Add special item "Default Style"
+				if (defaultStyleItem != null) Items.Add(defaultStyleItem);
+				
+				// Add style items
+				System.Collections.IEnumerator styleEnumerator;
 				switch (styleCategory) {
-					// Line Cap Styles
-					case StyleCategory.CapStyle:
-						cnt = design.CapStyles.Count;
-						for (int i = 0; i < cnt; ++i)
-							Items.Add(design.CapStyles[i]);
-						break;
-
-					// Font Styles
-					case StyleCategory.CharacterStyle:
-						cnt = design.CharacterStyles.Count;
-						for (int i = 0; i < cnt; ++i)
-							Items.Add(design.CharacterStyles[i]);
-						break;
-
-					// Color Styles
-					case StyleCategory.ColorStyle:
-						cnt = design.ColorStyles.Count;
-						for (int i = 0; i < cnt; ++i)
-							Items.Add(design.ColorStyles[i]);
-						break;
-
-					// Fill Styles
-					case StyleCategory.FillStyle:
-						cnt = design.FillStyles.Count;
-						for (int i = 0; i < cnt; ++i)
-							Items.Add(design.FillStyles[i]);
-						break;
-
-					// Line Styles
-					case StyleCategory.LineStyle:
-						cnt = design.LineStyles.Count;
-						for (int i = 0; i < cnt; ++i)
-							Items.Add(design.LineStyles[i]);
-						break;
-
-					// Title Styles
-					case StyleCategory.ParagraphStyle:
-						cnt = design.ParagraphStyles.Count;
-						for (int i = 0; i < cnt; ++i)
-							Items.Add(design.ParagraphStyles[i]);
-						break;
-
-					//// Shape Styles
-					//case StyleCategory.ShapeStyle:
-					//   cnt = design.ShapeStyles.Count;
-					//   for (int i = 0; i < cnt; ++i)
-					//      Items.Add(design.ShapeStyles[i]);
-					//   break;
-
-					//case StyleCategory.NoStyle:
-					//   // nothing to do
-					//   break;
-
-					default:
-						throw new NShapeException(string.Format("Unexpected enum value '{0}'.", StyleCategory));
+					case StyleCategory.CapStyle: 
+						styleEnumerator = styleSet.CapStyles.GetEnumerator(); break;
+					case StyleCategory.CharacterStyle: 
+						styleEnumerator = styleSet.CharacterStyles.GetEnumerator(); break;
+					case StyleCategory.ColorStyle: 
+						styleEnumerator = styleSet.ColorStyles.GetEnumerator(); break;
+					case StyleCategory.FillStyle: 
+						styleEnumerator = styleSet.FillStyles.GetEnumerator(); break;
+					case StyleCategory.LineStyle: 
+						styleEnumerator = styleSet.LineStyles.GetEnumerator(); break;
+					case StyleCategory.ParagraphStyle: 
+						styleEnumerator = styleSet.ParagraphStyles.GetEnumerator(); break;
+					default: throw new NShapeException(string.Format("Unexpected enum value '{0}'.", StyleCategory));
 				}
-				if (showOpenDesignerItem)
-					Items.Add(openDesignerItemText);
+				while (styleEnumerator.MoveNext())
+					Items.Add(styleEnumerator.Current);
+
+				// Add special item "More..."
+				if (openDesignerItem != null) Items.Add(openDesignerItem);
 			}
+			Sorted = true;
 			ResumeLayout();
 			Invalidate();
 		}
 		
 		
 		private void ExecuteSelection() {
-			if (editorService != null)
+			if (SelectedItem is OpenDesignerItem) {
+				if (styleSetProvider is Project) {
+					DesignEditorDialog dlg = new DesignEditorDialog((Project)styleSetProvider, styleCategory);
+					dlg.Show();
+				}
+				SelectedItem = preselectedStyle;
+			}
+			if (editorService != null) 
 				editorService.CloseDropDown();
 			if (SelectedStyle is CapStyle || SelectedStyle is LineStyle)
 				ToolCache.NotifyStyleChanged(SelectedStyle);
@@ -665,12 +658,12 @@ namespace Dataweb.NShape.WinFormsUI {
 				e.Graphics.FillRectangle(fillBrush, previewRect);
 			e.Graphics.DrawRectangle(ItemBorderPen, previewRect);
 			e.Graphics.DrawRectangle(Pens.Black, previewRect);
-			e.Graphics.DrawString(fillStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
+			e.Graphics.DrawString(fillStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
 		}
 
 
 		private void DrawCapStyleItem(ICapStyle capStyle, DrawItemEventArgs e) {
-			Pen capPen = ToolCache.GetPen(design.LineStyles.Normal, capStyle, capStyle);
+			Pen capPen = ToolCache.GetPen(styleSet.LineStyles.Normal, capStyle, capStyle);
 			Brush capBrush = null;
 			PointF[] capPoints = null;
 
@@ -686,7 +679,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// Start Cap
 			if (capStyle.CapShape != CapShape.None) {
 				capBrush = ToolCache.GetBrush(capStyle.ColorStyle);
-				ToolCache.GetCapPoints(capStyle, design.LineStyles.Normal, ref capPoints);
+				ToolCache.GetCapPoints(capStyle, styleSet.LineStyles.Normal, ref capPoints);
 				float angle = Geometry.RadiansToDegrees(Geometry.Angle(left, y, right, y));
 				matrix.Reset();
 				matrix.Translate(left, y);
@@ -697,7 +690,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// End Cap
 			if (capStyle.CapShape != CapShape.None) {
 				capBrush = ToolCache.GetBrush(capStyle.ColorStyle);
-				ToolCache.GetCapPoints(capStyle, design.LineStyles.Normal, ref capPoints);
+				ToolCache.GetCapPoints(capStyle, styleSet.LineStyles.Normal, ref capPoints);
 				float angle = Geometry.RadiansToDegrees(Geometry.Angle(right, y, left, y));
 				matrix.Reset();
 				matrix.Translate(right, y);
@@ -707,10 +700,53 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			// Draw
 			e.Graphics.DrawLine(capPen, left, y, right, y);
-			e.Graphics.DrawString(capStyle.Title, e.Font, TextBrush, lableLayoutRect, formatter);
+			e.Graphics.DrawString(capStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
 		}
 
 		#endregion
+
+
+		#region [Private] Methods: Custom item compare implementation
+
+		private int CompareItems(object a, object b) {
+			if (a == null) throw new ArgumentNullException("a");
+			if (b == null) throw new ArgumentNullException("b");
+			if (a is DefaultStyleItem)
+				return (b is DefaultStyleItem) ? 0 : -1;
+			else if (a is OpenDesignerItem) {
+				return (b is OpenDesignerItem) ? 0 : 1;
+			} else {
+				if (b is DefaultStyleItem) return 1;
+				else if (b is OpenDesignerItem) return -1;
+				else return string.Compare(a.ToString(), b.ToString());
+			}
+		}
+
+		#endregion
+
+
+		private class DefaultStyleItem {
+
+			public DefaultStyleItem() { }
+
+			public override string ToString() {
+				return defaultStyleItemText;
+			}
+
+			private const string defaultStyleItemText = "Default Style";
+		}
+
+
+		private class OpenDesignerItem {
+
+			public OpenDesignerItem() { }
+
+			public override string ToString() {
+				return openDesignerItemText;
+			}
+
+			private const string openDesignerItemText = "More...";
+		}
 
 
 		static StyleListBox() {
@@ -729,12 +765,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		private static readonly string previewText;
 
 		private StyleCategory styleCategory;
-		private Design design;
+		private IStyleSet styleSet;
+		private IStyleSetProvider styleSetProvider;
 		private IWindowsFormsEditorService editorService;
-		private bool showDefaultStyleItem = false;
-		private const string defaultStyleItemText = "Default Style";
-		private bool showOpenDesignerItem = false;
-		private const string openDesignerItemText = "More...";
+		private DefaultStyleItem defaultStyleItem;
+		private OpenDesignerItem openDesignerItem;
 
 		// Graphical stuff
 		private bool highlightItems = false;
@@ -755,9 +790,10 @@ namespace Dataweb.NShape.WinFormsUI {
 		private Pen itemBorderPen;
 		private Pen focusBorderPen;
 		// Buffers
+		private IStyle preselectedStyle;
 		private Matrix matrix;
-		private StringFormat formatter;
-		private StringFormatFlags formatterFlags;
+		private StringFormat specialItemFormatter;
+		private StringFormat styleItemFormatter;
 		private Rectangle itemBounds = Rectangle.Empty;
 		private Rectangle previewRect = Rectangle.Empty;
 		private Rectangle lableLayoutRect = Rectangle.Empty;

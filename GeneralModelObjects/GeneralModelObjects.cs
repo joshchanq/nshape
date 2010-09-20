@@ -42,21 +42,25 @@ namespace Dataweb.NShape.GeneralModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			return new ValueDevice(this);
 		}
 
 
+		/// <override></override>
 		public override IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			throw new NotImplementedException();
 		}
 
 
+		/// <override></override>
 		public override void Connect(TerminalId ownTerminalId, IModelObject targetConnector, TerminalId targetTerminalId) {
 			throw new NotImplementedException();
 		}
 
 
+		/// <override></override>
 		public override void Disconnect(TerminalId ownTerminalId, IModelObject targetConnector, TerminalId targetTerminalId) {
 			throw new NotImplementedException();
 		}

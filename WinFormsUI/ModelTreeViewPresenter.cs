@@ -22,13 +22,20 @@ using System.Windows.Forms;
 
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.Controllers;
+using System.Collections.Specialized;
 
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// Connects a Windows.Forms.TreeView control to a model controller.
+	/// </summary>
 	[ToolboxItem(true)]
 	public partial class ModelTreeViewPresenter : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ModelTreeViewPresenter" />.
+		/// </summary>
 		public ModelTreeViewPresenter() {
 			InitializeComponent();
 
@@ -36,11 +43,17 @@ namespace Dataweb.NShape.WinFormsUI {
 			imageList.ColorDepth = ColorDepth.Depth32Bit;
 			imageList.TransparentColor = Color.White;
 			imageList.ImageSize = new Size(imageSize, imageSize);
+
+			imgDifferentShapes = GdiHelpers.GetIconBitmap(Properties.Resources.ModelObjectAttached, Color.Fuchsia, imageList.TransparentColor);
+			imgNoShapes = GdiHelpers.GetIconBitmap(Properties.Resources.ModelObjectDetached, Color.Fuchsia, imageList.TransparentColor);
 		}
 
 
 		#region [Public] Events
 
+		/// <summary>
+		/// Raised when the current selection has changed.
+		/// </summary>
 		public event EventHandler SelectionChanged;
 
 		#endregion
@@ -48,12 +61,18 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <summary>
+		/// Specifies the model controller for this presenter.
+		/// </summary>
 		[Category("NShape")]
 		public ModelController ModelTreeController {
 			get { return modelTreeController; }
@@ -65,6 +84,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies a property controller for editing properties of the selected model object (optional).
+		/// </summary>
 		[Category("NShape")]
 		public PropertyController PropertyController {
 			get { return propertyController; }
@@ -72,6 +94,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 		
 		
+		/// <summary>
+		/// Specifies a TreeView used as user interface for this presenter.
+		/// </summary>
 		public TreeView TreeView {
 			get { return treeView; }
 			set {
@@ -92,12 +117,18 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Gets a readonly collection of selected model objects.
+		/// </summary>
 		[Browsable(false)]
 		public IReadOnlyCollection<IModelObject> SelectedModelObjects {
 			get { return selectedModelObjects; }
 		}
 
 
+		/// <summary>
+		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// </summary>
 		[Category("Behavior")]
 		public bool HideDeniedMenuItems {
 			get { return hideMenuItemsIfNotGranted; }
@@ -105,6 +136,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies wether the default context menu (created dynamically from MenuItemDefs)  or a user defined context menu is displayed.
+		/// </summary>
 		[Category("Behavior")]
 		public bool ShowDefaultContextMenu {
 			get { return showDefaultContextMenu; }
@@ -116,6 +150,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Methods
 
+		/// <summary>
+		/// Selects the given model object.
+		/// </summary>
+		/// <param name="modelObject">Model object to be selected.</param>
+		/// <param name="addToSelection">Specifies if the model object should be added to the current selection or should replace it.</param>
 		public void SelectModelObject(IModelObject modelObject, bool addToSelection) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 
@@ -130,6 +169,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Removes the given model object from the current selection.
+		/// </summary>
 		public void UnselectModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			if (selectedModelObjects.Contains(modelObject))
@@ -141,6 +183,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Clears all selected model objects.
+		/// </summary>
 		public void UnselectAllModelObjects() {
 			selectedModelObjects.Clear();
 			// Notify propertyPresenter (if attached) that all modelOjects were unselected
@@ -149,12 +194,19 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Find all loaded shapes in all loaded diagrams assigned to any of the given model objects.
+		/// </summary>
+		/// <param name="modelObjects"></param>
 		public void FindShapes(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 		   modelTreeController.FindShapes(modelObjects);
 		}
 
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		public IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			foreach (MenuItemDef action in modelTreeController.GetMenuItemDefs(selectedModelObjects))
 				yield return action;
@@ -385,8 +437,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// if an image with the desired key exists, reuse it
 			if (!imageList.Images.ContainsKey(imageKey)) {
 				Image img;
-				if (imageKey == imgKeyDifferentShapes) img = Properties.Resources.ModelObjectAttached;
-				else if (imageKey == imgKeyNoShape) img = Properties.Resources.ModelObjectDetached;
+				if (imageKey == imgKeyDifferentShapes) img = imgDifferentShapes;
+				else if (imageKey == imgKeyNoShape) img = imgNoShapes;
 				else img = template.CreateThumbnail(imageList.ImageSize.Width, imgMargin);
 				imageList.Images.Add(imageKey, img);
 			}
@@ -764,12 +816,14 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private bool hideMenuItemsIfNotGranted = false;
 		private bool showDefaultContextMenu = true;
-		private System.Collections.Specialized.HybridDictionary dict = new System.Collections.Specialized.HybridDictionary();
+		private HybridDictionary dict = new HybridDictionary();
 		private ReadOnlyList<IModelObject> selectedModelObjects = new ReadOnlyList<IModelObject>();
 
 		private List<IModelObject> modelObjectBuffer = new List<IModelObject>();
 		
 		private ImageList imageList;
+		private Image imgDifferentShapes;
+		private Image imgNoShapes;
 		private IContainer components;
 		private TreeView treeView;
 		private ContextMenuStrip contextMenuStrip;
@@ -777,14 +831,24 @@ namespace Dataweb.NShape.WinFormsUI {
 	}
 
 
+	/// <summary>
+	/// Drag'n'Drop info for dragging model objects out of the model tree presenter
+	/// </summary>
 	public class ModelObjectDragInfo {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ModelObjectDragInfo" />.
+		/// </summary>
+		/// <param name="modelObject"></param>
 		public ModelObjectDragInfo(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			this.modelObject = modelObject;
 		}
 
 
+		/// <summary>
+		/// Specifies the dragged model object.
+		/// </summary>
 		public IModelObject ModelObject {
 			get { return modelObject; }
 		}

@@ -27,12 +27,16 @@ namespace Dataweb.NShape.Advanced {
 	/// <typeparam name="TEntity"></typeparam>
 	public interface ICacheCollection<TEntity> : IEnumerable<EntityBucket<TEntity>> where TEntity : IEntity {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		bool Contains(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		TEntity GetEntity(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		EntityBucket<TEntity> this[object id] { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void Add(EntityBucket<TEntity> bucket);
 
 	}
@@ -43,8 +47,10 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public interface IStoreCache {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		object ProjectId { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		string ProjectName { get; }
 
 		/// <summary>
@@ -58,86 +64,122 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="version"></param>
 		void SetRepositoryBaseVersion(int version);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ProjectSettings Project { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void SetProjectOwnerId(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Design ProjectDesign { get; }
 
 		//---------
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<IEntityType> EntityTypes { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEntityType FindEntityTypeByName(string entityTypeName);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEntityType FindEntityTypeByElementName(string elementName);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		string CalculateElementName(string entityTypeName);
 
 		//---------
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IStyle GetProjectStyle(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Model GetModel();
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Template GetTemplate(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Diagram GetDiagram(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Shape GetShape(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IModelObject GetModelObject(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		Design GetDesign(object id);
 
 		//---------
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<Diagram> LoadedDiagrams { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<Diagram, IEntity>> NewDiagrams { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<Shape> LoadedShapes { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<Shape, IEntity>> NewShapes { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<ProjectSettings> LoadedProjects { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<ProjectSettings, IEntity>> NewProjects { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<Model> LoadedModels { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<Model, IEntity>> NewModels { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<Design> LoadedDesigns { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<Design, IEntity>> NewDesigns { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<IStyle> LoadedStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<IStyle, IEntity>> NewStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<Template> LoadedTemplates { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<IModelMapping> LoadedModelMappings { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<Template, IEntity>> NewTemplates { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<IModelMapping, IEntity>> NewModelMappings { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<ShapeConnection> NewShapeConnections { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<ShapeConnection> DeletedShapeConnections { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICacheCollection<IModelObject> LoadedModelObjects { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<KeyValuePair<IModelObject, IEntity>> NewModelObjects { get; }
 
 	}
+	
 	#endregion
 
 
 	#region Store Class
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public delegate bool IdFilter(object id);
 
 
@@ -172,11 +214,13 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="storeCache"></param>
 		public abstract void Create(IStoreCache storeCache);
 
+
 		/// <summary>
 		/// Opens a project store in the data source.
 		/// </summary>
 		/// <param name="storeCache"></param>
 		public abstract void Open(IStoreCache storeCache);
+
 
 		/// <summary>
 		/// Closes the project store.
@@ -187,10 +231,12 @@ namespace Dataweb.NShape.Advanced {
 			// Nothing to do yet.
 		}
 
+
 		/// <summary>
 		/// Deletes the project store in the data source.
 		/// </summary>
 		public abstract void Erase();
+
 
 		/// <summary>
 		/// 
@@ -200,7 +246,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="parameters"></param>
 		public abstract void LoadProjects(IStoreCache cache, IEntityType entityType, params object[] parameters);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadModel(IStoreCache cache, object projectId);
+
 
 		/// <summary>
 		/// Loads general designs or a project design.
@@ -209,26 +258,44 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="projectId">Project id for project design, null for general designs.</param>
 		public abstract void LoadDesigns(IStoreCache cache, object projectId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadTemplates(IStoreCache cache, object projectId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadDiagrams(IStoreCache cache, object projectId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadDiagramShapes(IStoreCache cache, Diagram diagram);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadTemplateShapes(IStoreCache cache, object templateId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadChildShapes(IStoreCache cache, object parentShapeId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadTemplateModelObjects(IStoreCache cache, object templateId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadModelModelObjects(IStoreCache cache, object modelId);
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void LoadChildModelObjects(IStoreCache cache, object parentModelObjectId);
+
 
 		/// <summary>
 		/// Commits all modifications in the cache to the data store.
 		/// </summary>
 		public abstract void SaveChanges(IStoreCache storeCache);
+
 
 		/// <summary>
 		/// Specifies the main version of the storage format.

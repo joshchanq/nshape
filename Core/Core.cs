@@ -27,16 +27,19 @@ namespace Dataweb.NShape.Advanced {
 	/// the string from there.</remarks>
 	public class ResourceString {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		static public implicit operator ResourceString(string s) {
 			return new ResourceString(s);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ResourceString(string s) {
 			value = s;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string Value {
 			get { return value; }
 		}
@@ -77,8 +80,14 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		Graphics InfoGraphics { get; }
 
+		/// <summary>
+		/// Fill style for drawing hints.
+		/// </summary>
 		IFillStyle HintBackgroundStyle { get; }
 
+		/// <summary>
+		/// Line style for drawing hints.
+		/// </summary>
 		ILineStyle HintForegroundStyle { get; }
 	}
 
@@ -92,19 +101,16 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Registers a library for shape or model objects.
 		/// </summary>
-		/// <param name="version">Version of the library</param>
 		void RegisterLibrary(string name, int defaultRepositoryVersion);
 
 		/// <summary>
 		/// Registers a shape type implemented in the library.
 		/// </summary>
-		/// <param name="shapeType"></param>
 		void RegisterShapeType(ShapeType shapeType);
 
 		/// <summary>
 		/// Registers a model object type implemented in the library.
 		/// </summary>
-		/// <param name="modelObjectType"></param>
 		void RegisterModelObjectType(ModelObjectType modelObjectType);
 	}
 
@@ -155,6 +161,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		
+		/// <summary>
+		/// Adds a dynamic library to the project.
+		/// </summary>
 		public void AddLibrary(string name, string assemblyName, int repositoryVersion) {
 			if (name == null) throw new ArgumentNullException("name");
 			if (assemblyName == null) throw new ArgumentNullException("assemblyName");
@@ -165,8 +175,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Retrieves the cache version of the given library.
 		/// </summary>
-		/// <param name="libraryName"></param>
-		/// <returns></returns>
 		public int GetRepositoryVersion(string libraryName) {
 			if (libraryName == null) throw new ArgumentNullException("libraryName");
 			LibraryData ld = FindLibraryData(libraryName, true);
@@ -187,11 +195,17 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// Receives the entity type name.
+		/// </summary>
 		public static string EntityTypeName {
 			get { return entityTypeName; }
 		}
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.ProjectSettings" />.
+		/// </summary>
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("LastSavedUtc", typeof(DateTime));
 			yield return new EntityInnerObjectsDefinition("Libraries", "Core.Library", librariesAttrNames, librariesAttrTypes);
@@ -304,19 +318,30 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
-	public struct EmptyEnumerator<T> : IEnumerable, IEnumerable<T>, IEnumerator<T>, IDisposable {
+	/// <summary>
+	/// Helper class used for creating or comparing empty collections
+	/// </summary>
+	public struct SingleInstanceEnumerator<T> : IEnumerable, IEnumerable<T>, IEnumerator<T>, IDisposable {
 
-		public static EmptyEnumerator<T> Create() {
-			EmptyEnumerator<T> result = EmptyEnumerator<T>.Empty;
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.SingleInstanceEnumerator`1" />.
+		/// </summary>
+		/// <returns></returns>
+		public static SingleInstanceEnumerator<T> Create(T instance) {
+			SingleInstanceEnumerator<T> result = SingleInstanceEnumerator<T>.Empty;
+			result.instanceReturned = false;
+			result.instance = instance;
 			return result;
 		}
 
 
-		public static readonly EmptyEnumerator<T> Empty;
+		/// <ToBeCompleted></ToBeCompleted>
+		public static readonly SingleInstanceEnumerator<T> Empty;
 
 
 		#region IEnumerable<T> Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerator<T> GetEnumerator() {
 			return this;
 		}
@@ -335,6 +360,95 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEnumerator<T> Members
 
+		/// <ToBeCompleted></ToBeCompleted>
+		public T Current {
+			get {
+				if (instanceReturned) return default(T);
+				else {
+					instanceReturned = true;
+					return instance;
+				}
+			}
+		}
+
+		#endregion
+
+
+		#region IEnumerator Members
+
+		object IEnumerator.Current {
+			get { return Current; }
+		}
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public bool MoveNext() {
+			return !instanceReturned;
+		}
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public void Reset() {
+			instanceReturned = false;
+		}
+
+		#endregion
+
+
+		#region IDisposable Members
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public void Dispose() {
+			// nothing to do
+		}
+
+		#endregion
+
+
+		private bool instanceReturned;
+		private T instance;
+	}
+
+
+	/// <summary>
+	/// Helper class used for creating or comparing empty collections
+	/// </summary>
+	public struct EmptyEnumerator<T> : IEnumerable, IEnumerable<T>, IEnumerator<T>, IDisposable {
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.EmptyEnumerator`1" />.
+		/// </summary>
+		/// <returns></returns>
+		public static EmptyEnumerator<T> Create() {
+			EmptyEnumerator<T> result = EmptyEnumerator<T>.Empty;
+			return result;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public static readonly EmptyEnumerator<T> Empty;
+
+
+		#region IEnumerable<T> Members
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public IEnumerator<T> GetEnumerator() {
+			return this;
+		}
+
+		#endregion
+
+
+		#region IEnumerable Members
+
+		IEnumerator IEnumerable.GetEnumerator() {
+			return this;
+		}
+
+		#endregion
+
+
+		#region IEnumerator<T> Members
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public T Current {
 			get { return default(T); }
 		}
@@ -348,10 +462,12 @@ namespace Dataweb.NShape.Advanced {
 			get { return default(T); }
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool MoveNext() {
 			return false; ;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Reset() {
 			// nothing to do
 		}
@@ -361,6 +477,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IDisposable Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Dispose() {
 			// nothing to do
 		}
@@ -370,13 +487,18 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <summary>
+	/// Helper class used for converting collections of <see cref="T:System.Object" /> to collections of the specified type.
+	/// </summary>
 	public struct ConvertEnumerator<T> : IEnumerable, IEnumerable<T>, IEnumerator<T>, IDisposable {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static ConvertEnumerator<T> Create(IEnumerable enumeration) {
 			return Create(enumeration.GetEnumerator());
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static ConvertEnumerator<T> Create(IEnumerator enumerator) {
 			ConvertEnumerator<T> result = ConvertEnumerator<T>.Empty;
 			result.enumerator = enumerator;
@@ -384,11 +506,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static readonly ConvertEnumerator<T> Empty;
 
 
 		#region IEnumerable<T> Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerator<T> GetEnumerator() {
 			return this;
 		}
@@ -407,6 +531,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEnumerator<T> Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public T Current {
 			get {
 				if (enumerator.Current is T)
@@ -428,6 +553,7 @@ namespace Dataweb.NShape.Advanced {
 			}
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool MoveNext() {
 			bool result;
 			do {
@@ -437,6 +563,7 @@ namespace Dataweb.NShape.Advanced {
 			return result;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Reset() {
 			enumerator.Reset();
 		}
@@ -446,6 +573,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IDisposable Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Dispose() {
 			// nothing to do
 		}
@@ -454,6 +582,30 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private IEnumerator enumerator;
+	}
+
+
+	/// <summary>
+	/// Helper class used for counting the number of instances in an enumeration.
+	/// </summary>
+	public static class Counter {
+
+		/// <summary>
+		/// Counts the number of instances in an enumeration.
+		/// </summary>
+		public static int GetCount<T>(IEnumerable<T> instances) {
+			if (instances is ICollection)
+				return ((ICollection)instances).Count;
+			else if (instances is ICollection<T>)
+				return ((ICollection<T>)instances).Count;
+			else {
+				int result = 0;
+				IEnumerator<T> enumerator = instances.GetEnumerator();
+				while (enumerator.MoveNext()) ++result;
+				return result;
+			}
+		}
+
 	}
 
 }

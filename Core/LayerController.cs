@@ -24,13 +24,20 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+	/// <ToBeCompleted></ToBeCompleted>
 	[ToolboxItem(true)]
 	[ToolboxBitmap(typeof(LayerController), "LayerController.bmp")]
 	public class LayerController : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.LayerController" />.
+		/// </summary>
 		public LayerController() { }
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.LayerController" />.
+		/// </summary>
 		public LayerController(DiagramSetController diagramSetController)
 			: this() {
 			if (diagramSetController == null) throw new ArgumentNullException("diagramSetController");
@@ -40,14 +47,29 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Events
 
+		/// <summary>
+		/// Occurs when the diagram of the LayerController has changed.
+		/// </summary>
 		public event EventHandler DiagramChanging;
 
+		/// <summary>
+		/// Raised when the diagram of the LayerController is going to change.
+		/// </summary>
 		public event EventHandler DiagramChanged;
 
+		/// <summary>
+		/// Occurs if layers has been added.
+		/// </summary>
 		public event EventHandler<LayersEventArgs> LayersAdded;
 
+		/// <summary>
+		/// Occurs if layers has been deleted.
+		/// </summary>
 		public event EventHandler<LayersEventArgs> LayersRemoved;
 
+		/// <summary>
+		/// Occurs if a layer has been modified.
+		/// </summary>
 		public event EventHandler<LayersEventArgs> LayerModified;
 
 		#endregion
@@ -55,12 +77,18 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <summary>
+		/// Provides access to a DiagramSetController.
+		/// </summary>
 		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
 			get { return diagramSetController; }
@@ -73,7 +101,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Returns the Owner's Project
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
 		/// </summary>
 		[Category("NShape")]
 		public Project Project {
@@ -88,6 +116,9 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <summary>
+		/// Adds a new layer to the given diagram.
+		/// </summary>
 		public void AddLayer(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			AssertDiagramSetControllerIsSet();
@@ -96,6 +127,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void AddLayer(Diagram diagram, string layerName) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (layerName == null) throw new ArgumentNullException("layerName");
@@ -108,6 +140,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RemoveLayers(Diagram diagram, IEnumerable<Layer> layers) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (layers == null) throw new ArgumentNullException("layers");
@@ -118,6 +151,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RemoveLayer(Diagram diagram, string layerName) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (layerName == null) throw new ArgumentNullException("layerName");
@@ -130,6 +164,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RenameLayer(Diagram diagram, Layer layer, string oldName, string newName) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (layer == null) throw new ArgumentNullException("layer");
@@ -143,6 +178,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetLayerZoomBounds(Diagram diagram, Layer layer, int lowerZoomBounds, int upperZoomBounds) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (layer == null) throw new ArgumentNullException("layer");
@@ -176,6 +212,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		public IEnumerable<MenuItemDef> GetMenuItemDefs(Diagram diagram, IReadOnlyCollection<Layer> selectedLayers) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (selectedLayers == null) throw new ArgumentNullException("selectedLayers");
@@ -236,6 +275,7 @@ namespace Dataweb.NShape.Controllers {
 		private void RegisterRepositoryEvents() {
 			AssertRepositoryIsSet();
 			if (!repositoryEventsRegistered) {
+				Project.Repository.DiagramUpdated += Repository_DiagramUpdated;
 				repositoryEventsRegistered = true;
 			}
 		}
@@ -244,6 +284,7 @@ namespace Dataweb.NShape.Controllers {
 		private void UnregisterRepositoryEvents() {
 			AssertRepositoryIsSet();
 			if (repositoryEventsRegistered) {
+				Project.Repository.DiagramUpdated += Repository_DiagramUpdated;
 				repositoryEventsRegistered = false;
 			}
 		}
@@ -315,6 +356,16 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		private void Repository_DiagramUpdated(object sender, RepositoryDiagramEventArgs e) {
+			// This is only a simple workaround.
+			// ToDo: Create a new event for this purpose!
+			if (DiagramChanging != null && DiagramChanged != null) {
+				DiagramChanging(this, eventArgs);
+				DiagramChanged(this, eventArgs);
+			}
+		}
+
+
 		private void diagrammController_ActiveLayersChanged(object sender, LayersEventArgs e) {
 			if (LayerModified != null) LayerModified(this, e);
 		}
@@ -338,6 +389,7 @@ namespace Dataweb.NShape.Controllers {
 	
 
 		#region Fields
+		/// <ToBeCompleted></ToBeCompleted>
 		public const int MaxLayerCount = 31;
 
 		private DiagramSetController diagramSetController = null;
@@ -353,12 +405,15 @@ namespace Dataweb.NShape.Controllers {
 
 	#region EventArgs
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LayerEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerEventArgs(Layer layer) {
 			this.layer = layer;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Layer Layer {
 			get { return layer; }
 			internal set { layer = value; }
@@ -370,34 +425,41 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LayersEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayersEventArgs(IEnumerable<Layer> layers) {
 			if (layers == null) throw new ArgumentNullException("layers");
 			this.layers = new ReadOnlyList<Layer>(layers);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IReadOnlyCollection<Layer> Layers { get { return layers; } }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal LayersEventArgs() {
 			layers = new ReadOnlyList<Layer>();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetLayers(ReadOnlyList<Layer> layers) {
 			this.layers.Clear();
 			this.layers.AddRange(layers);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetLayers(IEnumerable<Layer> layers) {
 			this.layers.Clear();
 			this.layers.AddRange(layers);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetLayers(Layer layer) {
 			this.layers.Clear();
 			this.layers.Add(layer);
@@ -408,8 +470,10 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LayerRenamedEventArgs : LayerEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerRenamedEventArgs(Layer layer, string oldName, string newName)
 			: base(layer) {
 
@@ -418,18 +482,21 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string OldName {
 			get { return oldName; }
 			internal set { oldName = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string NewName {
 			get { return newName; }
 			internal set { newName = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal LayerRenamedEventArgs() {
 		}
 
@@ -439,8 +506,10 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LayerZoomThresholdChangedEventArgs : LayerEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerZoomThresholdChangedEventArgs(Layer layer, int oldZoomThreshold, int newZoomThreshold)
 			: base(layer) {
 			this.oldZoomThreshold = oldZoomThreshold;
@@ -448,18 +517,21 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int OldZoomThreshold {
 			get { return oldZoomThreshold; }
 			internal set { oldZoomThreshold = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int NewZoomThreshold {
 			get { return newZoomThreshold; }
 			internal set { newZoomThreshold = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal LayerZoomThresholdChangedEventArgs() {
 		}
 
@@ -471,25 +543,30 @@ namespace Dataweb.NShape.Controllers {
 	#endregion
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LayerHelper {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Layer> GetLayers(LayerIds layerId, Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			return diagram.Layers.GetLayers(layerId);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Layer> Getlayers(Layer layer) {
 			yield return layer;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Layer> GetLayers(string layerName, Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			yield return diagram.Layers.FindLayer(layerName);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static LayerEventArgs GetLayerEventArgs(string layerName, Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			Layer layer = diagram.Layers.FindLayer(layerName);
@@ -499,6 +576,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static LayerEventArgs GetLayerEventArgs(Layer layer) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			layerEventArgs.Layer = layer;
@@ -506,6 +584,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static LayersEventArgs GetLayersEventArgs(Layer layer) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			layersEventArgs.SetLayers(layer);
@@ -513,6 +592,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static LayersEventArgs GetLayersEventArgs(ReadOnlyList<Layer> layers) {
 			if (layers == null) throw new ArgumentNullException("layers");
 			layersEventArgs.SetLayers(layers);
@@ -520,6 +600,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static LayersEventArgs GetLayersEventArgs(IEnumerable<Layer> layers) {
 			if (layers == null) throw new ArgumentNullException("layers");
 			layersEventArgs.SetLayers(layers);

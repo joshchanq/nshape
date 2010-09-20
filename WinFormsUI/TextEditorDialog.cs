@@ -23,8 +23,14 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// A simple text editor dialog used by ui type editors for text properties.
+	/// </summary>
 	public partial class TextEditorDialog : Form {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog() {
 			SetStyle(ControlStyles.ContainerControl
 						| ControlStyles.OptimizedDoubleBuffer
@@ -39,6 +45,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog(string text)
 			: this() {
 			textBox.Text = text;
@@ -46,6 +55,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog(IEnumerable<string> lines)
 			: this() {
 			if (lines == null) throw new ArgumentNullException("lines");
@@ -55,6 +67,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog(string text, ICharacterStyle characterStyle)
 			: this(text) {
 			if (characterStyle == null) throw new ArgumentNullException("characterStyle");
@@ -64,6 +79,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog(string text, string fontFamilyName, float fontSizeInPts, System.Drawing.FontStyle fontStyle)
 			: this(text) {
 			if (fontFamilyName == null) throw new ArgumentNullException("fontFamilyName");
@@ -71,6 +89,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog(IEnumerable<string> lines, CharacterStyle characterStyle)
 			: this(lines) {
 			if (characterStyle == null) throw new ArgumentNullException("characterStyle");
@@ -80,6 +101,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TextUITypeEditorDialog" />.
+		/// </summary>
 		public TextEditorDialog(IEnumerable<string> lines, string fontFamilyName, float fontSizeInPts, System.Drawing.FontStyle fontStyle)
 			: this(lines) {
 			if (fontFamilyName == null) throw new ArgumentNullException("fontFamilyName");
@@ -87,12 +111,20 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		#region [Public] Properties
+
+		/// <summary>
+		/// Indicates wether the displayed text should automatically wrap words to the beginning of the new line when necessary.
+		/// </summary>
 		public bool WordWrap {
 			get { return textBox.WordWrap; }
 			set { textBox.WordWrap = value; }
 		}
 
 
+		/// <summary>
+		/// Sets the horizontal alignment of the displayed text.
+		/// </summary>
 		public HorizontalAlignment TextAlignment {
 			get { return textBox.SelectionAlignment; }
 			set {
@@ -110,19 +142,47 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		[TypeConverter(typeof(TextConverter))]
+		/// <summary>
+		/// Gets or sets the current text to be edited.
+		/// </summary>
+		[TypeConverter(typeof(TextTypeConverter))]
 		public string ResultText {
 			get { return textBox.Text; }
 			set { textBox.Text = value; }
 		}
 
 
-		[TypeConverter(typeof(TextConverter))]
+		/// <summary>
+		/// Gets or sets the current multiline text to be edited.
+		/// </summary>
+		[TypeConverter(typeof(TextTypeConverter))]
 		public string[] Lines {
 			get { return textBox.Lines; }
 			set { textBox.Lines = value; }
 		}
 
+
+		/// <summary>
+		/// Specifies wether the user can insert tab characters into the text using the TAB key.
+		/// </summary>
+		public bool WantTab {
+			get { return !textBox.TabStop; }
+			set { textBox.TabStop = !value; }
+		}
+
+
+		/// <summary>
+		/// Specifies wether the user can insert line breaks using the RETURN key.
+		/// </summary>
+		public bool WantReturn {
+			get { return wantReturn; }
+			set { wantReturn = value; }
+		}
+
+		#endregion
+
+
+		#region [Private] Methods
 
 		private void okButton_Click(object sender, EventArgs e) {
 			DialogResult = DialogResult.OK;
@@ -162,17 +222,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
-
-		public bool WantTab {
-			get { return !textBox.TabStop; }
-			set { textBox.TabStop = !value; }
-		}
-
-
-		public bool WantReturn {
-			get { return wantReturn; }
-			set { wantReturn = value; }
-		}
+		#endregion
 
 
 		#region Fields

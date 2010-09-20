@@ -41,8 +41,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Tests whether the required permissions for the command are granted.
 		/// </summary>
-		/// <param name="security"></param>
-		/// <returns></returns>
 		bool IsAllowed(ISecurityManager securityManager);
 
 		/// <summary>
@@ -123,6 +121,7 @@ namespace Dataweb.NShape {
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string description;
 		private IRepository repository;
 
@@ -136,17 +135,20 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public abstract class AutoDisconnectShapesCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected AutoDisconnectShapesCommand()
 			: base() {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void Disconnect(IList<Shape> shapes) {
 			for (int i = shapes.Count - 1; i >= 0; --i)
 				Disconnect(shapes[i]);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void Disconnect(Shape shape) {
 			if (!connections.ContainsKey(shape))
 				connections.Add(shape, new List<ShapeConnectionInfo>(shape.GetConnectionInfos(ControlPointId.Any, null)));
@@ -158,10 +160,12 @@ namespace Dataweb.NShape {
 					sci.OtherShape.Disconnect(sci.OtherPointId);
 					Repository.DeleteShapeConnection(sci.OtherShape, sci.OtherPointId, shape, sci.OwnPointId);
 				}
+				sci.OtherShape.Invalidate();
 			}
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void Reconnect(IList<Shape> shapes) {
 			// restore connections
 			int cnt = shapes.Count;
@@ -170,6 +174,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void Reconnect(Shape shape) {
 			// restore connections
 			if (connections.ContainsKey(shape)) {
@@ -186,6 +191,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Dictionary<Shape, List<ShapeConnectionInfo>> ShapeConnections { get { return connections; } }
 
 
@@ -304,8 +310,10 @@ namespace Dataweb.NShape {
 	//}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public abstract class InsertOrRemoveModelObjectsCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetModelObjects(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			Debug.Assert(this.ModelObjects.Count == 0);
@@ -313,6 +321,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			Debug.Assert(this.ModelObjects.Count == 0);
@@ -321,6 +330,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InsertModelObjects(bool insertShapes) {
 			int cnt = ModelObjects.Count;
 			if (cnt == 0) throw new NShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
@@ -334,6 +344,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void RemoveModelObjects(bool deleteShapes) {
 			if (ModelObjects.Count == 0) throw new NShapeInternalException("No ModelObjects set. Call SetModelObjects() before.");
 			if (Repository != null) {
@@ -344,6 +355,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Dictionary<IModelObject, AttachedObjects> ModelObjects = new Dictionary<IModelObject, AttachedObjects>();
 
 
@@ -389,8 +401,10 @@ namespace Dataweb.NShape {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class AttachedObjects {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public AttachedObjects(IModelObject modelObject, IRepository repository) {
 			shapes = new List<Shape>();
 			children = new Dictionary<IModelObject, AttachedObjects>();
@@ -398,16 +412,19 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public List<Shape> Shapes {
 			get { return shapes; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Dictionary<IModelObject, AttachedObjects> Children {
 			get { return children; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Add(IModelObject modelObject, IRepository repository) {
 			DoAdd(this, modelObject, repository);
 		}
@@ -429,7 +446,8 @@ namespace Dataweb.NShape {
 	/// Base class for inserting and removing shapes along with their model objects to a diagram and a cache
 	/// </summary>
 	public abstract class InsertOrRemoveShapeCommand : AutoDisconnectShapesCommand {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected InsertOrRemoveShapeCommand(Diagram diagram)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -437,18 +455,24 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InsertShapesAndModels(LayerIds activeLayers) {
 			DoInsertShapesAndModels(false, activeLayers);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InsertShapesAndModels() {
 			DoInsertShapesAndModels(true, LayerIds.None);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void DeleteShapesAndModels() {
 			if (Repository != null && ModelObjects != null && ModelObjects.Count > 0) {
+				// Disconnect shapes as long as the model objects still exist.
+				Disconnect(Shapes);
+				
 				if (modelsAndObjects == null) {
 					modelsAndObjects = new Dictionary<IModelObject, AttachedObjects>();
 					foreach (IModelObject modelObject in ModelObjects)
@@ -462,20 +486,23 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InsertShapes(LayerIds activeLayers) {
 			DoInsertShapes(false, activeLayers);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InsertShapes() {
 			DoInsertShapes(true, LayerIds.None);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void RemoveShapes() {
 			if (Shapes.Count == 0) throw new NShapeInternalException("No shapes set. Call SetShapes() before.");
 
-			// disconnect all selectedShapes connected to the deleted shape(s)
+			// disconnect all shapes connected to the deleted shape(s)
 			Disconnect(Shapes);
 
 			if (Shapes.Count > 1) {
@@ -488,6 +515,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetShape(Shape shape, bool withModelObject) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			if (shapeLayers == null) shapeLayers = new List<LayerIds>(1);
@@ -504,11 +532,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetShapes(IEnumerable<Shape> shapes, bool withModelObjects) {
 			SetShapes(shapes, withModelObjects, true);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetShapes(IEnumerable<Shape> shapes, bool withModelObjects, bool invertSortOrder) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			this.Shapes.Clear();
@@ -531,6 +561,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetModelObject(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			if (this.modelObjects == null) this.modelObjects = new List<IModelObject>();
@@ -538,6 +569,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			if (this.modelObjects == null) this.modelObjects = new List<IModelObject>();
@@ -548,6 +580,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void SetModelObjects(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			foreach (Shape shape in shapes)
@@ -555,16 +588,19 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<Shape> Shapes {
 			get { return shapes; }
 		}
-		
-		
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<IModelObject> ModelObjects {
 			get { return modelObjects; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string GetDescription(DescriptionType descType, Shape shape, bool withModelObject) {
 			string modelString = string.Empty;
 			if (withModelObject && shape.ModelObject != null)
@@ -577,6 +613,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string GetDescription(DescriptionType descType, IEnumerable<Shape> shapes, bool withModelObjects) {
 			int shapeCnt = 0, modelCnt = 0;
 			foreach (Shape s in shapes) {
@@ -667,7 +704,13 @@ namespace Dataweb.NShape {
 		}
 
 
-		protected enum DescriptionType { Insert, Delete };
+		/// <ToBeCompleted></ToBeCompleted>
+		protected enum DescriptionType {
+			/// <ToBeCompleted></ToBeCompleted>
+			Insert,
+			/// <ToBeCompleted></ToBeCompleted>
+			Delete
+		};
 
 		private const string DescriptionFormatStr = "{0} {1} shape{2}{3}";
 		private const string WithModelsFormatStr = " with {0}model{1}"; 
@@ -685,6 +728,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public abstract class ShapeAggregationCommand : AutoDisconnectShapesCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ShapeAggregationCommand(Diagram diagram, Shape aggregationShape, IEnumerable<Shape> shapes)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -700,6 +744,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void CreateShapeAggregation(bool maintainZOrders) {
 			// Add aggregation shape to diagram
 			if (!aggregationShapeOwnedByDiagram) {
@@ -734,6 +779,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void DeleteShapeAggregation() {
 			// Update the child shape's owner
 			if (Repository != null) {
@@ -743,6 +789,9 @@ namespace Dataweb.NShape {
 
 			// Move the shapes to their initial owner
 			aggregationShape.Children.RemoveRange(shapes);
+			foreach (Shape childShape in aggregationShape.Children)
+				aggregationShape.Children.Remove(childShape);
+
 			if (!aggregationShapeOwnedByDiagram)
 				// If the aggregation shape was not initialy part of the diagram, remove it.
 				diagram.Shapes.Remove(aggregationShape);
@@ -759,17 +808,26 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Diagram diagram;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<Shape> shapes;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected LayerIds aggregationLayerIds;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Shape aggregationShape;
 		// Specifies if the aggreagtion shape initialy was owned by the diagram
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool aggregationShapeOwnedByDiagram;	
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public abstract class PropertySetCommand<T> : Command {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.PropertySetCommand`1" />.
+		/// </summary>
 		public PropertySetCommand(IEnumerable<T> modifiedObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			: base() {
 			if (modifiedObjects == null) throw new ArgumentNullException("modifiedObjects");
@@ -780,6 +838,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.PropertySetCommand`1" />.
+		/// </summary>
 		public PropertySetCommand(IEnumerable<T> modifiedObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base() {
 			if (modifiedObjects == null) throw new ArgumentNullException("modifiedObjects");
@@ -791,6 +852,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.PropertySetCommand`1" />.
+		/// </summary>
 		public PropertySetCommand(T modifiedObject, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base() {
 			if (modifiedObject == null) throw new ArgumentNullException("modifiedObject");
@@ -804,6 +868,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			int valCnt = newValues.Count;
 			int objCnt = modifiedObjects.Count;
@@ -823,6 +888,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			int valCnt = oldValues.Count;
 			int objCnt = modifiedObjects.Count;
@@ -836,6 +902,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get {
 				if (string.IsNullOrEmpty(description)) {
@@ -876,9 +943,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected PropertyInfo propertyInfo;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<object> oldValues;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<object> newValues;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<T> modifiedObjects;
 	}
 	
@@ -888,6 +959,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public abstract class ConnectionCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ConnectionCommand(Shape connectorShape, ControlPointId gluePointId, Shape targetShape, ControlPointId targetPointId)
 			: base() {
 			if (connectorShape == null) throw new ArgumentNullException("connectorShape");
@@ -899,6 +971,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ConnectionCommand(Shape connectorShape, ControlPointId gluePointId)
 			: base() {
 			if (connectorShape == null) throw new ArgumentNullException("connectorShape");
@@ -915,6 +988,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void Connect() {
 			connectorShape.Connect(gluePointId, targetShape, targetPointId);
 			if (Repository != null) {
@@ -922,9 +996,11 @@ namespace Dataweb.NShape {
 				Repository.UpdateShape(targetShape);
 				Repository.InsertShapeConnection(connectorShape, gluePointId, targetShape, targetPointId);
 			}
+			connectorShape.Invalidate();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void Disconnect() {
 			connectorShape.Disconnect(gluePointId);
 
@@ -936,20 +1012,27 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Connect; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Shape connectorShape;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Shape targetShape;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ControlPointId gluePointId;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ControlPointId targetPointId;
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public abstract class InsertOrRemoveLayerCommand : Command {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected InsertOrRemoveLayerCommand(Diagram diagram, string layerName)
 			: base() {
 			Construct(diagram);
@@ -962,6 +1045,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected InsertOrRemoveLayerCommand(Diagram diagram, Layer layer)
 			: base() {
 			Construct(diagram);
@@ -971,6 +1055,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected InsertOrRemoveLayerCommand(Diagram diagram, IEnumerable<Layer> layers)
 			: base() {
 			Construct(diagram);
@@ -978,11 +1063,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout;}
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void AddLayers() {
 			for (int i = 0; i < layers.Count; ++i) {
 				diagram.Layers.Add(layers[i]);
@@ -991,6 +1078,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void RemoveLayers() {
 			for (int i = 0; i < layers.Count; ++i) {
 				diagram.Layers.Remove(layers[i]);
@@ -1006,7 +1094,9 @@ namespace Dataweb.NShape {
 
 
 		#region Fields
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Diagram diagram;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<Layer> layers = null;
 		#endregion
 	}
@@ -1022,6 +1112,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public class AggregatedCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public AggregatedCommand()
 			: base() {
 			commands = new List<ICommand>();
@@ -1029,6 +1120,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public AggregatedCommand(IEnumerable<ICommand> commands)
 			: base() {
 			if (commands == null) throw new ArgumentNullException("commands");
@@ -1037,6 +1129,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get {
 				if (string.IsNullOrEmpty(description))
@@ -1046,9 +1139,11 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int CommandCount { get { return commands.Count; } }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Add(ICommand command) {
 			if (command == null) throw new ArgumentNullException("command");
 			command.Repository = Repository;
@@ -1057,6 +1152,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Insert(int index, ICommand command) {
 			if (command == null) throw new ArgumentNullException("command");
 			command.Repository = Repository;
@@ -1065,6 +1161,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Remove(ICommand command) {
 			if (command == null) throw new ArgumentNullException("command");
 			RemoveAt(commands.IndexOf(command));
@@ -1072,12 +1169,14 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RemoveAt(int index) {
 			commands.RemoveAt(index);
 			description = string.Empty;
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			for (int i = 0; i < commands.Count; ++i) {
 				if (commands[i].Repository != Repository) 
@@ -1087,6 +1186,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			for (int i = commands.Count - 1; i >= 0; --i) {
 				if (commands[i].Repository != Repository)
@@ -1096,6 +1196,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { 
 			   Permission requiredPermission = Permission.None;
@@ -1108,6 +1209,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override bool IsAllowed(ISecurityManager security) {
 			if (security == null) throw new ArgumentNullException("security");
 			bool result = true;
@@ -1146,18 +1248,21 @@ namespace Dataweb.NShape {
 	/// Command for connecting a shape's GluePoint to an other shape's GluePoint
 	/// </summary>
 	public class ConnectCommand : ConnectionCommand {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public ConnectCommand(Shape connectorShape, int gluePointId, Shape targetShape, int targetPointId)
 			: base(connectorShape, gluePointId, targetShape, targetPointId) {
 			this.description = string.Format("Connect {0} to {1}", connectorShape.Type.Name, targetShape.Type.Name);
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			Connect();
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			Disconnect();
 		}
@@ -1167,8 +1272,10 @@ namespace Dataweb.NShape {
 
 
 	#region DisconnectCommand
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DisconnectCommand : ConnectionCommand {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DisconnectCommand(Shape connectorShape, int gluePointId)
 			: base(connectorShape, gluePointId) {
 			this.description = string.Format("Disconnect {0}", connectorShape.Type.Name);
@@ -1181,6 +1288,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			connectorShape.Disconnect(gluePointId);
 			Repository.UpdateShape(connectorShape);
@@ -1189,6 +1297,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			connectorShape.Connect(gluePointId, connectionInfo.OtherShape, connectionInfo.OtherPointId);
 			Repository.UpdateShape(connectorShape);
@@ -1204,8 +1313,10 @@ namespace Dataweb.NShape {
 
 	#region MoveShapeByCommand class
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class MoveShapeByCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public MoveShapeByCommand(Shape shape, int dX, int dY)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -1217,6 +1328,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public MoveShapeByCommand(IEnumerable<Shape> shapes, int dX, int dY)
 			: base() {
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -1262,17 +1374,7 @@ namespace Dataweb.NShape {
 		}
 
 
-		private bool IsConnectedToNonSelectedShapes(Shape shape) {
-			if (shape == null) throw new ArgumentNullException("shape");
-			foreach (ControlPointId gluePointId in shape.GetControlPointIds(ControlPointCapabilities.Glue)) {
-				ShapeConnectionInfo sci = shape.GetConnectionInfo(gluePointId, null);
-				if (!sci.IsEmpty && shapes.IndexOf(sci.OtherShape) < 0)
-					return true;
-			}
-			return false;
-		}
-
-
+		/// <override></override>
 		public override void Execute() {
 			// remove connections temporarily
 			if (connectionsBuffer != null) {
@@ -1293,6 +1395,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			// remove connections temporarily
 			if (connectionsBuffer != null) {
@@ -1314,8 +1417,20 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
+		}
+
+
+		private bool IsConnectedToNonSelectedShapes(Shape shape) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			foreach (ControlPointId gluePointId in shape.GetControlPointIds(ControlPointCapabilities.Glue)) {
+				ShapeConnectionInfo sci = shape.GetConnectionInfo(gluePointId, null);
+				if (!sci.IsEmpty && shapes.IndexOf(sci.OtherShape) < 0)
+					return true;
+			}
+			return false;
 		}
 
 
@@ -1337,11 +1452,13 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public class MoveShapesCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public MoveShapesCommand()
 			: base() {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void AddMove(Shape shape, int dx, int dy) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			ShapeMove sm;
@@ -1354,26 +1471,33 @@ namespace Dataweb.NShape {
 
 		#region Base Class Implementation
 
+		/// <override></override>
 		public override void Execute() {
 			foreach (ShapeMove sm in shapeMoves)
 				sm.shape.MoveControlPointBy(ControlPointId.Reference, sm.dx, sm.dy, ResizeModifiers.None);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			foreach (ShapeMove sm in shapeMoves)
 				sm.shape.MoveControlPointBy(ControlPointId.Reference, -sm.dx, -sm.dy, ResizeModifiers.None);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected struct ShapeMove {
+			/// <ToBeCompleted></ToBeCompleted>
 			public Shape shape;
+			/// <ToBeCompleted></ToBeCompleted>
 			public int dx;
+			/// <ToBeCompleted></ToBeCompleted>
 			public int dy;
 		}
 
@@ -1387,7 +1511,10 @@ namespace Dataweb.NShape {
 
 
 	#region MoveControlPointCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class MoveControlPointCommand : Command {
+		
+		/// <ToBeCompleted></ToBeCompleted>
 		public MoveControlPointCommand(Shape shape, int controlPointId, int dX, int dY, ResizeModifiers modifiers)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -1401,6 +1528,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public MoveControlPointCommand(IEnumerable<Shape> shapes, int controlPointId, int dX, int dY, ResizeModifiers modifiers)
 			: base() {
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -1414,6 +1542,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			for (int i = 0; i < shapes.Count; ++i)
 				shapes[i].MoveControlPointBy(controlPointId, dX, dY, modifiers);
@@ -1422,6 +1551,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			for (int i = 0; i < shapes.Count; ++i)
 				shapes[i].MoveControlPointBy(controlPointId, -dX, -dY, modifiers);
@@ -1430,6 +1560,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
@@ -1445,17 +1576,12 @@ namespace Dataweb.NShape {
 
 	#region MoveGluePointCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class MoveGluePointCommand : Command {
 
 		/// <summary>
 		/// Constructs a glue point moving command.
 		/// </summary>
-		/// <param name="shape"></param>
-		/// <param name="ownPointId"></param>
-		/// <param name="otherShape"></param>
-		/// <param name="dX"></param>
-		/// <param name="dY"></param>
-		/// <param name="modifiers"></param>
 		public MoveGluePointCommand(Shape shape, int gluePointId, Shape targetShape, int dX, int dY, ResizeModifiers modifiers)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -1536,6 +1662,7 @@ namespace Dataweb.NShape {
 		//}
 
 
+		/// <override></override>
 		public override void Execute() {
 			// DetachGluePointFromConnectionPoint existing connection
 			if (!existingConnection.IsEmpty) {
@@ -1553,6 +1680,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			// DetachGluePointFromConnectionPoint new connection
 			if (!newConnection.IsEmpty) {
@@ -1570,6 +1698,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout | Permission.Connect; }
 		}
@@ -1597,6 +1726,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public class RotateShapesCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RotateShapesCommand(IEnumerable<Shape> shapes, int tenthsOfDegree)
 			: base() {
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -1609,6 +1739,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RotateShapesCommand(IEnumerable<Shape> shapes, int tenthsOfDegree, int rotateCenterX, int rotateCenterY)
 			: base() {
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -1633,6 +1764,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			foreach (Shape shape in shapes) {
 				if (!Geometry.IsValid(rotateCenterX , rotateCenterY))
@@ -1643,6 +1775,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			foreach (Shape shape in shapes) {
 				if (!Geometry.IsValid(rotateCenterX, rotateCenterY))
@@ -1664,6 +1797,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
@@ -1681,8 +1815,10 @@ namespace Dataweb.NShape {
 
 	#region SetCaptionTextCommand class
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class SetCaptionTextCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public SetCaptionTextCommand(ICaptionedShape shape, int captionIndex, string newValue)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -1696,6 +1832,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			//int newValuesCnt = 1;
 			for (int i = 0; i < modifiedLabeledShapes.Count; ++i) {
@@ -1708,6 +1845,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			//int newValuesCnt = 1;
 			for (int i = 0; i < modifiedLabeledShapes.Count; ++i) {
@@ -1720,6 +1858,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Present | Permission.ModifyData | Permission.Layout; }
 		}
@@ -1736,22 +1875,28 @@ namespace Dataweb.NShape {
 
 
 	#region ShapePropertySetCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ShapePropertySetCommand : PropertySetCommand<Shape> {
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public ShapePropertySetCommand(IEnumerable<Shape> modifiedShapes, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			: base(modifiedShapes, propertyInfo, oldValues, newValues) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ShapePropertySetCommand(IEnumerable<Shape> modifiedShapes, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base(modifiedShapes, propertyInfo, oldValues, newValue) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ShapePropertySetCommand(Shape modifiedShape, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base(modifiedShape, propertyInfo, oldValue, newValue) {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			base.Execute();
 			if (Repository != null) {
@@ -1761,6 +1906,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			base.Revert();
 			if (Repository != null) {
@@ -1770,6 +1916,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Present | Permission.ModifyData | Permission.Layout; }
 		}
@@ -1778,8 +1925,10 @@ namespace Dataweb.NShape {
 
 
 	#region LiftShapeCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LiftShapeCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LiftShapeCommand(Diagram diagram, IEnumerable<Shape> shapes, ZOrderDestination liftMode)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -1789,6 +1938,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LiftShapeCommand(Diagram diagram, Shape shape, ZOrderDestination liftMode)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -1799,6 +1949,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			// store current and new ZOrders
 			if (zOrderInfos == null || zOrderInfos.Count == 0)
@@ -1825,6 +1976,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			Debug.Assert(zOrderInfos != null);
 			foreach (Shape shape in modifiedShapes.BottomUp) {
@@ -1835,6 +1987,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
@@ -1917,8 +2070,10 @@ namespace Dataweb.NShape {
 
 
 	#region ChangeModelObjectParentCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class SetModelObjectParentCommand : Command {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public SetModelObjectParentCommand(IModelObject modelObject, IModelObject parent)
 			: base() {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
@@ -1946,18 +2101,21 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			modelObject.Parent = newParent;
 			if (Repository != null) Repository.UpdateModelObjectParent(modelObject, newParent);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			modelObject.Parent = oldParent;
 			if (Repository != null) Repository.UpdateModelObjectParent(modelObject, oldParent);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -1973,8 +2131,10 @@ namespace Dataweb.NShape {
 
 
 	#region AssignModelObjectCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class AssignModelObjectCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public AssignModelObjectCommand(Shape shape, IModelObject modelObject)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -1991,18 +2151,21 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			shape.ModelObject = newModelObject;
 			if (Repository != null) Repository.UpdateShape(shape);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			shape.ModelObject = oldModelObject;
 			if (Repository != null) Repository.UpdateShape(shape);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -2018,23 +2181,28 @@ namespace Dataweb.NShape {
 
 
 	#region ModelObjectPropertySetCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ModelObjectPropertySetCommand : PropertySetCommand<IModelObject> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ModelObjectPropertySetCommand(IEnumerable<IModelObject> modifiedModelObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			: base(modifiedModelObjects, propertyInfo, oldValues, newValues) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ModelObjectPropertySetCommand(IEnumerable<IModelObject> modifiedModelObjects, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base(modifiedModelObjects, propertyInfo, oldValues, newValue) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ModelObjectPropertySetCommand(IModelObject modifiedModelObject, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base(modifiedModelObject, propertyInfo, oldValue, newValue) {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			base.Execute();
 			if (Repository != null) {
@@ -2044,6 +2212,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			base.Revert();
 			if (Repository != null) {
@@ -2053,6 +2222,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -2062,8 +2232,10 @@ namespace Dataweb.NShape {
 
 
 	#region ExchangeTemplateCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ExchangeTemplateCommand : Command {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public ExchangeTemplateCommand(Template originalTemplate, Template changedTemplate)
 			: base() {
 			if (originalTemplate == null) throw new ArgumentNullException("originalTemplate");
@@ -2077,11 +2249,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			DoExchangeTemplates(originalTemplate, oldTemplate, newTemplate);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			DoExchangeTemplates(originalTemplate, newTemplate, oldTemplate);
 		}
@@ -2148,6 +2322,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Templates; }
 		}
@@ -2158,9 +2333,6 @@ namespace Dataweb.NShape {
 		private Template oldTemplate;
 		private Template newTemplate;
 
-		IFillStyle oldFillStyle;
-		IFillStyle newFillStyle;
-
 		private List<ShapeConnectionInfo> shapeConnectionInfos = new List<ShapeConnectionInfo>();
 		#endregion
 	}
@@ -2168,7 +2340,10 @@ namespace Dataweb.NShape {
 
 
 	#region ExchangeTemplateShapeCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ExchangeTemplateShapeCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public ExchangeTemplateShapeCommand(Template originalTemplate, Template changedTemplate)
 			: base() {
 			if (originalTemplate == null) throw new ArgumentNullException("originalTemplate");
@@ -2184,6 +2359,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (Repository != null) GetAllShapesFromTemplate();
 
@@ -2204,6 +2380,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			originalTemplate.Shape = null;
 			originalTemplate.CopyFrom(oldTemplate);
@@ -2234,8 +2411,9 @@ namespace Dataweb.NShape {
 							ReplaceShapesBuffer buffer = new ReplaceShapesBuffer();
 							buffer.diagram = diagram;
 							buffer.oldShape = shape;
-							buffer.newShape = newTemplate.CreateShape();
-							buffer.newShape.CopyFrom(buffer.oldShape);
+							// Create a new shape instance refering to the original template
+							buffer.newShape = newTemplate.Shape.Type.CreateInstance(originalTemplate);
+							buffer.newShape.CopyFrom(newTemplate.Shape);	// Copy all properties of the new shape
 							buffer.oldConnections = new List<ShapeConnectionInfo>(shape.GetConnectionInfos(ControlPointId.Any, null));
 							buffer.newConnections = new List<ShapeConnectionInfo>(buffer.oldConnections.Count);
 							foreach (ShapeConnectionInfo sci in buffer.oldConnections) {
@@ -2312,6 +2490,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData | Permission.Present | Permission.Connect | Permission.Templates; }
 		}
@@ -2340,9 +2519,11 @@ namespace Dataweb.NShape {
 
 
 	#region CreateTemplateCommand class
-	
+
+	/// <ToBeCompleted></ToBeCompleted>
 	public class CreateTemplateCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CreateTemplateCommand(Template template) {
 			if (template == null) throw new ArgumentNullException("template");
 			this.description = string.Format("Create new tempate '{0}' based on '{1}'", template.Name, template.Shape.Type.Name);
@@ -2350,6 +2531,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CreateTemplateCommand(string templateName, Shape baseShape)
 			: base() {
 			if (templateName == null) throw new ArgumentNullException("templateName");
@@ -2360,6 +2542,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (template == null) {
 				Shape templateShape = baseShape.Type.CreateInstance();
@@ -2377,6 +2560,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			if (Repository != null) {
 				Repository.DeleteModelMappings(template.GetPropertyMappings());
@@ -2385,6 +2569,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData | Permission.Present; }
 		}
@@ -2401,8 +2586,10 @@ namespace Dataweb.NShape {
 
 
 	#region DeleteTemplateCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DeleteTemplateCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteTemplateCommand(Template template)
 			: base() {
 			if (template == null) throw new ArgumentNullException("template");
@@ -2411,6 +2598,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (Repository != null) {
 				Repository.DeleteModelMappings(template.GetPropertyMappings());
@@ -2419,6 +2607,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			if (Repository != null) {
 				if (CanUndeleteEntity(template))
@@ -2431,6 +2620,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Templates; }
 		}
@@ -2444,23 +2634,28 @@ namespace Dataweb.NShape {
 
 
 	#region DiagramPropertySetCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DiagramPropertySetCommand : PropertySetCommand<Diagram> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramPropertySetCommand(IEnumerable<Diagram> modifiedDiagrams, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			: base(modifiedDiagrams, propertyInfo, oldValues, newValues) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramPropertySetCommand(IEnumerable<Diagram> modifiedDiagrams, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base(modifiedDiagrams, propertyInfo, oldValues, newValue) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramPropertySetCommand(Diagram modifiedDiagram, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base(modifiedDiagram, propertyInfo, oldValue, newValue) {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			base.Execute();
 			if (Repository != null) {
@@ -2470,6 +2665,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			base.Revert();
 			if (Repository != null) {
@@ -2479,6 +2675,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData | Permission.Present; }
 		}
@@ -2487,23 +2684,28 @@ namespace Dataweb.NShape {
 
 
 	#region DesignPropertySetCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DesignPropertySetCommand : PropertySetCommand<Design> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DesignPropertySetCommand(IEnumerable<Design> modifiedDesigns, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			: base(modifiedDesigns, propertyInfo, oldValues, newValues) {
 		}
 
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DesignPropertySetCommand(IEnumerable<Design> modifiedDesigns, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			:base(modifiedDesigns, propertyInfo, oldValues, newValue){
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DesignPropertySetCommand(Design modifiedDesign, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base(modifiedDesign, propertyInfo, oldValue, newValue) {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			base.Execute();
 			if (Repository != null) {
@@ -2513,6 +2715,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			base.Revert();
 			if (Repository != null) {
@@ -2522,6 +2725,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
@@ -2531,8 +2735,10 @@ namespace Dataweb.NShape {
 
 	#region LayerPropertySetCommand class
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class LayerPropertySetCommand : PropertySetCommand<Layer> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerPropertySetCommand(Diagram diagram, IEnumerable<Layer> modifiedLayers, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			:base(modifiedLayers, propertyInfo, oldValues, newValues) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2540,6 +2746,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerPropertySetCommand(Diagram diagram, IEnumerable<Layer> modifiedLayers, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base(modifiedLayers, propertyInfo, oldValues, newValue) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2547,6 +2754,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerPropertySetCommand(Diagram diagram, Layer modifiedLayer, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base(modifiedLayer, propertyInfo, oldValue, newValue) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2554,18 +2762,21 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			base.Execute();
 			if (Repository != null) Repository.UpdateDiagram(diagram);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			base.Revert();
 			if (Repository != null) Repository.UpdateDiagram(diagram);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
@@ -2579,8 +2790,10 @@ namespace Dataweb.NShape {
 
 
 	#region StylePropertySetCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class StylePropertySetCommand : PropertySetCommand<Style> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public StylePropertySetCommand(Design design, IEnumerable<Style> modifiedStyles, PropertyInfo propertyInfo, IEnumerable<object> oldValues, IEnumerable<object> newValues)
 			: base(modifiedStyles, propertyInfo, oldValues, newValues) {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2588,6 +2801,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public StylePropertySetCommand(Design design, IEnumerable<Style> modifiedStyles, PropertyInfo propertyInfo, IEnumerable<object> oldValues, object newValue)
 			: base(modifiedStyles, propertyInfo, oldValues, newValue) {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2595,6 +2809,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public StylePropertySetCommand(Design design, Style modifiedStyle, PropertyInfo propertyInfo, object oldValue, object newValue)
 			: base(modifiedStyle, propertyInfo, oldValue, newValue) {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2602,45 +2817,42 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
+			bool styleRenamed = propertyInfo.Name == "Name";
+			if (styleRenamed) RemoveModifiedStyles();
 			base.Execute();
-			UpdateDesignAndRepository();
+			UpdateDesignAndRepository(styleRenamed);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
+			bool styleRenamed = propertyInfo.Name == "Name";
+			if (styleRenamed) RemoveModifiedStyles();
 			base.Revert();
-			UpdateDesignAndRepository();
+			UpdateDesignAndRepository(styleRenamed);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
 
 
-		private void UpdateDesignAndRepository() {
-			int oldValCnt = oldValues.Count;
-			int newValCnt = newValues.Count;
-			int objCnt = modifiedObjects.Count;
-			// Check if the style was renamed.
-			bool maintainName = (string.Compare(propertyInfo.Name, "Name") == 0);
+		private void UpdateDesignAndRepository(bool styleRenamed) {
 			for (int i = modifiedObjects.Count - 1; i >= 0; --i) {
-				if (maintainName) {
-					MaintainStyleName(
-						modifiedObjects[i],
-						(string)oldValues[oldValCnt == objCnt ? i : 0],
-						(string)newValues[newValCnt == objCnt ? i : 0]);
-				}
+				if (styleRenamed) design.AddStyle(modifiedObjects[i]);
 				if (Repository != null) Repository.UpdateStyle(modifiedObjects[i]);
 			}
 			if (Repository != null) Repository.UpdateDesign(design);
 		}
-		
-		
-		private void MaintainStyleName(Style style, string oldName, string newName) {
-			design.RemoveStyle(oldName, style.GetType());
-			design.AddStyle(style);
+
+
+		private void RemoveModifiedStyles() {
+			for (int i = modifiedObjects.Count - 1; i >= 0; --i)
+				design.RemoveStyle(modifiedObjects[i].Name, modifiedObjects[i].GetType());
 		}
 
 
@@ -2657,6 +2869,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public class InsertShapeCommand : InsertOrRemoveShapeCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool withModelObjects, bool keepZOrder)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2665,6 +2878,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, Shape shape, bool withModelObjects, bool keepZOrder, int toX, int toY)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2674,6 +2888,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool withModelObjects, bool keepZOrder, int deltaX, int deltaY)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2682,6 +2897,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertShapeCommand(Diagram diagram, LayerIds layerIds, IEnumerable<Shape> shapes, bool withModelObjects, bool keepZOrder)
 			: base(diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -2690,18 +2906,21 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			//InsertShapes(layerIds);
 			InsertShapesAndModels(layerIds);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			//RemoveShapes();
 			DeleteShapesAndModels();
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Insert; }
 		}
@@ -2746,7 +2965,8 @@ namespace Dataweb.NShape {
 	/// RemoveRange the given shapes and their model objects from diagram and cache.
 	/// </summary>
 	public class DeleteShapeCommand : InsertOrRemoveShapeCommand {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteShapeCommand(Diagram diagram, IEnumerable<Shape> shapes, bool withModelObjects)
 			: base(diagram) {
 			SetShapes(shapes, withModelObjects);
@@ -2754,6 +2974,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteShapeCommand(Diagram diagram, Shape shape, bool withModelObjects)
 			: base(diagram) {
 			SetShape(shape, withModelObjects);
@@ -2761,16 +2982,19 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			DeleteShapesAndModels();
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			InsertShapesAndModels();
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Delete; }
 		}
@@ -2779,31 +3003,37 @@ namespace Dataweb.NShape {
 
 
 	#region InsertModelObjectsCommand
+	/// <ToBeCompleted></ToBeCompleted>
 	public class InsertModelObjectsCommand : InsertOrRemoveModelObjectsCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertModelObjectsCommand(IEnumerable<IModelObject> modelObjects)
 			: base() {
 			modelObjectBuffer = new List<IModelObject>(modelObjects);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertModelObjectsCommand(IModelObject modelObject) {
 			modelObjectBuffer = new List<IModelObject>(1);
 			modelObjectBuffer[0] = modelObject;
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (ModelObjects.Count == 0) SetModelObjects(modelObjectBuffer);
 			InsertModelObjects(true);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			RemoveModelObjects(true);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Insert; }
 		}
@@ -2816,31 +3046,37 @@ namespace Dataweb.NShape {
 
 
 	#region DeleteModelObjectsCommand
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DeleteModelObjectsCommand : InsertOrRemoveModelObjectsCommand {
 
-	   public DeleteModelObjectsCommand(IEnumerable<IModelObject> modelObjects)
+		/// <ToBeCompleted></ToBeCompleted>
+		public DeleteModelObjectsCommand(IEnumerable<IModelObject> modelObjects)
 	      : base() {
 			modelObjectBuffer = new List<IModelObject>(modelObjects);
 	   }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteModelObjectsCommand(IModelObject modelObject) {
 			modelObjectBuffer = new List<IModelObject>(1);
 			modelObjectBuffer[0] = modelObject;
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (ModelObjects.Count == 0) SetModelObjects(modelObjectBuffer);
 			RemoveModelObjects(true);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			InsertModelObjects(true);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Delete; }
 		}
@@ -2854,9 +3090,11 @@ namespace Dataweb.NShape {
 
 	#region InsertVertexCommand class
 
-	public class InsertVertexCommand : Command {
+	/// <ToBeCompleted></ToBeCompleted>
+	public class AddVertexCommand : Command {
 
-		public InsertVertexCommand(Shape shape, int x, int y)
+		/// <ToBeCompleted></ToBeCompleted>
+		public AddVertexCommand(Shape shape, int x, int y)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
 			if (!(shape is ILinearShape)) throw new ArgumentException(string.Format("Shape does not implement required interface {0}.", typeof(ILinearShape).Name));
@@ -2867,18 +3105,21 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			insertedPointId = ((ILinearShape)shape).AddVertex(x, y);
 			if (Repository != null) Repository.UpdateShape(shape);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			((ILinearShape)shape).RemoveVertex(insertedPointId);
 			if (Repository != null) Repository.UpdateShape(shape);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
@@ -2895,10 +3136,64 @@ namespace Dataweb.NShape {
 	#endregion
 
 
+	#region InsertVertexCommand class
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public class InsertVertexCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public InsertVertexCommand(Shape shape, ControlPointId beforePointId, int x, int y)
+			: base() {
+			if (shape == null) throw new ArgumentNullException("shape");
+			if (beforePointId == ControlPointId.None || beforePointId == ControlPointId.Any || beforePointId == ControlPointId.Reference || beforePointId == ControlPointId.FirstVertex)
+				throw new ArgumentException("beforePointId");
+			if (!(shape is ILinearShape)) throw new ArgumentException(string.Format("Shape does not implement required interface {0}.", typeof(ILinearShape).Name));
+			this.description = string.Format("Add Point to {0} at {1}|{2}", shape, x, y);
+			this.shape = shape;
+			this.beforePointId = beforePointId;
+			this.x = x;
+			this.y = y;
+		}
+
+
+		/// <override></override>
+		public override void Execute() {
+			insertedPointId = ((ILinearShape)shape).InsertVertex(beforePointId, x, y);
+			if (Repository != null) Repository.UpdateShape(shape);
+		}
+
+
+		/// <override></override>
+		public override void Revert() {
+			((ILinearShape)shape).RemoveVertex(insertedPointId);
+			if (Repository != null) Repository.UpdateShape(shape);
+		}
+
+
+		/// <override></override>
+		public override Permission RequiredPermission {
+			get { return Permission.Layout; }
+		}
+
+
+		#region Fields
+		private Shape shape;
+		private ControlPointId beforePointId = ControlPointId.None;
+		private int x;
+		private int y;
+		private ControlPointId insertedPointId = ControlPointId.None;
+		#endregion
+	}
+
+	#endregion
+
+
 	#region RemoveVertexCommand class
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class RemoveVertexCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RemoveVertexCommand(Shape shape, ControlPointId vertexId)
 			: base() {
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -2912,6 +3207,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			// store point position if not done yet
 			if (!Geometry.IsValid(p)) p = shape.GetControlPointPosition(removedPointId);
@@ -2922,6 +3218,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			shape.Invalidate();
 			((ILinearShape)shape).InsertVertex(nextPointId, p.X, p.Y);
@@ -2930,6 +3227,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Layout; }
 		}
@@ -2947,8 +3245,10 @@ namespace Dataweb.NShape {
 
 	#region CreateDesignCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class CreateDesignCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CreateDesignCommand(Design design)
 			: base() {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2957,6 +3257,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (Repository != null) {
 				if (CanUndeleteEntity(design))
@@ -2966,11 +3267,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			if (Repository != null) Repository.DeleteDesign(design);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
@@ -2984,7 +3287,10 @@ namespace Dataweb.NShape {
 
 	#region DeleteDesignCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DeleteDesignCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteDesignCommand(Design design)
 			: base() {
 			if (design == null) throw new ArgumentNullException("design");
@@ -2993,11 +3299,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (Repository != null) Repository.DeleteDesign(design);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			if (Repository != null) {
 				if (CanUndeleteEntity(design))
@@ -3007,6 +3315,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
@@ -3020,8 +3329,10 @@ namespace Dataweb.NShape {
 
 	#region CreateStyleCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class CreateStyleCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CreateStyleCommand(Design design, Style style)
 			: base() {
 			if (design == null) throw new ArgumentNullException("design");
@@ -3032,18 +3343,22 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			Design d = design ?? Repository.GetDesign(null);
 			d.AddStyle(style);
 			if (Repository != null) {
 				if (CanUndeleteEntity(style))
 					Repository.UndeleteStyle(d, style);
-				Repository.InsertStyle(d, style);
+				if (CanUndeleteEntity(style))
+					Repository.UndeleteStyle(d, style);
+				else Repository.InsertStyle(d, style);
 				Repository.UpdateDesign(d);
 			}
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			Design d = design ?? Repository.GetDesign(null);
 			d.RemoveStyle(style);
@@ -3054,6 +3369,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
@@ -3068,7 +3384,10 @@ namespace Dataweb.NShape {
 
 	#region DeleteStyleCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DeleteStyleCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteStyleCommand(Design design, Style style)
 			: base() {
 			if (design == null) throw new ArgumentNullException("design");
@@ -3079,6 +3398,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			Design d = design ?? Repository.GetDesign(null);
 			d.RemoveStyle(style);
@@ -3089,6 +3409,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			Design d = design ?? Repository.GetDesign(null);
 			d.AddStyle(style);
@@ -3101,6 +3422,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Designs; }
 		}
@@ -3115,18 +3437,22 @@ namespace Dataweb.NShape {
 
 	#region AddLayerCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class AddLayerCommand : InsertOrRemoveLayerCommand {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public AddLayerCommand(Diagram diagram, string layerName)
 			: base(diagram, layerName) {
 			this.description = string.Format("Add layer '{0}'", layerName);
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			AddLayers();
 		}
 
+		/// <override></override>
 		public override void Revert() {
 			RemoveLayers();
 		}
@@ -3137,7 +3463,10 @@ namespace Dataweb.NShape {
 
 	#region RemoveLayerCommand
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class RemoveLayerCommand : InsertOrRemoveLayerCommand {
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public RemoveLayerCommand(Diagram diagram, Layer layer)
 			: base(diagram, layer) {
 			Construct();
@@ -3145,6 +3474,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RemoveLayerCommand(Diagram diagram, IEnumerable<Layer> layers)
 			: base(diagram, layers) {
 			Construct();
@@ -3152,12 +3482,14 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			diagram.RemoveShapesFromLayers(affectedShapes, layerIds);
 			RemoveLayers();
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			AddLayers();
 			RestoreShapeLayers();
@@ -3206,6 +3538,205 @@ namespace Dataweb.NShape {
 	#endregion
 
 
+	#region AddShapesToLayersCommand class
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public class AddShapesToLayersCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public AddShapesToLayersCommand(Diagram diagram, Shape shape, LayerIds layerIds)
+			: this(diagram, SingleInstanceEnumerator<Shape>.Create(shape), layerIds) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public AddShapesToLayersCommand(Diagram diagram, IEnumerable<Shape> shapes, LayerIds layerIds)
+			: base() {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			this.diagram = diagram;
+			this.newLayerIds = layerIds;
+			this.shapes = new List<Shape>(shapes);
+			this.oldLayerIds = new List<LayerIds>(this.shapes.Count);
+			int cnt = this.shapes.Count;
+			for (int i = 0; i < cnt; ++i)
+				oldLayerIds.Add(this.shapes[i].Layers);
+		}
+
+
+		/// <override></override>
+		public override void Execute() {
+			if (shapes.Count > 0) {
+				for (int i = shapes.Count - 1; i >= 0; --i)
+					diagram.AddShapeToLayers(shapes[i], newLayerIds);
+				if (Repository != null) Repository.UpdateShapes(shapes);
+			}
+		}
+
+
+		/// <override></override>
+		public override void Revert() {
+			if (shapes.Count > 0) {
+				for (int i = shapes.Count - 1; i >= 0; --i)
+					diagram.AddShapeToLayers(shapes[i], oldLayerIds[i]);
+				if (Repository != null) Repository.UpdateShapes(shapes);
+			}
+		}
+
+
+		/// <override></override>
+		public override Permission RequiredPermission {
+			get { return Permission.Layout; }
+		}
+
+
+		private Diagram diagram;
+		private LayerIds newLayerIds;
+		private List<LayerIds> oldLayerIds;
+		private List<Shape> shapes;
+	}
+
+	#endregion
+
+
+	#region AssignShapesToLayersCommand class
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public class AssignShapesToLayersCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public AssignShapesToLayersCommand(Diagram diagram, Shape shape, LayerIds layerIds)
+			: this(diagram, SingleInstanceEnumerator<Shape>.Create(shape), layerIds) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public AssignShapesToLayersCommand(Diagram diagram, IEnumerable<Shape> shapes, LayerIds layerIds)
+			: base() {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			this.diagram = diagram;
+			this.newLayerIds = layerIds;
+			this.shapes = new List<Shape>(shapes);
+			this.oldLayerIds = new List<LayerIds>(this.shapes.Count);
+			int cnt = this.shapes.Count;
+			for (int i = 0; i < cnt; ++i)
+				oldLayerIds.Add(this.shapes[i].Layers);
+		}
+
+
+		/// <override></override>
+		public override void Execute() {
+			if (shapes.Count > 0) {
+				for (int i = shapes.Count - 1; i >= 0; --i) {
+					diagram.RemoveShapeFromLayers(shapes[i], LayerIds.All);
+					diagram.AddShapeToLayers(shapes[i], newLayerIds);
+				}
+				if (Repository != null) Repository.UpdateShapes(shapes);
+			}
+		}
+
+
+		/// <override></override>
+		public override void Revert() {
+			if (shapes.Count > 0) {
+				for (int i = shapes.Count - 1; i >= 0; --i) {
+					diagram.RemoveShapesFromLayers(shapes, LayerIds.All);
+					diagram.AddShapeToLayers(shapes[i], oldLayerIds[i]);
+				}
+				if (Repository != null) Repository.UpdateShapes(shapes);
+			}
+		}
+
+
+		/// <override></override>
+		public override Permission RequiredPermission {
+			get { return Permission.Layout; }
+		}
+
+
+		private Diagram diagram;
+		private LayerIds newLayerIds;
+		private List<LayerIds> oldLayerIds;
+		private List<Shape> shapes;
+	}
+
+	#endregion
+
+
+	#region RemoveShapesFromLayersCommand class
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public class RemoveShapesFromLayersCommand : Command {
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public RemoveShapesFromLayersCommand(Diagram diagram, Shape shape)
+			: this(diagram, SingleInstanceEnumerator<Shape>.Create(shape), LayerIds.All) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public RemoveShapesFromLayersCommand(Diagram diagram, IEnumerable<Shape> shapes)
+			: this(diagram, shapes, LayerIds.All) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public RemoveShapesFromLayersCommand(Diagram diagram, Shape shape, LayerIds removeFromLayerIds)
+			: this(diagram, SingleInstanceEnumerator<Shape>.Create(shape), removeFromLayerIds) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public RemoveShapesFromLayersCommand(Diagram diagram, IEnumerable<Shape> shapes, LayerIds removeFromLayerIds)
+			: base() {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			this.diagram = diagram;
+			this.shapes = new List<Shape>(shapes);
+			this.removeLayerIds = removeFromLayerIds;
+			this.originalLayerIds = new List<LayerIds>(this.shapes.Count);
+			int cnt = this.shapes.Count;
+			for (int i =0; i < cnt; ++i)
+				originalLayerIds.Add(this.shapes[i].Layers);
+		}
+
+
+		/// <override></override>
+		public override void Execute() {
+			if (shapes.Count > 0) {
+				for (int i = shapes.Count - 1; i >= 0; --i)
+					diagram.RemoveShapeFromLayers(shapes[i], removeLayerIds);
+				if (Repository != null) Repository.UpdateShapes(shapes);
+			}
+		}
+
+
+		/// <override></override>
+		public override void Revert() {
+			if (shapes.Count > 0) {
+				for (int i = shapes.Count - 1; i >= 0; --i)
+					diagram.AddShapeToLayers(shapes[i], originalLayerIds[i]);
+				if (Repository != null) Repository.UpdateShapes(shapes);
+			}
+		}
+
+
+		/// <override></override>
+		public override Permission RequiredPermission {
+			get { return Permission.Layout; }
+		}
+
+
+		private Diagram diagram;
+		private LayerIds removeLayerIds;
+		private List<LayerIds> originalLayerIds;
+		private List<Shape> shapes;
+	}
+
+	#endregion
+
+
 	#region GroupShapesCommand class
 
 	/// <summary>
@@ -3213,6 +3744,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public class GroupShapesCommand : ShapeAggregationCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupShapesCommand(Diagram diagram, LayerIds layerIds, Shape shapeGroup, IEnumerable<Shape> childShapes)
 			: base(diagram, shapeGroup, childShapes) {
 			if (!(aggregationShape is IShapeGroup)) throw new ArgumentException("Shape must be a shape group.");
@@ -3232,6 +3764,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			// insert aggregationShape into diagram (and Cache)
 			if (Repository != null) aggregationShape.ZOrder = Repository.ObtainNewTopZOrder(diagram);
@@ -3239,11 +3772,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			DeleteShapeAggregation();
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Insert; }
 		}
@@ -3258,6 +3793,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public class UngroupShapesCommand : ShapeAggregationCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public UngroupShapesCommand(Diagram diagram, Shape shapeGroup)
 			: base(diagram, shapeGroup, (shapeGroup != null) ? shapeGroup.Children : null) {
 			if (!(shapeGroup is IShapeGroup)) throw new ArgumentException("Shape must support IShapeGroup.");
@@ -3266,16 +3802,19 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			DeleteShapeAggregation();
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			CreateShapeAggregation(false);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Delete; }
 		}
@@ -3284,24 +3823,29 @@ namespace Dataweb.NShape {
 
 
 	#region AggregateCompositeShapeCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class AggregateCompositeShapeCommand : ShapeAggregationCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public AggregateCompositeShapeCommand(Diagram diagram, LayerIds layerIds, Shape parentShape, IEnumerable<Shape> childShapes)
 			: base(diagram, parentShape, childShapes) {
 			this.description = string.Format("Aggregate {0} shapes to a composite shape", base.shapes.Count);
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			CreateShapeAggregation(true);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			DeleteShapeAggregation();
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Insert; }
 		}
@@ -3310,24 +3854,29 @@ namespace Dataweb.NShape {
 
 
 	#region SplitCompositeShapeCommand class
+	/// <ToBeCompleted></ToBeCompleted>
 	public class SplitCompositeShapeCommand : ShapeAggregationCommand {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public SplitCompositeShapeCommand(Diagram diagram, LayerIds layerIds, Shape parentShape)
 			: base(diagram, parentShape, (parentShape != null) ? parentShape.Children : null) {
 			this.description = string.Format("Split composite shape into {0} single shapes", base.shapes.Count);
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			DeleteShapeAggregation();
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			CreateShapeAggregation(true);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Insert; }
 		}
@@ -3336,8 +3885,10 @@ namespace Dataweb.NShape {
 
 
 	#region InsertDiagramCommand 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class InsertDiagramCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public InsertDiagramCommand(Diagram diagram)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -3346,6 +3897,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (Repository != null) {
 				if (CanUndeleteEntity(diagram))
@@ -3355,11 +3907,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			if (Repository != null) Repository.DeleteDiagram(diagram);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Insert; }
 		}
@@ -3371,8 +3925,10 @@ namespace Dataweb.NShape {
 
 
 	#region DeleteDiagramCommand
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DeleteDiagramCommand : Command {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteDiagramCommand(Diagram diagram)
 			: base() {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -3381,11 +3937,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void Execute() {
 			if (Repository != null) Repository.DeleteDiagram(diagram);
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			if (Repository != null) {
 				if (diagram.Shapes.Count == 0)
@@ -3397,6 +3955,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.Delete; }
 		}

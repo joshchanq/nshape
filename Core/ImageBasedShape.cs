@@ -35,11 +35,11 @@ namespace Dataweb.NShape.Advanced {
 
 		#region [Public] Properties
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
 		[Description("The shape's image.")]
-		[PropertyMappingId(PropertyIdImage)]
 		[RequiredPermission(Permission.Present)]
-		[Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.NShape.WinFormsUI.NamedImageUITypeEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public NamedImage Image {
 			get { return image; }
 			set {
@@ -53,6 +53,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
 		[Description("Defines the layout of the displayed image.")]
 		[PropertyMappingId(PropertyIdImageLayout)]
@@ -68,6 +69,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
 		[Description("Displays the image as grayscale image.")]
 		[PropertyMappingId(PropertyIdImageGrayScale)]
@@ -83,6 +85,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
 		[Description("Gamma correction value for the image.")]
 		[PropertyMappingId(PropertyIdImageGamma)]
@@ -99,6 +102,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
 		[Description("Transparency of the image in percentage.")]
 		[PropertyMappingId(PropertyIdImageTransparency)]
@@ -115,6 +119,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
 		[Description("Transparency of the image in percentage.")]
 		[PropertyMappingId(PropertyIdImageTransparentColor)]
@@ -134,6 +139,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region [Public] Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void FitShapeToImageSize() {
 			if (image != null) {
 				Width = image.Width + (Width - imageBounds.Width);
@@ -142,6 +148,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new PictureBase(Type, (Template)null);
 			result.CopyFrom(this);
@@ -149,6 +156,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
 			if (source is PictureBase) {
@@ -165,6 +173,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
 			base.MakePreview(styleSet);
 			isPreview = true;
@@ -175,11 +184,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
 			return base.HitTest(x, y, controlPointCapability, range);
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if (ImageLayout == ImageLayoutMode.Original) {
 				if ((controlPointCapability & ControlPointCapabilities.Glue) != 0) {
@@ -206,6 +217,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			UpdateDrawCache();
@@ -231,6 +243,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <override></override>
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			base.LoadFieldsCore(reader, version);
 			imageLayout = (ImageLayoutMode)reader.ReadByte();
@@ -246,6 +259,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
 			base.SaveFieldsCore(writer, version);
 			writer.WriteByte((byte)imageLayout);
@@ -253,19 +267,24 @@ namespace Dataweb.NShape.Advanced {
 			writer.WriteFloat(imageGamma);
 			writer.WriteByte(compressionQuality);
 			writer.WriteBool(imageGrayScale);
-			string imgName = null;
-			Image img = null;
-			if (image != null) {
-				imgName = image.Name;
-				img = image.Image;
+			if (NamedImage.IsNullOrEmpty(image)) {
+				writer.WriteString(string.Empty);
+				writer.WriteImage(null);
+			} else {
+				writer.WriteString(image.Name);
+				object imgTag = image.Image.Tag;
+				image.Image.Tag = image.Name;
+				writer.WriteImage(image.Image);
+				image.Image.Tag = imgTag;
 			}
-			writer.WriteString(imgName);
-			writer.WriteImage(img);
 			writer.WriteInt32(transparentColor.ToArgb());
 		}
 
 
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.PictureBase" />.
+		/// </summary>
+		new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
 				yield return pi;
 			yield return new EntityFieldDefinition("ImageLayout", typeof(byte));
@@ -281,18 +300,21 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal PictureBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 			Construct();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal PictureBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 			Construct();
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			Size txtSize = Size.Empty;
@@ -311,12 +333,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void InvalidateDrawCache() {
 			base.InvalidateDrawCache();
 			imageBounds = Geometry.InvalidRectangle;
 		}
 
 
+		/// <override></override>
 		protected override void RecalcDrawCache() {
 			base.RecalcDrawCache();
 			imageBounds.Width = Width;
@@ -354,6 +378,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {
 			base.TransformDrawCache(deltaX, deltaY, deltaAngle, rotationCenterX, rotationCenterY);
 			if (Geometry.IsValid(imageBounds)) {
@@ -371,6 +396,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -390,15 +416,46 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InvalidateImageAttribs() {
 			GdiHelpers.DisposeObject(ref imageAttribs);
 			InvalidateDrawCache();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void InvalidateImageBrush() {
 			GdiHelpers.DisposeObject(ref imageBrush);
 			InvalidateDrawCache();
+		}
+
+
+		/// <override></override>
+		protected override void ProcessExecModelPropertyChange(IModelMapping propertyMapping) {
+			switch (propertyMapping.ShapePropertyId) {
+				//case PropertyIdImage: break;
+				case PropertyIdImageLayout:
+					ImageLayout = (ImageLayoutMode)propertyMapping.GetInteger();
+					break;
+				case PropertyIdImageGrayScale:
+					GrayScale = (propertyMapping.GetInteger() != 0);
+					break;
+				case PropertyIdImageGamma:
+					//GammaCorrection = Math.Max(0.00000001f, Math.Abs(propertyMapping.GetFloat()));
+					GammaCorrection = propertyMapping.GetFloat();
+					break;
+				case PropertyIdImageTransparency:
+					checked {
+						Transparency = (byte)propertyMapping.GetInteger();
+					}
+					break;
+				case PropertyIdImageTransparentColor:
+					TransparentColor = Color.FromArgb(propertyMapping.GetInteger());
+					break;
+				default:
+					base.ProcessExecModelPropertyChange(propertyMapping);
+					break;
+			}
 		}
 
 
@@ -426,11 +483,17 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdImage = 9;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdImageLayout = 10;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdImageGrayScale = 11;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdImageGamma = 12;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdImageTransparency = 13;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdImageTransparentColor = 14;
 
 		private ImageAttributes imageAttribs = null;
@@ -460,6 +523,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <remarks>RequiredPermissions set</remarks>
 	public class ImageBasedShape : ShapeBase, IPlanarShape, ICaptionedShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal ImageBasedShape(ShapeType shapeType, Template template,
 			string resourceBaseName, Assembly resourceAssembly)
 			: base(shapeType, template) {
@@ -467,6 +531,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal ImageBasedShape(ShapeType shapeType, IStyleSet styleSet,
 			string resourceBaseName, Assembly resourceAssembly)
 			: base(shapeType, styleSet) {
@@ -474,6 +539,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			w = image.Width;
@@ -485,6 +551,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
 
@@ -518,6 +585,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ImageBasedShape(Type, (Template)null, resourceName, resourceAssembly);
 			result.CopyFrom(this);
@@ -525,19 +593,21 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Text")]
 		[Description("Text displayed inside the shape")]
 		[PropertyMappingId(PropertyIdText)]
 		[RequiredPermission(Permission.ModifyData)]
-		[Editor("Dataweb.NShape.WinFormsUI.TextEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.NShape.WinFormsUI.TextUITypeEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public string Text {
 			get { return caption.Text; }
 			set { caption.Text = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Text")]
-		[Description("Determines the style of the shape's text.")]
+		[Description("Determines the style of the shape's text.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdCharacterStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICharacterStyle CharacterStyle {
@@ -550,8 +620,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Text")]
-		[Description("Determines the layout of the shape's text.")]
+		[Description("Determines the layout of the shape's text.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[RequiredPermission(Permission.Present)]
 		[PropertyMappingId(PropertyIdParagraphStyle)]
 		public IParagraphStyle ParagraphStyle {
@@ -564,6 +635,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
 			base.MakePreview(styleSet);
 			charStyle = styleSet.GetPreviewStyle(CharacterStyle);
@@ -572,6 +644,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool NotifyStyleChanged(IStyle style) {
 			bool result = base.NotifyStyleChanged(style);
 			if (style == null || IsStyleAffected(CharacterStyle, style) || IsStyleAffected(ParagraphStyle, style)) {
@@ -584,6 +657,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
 			RelativePosition result = RelativePosition.Empty;
 			result.A = 0;
@@ -592,6 +666,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
 			Point result = Point.Empty;
 			result.X = x;
@@ -600,12 +675,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateNormalVector(int x, int y) {
 			if (!ContainsPoint(x, y)) throw new NShapeException("Coordinates {0} are outside {1}.", new Point(x, y), Type.FullName);
 			return Geometry.CalcNormalVectorOfRectangle(x - (w / 2), y - (h / 2), x + (w / 2), y + (h / 2), x, y, 100);
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			// All controlPoints of the imagebased shape are inside the shpe's bounds
 			// so the tight fitting bounding rectangle equals the loose bounding rectangle
@@ -618,6 +695,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override int X {
 			get { return x; }
 			set {
@@ -630,6 +708,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override int Y {
 			get { return y; }
 			set {
@@ -642,6 +721,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Fit(int x, int y, int width, int height) {
 			if (height - ch < minH) ch = 0;
 			if (width * image.Height <= (height - ch) * image.Width) {
@@ -660,6 +740,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int fromX, int fromY) {
 			// Zwei identische Punkte definieren keine Gerade
 			if (fromX == x && fromY == y) fromY -= 10;
@@ -670,11 +751,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal override int ControlPointCount {
 			get { return 4; }
 		}
 
 
+		/// <override></override>
 		public override Point GetControlPointPosition(ControlPointId controlPointId) {
 			Point result = Point.Empty;
 			switch (controlPointId) {
@@ -705,6 +788,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			bool result;
 			switch (controlPointId) {
@@ -729,6 +813,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			UpdateDrawCache();
@@ -741,6 +826,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void DrawOutline(Graphics graphics, Pen pen) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (pen == null) throw new ArgumentNullException("pen");
@@ -750,6 +836,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Invalidate() {
 			if (DisplayService != null)
 				DisplayService.Invalidate(x - w / 2, y - h / 2, w, h);
@@ -759,6 +846,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IPlanarShape Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Layout")]
 		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
 		[PropertyMappingId(PropertyIdAngle)]
@@ -769,8 +857,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Appearance")]
-		[Description("Defines the appearence of the shape's interior. \nUse the design editor to modify and create styles.")]
+		[Description("Defines the appearence of the shape's interior.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdFillStyle)]
 		[RequiredPermission(Permission.Present)]
 		public virtual IFillStyle FillStyle {
@@ -787,11 +876,13 @@ namespace Dataweb.NShape.Advanced {
 
 		#region ICaptionedShape Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int CaptionCount {
 			get { return 1; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool GetCaptionTextBounds(int index, out Point topLeft, out Point topRight, out Point bottomRight, out Point bottomLeft) {
 			if (index != 0) throw new IndexOutOfRangeException("index");
 			Point location = Point.Empty;
@@ -807,6 +898,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool GetCaptionBounds(int index, out Point topLeft, out Point topRight, out Point bottomRight, out Point bottomLeft) {
 			if (index != 0) throw new IndexOutOfRangeException("index");
 			Point location = Point.Empty;
@@ -821,6 +913,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Rectangle GetCaptionTextBounds(int index) {
 			if (index != 0) throw new IndexOutOfRangeException("index");
 			Rectangle captionBounds = Rectangle.Empty;
@@ -832,6 +925,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Rectangle GetCaptionBounds(int index) {
 			Rectangle result = Rectangle.Empty;
 			result.X = -w / 2;
@@ -842,39 +936,46 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string GetCaptionText(int index) {
 			return caption.Text;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ICharacterStyle GetCaptionCharacterStyle(int index) {
 			return CharacterStyle;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IParagraphStyle GetCaptionParagraphStyle(int index) {
 			return ParagraphStyle;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetCaptionText(int index, string text) {
 			caption.Text = text;
 			this.captionUpdated = false;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetCaptionCharacterStyle(int index, ICharacterStyle characterStyle) {
 			CharacterStyle = characterStyle;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetCaptionParagraphStyle(int index, IParagraphStyle paragraphStyle) {
 			ParagraphStyle = paragraphStyle;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int FindCaptionFromPoint(int x, int y) {
-			return Geometry.RectangleContainsPoint(x, y, this.x - this.w / 2, this.y - this.h / 2 + this.h - this.ch, this.w, this.ch) ? 0 : -1;
+			return Geometry.RectangleContainsPoint(this.x - this.w / 2, this.y - this.h / 2 + this.h - this.ch, this.w, this.ch, x, y) ? 0 : -1;
 		}
 
 		#endregion
@@ -882,7 +983,10 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.ImageBasedShape" />.
+		/// </summary>
+		new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition epd in ShapeBase.GetPropertyDefinitions(version))
 				yield return epd;
 			yield return new EntityFieldDefinition("FillStyle", typeof(object));
@@ -894,6 +998,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			base.LoadFieldsCore(reader, version);
 			fillStyle = reader.ReadFillStyle();
@@ -908,6 +1013,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
 			base.SaveFieldsCore(writer, version);
 			writer.WriteStyle(fillStyle);
@@ -920,6 +1026,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void DeleteCore(IRepositoryWriter writer, int version) {
 			// Nothing to do
 		}
@@ -927,6 +1034,7 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <override></override>
 		protected override ControlPointId GetControlPointId(int index) {
 			switch (index) {
 				case 0: return 1;
@@ -938,17 +1046,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
-			return Geometry.RectangleContainsPoint(x, y, this.x - this.w / 2, this.y - this.h / 2, this.w, this.h);
+			return Geometry.RectangleContainsPoint(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h, x, y);
 		}
 
 
+		/// <override></override>
 		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
 			bool result = Geometry.RectangleIntersectsWithRectangle(this.x - this.w / 2, this.y - this.h / 2, this.w, this.h, x, y, width, height);
 			return result;
 		}
 
 
+		/// <override></override>
 		protected override bool MoveByCore(int deltaX, int deltaY) {
 			base.MoveByCore(deltaX, deltaY);
 			this.x += deltaX;
@@ -960,6 +1071,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool MovePointByCore(ControlPointId pointId, int deltaX, int deltaY, ResizeModifiers modifiers) {
 			bool result;
 			if (pointId == ControlPointId.Reference || pointId == 2) result = MoveByCore(deltaX, deltaY);
@@ -1005,6 +1117,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool RotateCore(int angle, int x, int y) {
 			if (x != X || y != Y) {
 				int toX = X;
@@ -1016,17 +1129,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void InvalidateDrawCache() {
 			base.InvalidateDrawCache();
 			caption.InvalidatePath();
 		}
 
 
+		/// <override></override>
 		protected override void RecalcDrawCache() {
 			UpdateDrawCache();
 		}
 
 
+		/// <override></override>
 		protected override void UpdateDrawCache() {
 			if (drawCacheIsInvalid) {
 				ch = CharacterStyle.Size + 4;
@@ -1037,6 +1153,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {
 			transformation.Reset();
 			transformation.Translate(deltaX, deltaY);
@@ -1055,26 +1172,43 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdAngle = 2;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdFillStyle = 3;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdText = 4;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdCharacterStyle = 5;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdParagraphStyle = 6;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int minW = 10;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int minH = 10;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int x, y; // Position of reference point in the center
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int w, h; // Size of shape
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int angle;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Image image;
+		//
 		// these are needed for calling the constructor when cloning
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string resourceName;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Assembly resourceAssembly;
-
+		//
 		// Caption fields
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool captionUpdated = false;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int ch; // Height of the caption
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Caption caption = new Caption("Test");
 
 		private ICharacterStyle charStyle;
@@ -1090,6 +1224,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <remarks>RequiredPermissions set</remarks>
 	public class CustomizableMetaFile : ImageBasedShape {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CustomizableMetaFile(Type, (Template)null, resourceName, resourceAssembly);
 			result.CopyFrom(this);
@@ -1097,6 +1232,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
 			if (source is CustomizableMetaFile) {
@@ -1104,6 +1240,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (!captionUpdated) UpdateDrawCache();
@@ -1118,23 +1255,20 @@ namespace Dataweb.NShape.Advanced {
 			MetafileHeader header = bufferImage.GetMetafileHeader();
 			graphics.DrawImage(bufferImage, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
 			
-			// Draw original image
-			// ToDo: Define a BrushRemapTable instead of exchanging brushes
-			//MetafileHeader header = ((Metafile)image).GetMetafileHeader();
-			//graphics.DrawImage(image, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
-#if DEBUG
-			//graphics.DrawRectangle(Pens.Red, dstBounds);
-#endif
-			if (h >= ch + 2 * minH) caption.Draw(graphics, CharacterStyle, ParagraphStyle);
+			//if (h >= ch + 2 * minH) 
+			if (caption != null)
+				caption.Draw(graphics, CharacterStyle, ParagraphStyle);
 		}
 
 
+		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
 			base.MakePreview(styleSet);
 			imageAttribs = GdiHelpers.GetImageAttributes(FillStyle);
 		}
 
 
+		/// <override></override>
 		public override bool NotifyStyleChanged(IStyle style) {
 			bool result = base.NotifyStyleChanged(style);
 			if (IsStyleAffected(LineStyle, style) || IsStyleAffected(FillStyle, style)) {
@@ -1145,6 +1279,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override IFillStyle FillStyle {
 			get { return base.FillStyle; }
 			set {
@@ -1158,6 +1293,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal CustomizableMetaFile(ShapeType shapeType, Template template,
 			string resourceBaseName, Assembly resourceAssembly)
 			: base(shapeType, template, resourceBaseName, resourceAssembly) {
@@ -1165,6 +1301,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal CustomizableMetaFile(ShapeType shapeType, IStyleSet styleSet,
 			string resourceBaseName, Assembly resourceAssembly)
 			: base(shapeType, styleSet, resourceBaseName, resourceAssembly) {
@@ -1172,6 +1309,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Debug.Assert(image is Metafile);
@@ -1191,9 +1329,6 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private bool MetafileProc(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
-#if DEBUG
-			++emfRecordsPlayed;
-#endif
 			try {
 				if (data == IntPtr.Zero)
 					((Metafile)image).PlayRecord(recordType, flags, 0, null);
@@ -1206,52 +1341,18 @@ namespace Dataweb.NShape.Advanced {
 					Marshal.Copy(data, metafileData, 0, dataSize);
 					// Adjust the color
 					switch (recordType) {
-						case EmfPlusRecordType.EmfSetWindowExtEx:
-							// An Position 0 steht die Größe in Bild-Einheiten
-							//int boundsWidth = Buffers.GetInt32(metafileData, 0);
-							//if (boundsWidth > 0) scaling = boundsWidth / w;
-							break;
-						case EmfPlusRecordType.EmfSetViewportExtEx:
-							// An Position 0 steht die Größe als SIZEL
-							// Buffers.SetInt32(metafileData, 0, w);
-							// Buffers.SetInt32(metafileData, 4, h - caption.Bounds.Height);
-							break;
 						case EmfPlusRecordType.EmfCreateBrushIndirect:
 							// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
 							// Get color of current brush
-							int idx = 8;
-							byte r = Buffers.GetByte(metafileData, 0, ref idx);
-							byte g = Buffers.GetByte(metafileData, 0, ref idx);
-							byte b = Buffers.GetByte(metafileData, 0, ref idx);
-							byte a = 255;// Buffers.GetByte(metafileData, 0, ref idx);
-							Color color = Color.FromArgb(a, r, g, b);
-							if (replaceColor == Color.Empty) replaceColor = Color.FromArgb(a, r, g, b);
-							// If the brush's color matches the color to replace, replace it.
-							if (color.ToArgb() == replaceColor.ToArgb()) {
+							if (!brushReplaced) {
 								Buffers.SetByte(metafileData, 8, FillStyle.BaseColorStyle.Color.R);
 								Buffers.SetByte(metafileData, 9, FillStyle.BaseColorStyle.Color.G);
 								Buffers.SetByte(metafileData, 10, FillStyle.BaseColorStyle.Color.B);
-								//Buffers.SetByte(metafileData, 11, FillStyle.BaseColorStyle.Color.A);
-#if DEBUG
-								++brushesReplaced;
-#endif
+								Buffers.SetByte(metafileData, 11, FillStyle.BaseColorStyle.Color.A);
+								brushReplaced = true;
 							}
 							break;
-						case EmfPlusRecordType.EmfCreatePen:
-						//// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
-						//Buffers.SetInt32(metafileData, 4, (int)LineStyle.DashType);
-						//Buffers.SetInt32(metafileData, 8, (int)(LineStyle.LineWidth * scaling));
-						//// y-Komponente wird angeblich nicht benutzt.
-						//Buffers.SetInt32(metafileData, 12, LineStyle.LineWidth);
-						//Buffers.SetByte(metafileData, 16, LineStyle.ColorStyle.Color.R);
-						//Buffers.SetByte(metafileData, 17, LineStyle.ColorStyle.Color.G);
-						//Buffers.SetByte(metafileData, 18, LineStyle.ColorStyle.Color.B);
-						//Buffers.SetByte(metafileData, 19, LineStyle.ColorStyle.Color.A);
-						//break;
-						case EmfPlusRecordType.FillPath:
-						default:
-							// nothing to do
-							break;
+						default: /* nothing to do */ break;
 					}
 					((Metafile)image).PlayRecord(recordType, flags, dataSize, metafileData);
 				}
@@ -1262,25 +1363,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private bool MetafileProc2(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
-			try {
-				if (data == IntPtr.Zero) ((Metafile)image).PlayRecord(recordType, flags, 0, null);
-				else {
-					if (dataSize > metafileDataSize) {
-						metafileDataSize = dataSize;
-						metafileData = new byte[metafileDataSize];
-					}
-					// Copy the unmanaged record to a managed byte buffer that can be used by PlayRecord.
-					Marshal.Copy(data, metafileData, 0, dataSize);
-					((Metafile)image).PlayRecord(recordType, flags, dataSize, metafileData);
-				}
-			} catch (Exception exc) {
-				Console.WriteLine("Error while playing metafile record: {0}", exc.Message);
-			}
-			return true;
-		}
-
-	
 		private Metafile CreateImage() {
 			// Create MetaFile and graphics context
 			Metafile metaFile = null;
@@ -1301,26 +1383,16 @@ namespace Dataweb.NShape.Advanced {
 					gfx.ReleaseHdc(hdc);
 				}
 			}
-#if DEBUG
-			emfRecordsPlayed = 0;
-			brushesReplaced = 0;
-#endif
 			imageAttribs = GdiHelpers.GetImageAttributes(FillStyle);
 			using (Graphics gfx = Graphics.FromImage(metaFile)) {
 				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.HighQuality);
 				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
 				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, metafileDelegate, IntPtr.Zero, imageAttribs);
-				//gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, new Graphics.EnumerateMetafileProc(MetafileProc2), IntPtr.Zero, imageAttribs);
 			}
 			if (stream != null) {
 				stream.Dispose();
 				stream = null;
 			}
-#if DEBUG
-			Console.WriteLine("Image created: {0} metafile records played and {1} brushes replaced.", emfRecordsPlayed, brushesReplaced);
-			emfRecordsPlayed = 0;
-			brushesReplaced = 0;
-#endif
 			return metaFile;
 		}
 
@@ -1328,17 +1400,10 @@ namespace Dataweb.NShape.Advanced {
 		private Graphics.EnumerateMetafileProc metafileDelegate;
 		private byte[] metafileData = null; // Date for meta file drawing
 		private int metafileDataSize = 0; // Allocated size for meta file data
-		private Color replaceColor = Color.Empty;
 		private bool brushReplaced;
-		private float scaling;
 
 		private ImageAttributes imageAttribs;
 		private Metafile bufferImage;
-
-#if DEBUG
-		private int emfRecordsPlayed = 0;
-		private int brushesReplaced = 0;
-#endif
 	}
 
 }

@@ -27,9 +27,9 @@ namespace Dataweb.NShape.Advanced {
 	/// Base class for all graphical objects
 	/// </summary>
 	/// <remarks>RequiredPermissions set</remarks>
-	[Serializable]
 	public abstract class ShapeBase : Shape, IShapeCollection, IReadOnlyShapeCollection {
 
+		/// <override></override>
 		public override void Dispose() {
 			if (ModelObject != null) ModelObject = null;
 			if (connectionInfos != null) {
@@ -44,6 +44,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Shape Members
 
+		/// <override></override>
 		public override void CopyFrom(Shape source) {
 			if (source == null) throw new ArgumentNullException("source");
 
@@ -55,7 +56,6 @@ namespace Dataweb.NShape.Advanced {
 			if (template == null) template = source.Template;
 			// Copy base properties
 			if (this.modelObject != null) this.modelObject.DetachShape(this);
-			//Debug.Assert((this.modelObject == null && source.ModelObject == null) || (this.modelObject != source.ModelObject));
 			this.modelObject = source.ModelObject;
 			if (this.modelObject != null) this.modelObject.AttachShape(this);
 
@@ -82,13 +82,17 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
 			if (styleSet == null) throw new ArgumentNullException("styleSet");
 			if (children != null) children.SetPreviewStyles(styleSet);
 			privateLineStyle = styleSet.GetPreviewStyle(LineStyle);
+			if (ModelObject != null) ModelObject.Name += " (Preview)";
+			// ToDo: Add Suffix to modelObject's children, too
 		}
 
 
+		/// <override></override>
 		public override bool NotifyStyleChanged(IStyle style) {
 			bool result = false;
 			if (style == null || IsStyleAffected(LineStyle, style)) {
@@ -102,14 +106,17 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override ShapeType Type {
 			get { return shapeType; }
 		}
 
 
+		/// <override></override>
 		public override Template Template { get { return template; } }
 
 
+		/// <override></override>
 		public override IModelObject ModelObject {
 			get { return modelObject; }
 			set {
@@ -122,11 +129,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override IShapeCollection Children {
 			get { return (IShapeCollection)this; }
 		}
 
 
+		/// <override></override>
 		public override Diagram Diagram {
 			get {
 				if (owner is DiagramShapeCollection)
@@ -148,6 +157,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Shape Parent {
 			get {
 				if (owner is ShapeAggregation) return ((ShapeAggregation)owner).Owner;
@@ -173,12 +183,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override object Tag {
 			get { return tag; }
 			set { tag = value; }
 		}
 
 
+		/// <override></override>
 		public override char SecurityDomainName {
 			get {
 				if (securityDomainName == '\0' && Template != null)
@@ -193,6 +205,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			bool isFeasible = ContainsPoint(mouseX, mouseY);
 			string description = "Create a new template.";
@@ -206,6 +219,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void NotifyModelChanged(int modelPropertyId) {
 			Debug.Assert(ModelObject != null);
 			// ToDo: 
@@ -232,6 +246,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateNormalVector(int x, int y) {
 			// ToDo: Remove this default implementation and implement this method in all classes that have a defined shape
 			return Geometry.CalcNormalVectorOfRectangle(GetBoundingRectangle(true), x, y, 100);
@@ -271,8 +286,7 @@ namespace Dataweb.NShape.Advanced {
 				ShapeConnectionInfo connectionInfo = ShapeConnectionInfo.Create(ownPointId, otherShape, otherPointId);
 				if (connectionInfos == null) connectionInfos = new List<ShapeConnectionInfo>();
 				if (!connectionInfos.Contains(connectionInfo)) {
-					if (this.ModelObject != null && otherShape.ModelObject != null)
-						ModelObject.Connect(Template.GetMappedTerminalId(ownPointId), otherShape.ModelObject, otherShape.Template.GetMappedTerminalId(otherPointId));
+					// Model objects will be connected by AtachGluePointToConnectionPoint()
 					otherShape.AttachGluePointToConnectionPoint(otherPointId, this, ownPointId);
 					connectionInfos.Add(connectionInfo);
 				}
@@ -290,9 +304,7 @@ namespace Dataweb.NShape.Advanced {
 			if (connectionInfos == null) return;
 			for (int i = connectionInfos.Count - 1; i >= 0; --i) {
 				if (connectionInfos[i].OwnPointId == gluePointId) {
-					if (this.ModelObject != null && connectionInfos[i].OtherShape.ModelObject != null)
-						ModelObject.Disconnect(Template.GetMappedTerminalId(gluePointId), connectionInfos[i].OtherShape.ModelObject, connectionInfos[i].OtherShape.Template.GetMappedTerminalId(connectionInfos[i].OtherPointId));
-
+					// Model objects will be disconnected by DetachGluePointFromConnectionPoint
 					connectionInfos[i].OtherShape.DetachGluePointFromConnectionPoint(connectionInfos[i].OtherPointId, this, gluePointId);
 					connectionInfos.RemoveAt(i);
 					if (connectionInfos.Count == 0) connectionInfos = null;
@@ -301,9 +313,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal abstract int ControlPointCount { get; }
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapabilities) {
 			// Default implementation: every control point is a connection point
 			if (controlPointId == ControlPointId.None || controlPointId == ControlPointId.Any) return false;
@@ -318,20 +332,22 @@ namespace Dataweb.NShape.Advanced {
 		public override IEnumerable<ShapeConnectionInfo> GetConnectionInfos(ControlPointId ownPointId, Shape otherShape) {
 			if (ownPointId == ControlPointId.None) throw new ArgumentException("ownPointId");
 			if (connectionInfos == null) yield break;
-			//for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-			//   if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-			//      && (ownPointId == ControlPointId.Any
-			//         || GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId))) {
-			//      yield return connectionInfos[i];
-			//   }
-			//}
-			foreach (ShapeConnectionInfo ci in connectionInfos) {
-				if ((otherShape == null || ci.OtherShape == otherShape)
+			for (int i = connectionInfos.Count - 1; i >= 0; --i) {
+				if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
 					&& (ownPointId == ControlPointId.Any
-						|| GetControlPointIndex(ownPointId) == GetControlPointIndex(ci.OwnPointId))) {
-					yield return ci;
+						|| GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId))) {
+					yield return connectionInfos[i];
 				}
 			}
+			// This version throw an exception if the collection is changed while enumerating...
+			// ToDo: Clarify if this is a desired behavior
+			//foreach (ShapeConnectionInfo ci in connectionInfos) {
+			//   if ((otherShape == null || ci.OtherShape == otherShape)
+			//      && (ownPointId == ControlPointId.Any
+			//         || GetControlPointIndex(ownPointId) == GetControlPointIndex(ci.OwnPointId))) {
+			//      yield return ci;
+			//   }
+			//}
 		}
 
 
@@ -354,6 +370,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override ControlPointId IsConnected(ControlPointId ownPointId, Shape otherShape) {
 			if (ownPointId == ControlPointId.None) throw new ArgumentException("ownPointId");
 			if (connectionInfos != null) {
@@ -408,9 +425,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected abstract bool ContainsPointCore(int x, int y);
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool ChildrenContainPoint(int x, int y) {
 			if (children == null) return false;
 			else return children.ContainsPoint(x, y);
@@ -420,8 +439,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range) {
 			Rectangle r = Rectangle.Empty;
-			r.X = x - range;
-			r.Y = y - range;
+			r.Offset(x - range, y - range);
 			r.Width = r.Height = range + range;
 			foreach (ControlPointId pointId in GetControlPointIds(controlPointCapability))
 				if (Geometry.RectangleContainsPoint(r, GetControlPointPosition(pointId)))
@@ -440,6 +458,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override IEnumerable<Point> IntersectOutlineWithLineSegment(int x1, int y1, int x2, int y2) {
 			// Default implementation, override for better results
 			Rectangle bounds = GetBoundingRectangle(true);
@@ -462,9 +481,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected abstract bool IntersectsWithCore(int x, int y, int width, int height);
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool IntersectsWithChildren(int x, int y, int width, int height) {
 			if (children != null)
 				return children.IntersectsWith(x, y, width, height);
@@ -472,6 +493,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override sealed Rectangle GetBoundingRectangle(bool tight) {
 			if (children == null) {
 				if (tight) {
@@ -515,17 +537,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ShapeCollection Owner {
 			get { return owner; }
 			set { owner = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected ShapeAggregation ChildrenCollection {
 			get { return children; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected abstract Rectangle CalculateBoundingRectangle(bool tight);
 
 		#endregion
@@ -581,7 +606,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Rotates the shape around the given coordinates.
 		/// </summary>
-		/// <param name="tenthsOfDegree">The rotation shapeAngle in tenths of degrees</param>
+		/// <param name="deltaAngle">The rotation angle in tenths of degrees</param>
 		/// <param name="x">X coordinate of the roation center</param>
 		/// <param name="y">Y coordinate of the roation center</param>
 		/// <returns></returns>
@@ -594,11 +619,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override IEnumerable<ControlPointId> GetControlPointIds(ControlPointCapabilities controlPointCapability) {
 			return Enumerator.Create(this, controlPointCapability);
 		}
 
 
+		/// <override></override>
 		public override ControlPointId FindNearestControlPoint(int x, int y, int distance, ControlPointCapabilities controlPointCapability) {
 			ControlPointId result = ControlPointId.None;
 			Point p = Point.Empty;
@@ -623,6 +650,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Drawing
 
+		/// <override></override>
 		public override IDisplayService DisplayService {
 			get { return displayService; }
 			set {
@@ -649,15 +677,15 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Paints the shape
+		/// Paint the shape
 		/// </summary>
-		/// <param name="e"></param>
 		public override void Draw(Graphics graphics) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (children != null) children.Draw(graphics);
 		}
 
 
+		/// <override></override>
 		public override void DrawOutline(Graphics graphics, Pen pen) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (pen == null) throw new ArgumentNullException("pen");
@@ -712,6 +740,9 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.ShapeBase" />.
+		/// </summary>
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("Template", typeof(object));
 			yield return new EntityFieldDefinition("ModelObject", typeof(object));
@@ -724,12 +755,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		[Browsable(false)]
 		protected override sealed object IdCore {
 			get { return id; }
 		}
 
 
+		/// <override></override>
 		protected override sealed void AssignIdCore(object id) {
 			if (id == null) throw new ArgumentNullException("id");
 			if (this.id != null) throw new InvalidOperationException("Shape has already an id.");
@@ -737,6 +770,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			InvalidateDrawCache();
 			template = reader.ReadTemplate();
@@ -755,11 +789,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void LoadInnerObjectsCore(string propertyName, IRepositoryReader reader, int version) {
 			// nothing to do
 		}
 
 
+		/// <override></override>
 		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
 			writer.WriteTemplate(template);
 			writer.WriteModelObject(modelObject);
@@ -772,11 +808,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void SaveInnerObjectsCore(string PropertyName, IRepositoryWriter writer, int version) {
 			// nothing to do
 		}
 
 
+		/// <override></override>
 		protected override void DeleteCore(IRepositoryWriter writer, int version) {
 			// nothing to do...
 
@@ -789,6 +827,7 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <override></override>
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
 			privateLineStyle = styleSet.LineStyles.Normal;
 			securityDomainName = 'A';
@@ -843,6 +882,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected ShapeBase(ShapeType shapeType, Template template) {
 			if (shapeType == null) throw new ArgumentNullException("shapeType");
 			InvalidateDrawCache();
@@ -851,6 +891,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected ShapeBase(ShapeType shapeType, IStyleSet styleSet)
 			: this(shapeType, (Template)null) {
 			if (styleSet == null) throw new ArgumentNullException("styleSet");
@@ -879,22 +920,24 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Rotates the shape around the given coordinates.
 		/// </summary>
-		/// <param name="tenthsOfDegree">The rotation shapeAngle in tenths of degrees</param>
+		/// <param name="deltaAngle">The rotation angle in tenths of degrees</param>
 		/// <param name="x">X coordinate of the roation center</param>
 		/// <param name="y">Y coordinate of the roation center</param>
 		/// <returns></returns>
 		protected abstract bool RotateCore(int deltaAngle, int x, int y);
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void ProcessExecModelPropertyChange(IModelMapping propertyMapping) {
 			if (propertyMapping.ShapePropertyId == PropertyIdLineStyle) {
 				// assign private stylebecause if the style matches the template's style, it would not be assigned.
-				privateLineStyle = (ILineStyle)propertyMapping.GetStyle();
+				privateLineStyle = (propertyMapping.GetStyle() as ILineStyle);
 				Invalidate();
 			}
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool IsStyleAffected(IStyle shapeStyle, IStyle changedStyle) {
 			// if styles are equal, style is affected
 			if (changedStyle == shapeStyle)
@@ -912,9 +955,6 @@ namespace Dataweb.NShape.Advanced {
 						return true;
 				if (shapeStyle is ILineStyle)
 					if (((ILineStyle)shapeStyle).ColorStyle == changedStyle)
-						return true;
-				if (shapeStyle is IShapeStyle)
-					if (((IShapeStyle)shapeStyle).ShadowColor == changedStyle)
 						return true;
 			}
 			return false;
@@ -935,7 +975,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Calculates the new position of a glue point connected to a shape
 		/// </summary>
-		/// <param name="ownPointId">Id of the connected GluePoint</param>
+		/// <param name="gluePointId">Id of the connected GluePoint</param>
 		/// <param name="shape">The shape the GluePoint is connected to</param>
 		/// <param name="fromX">The X position of the other end of the line.</param>
 		/// <param name="fromY">The Y position of the other end of the line.</param>
@@ -981,17 +1021,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual ControlPointId GetControlPointId(int index) {
 			// This is the default
 			return index + 1;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual int GetControlPointIndex(ControlPointId id) {
 			return id - 1;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void ControlPointsHaveMoved() {
 			if (connectionInfos != null) {
 				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
@@ -1001,13 +1044,15 @@ namespace Dataweb.NShape.Advanced {
 			}
 		}
 
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual bool IsConnectionPointEnabled(ControlPointId pointId) {
 			if (template == null) return true;
 			else { return Template.GetMappedTerminalId(pointId) != TerminalId.Invalid; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Matrix Matrix { 
 			get {
 				if (matrix == null) matrix = new Matrix();
@@ -1016,6 +1061,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void InvalidateDrawCache() {
 			drawCacheIsInvalid = true;
 			// Reset boundingRectangles
@@ -1024,6 +1070,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected abstract void UpdateDrawCache();
 
 
@@ -1042,8 +1089,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="deltaX">Translation on X axis</param>
 		/// <param name="deltaY">Translation on Y axis</param>
 		/// <param name="deltaAngle">Rotation shapeAngle in tenths of degrees</param>
-		/// <param name="shapePosition">X coordinate of the rotation center</param>
-		/// <param name="shapeRotationCenter">Y coordinate of the rotation center</param>
+		/// <param name="rotationCenterX">X coordinate of the rotation center</param>
+		/// <param name="rotationCenterY">Y coordinate of the rotation center</param>
 		protected abstract void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY);
 
 
@@ -1548,7 +1595,12 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
+		// true if any other shape is connected to this shape
+		/// <ToBeCompleted></ToBeCompleted>
+		protected List<ShapeConnectionInfo> connectionInfos;
+
 		// true if the draw cache has to be recalculated
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool drawCacheIsInvalid = true;
 
 		private ShapeType shapeType;
@@ -1568,8 +1620,6 @@ namespace Dataweb.NShape.Advanced {
 		// The model object this shape displays
 		private IModelObject modelObject;
 
-		// true if any other shape is connected to this shape
-		protected List<ShapeConnectionInfo> connectionInfos;
 
 		// Tight fitting Bounding rectangle of the rotated shape
 		private Rectangle boundingRectangleTight = Geometry.InvalidRectangle;
@@ -1577,7 +1627,7 @@ namespace Dataweb.NShape.Advanced {
 		private Rectangle boundingRectangleLoose = Geometry.InvalidRectangle;
 
 		// Counter for suspend notifying the owner of changed children position/size/rotation
-		int notifySuspendCounter = 0;
+		private int notifySuspendCounter = 0;
 		
 		private object id = null;
 		private object tag = null;

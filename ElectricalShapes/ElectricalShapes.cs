@@ -23,6 +23,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalRectangleBase : RectangleBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -53,6 +54,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -71,6 +73,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalSquareBase : SquareBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -94,6 +97,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -107,6 +111,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalEllipseBase : EllipseBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -120,6 +125,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -143,6 +149,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalCircleBase : CircleBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -166,6 +173,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -179,6 +187,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public abstract class ElectricalTriangleBase : IsoscelesTriangleBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case ControlPointId.Reference:
@@ -204,6 +213,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 5; } }
 
 
@@ -218,6 +228,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class DisconnectorSymbol : ElectricalCircleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DisconnectorSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -225,6 +236,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Diameter / 2f);
@@ -252,6 +264,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class AutoDisconnectorSymbol : ElectricalCircleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new AutoDisconnectorSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -259,6 +272,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -276,6 +290,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			if (tight) {
 				Rectangle result = Rectangle.Empty;
@@ -311,6 +326,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class AutoSwitchSymbol : ElectricalSquareBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new AutoSwitchSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -318,6 +334,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -362,6 +379,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class SwitchSymbol : ElectricalSquareBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new SwitchSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -369,6 +387,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -407,6 +426,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class BusBarSymbol : Polyline {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new BusBarSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -414,11 +434,13 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		public override int MaxVertexCount {
 			get { return 2; }
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if ((controlPointCapability & ControlPointCapabilities.Connect) != 0)
 				return true;
@@ -450,6 +472,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class TransformerSymbol : ElectricalRectangleBase {
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			FillStyle = styleSet.FillStyles.Transparent;
@@ -458,6 +481,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new TransformerSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -465,6 +489,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if ((controlPointCapability & ControlPointCapabilities.Connect) != 0) {
 				if (controlPointId == TopCenterControlPoint || controlPointId == BottomCenterControlPoint)
@@ -498,6 +523,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			Path.Reset();
 
@@ -563,6 +589,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class EarthSymbol : ElectricalRectangleBase {
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 40;
@@ -570,6 +597,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new EarthSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -577,6 +605,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -611,6 +640,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -699,6 +729,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class FeederSymbol : ElectricalTriangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new FeederSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -719,6 +750,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class RectifierSymbol : ElectricalTriangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new RectifierSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -726,6 +758,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width * CenterPosFactorX);
@@ -755,6 +788,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class DisconnectingPoint : ElectricalRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DisconnectingPoint(Type, (Template)null);
 			result.CopyFrom(this);
@@ -762,6 +796,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case MiddleLeftControlPoint:
@@ -796,6 +831,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();

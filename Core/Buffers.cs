@@ -39,7 +39,7 @@ namespace Dataweb.Utilities
 		/// <param name="buffer">Buffer to fill</param>
 		/// <param name="value">Value to fill with</param>
 		/// <param name="index">Index of first buffer entry to fill</param>
-		/// <param name="count">Numeric of buffer entries to fill</param>
+		/// <param name="count">Number of buffer entries to fill</param>
 		public static void Initialize(byte[] buffer, byte value, int index, int count) {
 			for (int i = index; i < index + count; ++i)
 				buffer[i] = value;
@@ -1148,6 +1148,7 @@ namespace Dataweb.Utilities
 		}
 
 
+		/// <override></override>
 		public override string ToString() {
 			if (this == LogicalValue.False) return "LogicalValue.False";
 			else if (this == LogicalValue.True) return "LogicalValue.True";
@@ -1158,308 +1159,16 @@ namespace Dataweb.Utilities
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public static class Diagnostics {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void RuntimeCheck(bool condition, string message) {
 #if DEBUG
 			if (!condition) throw new InvalidOperationException(message);
 #endif
 		}
 	
-	}
-
-
-	/// <summary>
-	/// This structure combines GDI+ images (bitmaps or metafiles) with a projectName (typically the filename withoout path and extension).
-	/// </summary>
-	[TypeConverter("Dataweb.NShape.WinFormsUI.NamedImageConverter, Dataweb.NShape.WinFormsUI")]
-	public class NamedImage : IDisposable {
-
-		/// <summary>
-		/// Loads an image from a file.
-		/// </summary>
-		public static NamedImage FromFile(string fileName) {
-			return new NamedImage(fileName);
-		}
-
-
-		/// <override></override>
-		public override string ToString() {
-			return this.name;
-		}
-
-
-		public NamedImage() {
-			this.image = null;
-			this.name = string.Empty;
-		}
-
-
-		/// <summary>
-		/// Creates a NamedImage from the given file.
-		/// </summary>
-		/// <param name="pathName"></param>
-		public NamedImage(string fileName) {
-			if (fileName == null) throw new ArgumentNullException("fileName");
-			if (fileName == string.Empty) throw new ArgumentException("fileName");
-			this.Load(fileName);
-		}
-
-
-		/// <summary>
-		/// Creates a NamedImage
-		/// </summary>
-		public NamedImage(Image image, string name) {
-			if (image == null) throw new ArgumentNullException("image");
-			if (name == null) throw new ArgumentNullException("name");
-			this.image = image;
-			this.name = name;
-		}
-
-
-		~NamedImage() {
-			Dispose();
-		}
-
-
-		#region IDisposable Members
-
-		public void Dispose() {
-			if (image != null) {
-				image.Dispose();
-				image = null;
-			}
-		}
-
-		#endregion
-
-
-		public NamedImage Clone() {
-			if (image == null) return new NamedImage();
-			else return new NamedImage((Image)image.Clone(), this.Name);
-		}
-
-
-		/// <summary>
-		/// The image.
-		/// </summary>
-		public Image Image {
-			get { return image; }
-			set { image = value; }
-		}
-
-
-		/// <summary>
-		/// Name of the image (typically the filename without path and extension)
-		/// </summary>
-		public string Name {
-			get { return name; }
-			set { name = value; }
-		}
-
-
-		/// <summary>
-		/// Width of the image. 0 if no image is set.
-		/// </summary>
-		public int Width {
-			get { return (image != null) ? image.Width : 0; }
-		}
-
-
-		/// <summary>
-		/// Height of the image. 0 if no image is set.
-		/// </summary>
-		public int Height {
-			get { return (image != null) ? image.Height : 0; }
-		}
-
-
-		/// <summary>
-		/// Saves this NamedImage to an image file.
-		/// </summary>
-		/// <param name="directoryName"></param>
-		/// <param name="format"></param>
-		public void Save(string directoryName, ImageFormat format) {
-			if (!Directory.Exists(directoryName))
-				throw new FileNotFoundException("Directory does not exist.", directoryName);
-			string fileName = Path.Combine(directoryName, name + GetImageFormatExtension(format));
-			image.Save(fileName, format);
-		}
-
-
-		/// <summary>
-		/// Loads the imagefile into this NamedImage.
-		/// </summary>
-		/// <param name="pathName"></param>
-		public void Load(string fileName) {
-			if (!File.Exists(fileName)) throw new FileNotFoundException("File not found or access denied.", fileName);
-			// GDI+ only reads the file header and keeps the image file locked for loading the 
-			// image data later on demand. 
-			// So we have to read the entire image to a buffer and create the image from a MemoryStream
-			//
-			// open the image file via FileStream
-			FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-			// Copy image data to memory buffer
-			byte[] buffer = new byte[fs.Length];
-			fs.Read(buffer, 0, buffer.Length);
-			// Close and dispose the FileStream
-			fs.Close();
-			fs.Dispose();
-			//
-			// Create the image from a MemoryStream
-			MemoryStream memStream = new MemoryStream(buffer);
-			image = Image.FromStream(memStream, true, true);
-			name = Path.GetFileNameWithoutExtension(fileName);
-		}
-
-
-		//static NamedImage() {
-		//   Empty = new NamedImage();
-		//}
-
-
-		/// <summary>
-		/// Gets the appropriate file extension for the given ImageFormat.
-		/// </summary>
-		private string GetImageFormatExtension(ImageFormat imageFormat) {
-			string result = string.Empty;
-			if (image.RawFormat.Guid == ImageFormat.Bmp.Guid) result = ".bmp";
-			else if (image.RawFormat.Guid == ImageFormat.Emf.Guid) result = ".emf";
-			else if (image.RawFormat.Guid == ImageFormat.Exif.Guid) result = ".exif";
-			else if (image.RawFormat.Guid == ImageFormat.Gif.Guid) result = ".gif";
-			else if (image.RawFormat.Guid == ImageFormat.Icon.Guid) result = ".ico";
-			else if (image.RawFormat.Guid == ImageFormat.Jpeg.Guid) result = ".jpeg";
-			else if (image.RawFormat.Guid == ImageFormat.MemoryBmp.Guid) result = ".bmp";
-			else if (image.RawFormat.Guid == ImageFormat.Png.Guid) result = ".png";
-			else if (image.RawFormat.Guid == ImageFormat.Tiff.Guid) result = ".tiff";
-			else if (image.RawFormat.Guid == ImageFormat.Wmf.Guid) result = ".wmf";
-			else Debug.Fail("Unsupported image format.");
-			return result;
-		}
-
-
-		#region Fields
-		private Image image;
-		private string name;
-		#endregion
-	}
-
-
-	internal class FileNameCollection : IList<string> {
-
-		public FileNameCollection() {
-			innerList = new List<string>();
-		}
-
-
-		public FileNameCollection(IEnumerable<string> collection) {
-			if (collection == null) throw new ArgumentNullException("collection");
-			if (collection is ICollection<string>)
-				innerList = new List<string>(((ICollection<string>)collection).Count);
-			else innerList = new List<string>();
-			foreach (string item in collection)
-				this.Add(item);
-		}
-
-
-		public FileNameCollection(int capacity) {
-			innerList = new List<string>(capacity);
-		}
-
-
-		public void AddRange(IEnumerable<string> collection) {
-			foreach (string s in collection)
-				innerList.Add(Path.GetFileName(s));
-		}
-
-
-		#region IList<string> Members
-
-		public int IndexOf(string item) {
-			return innerList.IndexOf(Path.GetFileName(item));
-		}
-
-
-		public void Insert(int index, string item) {
-			innerList.Insert(index, Path.GetFileName(item));
-		}
-
-
-		public void RemoveAt(int index) {
-			innerList.RemoveAt(index);
-		}
-
-
-		public string this[int index] {
-			get { return innerList[index]; }
-			set { innerList[index] = Path.GetFileName(value); }
-		}
-
-		#endregion
-
-
-		#region ICollection<string> Members
-
-		public void Add(string item) {
-			innerList.Add(Path.GetFileName(item));
-		}
-
-
-		public void Clear() {
-			innerList.Clear();
-		}
-
-
-		public bool Contains(string item) {
-			return innerList.Contains(Path.GetFileName(item));
-		}
-
-
-		public void CopyTo(string[] array, int arrayIndex) {
-			innerList.CopyTo(array, arrayIndex);
-		}
-
-
-		public int Count {
-			get { return innerList.Count; }
-		}
-
-
-		public bool IsReadOnly {
-			get { return true; }
-		}
-
-
-		public bool Remove(string item) {
-			return innerList.Remove(Path.GetFileName(item));
-		}
-
-		#endregion
-
-
-		#region IEnumerable<string> Members
-
-		public IEnumerator<string> GetEnumerator() {
-			return innerList.GetEnumerator();
-		}
-
-		#endregion
-
-
-		#region IEnumerable Members
-
-		IEnumerator IEnumerable.GetEnumerator() {
-			return innerList.GetEnumerator();
-		}
-
-		#endregion
-
-
-		#region Fields
-
-		private List<string> innerList = null;
-
-		#endregion
 	}
 
 }

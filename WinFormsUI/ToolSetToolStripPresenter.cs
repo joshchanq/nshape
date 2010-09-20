@@ -22,19 +22,31 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 	
+	/// <summary>
+	/// Implementation of a ToolSetPresenter based on a System.Windows.Forms.ToolStrip.
+	/// </summary>
 	public partial class ToolSetToolStripPresenter : ToolStrip {
 		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ToolSetToolStripPresenter" />.
+		/// </summary>
 		public ToolSetToolStripPresenter() {
 			InitializeComponent();
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ToolSetToolStripPresenter" />.
+		/// </summary>
 		public ToolSetToolStripPresenter(IContainer container) {
 			container.Add(this);
 			InitializeComponent();
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
@@ -42,6 +54,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the controller for this presenter.
+		/// </summary>
 		[Category("NShape")]
 		public ToolSetController ToolSetController {
 			get { return toolSetController; }
@@ -54,7 +69,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Specifies if MenuItemDefs that are not granted should appear as MenuItems in the dynamic context menu.
+		/// Specifies wether MenuItemDefs should not appear in the dynamic context menu if they are not granted.
 		/// </summary>
 		[Category("Behavior")]
 		public bool HideDeniedMenuItems {
@@ -84,7 +99,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		#region (Un)Registering for events
+		#region [Private] (Un)Registering for events
 
 		private void RegisterToolStripEvents() {
 			this.ItemClicked += new ToolStripItemClickedEventHandler(ToolSetToolStripPresenter_ItemClicked);
@@ -110,7 +125,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region ToolStrip event handler implementations
+		#region [Private] ToolStrip event handler implementations
 
 		private void ToolSetToolStripPresenter_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
 			if (e.ClickedItem.Tag is Tool) toolSetController.SelectTool((Tool)e.ClickedItem.Tag);
@@ -123,7 +138,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region ToolSetController event handler implementations
+		#region [Private] ToolSetController event handler implementations
 
 		private void toolSetController_ToolSelected(object sender, ToolEventArgs e) {
 			ToolStripItem item = FindItem(e.Tool);
@@ -196,7 +211,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private ToolSetController toolSetController;
-		private PropertyController propertyController;
 		private bool hideMenuItemsIfNotGranted = false;
 	}
 }

@@ -35,8 +35,9 @@
 			// 
 			// presenter
 			// 
-			this.presenter.LayerController = this.controller;
 			this.presenter.DiagramPresenter = null;
+			this.presenter.HideDeniedMenuItems = false;
+			this.presenter.LayerController = this.controller;
 			this.presenter.LayerView = this.layerListView;
 			// 
 			// layerListView
@@ -45,12 +46,14 @@
 			this.layerListView.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.layerListView.FullRowSelect = true;
 			this.layerListView.HeaderStyle = System.Windows.Forms.ColumnHeaderStyle.None;
+			this.layerListView.HideDeniedMenuItems = false;
 			this.layerListView.HideSelection = false;
 			this.layerListView.LabelEdit = true;
 			this.layerListView.LabelWrap = false;
 			this.layerListView.Location = new System.Drawing.Point(0, 0);
 			this.layerListView.Name = "layerListView";
 			this.layerListView.OwnerDraw = true;
+			this.layerListView.ShowDefaultContextMenu = true;
 			this.layerListView.ShowGroups = false;
 			this.layerListView.Size = new System.Drawing.Size(244, 357);
 			this.layerListView.TabIndex = 0;

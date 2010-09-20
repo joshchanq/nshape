@@ -21,14 +21,23 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// UI type editor for properties of type NamedImage.
+	/// </summary>
 	public partial class ImageEditor : Form {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ImageEditor" />.
+		/// </summary>
 		public ImageEditor() {
 			InitializeComponent();
 			Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ImageEditor" />.
+		/// </summary>
 		public ImageEditor(string fileName)
 			: this() {
 			if (fileName == null) throw new ArgumentNullException("fileName");
@@ -36,6 +45,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ImageEditor" />.
+		/// </summary>
 		public ImageEditor(Image image, string path)
 			: this() {
 			if (image == null) throw new ArgumentNullException("image");
@@ -45,11 +57,17 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ImageEditor" />.
+		/// </summary>
 		public ImageEditor(Image image)
 			: this(image, string.Empty) {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.ImageEditor" />.
+		/// </summary>
 		public ImageEditor(NamedImage namedImage) {
 			InitializeComponent();
 			if (namedImage == null) throw new ArgumentNullException("namedImage");
@@ -59,17 +77,22 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the image selected by the user.
+		/// </summary>
 		public NamedImage Result {
 			get { return resultImage; }
 		}
 		
 		
+		/// <override></override>
 		protected override void OnShown(EventArgs e) {
 			base.OnShown(e);
 			DisplayResult();
 		}
 
 
+		/// <override></override>
 		protected override void OnFormClosed(FormClosedEventArgs e) {
 			base.OnFormClosed(e);
 			pictureBox.Image = null;
@@ -108,6 +131,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		private void browseButton_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = "Image Files|*.Bmp;*.Emf;*.Exif;*.Gif;*.Ico;*.Jpg;*.Jpeg;*.Png;*.Tiff;*.Wmf|All files (*.*)|*.*";
+			openFileDialog.AutoUpgradeEnabled = (Environment.OSVersion.Version.Major >= 6);
 			if (nameTextBox.Text != string.Empty)
 				openFileDialog.InitialDirectory = Path.GetDirectoryName(nameTextBox.Text);
 			
@@ -139,4 +163,5 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private NamedImage resultImage = new NamedImage();
 	}
+
 }

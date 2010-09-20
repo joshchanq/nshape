@@ -27,8 +27,14 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// Implementation of a TemplatePresenter used for editing templates.
+	/// </summary>
 	public partial class TemplatePresenter : UserControl, IDisplayService {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TemplatePresenter" />.
+		/// </summary>
 		public TemplatePresenter() {
 			DoubleBuffered = true;
 			InitializeComponent();
@@ -42,6 +48,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TemplatePresenter" />.
+		/// </summary>
 		public TemplatePresenter(Project project, Template template)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
@@ -51,15 +60,19 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TemplatePresenter" />.
+		/// </summary>
 		public TemplatePresenter(Project project)
 			: this(project, null) {
 		}
 
 
+		/// <summary>
+		/// Finalizer of Dataweb.NShape.WinFormsUI.TemplatePresenter
+		/// </summary>
 		~TemplatePresenter() {
-			TemplateController = null;
-			infoGraphics.Dispose();
-			infoGraphics = null;
+			Dispose();
 		}
 
 
@@ -117,6 +130,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
@@ -124,6 +140,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Gets or sets the controller for tis presenter.
+		/// </summary>
 		[Category("NShape")]
 		public TemplateController TemplateController {
 			get { return templateController; }
@@ -147,6 +166,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies wether the template was modified.
+		/// </summary>
 		public bool TemplateWasModified {
 			get { return templateModified; }
 		}
@@ -156,11 +178,17 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Public] Methods
 
+		/// <summary>
+		/// Apply the changes performed on the template.
+		/// </summary>
 		public void ApplyChanges() {
 			templateController.ApplyChanges();
 		}
 
 
+		/// <summary>
+		/// Cancel all changes performed on the template.
+		/// </summary>
 		public void DiscardChanges() {
 			templateController.DiscardChanges();
 		}
@@ -180,24 +208,15 @@ namespace Dataweb.NShape.WinFormsUI {
 					templateController.Dispose();
 					templateController = null;
 				}
-				if (deactBrush != null) {
-					deactBrush.Dispose();
-					deactBrush = null;
-				}
-				if (actBrush != null) {
-					actBrush.Dispose();
-					actBrush = null;
-				}
-				if (deactPen != null) {
-					deactPen.Dispose();
-					deactPen = null;
-				}
-				if (actPen != null) {
-					actPen.Dispose();
-					actPen = null;
-				}
+				GdiHelpers.DisposeObject(ref deactBrush);
+				GdiHelpers.DisposeObject(ref actBrush);
+				GdiHelpers.DisposeObject(ref deactPen);
+				GdiHelpers.DisposeObject(ref actPen);
 				if (components != null)
 					components.Dispose();
+
+				TemplateController = null;
+				GdiHelpers.DisposeObject(ref infoGraphics);
 			}
 			base.Dispose(disposing);
 		}
@@ -222,7 +241,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 
 			// Set current Design for the Style UITypeEditor
-			StyleEditor.Design = templateController.Project.Repository.GetDesign(null);
+			StyleUITypeEditor.Project = templateController.Project;
 			// Initialize the propertyGridAdapter
 			propertyController.Project = Project;
 			propertyPresenter.PropertyController = propertyController;
@@ -238,6 +257,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			descriptionTextBox.Text = template.Description;
 			// assign template's shape to the PropertyGrid
 			propertyController.SetObject(0, template.Shape, false);
+			propertyController.SetObject(1, template.Shape.ModelObject, false);
 			//
 			// Initialize ModelObject dependent TabPages
 			if (templateController.ModelObjects.Count != 0) {
@@ -357,6 +377,10 @@ namespace Dataweb.NShape.WinFormsUI {
 					TerminalColumn.Items.Clear();
 					string terminalName = template.GetMappedTerminalName(ControlPointId.None);
 					TerminalColumn.Items.Add(terminalName ?? deactivatedTag);
+					if (modelObject != null) {
+						for (int i = 1; i <= modelObject.Type.MaxTerminalId; ++i)
+							TerminalColumn.Items.Add(modelObject.Type.GetTerminalName(i));
+					}
 
 					// add a row for each ControlPoint of the shape
 					foreach (ControlPointId pointId in shape.GetControlPointIds(ControlPointCapabilities.Connect)) {
@@ -375,6 +399,8 @@ namespace Dataweb.NShape.WinFormsUI {
 					}
 					pointMappingTabInitialized = true;
 
+					// ToDo: We have to handle when connection point mappings are changed by the user.
+					controlPointMappingGrid.Enabled = !shapesCreatedFromTemplate;
 					controlPointMappingGrid.ResumeLayout();
 					controlPointsTab.Show();
 				} else controlPointsTab.Hide();
@@ -467,7 +493,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region [Private] User interface implementation: Model mapping tab
+		#region [Private] User interface implementation: Visual Property Mapping Tab
 
 		private void InitModelMappingTab() {
 			Debug.Assert(templateController != null && templateController.WorkTemplate != null);
@@ -1081,6 +1107,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					newShape.ModelObject = TemplateController.WorkTemplate.Shape.ModelObject;
 					templateController.SetTemplateShape(newShape);
 					propertyController.SetObject(0, newShape, false);
+					propertyController.SetObject(1, newShape.ModelObject, false);
 					
 					// Update user interface
 					InitializeUI();
@@ -1195,7 +1222,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Private] ModelMapping helpers
 
-
 		private int? GetPropertyId(PropertyInfo propertyInfo) {
 			if (propertyInfo == null) throw new ArgumentNullException("propertyInfo");
 			object[] idAttribs = propertyInfo.GetCustomAttributes(typeof(PropertyMappingIdAttribute), true);
@@ -1270,7 +1296,7 @@ namespace Dataweb.NShape.WinFormsUI {
 						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.FloatInteger); break;
 						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.FloatString); break;
 						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMapping.MappingType.FloatStyle); break;
-						default: throw new NotSupportedException("Property mappings from '{0}' to {1} are not supported.");
+						default: throw new NotSupportedException(string.Format("Property mappings from '{0}' to '{1}' are not supported.", modelPropType, shapePropType));
 					}
 					break;
 				case MappedPropertyType.Int:
@@ -1279,13 +1305,13 @@ namespace Dataweb.NShape.WinFormsUI {
 						case MappedPropertyType.Int: result = new NumericModelMapping(shapePropertyId.Value, modelPropertyId.Value, NumericModelMapping.MappingType.IntegerInteger); break;
 						case MappedPropertyType.String: result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.IntegerString); break;
 						case MappedPropertyType.Style: result = new StyleModelMapping(shapePropertyId.Value, modelPropertyId.Value, StyleModelMapping.MappingType.IntegerStyle); break;
-						default: throw new NotSupportedException("Property mappings from '{0}' to {1} are not supported.");
+						default: throw new NotSupportedException(string.Format("Property mappings from '{0}' to '{1}' are not supported.", modelPropType, shapePropType));
 					}
 					break;
 				case MappedPropertyType.String:
 					if (shapePropType == MappedPropertyType.String)
 						result = new FormatModelMapping(shapePropertyId.Value, modelPropertyId.Value, FormatModelMapping.MappingType.StringString);
-					else throw new NotSupportedException("Property mappings from '{0}' to {1} are not supported.");
+					else throw new NotSupportedException(string.Format("Property mappings from '{0}' to '{1}' are not supported.", modelPropType, shapePropType));
 					break;
 				default: throw new NotSupportedException();
 			}
@@ -1369,6 +1395,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				this.index = itemIndex;
 			}
 
+			/// <override></override>
 			public override string ToString() {
 				return shape.ToString();
 			}
@@ -1380,9 +1407,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			private Shape shape;
 			private int index;
 		}
-
-
-		private enum TemplateEditorEditMode { CreateTemplate, EditTemplate };
 
 
 		private enum MappedPropertyType { Int, Float, String, Style };
@@ -1446,4 +1470,5 @@ namespace Dataweb.NShape.WinFormsUI {
 		private Brush actBrush = new SolidBrush(System.Drawing.Color.FromArgb(128, System.Drawing.Color.DarkGreen));
 		#endregion
 	}
+
 }

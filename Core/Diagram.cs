@@ -27,16 +27,24 @@ using Dataweb.NShape.Advanced;
 namespace Dataweb.NShape {
 
 	/// <summary>
-	/// Describes export image formats.
+	/// Describes export image file format.
 	/// </summary>
 	public enum ImageFileFormat {
+		/// <summary>Specifies bitmap (BMP) image format.</summary>
 		Bmp,
+		/// <summary>Specifies the enhanced Windows metafile image format (EMF).</summary>
 		Emf,
+		/// <summary>Specifies the Graphics Interchange Format (GIF) image format.</summary>
 		Gif,
+		/// <summary>Specifies the Joint Photographic Experts Group (JPEG) image format.</summary>
 		Jpeg,
+		/// <summary>Specifies the W3C Portable Network Graphics (PNG) image format.</summary>
 		Png,
+		/// <summary>Specifies the Tag Image File Format (TIFF) image format.</summary>
 		Tiff,
+		/// <summary>Specifies the enhanced Windows metafile plus image format (EMF).</summary>
 		EmfPlus,
+		/// <summary>Specifies the Scalable Vector Graphics file format (SVG).</summary>
 		Svg
 	}
 
@@ -48,60 +56,103 @@ namespace Dataweb.NShape {
 	/// </summary>
 	[Flags]
 	public enum LayerIds {
+		/// <summary>No Layers.</summary>
 		None = 0x0,
+		/// <summary>Layer 1</summary>
 		Layer01 = 0x00000001,
+		/// <summary>Layer 2</summary>
 		Layer02 = 0x00000002,
+		/// <summary>Layer 3</summary>
 		Layer03 = 0x00000004,
+		/// <summary>Layer 4</summary>
 		Layer04 = 0x00000008,
+		/// <summary>Layer 5</summary>
 		Layer05 = 0x00000010,
+		/// <summary>Layer 6</summary>
 		Layer06 = 0x00000020,
+		/// <summary>Layer 7</summary>
 		Layer07 = 0x00000040,
+		/// <summary>Layer 8</summary>
 		Layer08 = 0x00000080,
+		/// <summary>Layer 9</summary>
 		Layer09 = 0x00000100,
+		/// <summary>Layer 10</summary>
 		Layer10 = 0x00000200,
+		/// <summary>Layer 11</summary>
 		Layer11 = 0x00000400,
+		/// <summary>Layer 12</summary>
 		Layer12 = 0x00000800,
+		/// <summary>Layer 13</summary>
 		Layer13 = 0x00001000,
+		/// <summary>Layer 14</summary>
 		Layer14 = 0x00002000,
+		/// <summary>Layer 15</summary>
 		Layer15 = 0x00004000,
+		/// <summary>Layer 16</summary>
 		Layer16 = 0x00008000,
+		/// <summary>Layer 17</summary>
 		Layer17 = 0x00010000,
+		/// <summary>Layer 18</summary>
 		Layer18 = 0x00020000,
+		/// <summary>Layer 19</summary>
 		Layer19 = 0x00040000,
+		/// <summary>Layer 20</summary>
 		Layer20 = 0x00080000,
+		/// <summary>Layer 21</summary>
 		Layer21 = 0x00100000,
+		/// <summary>Layer 22</summary>
 		Layer22 = 0x00200000,
+		/// <summary>Layer 23</summary>
 		Layer23 = 0x00400000,
+		/// <summary>Layer 24</summary>
 		Layer24 = 0x00800000,
+		/// <summary>Layer 25</summary>
 		Layer25 = 0x01000000,
+		/// <summary>Layer 26</summary>
 		Layer26 = 0x02000000,
+		/// <summary>Layer 27</summary>
 		Layer27 = 0x04000000,
+		/// <summary>Layer 28</summary>
 		Layer28 = 0x08000000,
+		/// <summary>Layer 29</summary>
 		Layer29 = 0x10000000,
+		/// <summary>Layer 30</summary>
 		Layer30 = 0x20000000,
+		/// <summary>Layer 31</summary>
 		Layer31 = 0x40000000,
-		All = int.MinValue
+		/// <summary>All available layers.</summary>
+		All = int.MinValue	// uint.MaxValue and 0xFFFFFFFF result in type mismatch compiler error
 	}
 
 
 	/// <summary>
-	/// Groups shapes.
+	/// A layer used for grouoping shapes on a diagram.
 	/// </summary>
 	/// <status>reviewed</status>
 	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public class Layer {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Layer" />.
+		/// </summary>
+		/// <param name="name"></param>
 		public Layer(string name) {
 			this.name = name;
 		}
 
 
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.LayerIds" /> value used to identify the <see cref="T:Dataweb.NShape.Layer" />.
+		/// </summary>
 		public LayerIds Id {
 			get { return id; }
 			internal set { id = value; }
 		}
 
 
+		/// <summary>
+		/// The language independent name of the <see cref="T:Dataweb.NShape.Layer" />.
+		/// </summary>
 		[RequiredPermission(Permission.ModifyData)]
 		public string Name {
 			get { return name; }
@@ -109,6 +160,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// The localized title of the <see cref="T:Dataweb.NShape.Layer" />.
+		/// </summary>
 		[RequiredPermission(Permission.Present)]
 		public string Title {
 			get {
@@ -123,6 +177,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Specifies the minimum zoom level where the <see cref="T:Dataweb.NShape.Layer" /> is still visible. On lower zoom levels, the layer will be hidden automatically.
+		/// </summary>
 		[RequiredPermission(Permission.Present)]
 		public int LowerZoomThreshold {
 			get { return lowerZoomThreshold; }
@@ -133,6 +190,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Specifies the maximum zoom level where the <see cref="T:Dataweb.NShape.Layer" /> is still visible. On higher zoom levels, the layer will be hidden automatically.
+		/// </summary>
 		[RequiredPermission(Permission.Present)]
 		public int UpperZoomThreshold {
 			get { return upperZoomThreshold; }
@@ -156,17 +216,29 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Editable collection of layers
+	/// Defines methods for an editable collection of layers.
 	/// </summary>
 	/// <status>reviewed</status>
 	public interface ILayerCollection : ICollection<Layer> {
 
+		/// <summary>
+		/// Retrieve the <see cref="T:Dataweb.NShape.Layer" /> instance associated with the given <see cref="T:Dataweb.NShape.LayerIds" />.
+		/// </summary>
 		Layer GetLayer(LayerIds layerId);
 
+		/// <summary>
+		/// Retrieve all <see cref="T:Dataweb.NShape.Layer" /> instances associated with the given combination of <see cref="T:Dataweb.NShape.LayerIds" />.
+		/// </summary>
 		IEnumerable<Layer> GetLayers(LayerIds layerIds);		
 
+		/// <summary>
+		/// Retrieve the <see cref="T:Dataweb.NShape.Layer" /> instance with the given name.
+		/// </summary>
 		Layer FindLayer(string name);
 
+		/// <summary>
+		/// Rename the specified <see cref="T:Dataweb.NShape.Layer" />.
+		/// </summary>
 		bool RenameLayer(string previousName, string newName);
 
 	}
@@ -422,6 +494,7 @@ namespace Dataweb.NShape {
 	/// </summary>
 	internal class DiagramShapeCollection : ShapeCollection {
 
+		/// <override></override>
 		public override void NotifyChildMoving(Shape shape) {
 			base.NotifyChildMoving(shape);
 			CheckOwnerboundsUpdateNeeded(shape);
@@ -429,6 +502,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void NotifyChildMoved(Shape shape) {
 			base.NotifyChildMoved(shape);
 			CheckOwnerboundsUpdateNeeded(shape);
@@ -437,13 +511,15 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void NotifyChildResizing(Shape shape) {
 			base.NotifyChildResizing(shape);
 			CheckOwnerboundsUpdateNeeded(shape);
 			++shapeCounter;
 		}
-		
-		
+
+
+		/// <override></override>
 		public override void NotifyChildResized(Shape shape) {
 			base.NotifyChildResized(shape);
 			CheckOwnerboundsUpdateNeeded(shape);
@@ -452,6 +528,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void NotifyChildRotating(Shape shape) {
 			base.NotifyChildRotating(shape);
 			CheckOwnerboundsUpdateNeeded(shape);
@@ -459,6 +536,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void NotifyChildRotated(Shape shape) {
 			base.NotifyChildRotated(shape);
 			CheckOwnerboundsUpdateNeeded(shape);
@@ -490,6 +568,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected override void AddRangeCore(IEnumerable<Shape> collection) {
 			if (collection is ICollection) shapeCounter = ((ICollection)collection).Count;
 			else foreach (Shape s in collection) ++shapeCounter;
@@ -497,6 +576,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected override bool RemoveRangeCore(IEnumerable<Shape> collection) {
 			if (collection is ICollection) shapeCounter = ((ICollection)collection).Count;
 			else foreach (Shape s in collection) ++shapeCounter;
@@ -504,13 +584,15 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected override void ReplaceRangeCore(IEnumerable<Shape> oldShapes, IEnumerable<Shape> newShapes) {
 			if (oldShapes is ICollection) shapeCounter = ((ICollection)oldShapes).Count;
 			else foreach (Shape s in oldShapes) ++shapeCounter;
 			base.ReplaceRangeCore(oldShapes, newShapes);
 		}
-		
-		
+
+
+		/// <override></override>
 		protected override int InsertCore(int index, Shape shape) {
 			int result = base.InsertCore(index, shape);
 			shape.Diagram = owner;
@@ -525,6 +607,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected override void ReplaceCore(Shape oldShape, Shape newShape) {
 			base.ReplaceCore(oldShape, newShape);
 			oldShape.Diagram = null;
@@ -541,6 +624,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected override bool RemoveCore(Shape shape) {
 			bool result = base.RemoveCore(shape);
 			shape.Invalidate();
@@ -555,6 +639,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		protected override void ClearCore() {
 			for (int i = shapes.Count - 1; i >= 0; --i) {
 				CheckOwnerboundsUpdateNeeded(shapes[i]);
@@ -599,6 +684,9 @@ namespace Dataweb.NShape {
 	[TypeDescriptionProvider(typeof(TypeDescriptionProviderDg))]
 	public sealed class Diagram : IEntity {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Diagram" />.
+		/// </summary>
 		public Diagram(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			this.name = name;
@@ -653,12 +741,16 @@ namespace Dataweb.NShape {
 		public int Width {
 			get { return size.Width; }
 			set {
-				if (displayService != null)
-					displayService.Invalidate(0, 0, Width, Height);
-				if (value <= 0) size.Width = 1;
-				else size.Width = value;
-				if (displayService != null) 
-					displayService.Invalidate(0, 0, Width, Height);
+				if (Size.Width != value) {
+					if (displayService != null)
+						displayService.Invalidate(0, 0, Width, Height);
+					if (value <= 0) size.Width = 1;
+					else size.Width = value;
+					if (displayService != null) {
+						displayService.NotifyBoundsChanged();
+						displayService.Invalidate(0, 0, Width, Height);
+					}
+				}
 			}
 		}
 
@@ -672,12 +764,16 @@ namespace Dataweb.NShape {
 		public int Height {
 			get { return size.Height; }
 			set {
-				if (displayService != null)
-					displayService.Invalidate(0, 0, Width, Height);
-				if (value <= 0) size.Height = 1;
-				else size.Height = value;
-				if (displayService != null) 
-					displayService.Invalidate(0, 0, Width, Height);
+				if (size.Height != value) {
+					if (displayService != null)
+						displayService.Invalidate(0, 0, Width, Height);
+					if (value <= 0) size.Height = 1;
+					else size.Height = value;
+					if (displayService != null) {
+						displayService.NotifyBoundsChanged();
+						displayService.Invalidate(0, 0, Width, Height);
+					}
+				}
 			}
 		}
 
@@ -743,7 +839,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("The background image of the diagram.")]
-		[Editor("Dataweb.NShape.WinFormsUI.NamedImageEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+		[Editor("Dataweb.NShape.WinFormsUI.NamedImageUITypeEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		[RequiredPermission(Permission.Present)]
 		public NamedImage BackgroundImage {
 			get { return backImage; }
@@ -875,32 +971,53 @@ namespace Dataweb.NShape {
 
 		#region [Public] Methods: Layer management
 
+		/// <summary>
+		/// Gets all <see cref="T:Dataweb.NShape.LayerIds" /> the given <see cref="T:Dataweb.NShape.Advanced.NShape" /> is part of.
+		/// </summary>
 		public LayerIds GetShapeLayers(Shape shape) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			return shape.Layers;
 		}
 		
 
+		/// <summary>
+		/// Associates the given <see cref="T:Dataweb.NShape.Advanced.Shape" /> to all specified layers.
+		/// </summary>
 		public void AddShapeToLayers(Shape shape, LayerIds layerIds) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			shape.Layers |= layerIds;
-		}
-
-
-		public void AddShapesToLayers(IEnumerable<Shape> shapes, LayerIds layerIds) {
-			if (shapes == null) throw new ArgumentNullException("shapes");
-			foreach (Shape shape in shapes)
-				shape.Layers |= layerIds;
-		}
-
-
-		public void RemoveShapeFromLayers(Shape shape, LayerIds layerIds) {
-			if (shape == null) throw new ArgumentNullException("shape");
-			shape.Layers ^= (shape.Layers & layerIds);
 			shape.Invalidate();
 		}
 
 
+		/// <summary>
+		/// Associates the given collection of <see cref="T:Dataweb.NShape.Advanced.Shape" /> to all specified layers.
+		/// </summary>
+		public void AddShapesToLayers(IEnumerable<Shape> shapes, LayerIds layerIds) {
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			foreach (Shape shape in shapes) {
+				shape.Layers |= layerIds;
+				shape.Invalidate();
+			}
+		}
+
+
+		/// <summary>
+		/// Disociates the given <see cref="T:Dataweb.NShape.Advanced.Shape" /> to all specified layers.
+		/// </summary>
+		public void RemoveShapeFromLayers(Shape shape, LayerIds layerIds) {
+			if (shape == null) throw new ArgumentNullException("shape");
+			if (layerIds == LayerIds.None) return;
+			if (layerIds == LayerIds.All)
+				shape.Layers = LayerIds.None;
+			else shape.Layers ^= (shape.Layers & layerIds);
+			shape.Invalidate();
+		}
+
+
+		/// <summary>
+		/// Disociates the given collection of <see cref="T:Dataweb.NShape.Advanced.Shape" /> to all specified layers.
+		/// </summary>
 		public void RemoveShapesFromLayers(IEnumerable<Shape> shapes, LayerIds layerIds) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			foreach (Shape shape in shapes) {
@@ -910,6 +1027,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Delete all content of this <see cref="T:Dataweb.NShape.Diagram" />.
+		/// </summary>
 		public void Clear() {
 			diagramShapes.Clear();
 			layers.Clear();
@@ -1092,28 +1212,23 @@ namespace Dataweb.NShape {
 			bounds.Width = Math.Min(clipRectangle.Right, Width) - bounds.X;
 			bounds.Height = Math.Min(clipRectangle.Bottom, Height) - bounds.Y;
 
-			//if (clipRectangle.Width > Width)
-			//   clipRectangle.Width -= (clipRectangle.Width - Width);
-			//if (clipRectangle.Height > Height)
-			//   clipRectangle.Height -= (clipRectangle.Height - Height);
-
 			// draw diagram background color
 			UpdateBrushes();
 			//graphics.FillRectangle(colorBrush, clipRectangle);
 			graphics.FillRectangle(colorBrush, bounds);
 
 			// draw diagram background image
-			if (backImage != null && backImage.Image != null) {
+			if (!NamedImage.IsNullOrEmpty(backImage)) {
 				Rectangle diagramBounds = Rectangle.Empty;
 				diagramBounds.Width = Width;
 				diagramBounds.Height = Height;
 				if (imageAttribs == null) imageAttribs = GdiHelpers.GetImageAttributes(imageLayout, imageGamma, imageTransparency, imageGrayScale, false, imageTransparentColor);
 				if (backImage.Image is Metafile)
-					GdiHelpers.DrawImage(graphics, backImage.Image, imageAttribs, imageLayout, diagramBounds, bounds);
+					GdiHelpers.DrawImage(graphics, backImage.Image, imageAttribs, imageLayout, diagramBounds, diagramBounds);
 				else {
 					if (imageBrush == null) imageBrush = GdiHelpers.CreateTextureBrush(backImage.Image, imageAttribs);
 					Point center = Point.Empty;
-					center.Offset(diagramBounds.Width / 2, diagramBounds.Height / 2);
+					center.Offset(Width / 2, Height / 2);
 					GdiHelpers.TransformTextureBrush(imageBrush, imageLayout, diagramBounds, center, 0);
 					graphics.FillRectangle(imageBrush, bounds);
 				}
@@ -1169,11 +1284,17 @@ namespace Dataweb.NShape {
 		
 		#region IEntity Members (Explicit implementation)
 
+		/// <summary>
+		/// The entity type name of <see cref="T:Dataweb.NShape.Diagram" />.
+		/// </summary>
 		public static string EntityTypeName {
 			get { return entityTypeName; }
 		}
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Diagram" />.
+		/// </summary>
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("Name", typeof(string));
 			if (version > 2) yield return new EntityFieldDefinition("Title", typeof(string));
@@ -1217,8 +1338,9 @@ namespace Dataweb.NShape {
 			size.Height = reader.ReadInt32();
 			backColor = Color.FromArgb(reader.ReadInt32());
 			targetColor = Color.FromArgb(reader.ReadInt32());
-			backImage.Name = reader.ReadString();
-			backImage.Image = reader.ReadImage();
+			string imgName = reader.ReadString();
+			Image img = reader.ReadImage();
+			if (img != null) backImage = new NamedImage(img, imgName);
 			imageLayout = (ImageLayoutMode)reader.ReadByte();
 			imageGamma = reader.ReadFloat();
 			imageTransparency = reader.ReadByte();
@@ -1253,8 +1375,16 @@ namespace Dataweb.NShape {
 			writer.WriteInt32(size.Height);
 			writer.WriteInt32(BackgroundColor.ToArgb());
 			writer.WriteInt32(BackgroundGradientColor.ToArgb());
-			writer.WriteString(backImage.Name);
-			writer.WriteImage(backImage.Image);
+			if (NamedImage.IsNullOrEmpty(backImage)) {
+				writer.WriteString(string.Empty);
+				writer.WriteImage(null);
+			} else {
+				writer.WriteString(backImage.Name);
+				object imgTag = backImage.Image.Tag;
+				backImage.Image.Tag = backImage.Name;
+				writer.WriteImage(backImage.Image);
+				backImage.Image.Tag = imgTag;
+			}
 			writer.WriteByte((byte)imageLayout);
 			writer.WriteFloat(imageGamma);
 			writer.WriteByte(imageTransparency);
@@ -1302,10 +1432,11 @@ namespace Dataweb.NShape {
 			}
 		}
 
-		
+
 		private void UpdateBrushes() {
 			if (colorBrush == null) {
 				if (BackgroundGradientColor != BackgroundColor && highQualityRendering) {
+					colorBrushBounds.Location = Point.Empty;
 					colorBrushBounds.Width = 100;
 					colorBrushBounds.Height = 100;
 					colorBrush = new LinearGradientBrush(colorBrushBounds, BackgroundGradientColor, BackgroundColor, 45);
@@ -1313,17 +1444,13 @@ namespace Dataweb.NShape {
 			}
 			if (colorBrush is LinearGradientBrush && Size != colorBrushBounds.Size) {
 				LinearGradientBrush gradientBrush = (LinearGradientBrush)colorBrush;
-				float widthSq = gradientBrush.Rectangle.Width * gradientBrush.Rectangle.Width;
-				float heightSq = gradientBrush.Rectangle.Height * gradientBrush.Rectangle.Height;
-
-				float dX; float dY;
-				dX = (float)(Width / (Math.Sqrt(widthSq + widthSq) / 2));
-				dY = (float)(Height / (Math.Sqrt(heightSq + heightSq) / 2));
-				gradientBrush.ResetTransform();
-				gradientBrush.ScaleTransform(dX, dY);
-				gradientBrush.RotateTransform(45f);
+				colorBrushBounds.Location = Point.Empty; 
 				colorBrushBounds.Width = Width;
 				colorBrushBounds.Height = Height;
+				PointF center = PointF.Empty;
+				center.X = colorBrushBounds.X + (colorBrushBounds.Width / 2f);
+				center.Y = colorBrushBounds.Y + (colorBrushBounds.Height / 2f);
+				GdiHelpers.TransformLinearGradientBrush(gradientBrush, 45, colorBrushBounds, center, 0);
 			}
 		}
 
@@ -1332,6 +1459,7 @@ namespace Dataweb.NShape {
 
 		#region Fields
 
+		/// <summary>Defines the cell size of the diagram's spatial index.</summary>
 		public const int CellSize = 100;
 
 		private const string entityTypeName = "Core.Diagram";
@@ -1345,11 +1473,11 @@ namespace Dataweb.NShape {
 		private DiagramShapeCollection diagramShapes = null;
 		private Size size = new Size(1, 1);
 		// Rendering stuff
-		private Color backColor = Color.Silver;
-		private Color targetColor = Color.WhiteSmoke;
+		private Color backColor = Color.WhiteSmoke;
+		private Color targetColor = Color.White;
 		private bool highQualityRendering = true;
 		// Background image stuff
-		private NamedImage backImage = new NamedImage();
+		private NamedImage backImage;
 		private ImageLayoutMode imageLayout;
 		private float imageGamma = 1.0f;
 		private byte imageTransparency = 0;

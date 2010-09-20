@@ -30,10 +30,16 @@ namespace Dataweb.NShape.Controllers {
 	[ToolboxBitmap(typeof(DiagramSetController), "DiagramSetController.bmp")]
 	public class DiagramSetController : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramSetController" />.
+		/// </summary>
 		public DiagramSetController() {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramSetController" />.
+		/// </summary>
 		public DiagramSetController(Project project)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
@@ -41,22 +47,24 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		~DiagramSetController() {
-		}
-
-
 		#region [Public] Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler ProjectChanging;
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler ProjectChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler ToolChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<ModelObjectsEventArgs> SelectModelObjectsRequested;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<DiagramEventArgs> DiagramAdded;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<DiagramEventArgs> DiagramRemoved;
 
 		#endregion
@@ -64,12 +72,18 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return project; }
@@ -83,6 +97,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Browsable(false)]
 		public Tool ActiveTool {
 			get { return tool; }
@@ -93,6 +108,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Browsable(false)]
 		public IEnumerable<Diagram> Diagrams {
 			get {
@@ -106,6 +122,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram CreateDiagram(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertProjectIsOpen();
@@ -119,6 +136,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CloseDiagram(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertProjectIsOpen();
@@ -131,6 +149,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CloseDiagram(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			AssertProjectIsOpen();
@@ -147,6 +166,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void DeleteDiagram(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertProjectIsOpen();
@@ -159,6 +179,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void DeleteDiagram(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			AssertProjectIsOpen();
@@ -171,41 +192,63 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SelectModelObjects(IEnumerable<IModelObject> modelObjects) {
 			if (SelectModelObjectsRequested != null) 
 				SelectModelObjectsRequested(this, GetModelObjectsEventArgs(modelObjects));
 		}
 
-		#endregion
 
+		/// <ToBeCompleted></ToBeCompleted>
+		public void InsertShape(Diagram diagram, Shape shape, LayerIds activeLayers, bool withModelObjects) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shape == null) throw new ArgumentNullException("shape");
+			InsertShapes(diagram, SingleInstanceEnumerator<Shape>.Create(shape), activeLayers, withModelObjects);
+		}
 
-		#region [Public] Methods: Methods provided by actions
-
+		
+		/// <ToBeCompleted></ToBeCompleted>
 		public void InsertShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers, bool withModelObjects) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			ICommand cmd = new InsertShapeCommand(diagram, activeLayers, shapes, withModelObjects, true);
 			Project.ExecuteCommand(cmd);
-			// ToDo: Raise event
-			//if (ShapesInserted != null) ShapesInserted(this, eventArgs);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
+		public void DeleteShapes(Diagram diagram, Shape shape, bool withModelObjects) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shape == null) throw new ArgumentNullException("shape");
+			DeleteShapes(diagram, SingleInstanceEnumerator<Shape>.Create(shape), withModelObjects);
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public void DeleteShapes(Diagram diagram, IEnumerable<Shape> shapes, bool withModelObjects) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
+			if (withModelObjects) {
+				foreach (Shape s in shapes) {
+					if (s.ModelObject != null && s.ModelObject.ShapeCount > 1) {
+						string messageText = string.Format("{0} '{1}' can not be deleted while more than one shapes refer to it.",
+															s.ModelObject.Type.Name, s.ModelObject.Name);
+						throw new NShapeException(messageText);
+					}
+				}
+			}
 			ICommand cmd = new DeleteShapeCommand(diagram, shapes, withModelObjects);
 			Project.ExecuteCommand(cmd);
-			// ToDo: Raise event
-			//if (ShapesRemoved != null) ShapesRemoved(this, eventArgs);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Copy(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects) {
 			Copy(source, shapes, withModelObjects, Geometry.InvalidPoint);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Copy(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects, Point startPos) {
 			if (source == null) throw new ArgumentNullException("source");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -215,18 +258,23 @@ namespace Dataweb.NShape.Controllers {
 			editBuffer.withModelObjects = withModelObjects;
 			editBuffer.initialMousePos = startPos;
 			editBuffer.shapes.AddRange(shapes);
+			
+			// We have to copy the shapes immediately because shapes (and/or model objects) may 
+			// be deleted after they are copied to 'clipboard'.
 			// Copy shapes:
 			// Use the ShapeCollection's Clone method in order to maintain connections 
 			// between shapes inside the collection
-			editBuffer.shapes = editBuffer.shapes.Clone(withModelObjects);	
+			editBuffer.shapes = editBuffer.shapes.Clone(withModelObjects);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Cut(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects) {
 			Cut(source, shapes, withModelObjects, Geometry.InvalidPoint);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Cut(Diagram source, IEnumerable<Shape> shapes, bool withModelObjects, Point startPos) {
 			if (source == null) throw new ArgumentNullException("source");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -242,11 +290,13 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Paste(Diagram destination, LayerIds activeLayers) {
 			Paste(destination, activeLayers, 20, 20);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Paste(Diagram destination, LayerIds activeLayers, Point p) {
 			if (!editBuffer.IsEmpty) {
 				int dx, dy;
@@ -262,6 +312,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Paste(Diagram destination, LayerIds activeLayers, int offsetX, int offsetY) {
 			if (destination == null) throw new ArgumentNullException("destination");
 			if (!editBuffer.IsEmpty) {
@@ -280,6 +331,8 @@ namespace Dataweb.NShape.Controllers {
 				Project.ExecuteCommand(cmd);
 
 				// Clone shapes for another paste operation
+				// We have to copy the shapes immediately because shapes (and/or model objects) may 
+				// be deleted after they are copied to 'clipboard'.
 				editBuffer.shapes = editBuffer.shapes.Clone(editBuffer.withModelObjects);
 				if (editBuffer.action == EditAction.Cut) editBuffer.action = EditAction.Copy;
 			}
@@ -287,7 +340,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Aggregates the selected shapes to a group.
+		/// Aggregates the given shapes to a group.
 		/// </summary>
 		public void GroupShapes(Diagram diagram, IEnumerable<Shape> shapes, LayerIds activeLayers) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -307,7 +360,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Aggregate selected shapes to a composite shape based on the bottom shape.
+		/// Aggregate the given shapes to a composite shape based on the bottom shape.
 		/// </summary>
 		public void AggregateCompositeShape(Diagram diagram, Shape compositeShape, IEnumerable<Shape> shapes, LayerIds activeLayers) {
 			if (compositeShape == null) throw new ArgumentNullException("compositeShape");
@@ -325,7 +378,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Ungroups the selected shapes or the selected shape aggregation.
+		/// Ungroups the given shape group
 		/// </summary>
 		public void UngroupShapes(Diagram diagram, Shape groupShape) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -343,7 +396,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Splits the selected composite shape into independent shapes.
+		/// Splits the given composite shape into independent shapes.
 		/// </summary>
 		public void SplitCompositeShape(Diagram diagram, Shape compositeShape) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -359,6 +412,50 @@ namespace Dataweb.NShape.Controllers {
 			Project.ExecuteCommand(cmd);
 
 			shapeBuffer.Clear();
+		}
+
+
+		/// <summary>
+		/// Adds the given shapes to the given layers.
+		/// </summary>
+		public void AddShapesToLayers(Diagram diagram, IEnumerable<Shape> shapes, LayerIds layerIds) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+			
+			ICommand cmd = new AddShapesToLayersCommand(diagram, shapes, layerIds);
+			Project.ExecuteCommand(cmd);
+		}
+
+
+		/// <summary>
+		/// Assigns the given shapes to the given layers. If the shape was assigned to layers, these will be replaced.
+		/// </summary>
+		public void AssignShapesToLayers(Diagram diagram, IEnumerable<Shape> shapes, LayerIds layerIds) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+
+			ICommand cmd = new AssignShapesToLayersCommand(diagram, shapes, layerIds);
+			Project.ExecuteCommand(cmd);
+		}
+
+
+		/// <summary>
+		/// Removes the given shapes from all layers.
+		/// </summary>
+		public void RemoveShapesFromLayers(Diagram diagram, IEnumerable<Shape> shapes) {
+			RemoveShapesFromLayers(diagram, shapes, LayerIds.All);
+		}
+
+
+		/// <summary>
+		/// Removes the given shapes from the given layers.
+		/// </summary>
+		public void RemoveShapesFromLayers(Diagram diagram, IEnumerable<Shape> shapes, LayerIds layerIds) {
+			if (diagram == null) throw new ArgumentNullException("diagram");
+			if (shapes == null) throw new ArgumentNullException("shapes");
+
+			ICommand cmd = new RemoveShapesFromLayersCommand(diagram, shapes);
+			Project.ExecuteCommand(cmd);
 		}
 
 
@@ -385,6 +482,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanInsertShapes(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -393,14 +491,17 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanDeleteShapes(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			return Project.SecurityManager.IsGranted(Permission.Delete)
+				&& Project.SecurityManager.IsGranted(Permission.Delete, shapes)
 				&& diagram.Shapes.ContainsAll(shapes);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanCut(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -408,6 +509,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanCopy(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			// Check if shapes is not an empty collection
@@ -416,6 +518,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanPaste(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (editBuffer.IsEmpty) return false;
@@ -427,6 +530,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanGroupShapes(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			int cnt= 0;
@@ -438,6 +542,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanUngroupShape(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -450,6 +555,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanAggregateShapes(Diagram diagram, IReadOnlyShapeCollection shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -459,6 +565,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanSplitShapeAggregation(Diagram diagram, IReadOnlyShapeCollection shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -471,6 +578,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanLiftShapes(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -520,7 +628,7 @@ namespace Dataweb.NShape.Controllers {
 		#endregion
 
 
-		#region [Internal] Properties 
+		#region [Internal] Properties
 
 		internal IReadOnlyCollection<DiagramController> DiagramControllers {
 			get { return diagramControllers; }
@@ -533,12 +641,14 @@ namespace Dataweb.NShape.Controllers {
 
 		// ToDo: Make these methods protected internal as soon as the WinFormsUI.Display class 
 		// is split into DiagramPresenter and Display:IDiagramView
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramController OpenDiagram(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			return DoAddDiagramController(diagram);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramController OpenDiagram(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertProjectIsOpen();
@@ -754,7 +864,17 @@ namespace Dataweb.NShape.Controllers {
 
 	#region Enums
 
-	public enum IndicatorDrawMode { Normal, Highlighted, Deactivated };
+	/// <summary>
+	/// Specifies the draw mode of selection indicators and grips.
+	/// </summary>
+	public enum IndicatorDrawMode { 
+		/// <ToBeCompleted></ToBeCompleted>
+		Normal,
+		/// <ToBeCompleted></ToBeCompleted>
+		Highlighted,
+		/// <ToBeCompleted></ToBeCompleted>
+		Deactivated
+	};
 
 
 	/// <summary>
@@ -762,237 +882,441 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	[Flags]
 	public enum MouseButtonsDg {
-		/// <summary>
-		/// No mouse button was pressed.
-		/// </summary>
+		/// <summary>No mouse button was pressed.</summary>
 		None = 0,
-		/// <summary>
-		/// The left mouse button was pressed.
-		/// </summary>
+		/// <summary>The left mouse button was pressed.</summary>
 		Left = 0x100000,
-		/// <summary>
-		/// The right mouse button was pressed.
-		/// </summary>
+		/// <summary>The right mouse button was pressed.</summary>
 		Right = 0x200000,
-		/// <summary>
-		/// The middle mouse button was pressed.
-		/// </summary>
+		/// <summary>The middle mouse button was pressed.</summary>
 		Middle = 0x400000,
-		/// <summary>
-		/// The first XButton was pressed.
-		/// </summary>
+		/// <summary>The first XButton was pressed.</summary>
 		ExtraButton1 = 0x800000,
-		/// <summary>
-		/// The second XButton was pressed.
-		/// </summary>
+		/// <summary>The second XButton was pressed.</summary>
 		ExtraButton2 = 0x1000000,
 	}
 
 
-	public enum MouseEventType { MouseDown, MouseMove, MouseUp };
-
-
-	public enum KeyEventType { KeyDown, KeyPress, KeyUp, PreviewKeyDown }
+	/// <summary>
+	/// Specifies the kind of mouse event.
+	/// </summary>
+	public enum MouseEventType { 
+		/// <summary>A mouse button was pressed.</summary>
+		MouseDown,
+		/// <summary>The mouse was moved.</summary>
+		MouseMove,
+		/// <summary>A mouse button was released.</summary>
+		MouseUp 
+	};
 
 
 	/// <summary>
-	/// This is the NShape representation of System.Windows.Forms.Keys (Framework 2.0)
+	/// Specifies the kind of key event.
+	/// </summary>
+	public enum KeyEventType { 
+		/// <summary>A key was pressed down.</summary>
+		KeyDown, 
+		/// <summary>A key was pressed.</summary>
+		KeyPress, 
+		/// <summary>A key was released.</summary>
+		KeyUp, 
+		/// <summary>A key is going to be pressed.</summary>
+		PreviewKeyDown 
+	}
+
+
+	/// <summary>
+	/// Specifies key codes and modifiers. This is the NShape representation of System.Windows.Forms.Keys (Framework 2.0)
 	/// </summary>
 	[Flags]
 	public enum KeysDg {
+		/// <summary>The A key.</summary>
 		A = 0x41,
+		/// <summary>The add key.</summary>
 		Add = 0x6b,
+		/// <summary>The ALT modifier key.</summary>
 		Alt = 0x40000,
+		/// <summary>The application key (Microsoft Natural Keyboard).</summary>
 		Apps = 0x5d,
+		/// <summary>The ATTN key.</summary>
 		Attn = 0xf6,
+		/// <summary>The B key.</summary>
 		B = 0x42,
+		/// <summary>The BACKSPACE key.</summary>
 		Back = 8,
+		/// <summary>The browser back key (Windows 2000 or later).</summary>
 		BrowserBack = 0xa6,
+		/// <summary>The browser favorites key (Windows 2000 or later).</summary>
 		BrowserFavorites = 0xab,
+		/// <summary>The browser forward key (Windows 2000 or later).</summary>
 		BrowserForward = 0xa7,
+		/// <summary>The browser home key (Windows 2000 or later).</summary>
 		BrowserHome = 0xac,
+		/// <summary>The browser refresh key (Windows 2000 or later).</summary>
 		BrowserRefresh = 0xa8,
+		/// <summary>The browser search key (Windows 2000 or later).</summary>
 		BrowserSearch = 170,
+		/// <summary>The browser stop key (Windows 2000 or later).</summary>
 		BrowserStop = 0xa9,
+		/// <summary>The C key.</summary>
 		C = 0x43,
+		/// <summary>The CANCEL key.</summary>
 		Cancel = 3,
+		/// <summary>The CAPS LOCK key.</summary>
 		Capital = 20,
+		/// <summary>The CAPS LOCK key.</summary>
 		CapsLock = 20,
+		/// <summary>The CLEAR key.</summary>
 		Clear = 12,
+		/// <summary>The CTRL modifier key.</summary>
 		Control = 0x20000,
+		/// <summary>The CTRL key.</summary>
 		ControlKey = 0x11,
+		/// <summary>The CRSEL key.</summary>
 		Crsel = 0xf7,
+		/// <summary>The D key.</summary>
 		D = 0x44,
+		/// <summary>The 0 key.</summary>
 		D0 = 0x30,
+		/// <summary>The 1 key.</summary>
 		D1 = 0x31,
+		/// <summary>The 2 key.</summary>
 		D2 = 50,
+		/// <summary>The 3 key.</summary>
 		D3 = 0x33,
+		/// <summary>The 4 key.</summary>
 		D4 = 0x34,
+		/// <summary>The 5 key.</summary>
 		D5 = 0x35,
+		/// <summary>The 6 key.</summary>
 		D6 = 0x36,
+		/// <summary>The 7 key.</summary>
 		D7 = 0x37,
+		/// <summary>The 8 key.</summary>
 		D8 = 0x38,
+		/// <summary>The 9 key.</summary>
 		D9 = 0x39,
+		/// <summary>The decimal key.</summary>
 		Decimal = 110,
+		/// <summary>The DEL key.</summary>
 		Delete = 0x2e,
+		/// <summary>The divide key.</summary>
 		Divide = 0x6f,
+		/// <summary>The DOWN ARROW key.</summary>
 		Down = 40,
+		/// <summary>The E key.</summary>
 		E = 0x45,
+		/// <summary>The END key.</summary>
 		End = 0x23,
+		/// <summary>The ENTER key.</summary>
 		Enter = 13,
+		/// <summary>The ERASE EOF key.</summary>
 		EraseEof = 0xf9,
+		/// <summary>The ESC key.</summary>
 		Escape = 0x1b,
+		/// <summary>The EXECUTE key.</summary>
 		Execute = 0x2b,
+		/// <summary>The EXSEL key.</summary>
 		Exsel = 0xf8,
+		/// <summary>The F key.</summary>
 		F = 70,
+		/// <summary>The F1 key.</summary>
 		F1 = 0x70,
+		/// <summary>The F10 key.</summary>
 		F10 = 0x79,
+		/// <summary>The F11 key.</summary>
 		F11 = 0x7a,
+		/// <summary>The F12 key.</summary>
 		F12 = 0x7b,
+		/// <summary>The F13 key.</summary>
 		F13 = 0x7c,
+		/// <summary>The F14 key.</summary>
 		F14 = 0x7d,
+		/// <summary>The F15 key.</summary>
 		F15 = 0x7e,
+		/// <summary>The F16 key.</summary>
 		F16 = 0x7f,
+		/// <summary>The F17 key.</summary>
 		F17 = 0x80,
+		/// <summary>The F18 key.</summary>
 		F18 = 0x81,
+		/// <summary>The F19 key.</summary>
 		F19 = 130,
+		/// <summary>The F2 key.</summary>
 		F2 = 0x71,
+		/// <summary>The F20 key.</summary>
 		F20 = 0x83,
+		/// <summary>The F21 key.</summary>
 		F21 = 0x84,
+		/// <summary>The F22 key.</summary>
 		F22 = 0x85,
+		/// <summary>The F23 key.</summary>
 		F23 = 0x86,
+		/// <summary>The F24 key.</summary>
 		F24 = 0x87,
+		/// <summary>The F3 key.</summary>
 		F3 = 0x72,
+		/// <summary>The F4 key.</summary>
 		F4 = 0x73,
+		/// <summary>The F5 key.</summary>
 		F5 = 0x74,
+		/// <summary>The F6 key.</summary>
 		F6 = 0x75,
+		/// <summary>The F7 key.</summary>
 		F7 = 0x76,
+		/// <summary>The F8 key.</summary>
 		F8 = 0x77,
+		/// <summary>The F9 key.</summary>
 		F9 = 120,
+		/// <summary>The IME final mode key.</summary>
 		FinalMode = 0x18,
+		/// <summary>The G key.</summary>
 		G = 0x47,
+		/// <summary>The H key.</summary>
 		H = 0x48,
+		/// <summary>The IME Hanguel mode key. (maintained for compatibility; use HangulMode) </summary>
 		HanguelMode = 0x15,
+		/// <summary>The IME Hangul mode key.</summary>
 		HangulMode = 0x15,
+		/// <summary>The IME Hanja mode key.</summary>
 		HanjaMode = 0x19,
+		/// <summary>The HELP key.</summary>
 		Help = 0x2f,
+		/// <summary>The HOME key.</summary>
 		Home = 0x24,
+		/// <summary>The I key.</summary>
 		I = 0x49,
+		/// <summary>The IME accept key, replaces <see cref="F:System.Windows.Forms.Keys.IMEAceept"></see>.</summary>
 		IMEAccept = 30,
+		/// <summary>The IME accept key. Obsolete, use <see cref="F:System.Windows.Forms.Keys.IMEAccept"></see> instead.</summary>
 		IMEAceept = 30,
+		/// <summary>The IME convert key.</summary>
 		IMEConvert = 0x1c,
+		/// <summary>The IME mode change key.</summary>
 		IMEModeChange = 0x1f,
+		/// <summary>The IME nonconvert key.</summary>
 		IMENonconvert = 0x1d,
+		/// <summary>The INS key.</summary>
 		Insert = 0x2d,
+		/// <summary>The J key.</summary>
 		J = 0x4a,
+		/// <summary>The IME Junja mode key.</summary>
 		JunjaMode = 0x17,
+		/// <summary>The K key.</summary>
 		K = 0x4b,
+		/// <summary>The IME Kana mode key.</summary>
 		KanaMode = 0x15,
+		/// <summary>The IME Kanji mode key.</summary>
 		KanjiMode = 0x19,
+		/// <summary>The bitmask to extract a key code from a key value.</summary>
 		KeyCode = 0xffff,
+		/// <summary>The L key.</summary>
 		L = 0x4c,
+		/// <summary>The start application one key (Windows 2000 or later).</summary>
 		LaunchApplication1 = 0xb6,
+		/// <summary>The start application two key (Windows 2000 or later).</summary>
 		LaunchApplication2 = 0xb7,
+		/// <summary>The launch mail key (Windows 2000 or later).</summary>
 		LaunchMail = 180,
+		/// <summary>The left mouse button.</summary>
 		LButton = 1,
+		/// <summary>The left CTRL key.</summary>
 		LControlKey = 0xa2,
+		/// <summary>The LEFT ARROW key.</summary>
 		Left = 0x25,
+		/// <summary>The LINEFEED key.</summary>
 		LineFeed = 10,
+		/// <summary>The left ALT key.</summary>
 		LMenu = 0xa4,
+		/// <summary>The left SHIFT key.</summary>
 		LShiftKey = 160,
+		/// <summary>The left Windows logo key (Microsoft Natural Keyboard).</summary>
 		LWin = 0x5b,
+		/// <summary>The M key.</summary>
 		M = 0x4d,
+		/// <summary>The middle mouse button (three-button mouse).</summary>
 		MButton = 4,
+		/// <summary>The media next track key (Windows 2000 or later).</summary>
 		MediaNextTrack = 0xb0,
+		/// <summary>The media play pause key (Windows 2000 or later).</summary>
 		MediaPlayPause = 0xb3,
+		/// <summary>The media previous track key (Windows 2000 or later).</summary>
 		MediaPreviousTrack = 0xb1,
+		/// <summary>The media Stop key (Windows 2000 or later).</summary>
 		MediaStop = 0xb2,
+		/// <summary>The ALT key.</summary>
 		Menu = 0x12,
+		/// <summary>The bitmask to extract modifiers from a key value.</summary>
 		Modifiers = -65536,
+		/// <summary>The multiply key.</summary>
 		Multiply = 0x6a,
+		/// <summary>The N key.</summary>
 		N = 0x4e,
+		/// <summary>The PAGE DOWN key.</summary>
 		Next = 0x22,
+		/// <summary>A constant reserved for future use.</summary>
 		NoName = 0xfc,
+		/// <summary>No key pressed.</summary>
 		None = 0,
+		/// <summary>The NUM LOCK key.</summary>
 		NumLock = 0x90,
+		/// <summary>The 0 key on the numeric keypad.</summary>
 		NumPad0 = 0x60,
+		/// <summary>The 1 key on the numeric keypad.</summary>
 		NumPad1 = 0x61,
+		/// <summary>The 2 key on the numeric keypad.</summary>
 		NumPad2 = 0x62,
+		/// <summary>The 3 key on the numeric keypad.</summary>
 		NumPad3 = 0x63,
+		/// <summary>The 4 key on the numeric keypad.</summary>
 		NumPad4 = 100,
+		/// <summary>The 5 key on the numeric keypad.</summary>
 		NumPad5 = 0x65,
+		/// <summary>The 6 key on the numeric keypad.</summary>
 		NumPad6 = 0x66,
+		/// <summary>The 7 key on the numeric keypad.</summary>
 		NumPad7 = 0x67,
+		/// <summary>The 8 key on the numeric keypad.</summary>
 		NumPad8 = 0x68,
+		/// <summary>The 9 key on the numeric keypad.</summary>
 		NumPad9 = 0x69,
+		/// <summary>The O key.</summary>
 		O = 0x4f,
+		/// <summary>The OEM 1 key.</summary>
 		Oem1 = 0xba,
+		/// <summary>The OEM 102 key.</summary>
 		Oem102 = 0xe2,
+		/// <summary>The OEM 2 key.</summary>
 		Oem2 = 0xbf,
+		/// <summary>The OEM 3 key.</summary>
 		Oem3 = 0xc0,
+		/// <summary>The OEM 4 key.</summary>
 		Oem4 = 0xdb,
+		/// <summary>The OEM 5 key.</summary>
 		Oem5 = 220,
+		/// <summary>The OEM 6 key.</summary>
 		Oem6 = 0xdd,
+		/// <summary>The OEM 7 key.</summary>
 		Oem7 = 0xde,
+		/// <summary>The OEM 8 key.</summary>
 		Oem8 = 0xdf,
+		/// <summary>The OEM angle bracket or backslash key on the RT 102 key keyboard (Windows 2000 or later).</summary>
 		OemBackslash = 0xe2,
+		/// <summary>The CLEAR key.</summary>
 		OemClear = 0xfe,
+		/// <summary>The OEM close bracket key on a US standard keyboard (Windows 2000 or later).</summary>
 		OemCloseBrackets = 0xdd,
+		/// <summary>The OEM comma key on any country/region keyboard (Windows 2000 or later).</summary>
 		Oemcomma = 0xbc,
+		/// <summary>The OEM minus key on any country/region keyboard (Windows 2000 or later).</summary>
 		OemMinus = 0xbd,
+		/// <summary>The OEM open bracket key on a US standard keyboard (Windows 2000 or later).</summary>
 		OemOpenBrackets = 0xdb,
+		/// <summary>The OEM period key on any country/region keyboard (Windows 2000 or later).</summary>
 		OemPeriod = 190,
+		/// <summary>The OEM pipe key on a US standard keyboard (Windows 2000 or later).</summary>
 		OemPipe = 220,
+		/// <summary>The OEM plus key on any country/region keyboard (Windows 2000 or later).</summary>
 		Oemplus = 0xbb,
+		/// <summary>The OEM question mark key on a US standard keyboard (Windows 2000 or later).</summary>
 		OemQuestion = 0xbf,
+		/// <summary>The OEM singled/double quote key on a US standard keyboard (Windows 2000 or later).</summary>
 		OemQuotes = 0xde,
+		/// <summary>The OEM Semicolon key on a US standard keyboard (Windows 2000 or later).</summary>
 		OemSemicolon = 0xba,
+		/// <summary>The OEM tilde key on a US standard keyboard (Windows 2000 or later).</summary>
 		Oemtilde = 0xc0,
+		/// <summary>The P key.</summary>
 		P = 80,
+		/// <summary>The PA1 key.</summary>
 		Pa1 = 0xfd,
+		/// <summary>Used to pass Unicode characters as if they were keystrokes. The Packet key value is the low word of a 32-bit virtual-key value used for non-keyboard input methods.</summary>
 		Packet = 0xe7,
+		/// <summary>The PAGE DOWN key.</summary>
 		PageDown = 0x22,
+		/// <summary>The PAGE UP key.</summary>
 		PageUp = 0x21,
+		/// <summary>The PAUSE key.</summary>
 		Pause = 0x13,
+		/// <summary>The PLAY key.</summary>
 		Play = 250,
+		/// <summary>The PRINT key.</summary>
 		Print = 0x2a,
+		/// <summary>The PRINT SCREEN key.</summary>
 		PrintScreen = 0x2c,
+		/// <summary>The PAGE UP key.</summary>
 		Prior = 0x21,
+		/// <summary>The PROCESS KEY key.</summary>
 		ProcessKey = 0xe5,
+		/// <summary>The Q key.</summary>
 		Q = 0x51,
+		/// <summary>The R key.</summary>
 		R = 0x52,
+		/// <summary>The right mouse button.</summary>
 		RButton = 2,
+		/// <summary>The right CTRL key.</summary>
 		RControlKey = 0xa3,
+		/// <summary>The RETURN key.</summary>
 		Return = 13,
+		/// <summary>The RIGHT ARROW key.</summary>
 		Right = 0x27,
+		/// <summary>The right ALT key.</summary>
 		RMenu = 0xa5,
+		/// <summary>The right SHIFT key.</summary>
 		RShiftKey = 0xa1,
+		/// <summary>The right Windows logo key (Microsoft Natural Keyboard).</summary>
 		RWin = 0x5c,
+		/// <summary>The S key.</summary>
 		S = 0x53,
+		/// <summary>The SCROLL LOCK key.</summary>
 		Scroll = 0x91,
+		/// <summary>The SELECT key.</summary>
 		Select = 0x29,
+		/// <summary>The select media key (Windows 2000 or later).</summary>
 		SelectMedia = 0xb5,
+		/// <summary>The separator key.</summary>
 		Separator = 0x6c,
+		/// <summary>The SHIFT modifier key.</summary>
 		Shift = 0x10000,
+		/// <summary>The SHIFT key.</summary>
 		ShiftKey = 0x10,
+		/// <summary>The computer sleep key.</summary>
 		Sleep = 0x5f,
+		/// <summary>The PRINT SCREEN key.</summary>
 		Snapshot = 0x2c,
+		/// <summary>The SPACEBAR key.</summary>
 		Space = 0x20,
+		/// <summary>The subtract key.</summary>
 		Subtract = 0x6d,
+		/// <summary>The T key.</summary>
 		T = 0x54,
+		/// <summary>The TAB key.</summary>
 		Tab = 9,
+		/// <summary>The U key.</summary>
 		U = 0x55,
+		/// <summary>The UP ARROW key.</summary>
 		Up = 0x26,
+		/// <summary>The V key.</summary>
 		V = 0x56,
+		/// <summary>The volume down key (Windows 2000 or later).</summary>
 		VolumeDown = 0xae,
+		/// <summary>The volume mute key (Windows 2000 or later).</summary>
 		VolumeMute = 0xad,
+		/// <summary>The volume up key (Windows 2000 or later).</summary>
 		VolumeUp = 0xaf,
+		/// <summary>The W key.</summary>
 		W = 0x57,
+		/// <summary>The X key.</summary>
 		X = 0x58,
+		/// <summary>The first x mouse button (five-button mouse).</summary>
 		XButton1 = 5,
+		/// <summary>The second x mouse button (five-button mouse).</summary>
 		XButton2 = 6,
+		/// <summary>The Y key.</summary>
 		Y = 0x59,
+		/// <summary>The Z key.</summary>
 		Z = 90,
+		/// <summary>The ZOOM key.</summary>
 		Zoom = 0xfb
 	}
 
@@ -1001,8 +1325,12 @@ namespace Dataweb.NShape.Controllers {
 
 	#region EventArgs
 
+	/// <summary>Provides data for mouse events.</summary>
 	public class MouseEventArgsDg : EventArgs {
 
+		/// <summary>
+		/// Initializing a new instance of <see cref="T:Dataweb.NShape.Controllers.MouseEventArgsDg" />.
+		/// </summary>
 		public MouseEventArgsDg(MouseEventType eventType, MouseButtonsDg buttons, int clicks, int delta, Point location, KeysDg modifiers) {
 			this.buttons = buttons;
 			this.clicks = clicks;
@@ -1062,6 +1390,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Initializes an new empty instance of <see cref="T:Dataweb.NShape.Controllers.MouseEventArgsDg" />.
+		/// </summary>
 		protected internal MouseEventArgsDg() {
 			this.buttons = MouseButtonsDg.None;
 			this.clicks = 0;
@@ -1073,19 +1404,29 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected MouseEventType eventType;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected MouseButtonsDg buttons;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Point position;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int wheelDelta;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int clicks;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected KeysDg modifiers;
 		
 		#endregion
 	}
 
 
+	/// <summary>Provides data for keyboard events.</summary>
 	public class KeyEventArgsDg : EventArgs {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.KeyEventArgsDg" />.
+		/// </summary>
 		public KeyEventArgsDg(KeyEventType eventType, int keyData, char keyChar, bool handled, bool suppressKeyPress) {
 			this.eventType = eventType;
 			this.handled = handled;
@@ -1095,97 +1436,131 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>Specifies the kind of key event.</summary>
 		public KeyEventType EventType {
 			get { return eventType; }
 		}
 
 
+		/// <summary>Gets the character corresponding to the key pressed.</summary>
 		public char KeyChar {
 			get { return keyChar; }
 		}
 
 
+		/// <summary>Gets the key data for a keyboard event.</summary>
 		public int KeyData {
 			get { return keyData; }
 		}
 
 
+		/// <summary>Gets or sets a value indicating whether the event was handled.</summary>
 		public bool Handled {
 			get { return handled; }
 			set { handled = value; }
 		}
 
 
+		/// <summary>Gets or sets a value indicating whether the key event should be passed on to the underlying control.</summary>
 		public bool SuppressKeyPress {
 			get { return suppressKeyPress; }
 			set { suppressKeyPress = value; }
 		}
 
 
+		/// <summary>Gets a value indicating whether the CTRL key was pressed.</summary>
 		public bool Control {
 			get { return (keyData & control) == control; }
 		}
 
 
+		/// <summary>Gets or sets a value indicating whether the key event should be passed on to the underlying control</summary>
 		public bool Shift {
 			get { return (keyData & shift) == shift; }
 		}
 
 
+		/// <summary>Gets a value indicating whether the ALT key was pressed.</summary>
 		public bool Alt {
 			get { return (keyData & alt) == alt; }
 		}
 
 
+		/// <summary>Gets the keyboard code for a keyboard event.</summary>
 		public int KeyCode {
 			get { return keyData & keyCode; }
 		}
 
 
+		/// <summary>Specifies the currently pressed modifier keys.</summary>
 		public int Modifiers {
 			get { return (keyData & ~keyCode); }
 		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected internal KeyEventArgsDg() {
+			this.eventType = KeyEventType.PreviewKeyDown;
+			this.handled = false;
+			this.keyChar = '\0';
+			this.keyData = 0;
+			this.suppressKeyPress = false;
+		}
+
 
 		/// <summary>
 		/// The bitmask to extract modifiers from a key value.
 		/// </summary>
 		protected const int modifiers = -65536;
 
+	
 		/// <summary>
 		/// The bitmask to extract a key code from a key value.
 		/// </summary>
-		protected const int keyCode = 65535;
+		protected const int keyCode = ushort.MaxValue;
 
+		
 		/// <summary>
 		/// The SHIFT modifier key.
 		/// </summary>
-		protected const int shift = 65536;
+		protected const int shift = ushort.MaxValue;
 
+		
 		/// <summary>
 		/// The CTRL modifier key.
 		/// </summary>
 		protected const int control = 131072;
 
+		
 		/// <summary>
 		/// The ALT modifier key.
 		/// </summary>
 		protected const int alt = 262144;
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected KeyEventType eventType;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected char keyChar;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected int keyData;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool handled;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected bool suppressKeyPress;
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DiagramEventArgs : EventArgs {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramEventArgs(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			this.diagram = diagram;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram Diagram {
 			get { return diagram; }
 			internal set { diagram = value; }
@@ -1198,17 +1573,19 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ShapeEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ShapeEventArgs(IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			this.shapes.AddRange(shapes);
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IReadOnlyCollection<Shape> Shapes {
 			get { return shapes; }
 		}
-
 
 		internal ShapeEventArgs() {
 			this.shapes.Clear();
@@ -1228,17 +1605,19 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ModelObjectsEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ModelObjectsEventArgs(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			this.modelObjects.AddRange(modelObjects);
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IReadOnlyCollection<IModelObject> ModelObjects {
 			get { return modelObjects; }
 		}
-
 
 		internal ModelObjectsEventArgs() {
 			this.modelObjects.Clear();
@@ -1258,8 +1637,10 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DiagramShapeEventArgs : ShapeEventArgs {
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramShapeEventArgs(IEnumerable<Shape> shapes, Diagram diagram)
 			: base(shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
@@ -1267,6 +1648,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram Diagram {
 			get { return diagram; }
 		}
@@ -1298,8 +1680,10 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ShapeMouseEventArgs : MouseEventArgsDg {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ShapeMouseEventArgs(IEnumerable<Shape> shapes, Diagram diagram, MouseEventType eventType, MouseButtonsDg buttons, int clicks, int delta, Point location, KeysDg modifiers)
 			: base(eventType, buttons, clicks, delta, location, modifiers) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
@@ -1307,6 +1691,7 @@ namespace Dataweb.NShape.Controllers {
 			this.diagram = diagram;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IReadOnlyCollection<Shape> Shapes { get { return shapes; } }
 
 		internal ShapeMouseEventArgs()
@@ -1333,10 +1718,16 @@ namespace Dataweb.NShape.Controllers {
 
 	#region Exceptions
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DiagramControllerNotFoundException : NShapeException {
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramControllerNotFoundException" />.
+		/// </summary>
 		public DiagramControllerNotFoundException(Diagram diagram)
 			: base("No {0} found for {1} '{2}'", typeof(DiagramController).Name, typeof(Diagram).Name, (diagram != null) ? diagram.Name : string.Empty) {
 		}
+
 	}
 
 	#endregion

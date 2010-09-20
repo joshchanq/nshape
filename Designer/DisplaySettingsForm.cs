@@ -17,6 +17,7 @@ using System;
 using System.Windows.Forms;
 
 using Dataweb.NShape.Controllers;
+using System.Drawing;
 
 
 namespace Dataweb.NShape.Designer {
@@ -67,6 +68,12 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
+		public Color GridColor {
+			get { return gridColorLabel.BackColor; }
+			set { gridColorLabel.BackColor = value; }
+		}
+
+
 		public ControlPointShape ResizePointShape {
 			get { return (ControlPointShape)resizePointCombo.SelectedItem; }
 			set { resizePointCombo.SelectedItem = value; }
@@ -97,6 +104,36 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
+		private void chooseGridColorButton_Click(object sender, EventArgs e) {
+			colorDialog.AllowFullOpen = true;
+			colorDialog.FullOpen = true;
+			colorDialog.AnyColor = true;
+			colorDialog.Color = GridColor;
+
+			// Add current Display color as CustomColor
+			if (colorDialog.CustomColors != null) {
+				int gridColorRGB = ColorToRGB(GridColor);
+				int[] colors = colorDialog.CustomColors;
+				int idx = Array.IndexOf(colors, gridColorRGB, 0);
+				if (idx < 0) {
+					int emptyArgb = ColorToRGB(Color.White);
+					int maxIdx = colors.Length - 1;
+					do ++idx; while (idx < maxIdx && colors[idx] != emptyArgb);
+					colors[idx] = gridColorRGB;
+				}
+				colorDialog.CustomColors = colors;
+			}
+
+			if (colorDialog.ShowDialog(this) == DialogResult.OK)
+				GridColor = colorDialog.Color;
+		}
+
+
+		private int ColorToRGB(Color color) {
+			return (int)(((uint)((((color.R << 0x10) | (color.G << 8)) | color.B)) & uint.MaxValue));
+		}
+
+	
 		private void cancelButton_Click(object sender, EventArgs e) {
 			this.DialogResult = DialogResult.Cancel;
 		}
@@ -104,6 +141,10 @@ namespace Dataweb.NShape.Designer {
 
 		private void okButton_Click(object sender, EventArgs e) {
 			this.DialogResult = DialogResult.OK;
+		}
+
+		private void snapDistanceUpDown_ValueChanged(object sender, EventArgs e) {
+
 		}
 	}
 }

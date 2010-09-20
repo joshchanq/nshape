@@ -23,28 +23,19 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
-			this.listBox1 = new System.Windows.Forms.ListBox();
 			this.addLibraryButton = new System.Windows.Forms.Button();
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
 			this.closeButton = new System.Windows.Forms.Button();
+			this.libraryListView = new System.Windows.Forms.ListView();
+			this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderVersion = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderPath = new System.Windows.Forms.ColumnHeader();
 			this.SuspendLayout();
-			// 
-			// listBox1
-			// 
-			this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-							| System.Windows.Forms.AnchorStyles.Left)
-							| System.Windows.Forms.AnchorStyles.Right)));
-			this.listBox1.FormattingEnabled = true;
-			this.listBox1.IntegralHeight = false;
-			this.listBox1.Location = new System.Drawing.Point(3, 3);
-			this.listBox1.Name = "listBox1";
-			this.listBox1.Size = new System.Drawing.Size(557, 114);
-			this.listBox1.TabIndex = 1;
 			// 
 			// addLibraryButton
 			// 
 			this.addLibraryButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.addLibraryButton.Location = new System.Drawing.Point(12, 131);
+			this.addLibraryButton.Location = new System.Drawing.Point(12, 216);
 			this.addLibraryButton.Name = "addLibraryButton";
 			this.addLibraryButton.Size = new System.Drawing.Size(115, 23);
 			this.addLibraryButton.TabIndex = 4;
@@ -60,7 +51,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// closeButton
 			// 
 			this.closeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.closeButton.Location = new System.Drawing.Point(477, 131);
+			this.closeButton.Location = new System.Drawing.Point(477, 216);
 			this.closeButton.Name = "closeButton";
 			this.closeButton.Size = new System.Drawing.Size(75, 23);
 			this.closeButton.TabIndex = 5;
@@ -68,14 +59,45 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.closeButton.UseVisualStyleBackColor = true;
 			this.closeButton.Click += new System.EventHandler(this.closeButton_Click);
 			// 
+			// libraryListView
+			// 
+			this.libraryListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+							| System.Windows.Forms.AnchorStyles.Left)
+							| System.Windows.Forms.AnchorStyles.Right)));
+			this.libraryListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeaderName,
+            this.columnHeaderVersion,
+            this.columnHeaderPath});
+			this.libraryListView.Location = new System.Drawing.Point(3, 2);
+			this.libraryListView.Name = "libraryListView";
+			this.libraryListView.Size = new System.Drawing.Size(557, 200);
+			this.libraryListView.TabIndex = 6;
+			this.libraryListView.UseCompatibleStateImageBehavior = false;
+			this.libraryListView.View = System.Windows.Forms.View.Details;
+			// 
+			// columnHeaderName
+			// 
+			this.columnHeaderName.Text = "Library Name";
+			this.columnHeaderName.Width = 244;
+			// 
+			// columnHeaderVersion
+			// 
+			this.columnHeaderVersion.Text = "Version";
+			this.columnHeaderVersion.Width = 54;
+			// 
+			// columnHeaderPath
+			// 
+			this.columnHeaderPath.Text = "Library Path";
+			this.columnHeaderPath.Width = 254;
+			// 
 			// LibraryManagementDialog
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(564, 164);
+			this.ClientSize = new System.Drawing.Size(564, 249);
+			this.Controls.Add(this.libraryListView);
 			this.Controls.Add(this.closeButton);
 			this.Controls.Add(this.addLibraryButton);
-			this.Controls.Add(this.listBox1);
 			this.Name = "LibraryManagementDialog";
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -88,9 +110,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#endregion
 
-		private System.Windows.Forms.ListBox listBox1;
 		private System.Windows.Forms.Button addLibraryButton;
 		private System.Windows.Forms.OpenFileDialog openFileDialog;
 		private System.Windows.Forms.Button closeButton;
+		private System.Windows.Forms.ListView libraryListView;
+		private System.Windows.Forms.ColumnHeader columnHeaderName;
+		private System.Windows.Forms.ColumnHeader columnHeaderVersion;
+		private System.Windows.Forms.ColumnHeader columnHeaderPath;
 	}
 }

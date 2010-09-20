@@ -42,9 +42,6 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Creates and initializes a new TemplateController instance
 		/// </summary>
-		/// <param name="projectInfo"></param>
-		/// <param name="template"></param>
-		/// <param name="newModelObject"></param>
 		public TemplateController(Project project, Template template)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
@@ -52,6 +49,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		~TemplateController() {
 			infoGraphics.Dispose();
 			infoGraphics = null;
@@ -166,6 +164,9 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -173,7 +174,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// The TemplateController's Project.
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
 		/// </summary>
 		[Category("NShape")]
 		public Project Project {
@@ -271,6 +272,10 @@ namespace Dataweb.NShape.Controllers {
 				if (project == null) throw new ArgumentNullException("project");
 				if (this.project != project) Project = project;
 
+#if DEBUG
+				template.Tag = template.Name;
+#endif
+
 				// Check if there are ShapeTypes supporting templating
 				bool templateSupportingShapeTypeFound = false;
 				foreach (ShapeType shapeType in project.ShapeTypes) {
@@ -353,7 +358,6 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Change the current template's description.
 		/// </summary>
-		/// <param name="projectName"></param>
 		public void SetTemplateDescription(string description) {
 			if (workTemplate.Description != description) {
 				string oldDescription = workTemplate.Name;
@@ -450,7 +454,7 @@ namespace Dataweb.NShape.Controllers {
 		/// If the template has no Modelobject, this method enables/disables ConnectionPoints of the shape.
 		/// If the template has a ModelObject, this method assigns a ModelObject terminal to a ConnectionPoint of the shape
 		/// </summary>
-		/// <param name="connectionPointId">Id of the shape's ControlPoint</param>
+		/// <param name="controlPointId">Id of the shape's ControlPoint</param>
 		/// <param name="terminalId">Id of the Modelobject's Terminal. Pass -1 in order to clear the mapping.</param>
 		public void SetTerminalConnectionPointMapping(ControlPointId controlPointId, TerminalId terminalId) {
 			TerminalId oldTerminalId = workTemplate.GetMappedTerminalId(controlPointId);
@@ -531,12 +535,14 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void NotifyTemplateShapeChanged() {
 			templateWasChanged = true;
 			if (TemplateShapeModified != null) TemplateShapeModified(this, new EventArgs());
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void NotifyTemplateModelObjectChanged() {
 			templateWasChanged = true;
 			if (TemplateModelObjectModified != null) TemplateModelObjectModified(this, new EventArgs());
@@ -600,7 +606,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private bool IsOfType(Type type, Type targetType) {
-			return (type.IsSubclassOf(targetType) || type.GetInterface(targetType.Name, true) != null);
+			return (type == targetType || type.IsSubclassOf(targetType) || type.GetInterface(targetType.Name, true) != null);
 		}
 		
 		
@@ -684,7 +690,15 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
-	public enum TemplateControllerEditMode { CreateTemplate, EditTemplate };
+	/// <summary>
+	/// Specifies the edit mode of a <see cref="T:Dataweb.NShape.Controllers.TemplateController" />.
+	/// </summary>
+	public enum TemplateControllerEditMode { 
+		/// <summary>Compose a new template.</summary>
+		CreateTemplate, 
+		/// <summary>Modify an existing template.</summary>
+		EditTemplate 
+	};
 
 
 	#region EventArgs
@@ -694,17 +708,20 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	public class TemplateControllerInitializingEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerInitializingEventArgs(TemplateControllerEditMode editMode, Template template) {
 			this.editMode = editMode;
 			this.template = template;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerEditMode EditMode {
 			get { return editMode; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Template Template {
 			get { return template; }
 		}
@@ -720,18 +737,21 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	public class TemplateControllerStringChangedEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerStringChangedEventArgs(string oldString, string newString) {
 			this.oldString = oldString;
 			this.newString = newString;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string OldString {
 			get { return oldString; }
 			internal set { oldString = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string NewString {
 			get { return newString; }
 			internal set { newString = value; }
@@ -748,11 +768,13 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	public class TemplateControllerTemplateEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerTemplateEventArgs(Template template) {
 			this.template = template;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Template Template {
 			get { return template; }
 			internal set { template = value; }
@@ -768,6 +790,7 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	public class TemplateControllerTemplateShapeReplacedEventArgs : TemplateControllerTemplateEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerTemplateShapeReplacedEventArgs(Template template, Shape oldTemplateShape, Shape newTemplateShape)
 			: base(template) {
 			this.oldTemplateShape = oldTemplateShape;
@@ -775,12 +798,14 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape OldTemplateShape {
 			get { return oldTemplateShape; }
 			internal set { oldTemplateShape = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape NewTemplateShape {
 			get { return newTemplateShape; }
 			internal set { newTemplateShape = value; }
@@ -797,6 +822,7 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	public class TemplateControllerModelObjectReplacedEventArgs : TemplateControllerTemplateEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerModelObjectReplacedEventArgs(Template template,
 			IModelObject oldModelObject, IModelObject newModelObject)
 			: base(template) {
@@ -805,12 +831,14 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IModelObject OldModelObject {
 			get { return oldModelObject; }
 			internal set { oldModelObject = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IModelObject NewModelObject {
 			get { return newModelObject; }
 			internal set { newModelObject = value; }
@@ -825,11 +853,14 @@ namespace Dataweb.NShape.Controllers {
 	/// Encapsulates parameters for a TemplateController event raised when the mapping of ControlPointId to TerminalId is modified.
 	/// </summary>
 	public class TemplateControllerPropertyMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerPropertyMappingChangedEventArgs(Template template, IModelMapping modelMapping)
 			: base(template) {
 			this.propertyMapping = modelMapping;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IModelMapping ModelMapping {
 			get { return propertyMapping; }
 			internal set { propertyMapping = value; }
@@ -844,6 +875,7 @@ namespace Dataweb.NShape.Controllers {
 	/// </summary>
 	public class TemplateControllerPointMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TemplateControllerPointMappingChangedEventArgs(Template template, ControlPointId controlPointId, TerminalId oldTerminalId, TerminalId newTerminalId)
 			: base(template) {
 			this.controlPointId = controlPointId;
@@ -851,16 +883,19 @@ namespace Dataweb.NShape.Controllers {
 			this.newTerminalId = newTerminalId;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ControlPointId ControlPointId {
 			get { return controlPointId; }
 			internal set { controlPointId = value; }
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TerminalId OldTerminalId {
 			get { return oldTerminalId; }
 			internal set { oldTerminalId = value; }
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TerminalId NewTerminalId {
 			get { return newTerminalId; }
 			internal set { newTerminalId = value; }

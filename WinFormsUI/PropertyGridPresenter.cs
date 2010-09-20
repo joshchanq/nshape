@@ -31,10 +31,16 @@ namespace Dataweb.NShape.WinFormsUI {
 	/// </summary>
 	public class PropertyPresenter : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.PropertyPresenter" />.
+		/// </summary>
 		public PropertyPresenter() {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.PropertyPresenter" />.
+		/// </summary>
 		public PropertyPresenter(IPropertyController propertyController)
 			: this() {
 			if (propertyController == null) throw new ArgumentNullException("propertyController");
@@ -42,12 +48,18 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
-		public new string ProductVersion {
+		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <summary>
+		/// Specifies the controller for this presenter.
+		/// </summary>
 		[Category("NShape")]
 		public IPropertyController PropertyController {
 			get { return propertyController; }
@@ -59,6 +71,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the number of property grids/pages available
+		/// </summary>
 		[Browsable(false)]
 		public int PageCount {
 			get {
@@ -70,6 +85,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 		
 		
+		/// <summary>
+		/// Specifies a PropertyGrid for editing primary objects.
+		/// </summary>
 		public PropertyGrid PrimaryPropertyGrid {
 			get { return primaryPropertyGrid; }
 			set {
@@ -80,6 +98,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies a PropertyGrid for editing secondary objects.
+		/// </summary>
 		public PropertyGrid SecondaryPropertyGrid {
 			get { return secondaryPropertyGrid; }
 			set {
@@ -90,6 +111,8 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		#region [Private] Methods
+		
 		private void GetPropertyGrid(int pageIndex, out PropertyGrid propertyGrid) {
 			propertyGrid = null;
 			switch (pageIndex) {
@@ -104,35 +127,32 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		//private void GetPropertyGrid(int pageIndex, out PropertyGrid propertyGrid, out Hashtable selectedObjectsList) {
-		//   propertyGrid = null;
-		//   selectedObjectsList = null;
-		//   switch (pageIndex) {
-		//      case 0:
-		//         propertyGrid = primaryPropertyGrid;
-		//         selectedObjectsList = selectedPrimaryObjectsList;
-		//         break;
-		//      case 1:
-		//         propertyGrid = secondaryPropertyGrid;
-		//         selectedObjectsList = selectedSecondaryObjectsList;
-		//         break;
-		//      default: Debug.Fail("PageIndex out of range."); break;
-		//   }
-		//   //if (propertyGrid == null) throw new IndexOutOfRangeException(string.Format("Property presenter has no PropertyGrid assigned for page {0}.", pageIndex));
-		//}
-
-
-		//private void GetPropertyGrid(int pageIndex, out PropertyGrid propertyGrid) {
-		//   Hashtable list = null;
-		//   GetPropertyGrid(pageIndex, out propertyGrid, out list);
-		//}
-
-
 		private void AssertControllerExists() {
 			if (PropertyController == null) throw new InvalidOperationException("Property PropertyController is not set.");
 		}
 		
 		
+		private PropertyInfo GetPropertyInfo(PropertyGrid propertyGrid, GridItem item) {
+			if (propertyGrid == null) throw new ArgumentNullException("propertyGrid");
+			if (item == null) throw new ArgumentNullException("item");
+			PropertyInfo result = null;
+			int cnt = propertyGrid.SelectedObjects.Length;
+			Type selectedObjectsType = propertyGrid.SelectedObject.GetType();
+			// handle the case that the edited property is an expendable property, e.g. of type 'Font'. 
+			// In this case, the property that has to be changed is not the edited item itself but it's parent item.
+			if (item.Parent.PropertyDescriptor != null) {
+				// the current selectedItem is a ChildItem of the edited object's property
+				result = selectedObjectsType.GetProperty(item.Parent.PropertyDescriptor.Name);
+			} else if (item.PropertyDescriptor != null)
+				result = selectedObjectsType.GetProperty(item.PropertyDescriptor.Name);
+			return result;
+		}
+
+		#endregion
+
+
+		#region [Private] Methods: (Un)Registering for events
+
 		private void RegisterPropertyControllerEvents() {
 			if (propertyController != null) {
 				propertyController.ObjectsModified += propertyController_RefreshObjects;
@@ -171,6 +191,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+		#endregion
+
+
+		#region [Private] Methods: Event handler implementations
 
 		private void propertyGrid_Leave(object sender, EventArgs e) {
 			TypeDescriptionProviderDg.PropertyController = null;
@@ -182,29 +206,12 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		private PropertyInfo GetPropertyInfo(PropertyGrid propertyGrid, GridItem item) {
-			if (propertyGrid == null) throw new ArgumentNullException("propertyGrid");
-			if (item == null) throw new ArgumentNullException("item");
-			PropertyInfo result = null;
-			int cnt = propertyGrid.SelectedObjects.Length;
-			Type selectedObjectsType = propertyGrid.SelectedObject.GetType();
-			// handle the case that the edited property is an expendable property, e.g. of type 'Font'. 
-			// In this case, the property that has to be changed is not the edited item itself but it's parent item.
-			if (item.Parent.PropertyDescriptor != null) {
-				// the current selectedItem is a ChildItem of the edited object's property
-				result = selectedObjectsType.GetProperty(item.Parent.PropertyDescriptor.Name);
-			} else if (item.PropertyDescriptor != null)
-				result = selectedObjectsType.GetProperty(item.PropertyDescriptor.Name);
-			return result;
-		}
-
-
 		private void propertyController_ObjectsSet(object sender, PropertyControllerEventArgs e) {
 			AssertControllerExists();
 
 			propertyController.CancelSetProperty();
 			if (propertyController.Project != null && propertyController.Project.IsOpen)
-				StyleEditor.Design = propertyController.Project.Design;
+				StyleUITypeEditor.Project = propertyController.Project;
 
 			PropertyGrid grid = null;
 			GetPropertyGrid(e.PageIndex, out grid);
@@ -219,7 +226,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void propertyController_RefreshObjects(object sender, PropertyControllerEventArgs e) {
 			AssertControllerExists();
 			
-			StyleEditor.Design = propertyController.Project.Design;
+			StyleUITypeEditor.Project = propertyController.Project;
 			PropertyGrid grid = null;
 			GetPropertyGrid(e.PageIndex, out grid);
 			if (grid == null) throw new IndexOutOfRangeException(string.Format("Property page {0} does not exist.", e.PageIndex));
@@ -262,13 +269,16 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+		#endregion
+
 
 		#region Fields
 
-		private PropertyGrid primaryPropertyGrid;
-		private PropertyGrid secondaryPropertyGrid;
-		private IPropertyController propertyController;
+		private PropertyGrid primaryPropertyGrid = null;
+		private PropertyGrid secondaryPropertyGrid = null;
+		private IPropertyController propertyController = null;
 
 		#endregion
+	
 	}
 }

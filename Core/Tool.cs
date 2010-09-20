@@ -25,6 +25,9 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.Advanced {
 
+	/// <summary>
+	/// Provides cursors to UI components.
+	/// </summary>
 	public class CursorProvider {
 
 		/// <summary>
@@ -72,7 +75,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Registers a custom cursor that can be used with SetCursor.
 		/// </summary>
-		/// <param name="fileName">The cursor resource.</param>
+		/// <param name="resource">The cursor resource.</param>
 		/// <returns>Id of the cursor.</returns>
 		public static int RegisterCursor(byte[] resource) {
 			if (resource == null) throw new ArgumentNullException("resource");
@@ -101,6 +104,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// The default cursor id.
+		/// </summary>
 		public const int DefaultCursorID = 0;
 
 
@@ -147,6 +153,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public class ToolExecutedEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ToolExecutedEventArgs(Tool tool, ToolResult eventType)
 			: base() {
 			if (tool == null) throw new ArgumentNullException("tool");
@@ -155,11 +162,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Tool Tool {
 			get { return tool; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ToolResult EventType {
 			get { return eventType; }
 		}
@@ -179,6 +188,9 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Releases all resources.
+		/// </summary>
 		public virtual void Dispose() {
 			if (smallIcon != null)
 				smallIcon.Dispose();
@@ -192,17 +204,26 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <summary>
+		/// A culture independent name, used as title if no title was specified.
+		/// </summary>
 		public string Name {
 			get { return name; }
 		}
 
 
+		/// <summary>
+		/// A culture dependent title, used as label for toolbox items.
+		/// </summary>
 		public string Title {
 			get { return title; }
 			set { title = value; }
 		}
 
 
+		/// <summary>
+		/// A culture dependent description, used as description for toolbox items.
+		/// </summary>
 		public virtual string Description {
 			// TODO 2: Remove this implementation, when all derived classes have a better one.
 			get { return description; }
@@ -210,33 +231,60 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Specifies the toolbox category.
+		/// </summary>
 		public string Category {
 			get { return category; }
 			set { category = value; }
 		}
 
 
+		/// <summary>
+		/// Specifies the tool tip text displayed for the toolbox item.
+		/// </summary>
 		public string ToolTipText {
 			get { return Description; }
 			set { Description = value; }
 		}
 
 
+		/// <summary>
+		/// A small icon for this <see cref="T:Dataweb.NShape.Advanced.Tool" />.
+		/// </summary>
 		public Bitmap SmallIcon {
 			get { return smallIcon; }
 			set { smallIcon = value; }
 		}
 
 
+		/// <summary>
+		/// A large icon for this <see cref="T:Dataweb.NShape.Advanced.Tool" />.
+		/// </summary>
 		public Bitmap LargeIcon {
 			get { return largeIcon; }
 			set { largeIcon = value; }
 		}
 
 
+		/// <summary>
+		/// Specifies the minimum distance the mouse has to be moved before the tool is starting a drag action.
+		/// </summary>
+		public Size MinimumDragDistance {
+			get { return minDragDistance; }
+			set { minDragDistance = value; }
+		}
+		
+		
+		/// <summary>
+		/// Called by the <see cref="T:Dataweb.NShape.Advanced.Controllers.IDiagramPresenter" /> when the mouse has entered the control's area.
+		/// </summary>
 		public abstract void EnterDisplay(IDiagramPresenter diagramPresenter);
 
 
+		/// <summary>
+		/// Called by the <see cref="T:Dataweb.NShape.Advanced.Controllers.IDiagramPresenter" /> when the mouse has left the control's area.
+		/// </summary>
 		public abstract void LeaveDisplay(IDiagramPresenter diagramPresenter);
 
 
@@ -244,7 +292,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Processes a mouse event.
 		/// The base Method has to be called at the end when overriding this implementation.
 		/// </summary>
-		/// <param name="display">Diagram presenter where the event occurred.</param>
+		/// <param name="diagramPresenter">Diagram presenter where the event occurred.</param>
 		/// <param name="e">Description of the mouse event.</param>
 		/// <returns>True if the event was handled, false if the event was not handled.</returns>
 		public virtual bool ProcessMouseEvent(IDiagramPresenter diagramPresenter, MouseEventArgsDg e) {
@@ -313,16 +361,44 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		public abstract IEnumerable<MenuItemDef> GetMenuItemDefs(IDiagramPresenter diagramPresenter);
 
 
+		/// <summary>
+		/// Request redrawing.
+		/// </summary>
 		public abstract void Invalidate(IDiagramPresenter diagramPresenter);
 
 
+		/// <summary>
+		/// Draws the tool's preview.
+		/// </summary>
+		/// <param name="diagramPresenter"></param>
 		public abstract void Draw(IDiagramPresenter diagramPresenter);
 
 
+		/// <summary>
+		/// Redraw icons.
+		/// </summary>
 		public abstract void RefreshIcons();
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		[Obsolete]
+		public bool ToolActionPending {
+			get { return IsToolActionPending; }
+		}
+
+
+		/// <summary>
+		/// Indicates if the tool has pending actions.
+		/// </summary>
+		public bool IsToolActionPending {
+			get { return pendingActions.Count > 0; }
+		}
 
 
 		/// <summary>
@@ -331,15 +407,21 @@ namespace Dataweb.NShape.Advanced {
 		public event EventHandler<ToolExecutedEventArgs> ToolExecuted;
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.Tool" />.
+		/// </summary>
 		protected Tool() {
 			smallIcon = new Bitmap(16, 16);
 			largeIcon = new Bitmap(32, 32);
-			name = "Tool " + this.GetHashCode().ToString();
+			name = "Tool_" + this.GetHashCode().ToString();
 			ExecutedEventArgs = new ToolExecutedEventArgs(this, ToolResult.Executed);
 			CancelledEventArgs = new ToolExecutedEventArgs(this, ToolResult.Canceled);
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.Tool" />.
+		/// </summary>
 		protected Tool(string category)
 			: this() {
 			if (!string.IsNullOrEmpty(category))
@@ -347,14 +429,23 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Finalizer of <see cref="T:Dataweb.NShape.Advanced.Tool" />.
+		/// </summary>
 		~Tool() {
 			Dispose();
 		}
 
 
-		protected abstract void CancelCore();
+		/// <summary>
+		/// Perform all necessary actions to cancel the current tool actions.
+		/// </summary>
+ 		protected abstract void CancelCore();
 
 
+		/// <summary>
+		/// Called when a tool action has finished. Raises the ToolExecuted event.
+		/// </summary>
 		protected virtual void OnToolExecuted(ToolExecutedEventArgs eventArgs) {
 			if (IsToolActionPending) throw new InvalidOperationException(string.Format("{0} tool actions pending.", pendingActions.Count));
 			if (ToolExecuted != null) ToolExecuted(this, eventArgs);
@@ -362,14 +453,37 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
+		/// Disconnect, disposes and deletes the given preview <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
+		/// <param name="shape"></param>
+		protected void DeletePreviewShape(ref Shape shape) {
+			if (shape != null) {
+				// Disconnect all existing connections (disconnects model, too)
+				foreach (ControlPointId pointId in shape.GetControlPointIds(ControlPointCapabilities.Connect | ControlPointCapabilities.Glue)) {
+					ControlPointId otherPointId = shape.IsConnected(pointId, null);
+					if (otherPointId != ControlPointId.None) shape.Disconnect(pointId);
+				}
+				// Delete model obejct
+				if (shape.ModelObject != null)
+					shape.ModelObject = null;
+				// Delete shape
+				shape.Invalidate();
+				shape.Dispose();
+				shape = null;
+			}
+		}
+
+
+		/// <summary>
 		/// Finds the nearest snap point for a point.
 		/// </summary>
-		/// <param name="ptX">X coordinate</param>
-		/// <param name="ptY">Y coordinate</param>
+		/// <param name="diagramPresenter">The <see cref="T:Dataweb.NShape.Controllers.IDiagramPresenter" /></param>
+		/// <param name="x">X coordinate</param>
+		/// <param name="y">Y coordinate</param>
 		/// <param name="snapDeltaX">Horizontal distance between x and the nearest snap point.</param>
 		/// <param name="snapDeltaY">Vertical distance between y and the nearest snap point.</param>
 		/// <returns>Distance to nearest snap point.</returns>
-		/// <remarks>If snapping is disabled for the current ownerDisplay, this function does virtually nothing.</remarks>
+		/// <remarks>If snapping is disabled for the current ownerDisplay, this function does nothing.</remarks>
 		protected float FindNearestSnapPoint(IDiagramPresenter diagramPresenter, int x, int y, out int snapDeltaX, out int snapDeltaY) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 
@@ -440,10 +554,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Finds the nearest SnapPoint in range of the given shape's control point.
 		/// </summary>
+		/// <param name="diagramPresenter">The <see cref="T:Dataweb.NShape.Controllers.IDiagramPresenter" /></param>
 		/// <param name="shape">The shape for which the nearest snap point is searched.</param>
-		/// <param name="connectionPointId">The control point of the shape.</param>
-		/// <param name="moveByX">Declares the distance, the shape is moved on X axis before finding snap point.</param>
-		/// <param name="moveByY">Declares the distance, the shape is moved on X axis before finding snap point.</param>
+		/// <param name="controlPointId">The control point of the shape.</param>
+		/// <param name="pointOffsetX">Declares the distance, the shape is moved on X axis before finding snap point.</param>
+		/// <param name="pointOffsetY">Declares the distance, the shape is moved on X axis before finding snap point.</param>
 		/// <param name="snapDeltaX">Horizontal distance between ptX and the nearest snap point.</param>
 		/// <param name="snapDeltaY">Vertical distance between ptY and the nearest snap point.</param>
 		/// <returns>Distance to nearest snap point.</returns>
@@ -461,11 +576,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Finds the nearest SnapPoint in range of the given shape.
 		/// </summary>
+		/// <param name="diagramPresenter">The <see cref="T:Dataweb.NShape.Controllers.IDiagramPresenter" /></param>
 		/// <param name="shape">The shape for which the nearest snap point is searched.</param>
-		/// <param name="shapeOffsetX">Declares the distance, the shape is moved on X axis 
-		/// before finding snap point.</param>
-		/// <param name="shapeOffsetY">Declares the distance, the shape is moved on X axis 
-		/// before finding snap point.</param>
+		/// <param name="shapeOffsetX">Declares the distance, the shape is moved on X axis before finding snap point.</param>
+		/// <param name="shapeOffsetY">Declares the distance, the shape is moved on X axis before finding snap point.</param>
 		/// <param name="snapDeltaX">Horizontal distance between ptX and the nearest snap point.</param>
 		/// <param name="snapDeltaY">Vertical distance between ptY and the nearest snap point.</param>
 		/// <returns>Distance to the calculated snap point.</returns>
@@ -525,14 +639,13 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Finds the nearest SnapPoint in range of the given shape.
 		/// </summary>
+		/// <param name="diagramPresenter">The <see cref="T:Dataweb.NShape.Controllers.IDiagramPresenter" /></param>
 		/// <param name="shape">The shape for which the nearest snap point is searched.</param>
-		/// <param name="moveByX">Declares the distance, the shape is moved on X axis 
-		/// before finding snap point.</param>
-		/// <param name="moveByY">Declares the distance, the shape is moved on X axis 
-		/// before finding snap point.</param>
+		/// <param name="pointOffsetX">Declares the distance, the shape is moved on X axis before finding snap point.</param>
+		/// <param name="pointOffsetY">Declares the distance, the shape is moved on X axis before finding snap point.</param>
 		/// <param name="snapDeltaX">Horizontal distance between ptX and the nearest snap point.</param>
 		/// <param name="snapDeltaY">Vertical distance between ptY and the nearest snap point.</param>
-		/// <param name="controlPointCapabilities">Filter for control points taken into 
+		/// <param name="controlPointCapability">Filter for control points taken into 
 		/// account while calculating the snap distance.</param>
 		/// <returns>Control point of the shape, the calculated distance refers to.</returns>
 		protected ControlPointId FindNearestSnapPoint(IDiagramPresenter diagramPresenter, Shape shape, int pointOffsetX, int pointOffsetY,
@@ -560,17 +673,18 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <summary>
 		/// Finds the nearest ControlPoint in range of the given shape's ControlPoint. 
-		/// If there is no ControlPoint in range, the snap distance to the nearest grid 
-		/// line will be calculated.
+		/// If there is no ControlPoint in range, the snap distance to the nearest grid line will be calculated.
 		/// </summary>
+		/// <param name="diagramPresenter">The <see cref="T:Dataweb.NShape.Controllers.IDiagramPresenter" /></param>
 		/// <param name="shape">The given shape.</param>
-		/// <param name="connectionPointId">the given shape's ControlPoint</param>
-		/// <param name="moveByX">Declares the distance, the shape is moved on X axis before finding snap point.</param>
-		/// <param name="moveByY">Declares the distance, the shape is moved on X axis before finding snap point.</param>
+		/// <param name="controlPointId">the given shape's ControlPoint</param>
+		/// <param name="targetPointCapabilities">Capabilities of the control point to find.</param>
+		/// <param name="pointOffsetX">Declares the distance, the shape is moved on X axis before finding snap point.</param>
+		/// <param name="pointOffsetY">Declares the distance, the shape is moved on X axis before finding snap point.</param>
 		/// <param name="snapDeltaX">Horizontal distance between ptX and the nearest snap point.</param>
 		/// <param name="snapDeltaY">Vertical distance between ptY and the nearest snap point.</param>
-		/// <param name="ownPointId">The Id of the returned shape's nearest ControlPoint.</param>
-		/// <returns>The shape owning the nearest ControlPoint</returns>
+		/// <param name="resultPointId">The Id of the returned shape's nearest ControlPoint.</param>
+		/// <returns>The shape owning the found <see cref="T:Dataweb.NShape.Advanced.ControlPointId" />.</returns>
 		protected Shape FindNearestControlPoint(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId controlPointId,
 			ControlPointCapabilities targetPointCapabilities, int pointOffsetX, int pointOffsetY,
 			out int snapDeltaX, out int snapDeltaY, out ControlPointId resultPointId) {
@@ -631,34 +745,39 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		///// <summary>
+		///// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) in range of the given point.
+		///// </summary>
+		//protected ShapeAtCursorInfo FindConnectionTargetFromPosition(IDiagramPresenter diagramPresenter, int x, int y, bool onlyUnselected) {
+		//   return FindConnectionTargetFromPosition(diagramPresenter, x, y, onlyUnselected, true);
+		//}
+
+
 		/// <summary>
-		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) 
-		/// in range of the given point.
+		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) in range of the given point.
 		/// </summary>
-		protected ShapeAtCursorInfo FindConnectionTarget(IDiagramPresenter diagramPresenter, int x, int y, bool onlyUnselected) {
-		   return DoFindConnectionTarget(diagramPresenter, null, ControlPointId.None, x, y, onlyUnselected);
+		protected ShapeAtCursorInfo FindConnectionTargetFromPosition(IDiagramPresenter diagramPresenter, int x, int y, bool onlyUnselected, bool snapToConnectionPoints) {
+			return DoFindConnectionTarget(diagramPresenter, null, ControlPointId.None, x, y, onlyUnselected, snapToConnectionPoints ? diagramPresenter.ZoomedGripSize : 0);
 		}
 
 
 		/// <summary>
-		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) 
-		/// in range of the given point.
+		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) in range of the given point.
 		/// </summary>
-		protected ShapeAtCursorInfo FindConnectionTarget(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId gluePointId, Point newGluePointPos, bool onlyUnselected) {
+		protected ShapeAtCursorInfo FindConnectionTarget(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId gluePointId, Point newGluePointPos, bool onlyUnselected, bool snapToConnectionPoints) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			if (shape == null) throw new ArgumentNullException("shape");
 			// Find (non-selected shape) its connection point under cursor
 			ShapeAtCursorInfo result = ShapeAtCursorInfo.Empty;
 			if (diagramPresenter.Diagram != null)
-				result = DoFindConnectionTarget(diagramPresenter, shape, gluePointId, newGluePointPos.X, newGluePointPos.Y, onlyUnselected);
+				result = DoFindConnectionTarget(diagramPresenter, shape, gluePointId, newGluePointPos.X, newGluePointPos.Y, onlyUnselected, snapToConnectionPoints ? diagramPresenter.ZoomedGripSize : 0);
 			return result;
 		}
 
 
 		/// <summary>
-		/// Find the topmost shape that is at the given point or has a control point with the given
-		/// capabilities in range of the given point. If parameter onlyUnselected is true, only 
-		/// shapes that are not selected will be returned.
+		/// Find the topmost shape that is at the given point or has a control point with the given capabilities in range of the given point. 
+		/// If parameter onlyUnselected is true, only shapes that are not selected will be returned.
 		/// </summary>
 		protected ShapeAtCursorInfo FindShapeAtCursor(IDiagramPresenter diagramPresenter, int x, int y, ControlPointCapabilities capabilities, int range, bool onlyUnselected) {
 			// Find non-selected shape its connection point under cursor
@@ -683,12 +802,15 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Invalidates all connection targets in range.
+		/// </summary>
 		protected void InvalidateConnectionTargets(IDiagramPresenter diagramPresenter, int currentPosX, int currentPosY) {
 			// invalidate selectedShapes in last range
 			diagramPresenter.InvalidateGrips(shapesInRange, ControlPointCapabilities.Connect);
 
 			if (Geometry.IsValid(currentPosX, currentPosY)) {
-				ShapeAtCursorInfo shapeAtCursor = DoFindConnectionTarget(diagramPresenter, currentPosX, currentPosY, false);
+				ShapeAtCursorInfo shapeAtCursor = FindConnectionTargetFromPosition(diagramPresenter, currentPosX, currentPosY, false, true);
 				if (!shapeAtCursor.IsEmpty) shapeAtCursor.Shape.Invalidate();
 
 				// invalidate selectedShapes in current range
@@ -700,13 +822,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Draws all connection targets in range.
+		/// </summary>
 		protected void DrawConnectionTargets(IDiagramPresenter diagramPresenter, int x, int y) {
+			if (!Geometry.IsValid(x, y)) throw new ArgumentException("x, y");
 			Point p = Point.Empty;
 			p.Offset(x, y);
 			DrawConnectionTargets(diagramPresenter, null, ControlPointId.None, p, EmptyEnumerator<Shape>.Empty);
 		}
 
 
+		/// <summary>
+		/// Draws all connection targets in range.
+		/// </summary>
 		protected void DrawConnectionTargets(IDiagramPresenter diagramPresenter, int x, int y, IEnumerable<Shape> excludedShapes) {
 			Point p = Point.Empty;
 			p.Offset(x, y);
@@ -714,13 +843,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Draws all connection targets in range.
+		/// </summary>
 		protected void DrawConnectionTargets(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId gluePtId, Point newGluePtPos) {
 			DrawConnectionTargets(diagramPresenter, shape, gluePtId, newGluePtPos, EmptyEnumerator<Shape>.Empty);
 		}
 
 
+		/// <summary>
+		/// Draws all connection targets in range.
+		/// </summary>
 		protected void DrawConnectionTargets(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId gluePtId, Point newGluePtPos, IEnumerable<Shape> excludedShapes) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
+			if (!Geometry.IsValid(newGluePtPos)) throw new ArgumentException("newGluePtPos");
 			//if (shape == null) throw new ArgumentNullException("shape");
 			//if (gluePtId == ControlPointId.None || gluePtId == ControlPointId.Any)
 			//   throw new ArgumentException(string.Format("{0} is not a valid {1} for this operation.", gluePtId, typeof(ControlPointId).Name));
@@ -730,8 +866,8 @@ namespace Dataweb.NShape.Advanced {
 				// Find connection target shape at the given position
 				ShapeAtCursorInfo shapeAtCursor = ShapeAtCursorInfo.Empty;
 				if (shape != null && gluePtId != ControlPointId.None)
-					shapeAtCursor = FindConnectionTarget(diagramPresenter, shape, gluePtId, newGluePtPos, false);
-				else shapeAtCursor = FindConnectionTarget(diagramPresenter, newGluePtPos.X, newGluePtPos.Y, false);
+					shapeAtCursor = FindConnectionTarget(diagramPresenter, shape, gluePtId, newGluePtPos, false, false);
+				else shapeAtCursor = FindConnectionTargetFromPosition(diagramPresenter, newGluePtPos.X, newGluePtPos.Y, false, false);
 
 				// Add shapes in range to the shapebuffer and then remove all excluded shapes
 				shapeBuffer.Clear();
@@ -779,35 +915,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		[Obsolete]
-		public bool ToolActionPending {
-			get { return IsToolActionPending; }
-		}
-
-
-		/// <summary>
-		/// Indicates if the tool has pending actions.
-		/// </summary>
-		public bool IsToolActionPending {
-			get { return pendingActions.Count > 0; }
-		}
-
-
-		internal void Assert(bool condition) {
-#if DEBUG
-			Assert(condition, null);
-#endif
-		}
-
-
-		internal void Assert(bool condition, string message) {
-			if (condition == false) {
-				if (string.IsNullOrEmpty(message)) throw new NShapeInternalException("Assertion Failure.");
-				else throw new NShapeInternalException(string.Format("Assertion Failure: {0}", message));
-			}
-		}
-
-
 		/// <summary>
 		/// Ends a tool's action. Crears the start position for the action and the display used for the action.
 		/// </summary>
@@ -823,6 +930,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Indicates wether a grip was hit
+		/// </summary>
 		protected bool IsGripHit(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId controlPointId, int x, int y) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			Point p = shape.GetControlPointPosition(controlPointId);
@@ -830,6 +940,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Indicates wether a grip was hit
+		/// </summary>
 		protected bool IsGripHit(IDiagramPresenter diagramPresenter, int controlPointX, int controlPointY, int x, int y) {
 			if (diagramPresenter == null) throw new ArgumentNullException("display");
 			return Geometry.DistancePointPoint(controlPointX, controlPointY, x, y) <= diagramPresenter.ZoomedGripSize;
@@ -868,6 +981,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Specifies the current tool action.
+		/// </summary>
 		protected ActionDef CurrentToolAction {
 			get {
 				if (pendingActions.Count > 0)
@@ -877,22 +993,37 @@ namespace Dataweb.NShape.Advanced {
 		}
 		
 		
+		/// <summary>
+		/// Indicates wether a tool action is pending.
+		/// </summary>
 		protected IEnumerable<ActionDef> PendingToolActions {
 			get { return pendingActions; }
 		}
 
 
+		/// <summary>
+		/// Specifies the number of pending tool actions.
+		/// </summary>
 		protected int PendingToolActionsCount {
 			get { return pendingActions.Count; }
 		}
 
 
+		/// <summary>
+		/// Buffer for <see cref="T:Dataweb.NShape.Advanced.ToolExecutedEventArgs" /> in order to minimize memory allocation overhead.
+		/// </summary>
 		protected ToolExecutedEventArgs ExecutedEventArgs;
 
 
+		/// <summary>
+		/// Buffer for <see cref="T:Dataweb.NShape.Advanced.ToolExecutedEventArgs" /> in order to minimize memory allocation overhead.
+		/// </summary>
 		protected ToolExecutedEventArgs CancelledEventArgs;
 
 
+		/// <summary>
+		/// Indicates wether the given shape can connect to the given targetShape with the specified glue point.
+		/// </summary>
 		protected bool CanConnectTo(Shape shape, ControlPointId gluePointId, Shape targetShape) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			if (targetShape == null) throw new ArgumentNullException("targetShape");
@@ -912,6 +1043,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Indicates wether the given shape can connect to the given targetShape with the specified glue point.
+		/// </summary>
 		protected bool CanConnectTo(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId unmovedGluePoint, ControlPointId movedControlPoint, bool onlyUnselected) {
 			if (shape is ILinearShape && ((ILinearShape)shape).VertexCount == 2) {
 				Point posA = shape.GetControlPointPosition(unmovedGluePoint);
@@ -928,12 +1062,18 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) 
-		/// in range of the given point.
-		/// </summary>
-		private ShapeAtCursorInfo DoFindConnectionTarget(IDiagramPresenter diagramPresenter, int x, int y, bool onlyUnselected) {
-			return DoFindConnectionTarget(diagramPresenter, null, ControlPointId.None, x, y, onlyUnselected);
+		internal void Assert(bool condition) {
+#if DEBUG
+			Assert(condition, null);
+#endif
+		}
+
+
+		internal void Assert(bool condition, string message) {
+			if (condition == false) {
+				if (string.IsNullOrEmpty(message)) throw new NShapeInternalException("Assertion Failure.");
+				else throw new NShapeInternalException(string.Format("Assertion Failure: {0}", message));
+			}
 		}
 
 
@@ -941,13 +1081,14 @@ namespace Dataweb.NShape.Advanced {
 		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) 
 		/// in range of the given point.
 		/// </summary>
-		private ShapeAtCursorInfo DoFindConnectionTarget(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId gluePointId, int x, int y, bool onlyUnselected) {
+		private ShapeAtCursorInfo DoFindConnectionTarget(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId gluePointId, int x, int y, bool onlyUnselected, int range) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
+			if (range < 0) throw new ArgumentOutOfRangeException("range");
 			// Find (non-selected shape) its connection point under cursor
 			ShapeAtCursorInfo result = ShapeAtCursorInfo.Empty;
 			int resultZOrder = int.MinValue;
 			if (diagramPresenter.Diagram != null) {
-				foreach (Shape s in diagramPresenter.Diagram.Shapes.FindShapes(x, y, ControlPointCapabilities.Connect, diagramPresenter.ZoomedGripSize)) {
+				foreach (Shape s in diagramPresenter.Diagram.Shapes.FindShapes(x, y, ControlPointCapabilities.Connect, range)) {
 					if (s == shape) continue;
 					// Skip shapes below the last matching shape
 					if (s.ZOrder < resultZOrder) continue;
@@ -961,9 +1102,9 @@ namespace Dataweb.NShape.Advanced {
 					// Skip selected shapes (if not wanted)
 					if (onlyUnselected && diagramPresenter.SelectedShapes.Contains(s)) continue;
 					// Perform a HitTest on the shape
-					ControlPointId pointId = s.HitTest(x, y, ControlPointCapabilities.Connect, diagramPresenter.ZoomedGripSize);
+					ControlPointId pointId = s.HitTest(x, y, ControlPointCapabilities.Connect, range);
 					if (pointId != ControlPointId.None) {
-						if (s.HasControlPointCapability(pointId, ControlPointCapabilities.Glue)) { continue; }
+						if (s.HasControlPointCapability(pointId, ControlPointCapabilities.Glue)) continue;
 						result.Shape = s;
 						result.ControlPointId = pointId;
 						resultZOrder = s.ZOrder;
@@ -976,50 +1117,66 @@ namespace Dataweb.NShape.Advanced {
 
 		#region [Protected] Types
 
+		/// <summary>
+		/// The current state of the mouse.
+		/// </summary>
 		protected struct MouseState {
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static bool operator ==(MouseState a, MouseState b) {
 				return (a.Position == b.Position
 					&& a.Modifiers == b.Modifiers
 					&& a.Buttons == b.Buttons);
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static bool operator !=(MouseState a, MouseState b) {
 				return !(a == b);
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static MouseState Empty;
 
+			/// <override></override>
 			public override int GetHashCode() {
 				return Position.GetHashCode() ^ Buttons.GetHashCode() ^ Modifiers.GetHashCode();
 			}
 
+			/// <override></override>
 			public override bool Equals(object obj) {
 				return (obj is MouseState && object.ReferenceEquals(this, obj));
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public int X {
 				get { return Position.X; }
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public int Y {
 				get { return Position.Y; }
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public Point Position;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public KeysDg Modifiers;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public MouseButtonsDg Buttons;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsButtonDown(MouseButtonsDg button) {
 				return (Buttons & button) != 0;
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsKeyPressed(KeysDg modifier) {
 				return (Modifiers & modifier) != 0;
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsEmpty {
 				get { return this == Empty; }
 			}
@@ -1032,38 +1189,49 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected struct ShapeAtCursorInfo {
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static bool operator ==(ShapeAtCursorInfo a, ShapeAtCursorInfo b) {
 				return (a.Shape == b.Shape
 					&& a.ControlPointId == b.ControlPointId
 					&& a.CaptionIndex == b.CaptionIndex);
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static bool operator !=(ShapeAtCursorInfo a, ShapeAtCursorInfo b) {
 				return !(a == b);
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static ShapeAtCursorInfo Empty;
 
+			/// <override></override>
 			public override int GetHashCode() {
 				return Shape.GetHashCode() ^ ControlPointId.GetHashCode() ^ CaptionIndex.GetHashCode();
 			}
 
+			/// <override></override>
 			public override bool Equals(object obj) {
 				return (obj is ShapeAtCursorInfo && object.ReferenceEquals(this, obj));
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public void Clear() {
 				this = Empty;
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public Shape Shape;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public ControlPointId ControlPointId;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public int CaptionIndex;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsCursorAtGrip {
 				get {
 					return (Shape != null
@@ -1072,6 +1240,7 @@ namespace Dataweb.NShape.Advanced {
 				}
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsCursorAtGluePoint {
 				get {
 					return (Shape != null
@@ -1079,6 +1248,7 @@ namespace Dataweb.NShape.Advanced {
 				}
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsCursorAtConnectionPoint {
 				get {
 					return (Shape != null
@@ -1086,10 +1256,12 @@ namespace Dataweb.NShape.Advanced {
 				}
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsCursorAtCaption {
 				get { return (Shape is ICaptionedShape && CaptionIndex >= 0 && !IsCursorAtGrip); }
 			}
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool IsEmpty {
 				get { return Shape == null; }
 			}
@@ -1102,10 +1274,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected struct ActionDef {
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static readonly ActionDef Empty;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public static ActionDef Create(IDiagramPresenter diagramPresenter, int action, MouseState mouseState, bool wantsAutoScroll) {
 				ActionDef result = ActionDef.Empty;
 				result.diagramPresenter = diagramPresenter;
@@ -1115,7 +1290,7 @@ namespace Dataweb.NShape.Advanced {
 				return result;
 			}
 
-
+			/// <ToBeCompleted></ToBeCompleted>
 			public ActionDef(IDiagramPresenter diagramPresenter, int action, MouseState mouseState, bool wantsAutoScroll) {
 				this.diagramPresenter = diagramPresenter;
 				this.action = action;
@@ -1123,26 +1298,25 @@ namespace Dataweb.NShape.Advanced {
 				this.wantsAutoScroll = wantsAutoScroll;
 			}
 
-
+			/// <ToBeCompleted></ToBeCompleted>
 			public IDiagramPresenter DiagramPresenter {
 				get { return diagramPresenter; }
 			}
 
-
+			/// <ToBeCompleted></ToBeCompleted>
 			public MouseState MouseState {
 				get { return mouseState; }
 			}
 
-
+			/// <ToBeCompleted></ToBeCompleted>
 			public int Action {
 				get { return action; }
 			}
 
-
+			/// <ToBeCompleted></ToBeCompleted>
 			public bool WantsAutoScroll {
 				get { return wantsAutoScroll; }
 			}
-
 
 			static ActionDef() {
 				Empty.diagramPresenter = null;
@@ -1150,7 +1324,6 @@ namespace Dataweb.NShape.Advanced {
 				Empty.mouseState = MouseState.Empty;
 				Empty.wantsAutoScroll = false;
 			}
-
 
 			private IDiagramPresenter diagramPresenter;
 			private MouseState mouseState;
@@ -1162,6 +1335,11 @@ namespace Dataweb.NShape.Advanced {
 
 
 		#region Fields
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected int margin = 1;
+		/// <ToBeCompleted></ToBeCompleted>
+		protected Color transparentColor = Color.LightGray;
 
 		// --- Description of the tool ---
 		// Unique name of the tool.
@@ -1176,10 +1354,10 @@ namespace Dataweb.NShape.Advanced {
 		private Bitmap smallIcon;
 		// the large icon of the tool
 		private Bitmap largeIcon;
+		// minimum distance the mouse has to move before a drag action is considered as drag action
+		private Size minDragDistance = new Size(4, 4);
 		//
 		// margin and background colors of the toolbox icons "LargeIcon" and "SmallIcon"
-		protected int margin = 1;
-		protected Color transparentColor = Color.LightGray;
 		// highlighting connection targets in range
 		private int pointHighlightRange = 50;
 		//
@@ -1207,12 +1385,18 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class PointerTool : Tool {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.PointerTool" />.
+		/// </summary>
 		public PointerTool()
 			: base("Standard") {
 			Construct();
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.PointerTool" />.
+		/// </summary>
 		public PointerTool(string category)
 			: base(category) {
 			Construct();
@@ -1408,7 +1592,7 @@ namespace Dataweb.NShape.Advanced {
 					diagramPresenter.ResetTransformation();
 					try {
 						if (PendingToolActionsCount == 1) {
-							diagramPresenter.DrawAnglePreview(rectBuffer.Location, rectBuffer.Width, CurrentMouseState.Position, cursors[ToolCursor.Rotate], 0, 0);
+							diagramPresenter.DrawAnglePreview(rectBuffer.Location, CurrentMouseState.Position, cursors[ToolCursor.Rotate], 0, 0);
 						} else {
 							// Get MouseState of the first click (on the rotation point)
 							MouseState initMouseState = GetPreviousMouseState();
@@ -1419,7 +1603,7 @@ namespace Dataweb.NShape.Advanced {
 							rectBuffer.Location = SelectedShapeAtCursorInfo.Shape.GetControlPointPosition(SelectedShapeAtCursorInfo.ControlPointId);
 							rectBuffer.Width = rectBuffer.Height = (int)Math.Ceiling(Geometry.DistancePointPoint(rectBuffer.Location, CurrentMouseState.Position));
 
-							diagramPresenter.DrawAnglePreview(rectBuffer.Location, rectBuffer.Width, CurrentMouseState.Position,
+							diagramPresenter.DrawAnglePreview(rectBuffer.Location, CurrentMouseState.Position,
 								cursors[ToolCursor.Rotate], startAngle, sweepAngle);
 						}
 					} finally { diagramPresenter.RestoreTransformation(); }
@@ -1510,7 +1694,6 @@ namespace Dataweb.NShape.Advanced {
 
 		private Action CurrentAction {
 			get {
-				//return currentToolAction; 
 				if (IsToolActionPending)
 					return (Action)CurrentToolAction.Action;
 				else return Action.None;
@@ -1545,7 +1728,9 @@ namespace Dataweb.NShape.Advanced {
 						case Action.SelectWithFrame:
 						case Action.MoveHandle:
 						case Action.MoveShape:
-							wantAutoScroll = true; break;
+							wantAutoScroll = true;
+							result = true;
+							break;
 						default: wantAutoScroll = false; break;
 					}
 					StartToolAction(diagramPresenter, (int)newAction, mouseState, wantAutoScroll);
@@ -1562,12 +1747,12 @@ namespace Dataweb.NShape.Advanced {
 						case Action.PrepareRotate:
 						case Action.Rotate:
 							CreatePreviewShapes(diagramPresenter);
+							result = true;
 							break;
 						default: throw new NShapeUnsupportedValueException(CurrentAction);
 					}
-
+					
 					Invalidate(ActionDiagramPresenter);
-					result = true;
 				}
 			} else {
 				// ... otherwise cancel the action (if right mouse button was pressed)
@@ -1604,8 +1789,11 @@ namespace Dataweb.NShape.Advanced {
 					ShapeAtCursorInfo shapeAtCursorInfo = ShapeAtCursorInfo.Empty;
 					newAction = CurrentAction;
 					if (mouseState.IsButtonDown(MouseButtonsDg.Left)) {
-						shapeAtCursorInfo = FindShapeAtCursor(ActionDiagramPresenter, ActionStartMouseState.X, ActionStartMouseState.Y, ControlPointCapabilities.None, 0, true);
-						newAction = DetermineMouseMoveAction(ActionDiagramPresenter, ActionStartMouseState, shapeAtCursorInfo);
+						if (IsDragActionFeasible(mouseState, MouseButtonsDg.Left)) {
+							// Determine new drag action
+							shapeAtCursorInfo = FindShapeAtCursor(ActionDiagramPresenter, ActionStartMouseState.X, ActionStartMouseState.Y, ControlPointCapabilities.None, 0, true);
+							newAction = DetermineMouseMoveAction(ActionDiagramPresenter, ActionStartMouseState, shapeAtCursorInfo);
+						}
 					} else newAction = DetermineMouseMoveAction(ActionDiagramPresenter, ActionStartMouseState, shapeAtCursorInfo);
 
 					// If the action has changed, prepare and start the new action
@@ -1620,6 +1808,8 @@ namespace Dataweb.NShape.Advanced {
 
 							// Select -> (Select and) move shape
 							case Action.MoveShape:
+							case Action.MoveHandle:
+							case Action.PrepareRotate:
 								Assert(CurrentAction == Action.Select);
 								if (SelectedShapeAtCursorInfo.IsEmpty) {
 									// Select shape at cursor before start dragging it
@@ -1634,10 +1824,8 @@ namespace Dataweb.NShape.Advanced {
 								result = PrepareMoveShapePreview(ActionDiagramPresenter, ActionStartMouseState);
 								break;
 
-							case Action.PrepareRotate:
 							case Action.Rotate:
 							case Action.EditCaption:
-							case Action.MoveHandle:
 							case Action.None:
 							case Action.Select:
 								Debug.Fail("Unhandled change of CurrentAction.");
@@ -1773,14 +1961,14 @@ namespace Dataweb.NShape.Advanced {
 
 				case Action.MoveHandle:
 					Assert(!SelectedShapeAtCursorInfo.IsEmpty);
-					result = PerformMoveHandle(ActionDiagramPresenter, mouseState);
+					result = PerformMoveHandle(ActionDiagramPresenter);
 					while (IsToolActionPending)
 						EndToolAction();
 					break;
 
 				case Action.MoveShape:
 					Assert(!SelectedShapeAtCursorInfo.IsEmpty);
-					result = PerformMoveShape(ActionDiagramPresenter, mouseState);
+					result = PerformMoveShape(ActionDiagramPresenter);
 					while (IsToolActionPending)
 						EndToolAction();
 					break;
@@ -1792,7 +1980,7 @@ namespace Dataweb.NShape.Advanced {
 
 				case Action.Rotate:
 					Assert(!SelectedShapeAtCursorInfo.IsEmpty);
-					result = PerformRotate(ActionDiagramPresenter, mouseState);
+					result = PerformRotate(ActionDiagramPresenter);
 					while (IsToolActionPending)
 						EndToolAction();
 					break;
@@ -1834,24 +2022,17 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		private Action DetermineMouseDownAction(IDiagramPresenter diagramPresenter, MouseState mouseState) {
 			if (mouseState.IsButtonDown(MouseButtonsDg.Left)) {
-				if (!SelectedShapeAtCursorInfo.IsEmpty) {
-					// Check if cursor is over a control point and moving grips or rotating is feasible
-					if (SelectedShapeAtCursorInfo.IsCursorAtGrip) {
-						if (IsMoveHandleFeasible(diagramPresenter, SelectedShapeAtCursorInfo))
-							return Action.MoveHandle;
-						else if (IsRotatatingFeasible(diagramPresenter, SelectedShapeAtCursorInfo))
-							return Action.PrepareRotate;
-					}
-					// Moving shapes is initiated as soon as the user starts drag action (move mouse 
+				if (!SelectedShapeAtCursorInfo.IsEmpty
+					&& IsEditCaptionFeasible(diagramPresenter, mouseState, SelectedShapeAtCursorInfo)) {
+					// If the cursor is not over a caption of a selected shape when clicking left mouse button, 
+					// we assume the user wants to select something
+					// Same thing if no other action is granted.
+					return Action.EditCaption;
+				} else
+					// Moving shapes and handles is initiated as soon as the user starts drag action (move mouse 
 					// while mouse button is pressed) 
 					// If the user does not start a drag action, this will result in (un)selecting shapes.
-				}
-				// If the cursor is not over a caption of a selected shape when clicking left mouse button, 
-				// we assume the user wants to select something
-				// Same thing if no other action is granted.
-				if (IsEditCaptionFeasible(diagramPresenter, mouseState, SelectedShapeAtCursorInfo))
-					return Action.EditCaption;
-				else return Action.Select;
+					return Action.Select;
 			} else if (mouseState.IsButtonDown(MouseButtonsDg.Right)) {
 				// Abort current action when clicking right mouse button
 				return Action.None;
@@ -1877,13 +2058,22 @@ namespace Dataweb.NShape.Advanced {
 
 				case Action.Select:
 					if (mouseState.IsButtonDown(MouseButtonsDg.Left)) {
-						// If there is no shape under the cursor, start a SelectWithFrame action,
-						// otherwise start a MoveShape action
-						if (IsMoveShapeFeasible(diagramPresenter, mouseState, SelectedShapeAtCursorInfo)
-							|| IsMoveShapeFeasible(diagramPresenter, mouseState, shapeAtCursorInfo))
-							return Action.MoveShape;
-						else return Action.SelectWithFrame;
-					} else return CurrentAction;
+						// Check if cursor is over a control point and moving grips or rotating is feasible
+						if (SelectedShapeAtCursorInfo.IsCursorAtGrip) {
+							if (IsMoveHandleFeasible(diagramPresenter, SelectedShapeAtCursorInfo))
+								return Action.MoveHandle;
+							else if (IsRotatatingFeasible(diagramPresenter, SelectedShapeAtCursorInfo))
+								return Action.PrepareRotate;
+						} else {
+							// If there is no shape under the cursor, start a SelectWithFrame action,
+							// otherwise start a MoveShape action
+							if (IsMoveShapeFeasible(diagramPresenter, mouseState, SelectedShapeAtCursorInfo)
+								|| IsMoveShapeFeasible(diagramPresenter, mouseState, shapeAtCursorInfo))
+								return Action.MoveShape;
+							else return Action.SelectWithFrame;
+						}
+					}
+					return CurrentAction;
 
 				case Action.PrepareRotate:
 					if (mouseState.IsButtonDown(MouseButtonsDg.Left)) {
@@ -2001,8 +2191,8 @@ namespace Dataweb.NShape.Advanced {
 					if (diagramPresenter.SelectedShapes.Count > 0) {
 						diagramPresenter.UnselectAll();
 						ClearPreviews();
+						result = true;
 					}
-					result = true;
 				}
 			} else {
 				// if there was no other shape to select and a selected shape is under the cursor,
@@ -2092,7 +2282,7 @@ namespace Dataweb.NShape.Advanced {
 							if (targetPointId != ControlPointId.None)
 								selectedShape.Connect(gluePointId, shape, targetPointId);
 						} else {
-							ShapeAtCursorInfo shapeInfo = FindConnectionTarget(diagramPresenter, selectedShape, gluePointId, gluePointPos, true);
+							ShapeAtCursorInfo shapeInfo = FindConnectionTarget(diagramPresenter, selectedShape, gluePointId, gluePointPos, true, true);
 							if (shapeInfo.ControlPointId != ControlPointId.None) {
 								ICommand cmd = new ConnectCommand(selectedShape, gluePointId, shapeInfo.Shape, shapeInfo.ControlPointId);
 								diagramPresenter.Project.ExecuteCommand(cmd);
@@ -2129,28 +2319,78 @@ namespace Dataweb.NShape.Advanced {
 			// move selectedShapes
 			Rectangle shapeBounds = Rectangle.Empty;
 			foreach (Shape selectedShape in diagramPresenter.SelectedShapes) {
-				Shape preview = FindPreviewOfShape(selectedShape);
-				preview.MoveTo(selectedShape.X + distanceX, selectedShape.Y + distanceY);
+				// Get preview of the shape to move
+				Shape previewShape = FindPreviewOfShape(selectedShape);
+				
+				// If the shape has connected other shapes connected to it, restore old position first
+				// in order to get a more accurate preview of the result
+				MoveConnectedShapesToStartPosition(previewShape, selectedShape);
+
+				// Now move the preview shape to the new position
+				previewShape.MoveTo(selectedShape.X + distanceX, selectedShape.Y + distanceY);
 			}
 			return true;
 		}
 
 
+		// Move shape and its connected shapes to the action's start position
+		private void MoveConnectedShapesToStartPosition(Shape previewShape, Shape originalShape) {
+			if (previewShape.IsConnected(ControlPointId.Any, null) == ControlPointId.None) return;
+			previewShape.MoveTo(originalShape.X, originalShape.Y);
+			foreach (ShapeConnectionInfo sci in previewShape.GetConnectionInfos(ControlPointId.Any, null)) {
+				// If the connected point is the active shape, we can skip it as it will not change Position / shape
+				// when moving its partner shape.
+				if (previewShape.HasControlPointCapability(sci.OwnPointId, ControlPointCapabilities.Glue)) continue;
+				
+				// If the connected shape is the active shape, check shape and point positions
+				Shape otherShapePreview = sci.OtherShape; 
+				Shape otherShapeOriginal = FindShapeOfPreview(sci.OtherShape);
+				if (sci.OtherShape is ILinearShape) {
+					// Line shapes
+					Shape lineShapePreview = sci.OtherShape;
+					foreach (ControlPointId ptId in otherShapeOriginal.GetControlPointIds(ControlPointCapabilities.Resize)) {
+						if (lineShapePreview.IsConnected(ptId, null) != ControlPointId.None) continue;
+						Point ptPosO = otherShapeOriginal.GetControlPointPosition(ptId);
+						Point ptPosP = sci.OtherShape.GetControlPointPosition(ptId);
+						if (ptPosO != ptPosP) sci.OtherShape.MoveControlPointTo(ptId, ptPosO.X, ptPosO.Y, ResizeModifiers.None);
+					}
+				} else {
+					// Other shapes
+					if (otherShapePreview.X != otherShapeOriginal.X || otherShapePreview.Y != otherShapeOriginal.Y)
+						otherShapePreview.MoveTo(otherShapeOriginal.X, otherShapeOriginal.Y);
+				}
+				MoveConnectedShapesToStartPosition(sci.OtherShape, otherShapeOriginal);
+			}
+		}
+
+
 		// apply the move action
-		private bool PerformMoveShape(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		private bool PerformMoveShape(IDiagramPresenter diagramPresenter) {
 			bool result = false;
 			if (SelectedShapeAtCursorInfo.IsEmpty) {
 				// Das SOLLTE nie passieren - passiert aber leider ab und zu... :-(
+				Debug.Assert(!SelectedShapeAtCursorInfo.IsEmpty);
 				return result;
 			}
 
-			if (ActionStartMouseState.Position != mouseState.Position) {
+			if (ActionStartMouseState.Position != CurrentMouseState.Position) {
 				// calculate the movement
-				int distanceX = mouseState.X - ActionStartMouseState.X;
-				int distanceY = mouseState.Y - ActionStartMouseState.Y;
-				snapDeltaX = snapDeltaY = 0;
-				if (diagramPresenter.SnapToGrid)
-					FindNearestSnapPoint(diagramPresenter, SelectedShapeAtCursorInfo.Shape, distanceX, distanceY, out snapDeltaX, out snapDeltaY, ControlPointCapabilities.All);
+				int distanceX = CurrentMouseState.X - ActionStartMouseState.X;
+				int distanceY = CurrentMouseState.Y - ActionStartMouseState.Y;
+				//snapDeltaX = snapDeltaY = 0;
+				//if (diagramPresenter.SnapToGrid)
+				//   FindNearestSnapPoint(diagramPresenter, SelectedShapeAtCursorInfo.Shape, distanceX, distanceY, out snapDeltaX, out snapDeltaY, ControlPointCapabilities.All);
+
+#if DEBUG
+				int dx = distanceX + snapDeltaX;
+				int dy = distanceY + snapDeltaY;
+				Debug.Assert(CurrentMouseState.Position == CurrentMouseState.Position);
+				foreach (Shape selectedShape in diagramPresenter.SelectedShapes) {
+					Shape previewShape = previewShapes[selectedShape];
+					Debug.Assert(previewShape.X == selectedShape.X + dx);
+					Debug.Assert(previewShape.Y == selectedShape.Y + dy);
+				}
+#endif
 
 				ICommand cmd = new MoveShapeByCommand(diagramPresenter.SelectedShapes, distanceX + snapDeltaX, distanceY + snapDeltaY);
 				diagramPresenter.Project.ExecuteCommand(cmd);
@@ -2214,15 +2454,14 @@ namespace Dataweb.NShape.Advanced {
 
 
 		// apply the resize action
-		private bool PerformMoveHandle(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		private bool PerformMoveHandle(IDiagramPresenter diagramPresenter) {
 			bool result = false;
 			Invalidate(diagramPresenter);
 
-			int distanceX = mouseState.X - ActionStartMouseState.X;
-			int distanceY = mouseState.Y - ActionStartMouseState.Y;
+			int distanceX = CurrentMouseState.X - ActionStartMouseState.X;
+			int distanceY = CurrentMouseState.Y - ActionStartMouseState.Y;
 
 			// if the moved ControlPoint is a single GluePoint, snap to ConnectionPoints
-			snapDeltaX = snapDeltaY = 0;
 			bool isGluePoint = false;
 			if (diagramPresenter.SelectedShapes.Count == 1)
 				isGluePoint = SelectedShapeAtCursorInfo.Shape.HasControlPointCapability(SelectedShapeAtCursorInfo.ControlPointId, ControlPointCapabilities.Glue);
@@ -2234,12 +2473,13 @@ namespace Dataweb.NShape.Advanced {
 				Point currentPtPos = SelectedShapeAtCursorInfo.Shape.GetControlPointPosition(SelectedShapeAtCursorInfo.ControlPointId);
 				Point newPtPos = Point.Empty;
 				newPtPos.Offset(currentPtPos.X + distanceX, currentPtPos.Y + distanceY);
-				targetShapeInfo = FindConnectionTarget(ActionDiagramPresenter, SelectedShapeAtCursorInfo.Shape, SelectedShapeAtCursorInfo.ControlPointId, newPtPos, true);
+				targetShapeInfo = FindConnectionTarget(ActionDiagramPresenter, SelectedShapeAtCursorInfo.Shape, SelectedShapeAtCursorInfo.ControlPointId, newPtPos, true, true);
 				if (!targetShapeInfo.IsEmpty) {
 					calcSnapDistance = false;
 					if (targetShapeInfo.ControlPointId != ControlPointId.Reference) {
-						distanceX = newPtPos.X - currentPtPos.X;
-						distanceY = newPtPos.Y - currentPtPos.Y;
+						Point pt = targetShapeInfo.Shape.GetControlPointPosition(targetShapeInfo.ControlPointId);
+						distanceX = pt.X - currentPtPos.X;
+						distanceY = pt.Y - currentPtPos.Y;
 					}
 				}
 			}
@@ -2387,15 +2627,15 @@ namespace Dataweb.NShape.Advanced {
 
 
 		// apply rotate action
-		private bool PerformRotate(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		private bool PerformRotate(IDiagramPresenter diagramPresenter) {
 			bool result = false;
 			if (PendingToolActionsCount >= 1
-				&& ActionStartMouseState.Position != mouseState.Position
-				&& IsMinRotateRangeExceeded(ActionDiagramPresenter, mouseState)) {
+				&& ActionStartMouseState.Position != CurrentMouseState.Position
+				&& IsMinRotateRangeExceeded(ActionDiagramPresenter, CurrentMouseState)) {
 				// Calculate rotation
 				MouseState initMouseState = GetPreviousMouseState();
 				int startAngle, sweepAngle;
-				CalcAngle(initMouseState, ActionStartMouseState, mouseState, out startAngle, out sweepAngle);
+				CalcAngle(initMouseState, ActionStartMouseState, CurrentMouseState, out startAngle, out sweepAngle);
 				// Create and execute command
 				ICommand cmd = new RotateShapesCommand(diagramPresenter.SelectedShapes, sweepAngle);
 				diagramPresenter.Project.ExecuteCommand(cmd);
@@ -2446,21 +2686,6 @@ namespace Dataweb.NShape.Advanced {
 				rectBuffer.Width = rectBuffer.Height = requiredDistance;
 			diagramPresenter.InvalidateDiagram(rectBuffer.X - rectBuffer.Width, rectBuffer.Y - rectBuffer.Height, rectBuffer.Width + rectBuffer.Width, rectBuffer.Height + rectBuffer.Height);
 		}
-
-		#endregion
-
-
-		#region Title Editor
-
-		//private void ShowTextEditor(string pressedKey) {
-		//   // show TextEditor
-		//   if (CurrentDisplay.SelectedShapes.Count == 1) {
-		//      if (CurrentDisplay.SelectedShapes.TopMost is ICaptionedShape) {
-		//         ICaptionedShape labeledShape = (ICaptionedShape)CurrentDisplay.SelectedShapes.TopMost;
-		//         if (labeledShape.CaptionCount > 0) CurrentDisplay.OpenCaptionEditor(labeledShape, 0, pressedKey);
-		//      }
-		//   }
-		//}
 
 		#endregion
 
@@ -2558,10 +2783,8 @@ namespace Dataweb.NShape.Advanced {
 
 		private void ClearPreviews() {
 			foreach (KeyValuePair<Shape, Shape> item in previewShapes) {
-				Shape preview = item.Value;
-				preview.Invalidate();
-				preview.DisplayService = null;
-				preview.Dispose();
+				Shape previewShape = item.Value;
+				DeletePreviewShape(ref previewShape);
 			}
 			previewShapes.Clear();
 			originalShapes.Clear();
@@ -2583,7 +2806,6 @@ namespace Dataweb.NShape.Advanced {
 		/// Create previews of shapes connected to the given shape (and it's children) and connect them to the
 		/// shape's preview (or the preview of it's child)
 		/// </summary>
-		/// <param name="shape">The original shape which contains all ConnectionInfo</param>
 		private void ConnectPreviewOfShape(IDiagramPresenter diagramPresenter, Shape shape) {
 			// process shape's children
 			if (shape.Children != null && shape.Children.Count > 0) {
@@ -2621,8 +2843,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Creates (or finds) a preview of the connection's PassiveShape and connects it to the current preview shape
 		/// </summary>
-		/// <param name="previewShape">The preview shape</param>
-		/// <param name="connectionInfo">ConnectionInfo of the original (non-preview) shape</param>
 		private void CreateConnectedTargetPreviewShape(IDiagramPresenter diagramPresenter, Shape previewShape, ShapeConnectionInfo connectionInfo) {
 			// Check if any other selected shape is connected to the same non-selected shape
 			Shape previewTargetShape;
@@ -2632,7 +2852,8 @@ namespace Dataweb.NShape.Advanced {
 				// If the current passiveShape is not connected to any other of the selected selectedShapes,
 				// create a clone of the passiveShape and connect it to the corresponding preview
 				// If the preview exists, abort connecting (in this case, the shape is a preview of a child shape)
-				if (previewShapes.ContainsKey(connectionInfo.OtherShape)) return;
+				if (previewShapes.ContainsKey(connectionInfo.OtherShape))
+					return;
 				else {
 					previewTargetShape = connectionInfo.OtherShape.Type.CreatePreviewInstance(connectionInfo.OtherShape);
 					AddPreview(connectionInfo.OtherShape, previewTargetShape, diagramPresenter.DisplayService);
@@ -2665,14 +2886,144 @@ namespace Dataweb.NShape.Advanced {
 						else if (connectorCI.OtherPointId == ControlPointId.Reference) {
 							// Connect the other end of the previewTargetShape if the connection is a Point-To-Shape connection
 							Assert(connectorCI.OtherShape.IsConnected(connectorCI.OtherPointId, previewTargetShape) == ControlPointId.None);
-							Assert(previewTargetShape.IsConnected(connectorCI.OwnPointId, null) == ControlPointId.None);
-							previewTargetShape.Connect(connectorCI.OwnPointId, connectorCI.OtherShape, connectorCI.OtherPointId);
+							if (previewTargetShape.IsConnected(connectorCI.OwnPointId, null) == ControlPointId.None)
+								previewTargetShape.Connect(connectorCI.OwnPointId, connectorCI.OtherShape, connectorCI.OtherPointId);
 						}
 					}
 				}
 			}
 		}
 
+
+		// Experimental code
+		//private void CreatePreviewsOfConnectedShapes(IDiagramPresenter diagramPresenter, Shape shape) {
+		//   // process shape's children
+		//   if (shape.Children != null && shape.Children.Count > 0) {
+		//      foreach (Shape childShape in shape.Children)
+		//         CreatePreviewsOfConnectedShapes(diagramPresenter, childShape);
+		//   }
+
+		//   Shape preview = FindPreviewOfShape(shape);
+		//   foreach (ShapeConnectionInfo connectionInfo in shape.GetConnectionInfos(ControlPointId.Any, null)) {
+		//      if (diagramPresenter.SelectedShapes.Contains(connectionInfo.OtherShape)) continue;
+		//      // Create a preview of the shape that is connected to the preview (recursive call)
+		//      DoCreatePreviewsOfConnectedShape(diagramPresenter, preview, connectionInfo);
+		//   }
+		//}
+
+
+		///// <summary>
+		///// Creates (or finds) a preview of the connection's PassiveShape and connects it to the current preview shape
+		///// </summary>
+		//private void DoCreatePreviewsOfConnectedShape(IDiagramPresenter diagramPresenter, Shape previewShape, ShapeConnectionInfo connectionInfo) {
+		//   // Check if any other selected shape is connected to the same non-selected shape
+		//   Shape previewTargetShape;
+		//   // If the current passiveShape is already connected to another shape of the current selection,
+		//   // connect the current preview to the other preview's passiveShape
+		//   if (!targetShapeBuffer.TryGetValue(connectionInfo.OtherShape, out previewTargetShape)) {
+		//      // If the current passiveShape is not connected to any other of the selected selectedShapes,
+		//      // create a clone of the passiveShape and connect it to the corresponding preview
+		//      // If the preview exists, abort connecting (in this case, the shape is a preview of a child shape)
+		//      if (previewShapes.ContainsKey(connectionInfo.OtherShape)) 
+		//         return;
+		//      else {
+		//         previewTargetShape = connectionInfo.OtherShape.Type.CreatePreviewInstance(connectionInfo.OtherShape);
+		//         AddPreview(connectionInfo.OtherShape, previewTargetShape, diagramPresenter.DisplayService);
+		//      }
+		//      // Add passive shape and it's clone to the passive shape dictionary
+		//      targetShapeBuffer.Add(connectionInfo.OtherShape, previewTargetShape);
+		//   }
+		//   // Connect the (new or existing) preview shapes
+		//   // Skip connecting if the preview is already connected.
+		//   Assert(previewTargetShape != null, "Error while creating connected preview shapes.");
+		//   // check, if any shapes are connected to the connector (that is connected to the selected shape)
+		//   foreach (ShapeConnectionInfo connectorCI in connectionInfo.OtherShape.GetConnectionInfos(ControlPointId.Any, null)) {
+		//      if (connectorCI.OtherShape == FindShapeOfPreview(previewShape)) continue;
+		//      if (connectorCI.OwnPointId == connectionInfo.OtherPointId) continue;
+		//      DoCreatePreviewsOfConnectedShape(diagramPresenter, previewTargetShape, connectorCI);
+		//   }
+		//}
+
+
+		///// <summary>
+		///// Create previews of shapes connected to the given shape (and it's children) and connect them to the
+		///// shape's preview (or the preview of it's child)
+		///// </summary>
+		//private void ConnectPreviewsToShape(IDiagramPresenter diagramPresenter, Shape shape) {
+		//   // process shape's children
+		//   if (shape.Children != null && shape.Children.Count > 0) {
+		//      foreach (Shape childShape in shape.Children)
+		//         ConnectPreviewsToShape(diagramPresenter, childShape);
+		//   }
+
+		//   Shape preview = FindPreviewOfShape(shape);
+		//   foreach (ShapeConnectionInfo connectionInfo in shape.GetConnectionInfos(ControlPointId.Any, null)) {
+		//      if (diagramPresenter.SelectedShapes.Contains(connectionInfo.OtherShape)) {
+		//         // Do not connect previews if BOTH of the connected shapes are part of the selection because 
+		//         // this would restrict movement of the connector shapes and decreases performance (many 
+		//         // unnecessary FollowConnectionPointWithGluePoint() calls)
+		//         if (shape.HasControlPointCapability(connectionInfo.OwnPointId, ControlPointCapabilities.Glue)) {
+		//            if (IsConnectedToNonSelectedShape(diagramPresenter, shape)) {
+		//               Shape targetPreview = FindPreviewOfShape(connectionInfo.OtherShape);
+		//               preview.Connect(connectionInfo.OwnPointId, targetPreview, connectionInfo.OtherPointId);
+		//            }
+		//         }
+		//      } else {
+		//         // Connect preview of shape to a non-selected shape if it is a single shape 
+		//         // that has a glue point (e.g. a Label)
+		//         if (preview.HasControlPointCapability(connectionInfo.OwnPointId, ControlPointCapabilities.Glue)) {
+		//            // Only connect if the control point to be connected is not the control point to be moved
+		//            if (shape == SelectedShapeAtCursorInfo.Shape && connectionInfo.OwnPointId != SelectedShapeAtCursorInfo.ControlPointId) {
+		//               if (preview.IsConnected(connectionInfo.OwnPointId, null) == ControlPointId.None)
+		//                  preview.Connect(connectionInfo.OwnPointId, connectionInfo.OtherShape, connectionInfo.OtherPointId);
+		//            }
+		//         } else
+		//            // Create a preview of the shape that is connected to the preview (recursive call)
+		//            DoConnectPreviewsToShape(diagramPresenter, preview, connectionInfo);
+		//      }
+		//   }
+		//}
+
+
+		///// <summary>
+		///// Creates (or finds) a preview of the connection's PassiveShape and connects it to the current preview shape
+		///// </summary>
+		//private void DoConnectPreviewsToShape(IDiagramPresenter diagramPresenter, Shape previewShape, ShapeConnectionInfo connectionInfo) {
+		//   // Check if any other selected shape is connected to the same non-selected shape
+		//   Shape previewTargetShape;
+		//   // If the current passiveShape is already connected to another shape of the current selection,
+		//   // connect the current preview to the other preview's passiveShape
+		//   if (!targetShapeBuffer.TryGetValue(connectionInfo.OtherShape, out previewTargetShape)) return;
+			
+		//   if (previewTargetShape.IsConnected(connectionInfo.OtherPointId, null) == ControlPointId.None) {
+		//      previewTargetShape.Connect(connectionInfo.OtherPointId, previewShape, connectionInfo.OwnPointId);
+		//      // check, if any shapes are connected to the connector (that is connected to the selected shape)
+		//      foreach (ShapeConnectionInfo connectorCI in connectionInfo.OtherShape.GetConnectionInfos(ControlPointId.Any, null)) {
+		//         // skip if the connector is connected to the shape with more than one glue point
+		//         if (connectorCI.OtherShape == FindShapeOfPreview(previewShape)) continue;
+		//         if (connectorCI.OwnPointId != connectionInfo.OtherPointId) {
+		//            // Check if the shape on the other end is selected.
+		//            // If it is, connect to it's preview or skip connecting if the target preview does 
+		//            // not exist yet (it will be connected when creating the targt's preview)
+		//            if (diagramPresenter.SelectedShapes.Contains(connectorCI.OtherShape)) {
+		//               if (previewShapes.ContainsKey(connectorCI.OtherShape)) {
+		//                  Shape s = FindPreviewOfShape(connectorCI.OtherShape);
+		//                  if (s.IsConnected(connectorCI.OtherPointId, previewTargetShape) == ControlPointId.None)
+		//                     previewTargetShape.Connect(connectorCI.OwnPointId, s, connectorCI.OtherPointId);
+		//               } else continue;
+		//            } else if (connectorCI.OtherShape.HasControlPointCapability(connectorCI.OtherPointId, ControlPointCapabilities.Glue))
+		//               // Connect connectors connected to the previewTargetShape
+		//               DoConnectPreviewsToShape(diagramPresenter, previewTargetShape, connectorCI);
+		//            else if (connectorCI.OtherPointId == ControlPointId.Reference) {
+		//               // Connect the other end of the previewTargetShape if the connection is a Point-To-Shape connection
+		//               Assert(connectorCI.OtherShape.IsConnected(connectorCI.OtherPointId, previewTargetShape) == ControlPointId.None);
+		//               Assert(previewTargetShape.IsConnected(connectorCI.OwnPointId, null) == ControlPointId.None);
+		//               previewTargetShape.Connect(connectorCI.OwnPointId, connectorCI.OtherShape, connectorCI.OtherPointId);
+		//            }
+		//         }
+		//      }
+		//   }
+		//}
 
 		#endregion
 
@@ -2756,8 +3107,9 @@ namespace Dataweb.NShape.Advanced {
 							diagramPresenter,
 							SelectedShapeAtCursorInfo.Shape,
 							SelectedShapeAtCursorInfo.ControlPointId,
-							ptPos, 
-							true);
+							ptPos,
+							true,
+							false);
 						if (!shapeAtCursorInfo.IsEmpty && shapeAtCursorInfo.IsCursorAtGrip)
 							return cursors[ToolCursor.Connect];
 					}
@@ -2791,6 +3143,9 @@ namespace Dataweb.NShape.Advanced {
 					// AttachGluePointToConnectionPoint the preview shape (and all it's cildren) to all the shapes the original shape was connected to
 					// Additionally, create previews for all connected shapes and connect these to the appropriate target shapes
 					ConnectPreviewOfShape(diagramPresenter, selectedShape);
+
+					//CreatePreviewsOfConnectedShapes(diagramPresenter, selectedShape);
+					//ConnectPreviewsToShape(diagramPresenter, selectedShape);
 				}
 				targetShapeBuffer.Clear();
 			}
@@ -2821,6 +3176,17 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		private bool IsDragActionFeasible(MouseState mouseState, MouseButtonsDg button) {
+			int dx = 0, dy = 0;
+			if (mouseState.IsButtonDown(button) && IsToolActionPending) {
+				// Check the minimum drag distance before switching to a drag action
+				dx = Math.Abs(mouseState.X - ActionStartMouseState.X);
+				dy = Math.Abs(mouseState.Y - ActionStartMouseState.Y);
+			}
+			return (dx >= MinimumDragDistance.Width || dy >= MinimumDragDistance.Height);
+		}
+		
+		
 		private bool IsMoveShapeFeasible(IDiagramPresenter diagramPresenter, MouseState mouseState, ShapeAtCursorInfo shapeAtCursorInfo) {
 			if (shapeAtCursorInfo.IsEmpty)
 				return false;
@@ -2979,8 +3345,10 @@ namespace Dataweb.NShape.Advanced {
 
 			public ShapeConnectionInfo connectionInfo;
 
+			/// <override></override>
 			public override bool Equals(object obj) { return obj is ConnectionInfoBuffer && this == (ConnectionInfoBuffer)obj; }
 
+			/// <override></override>
 			public override int GetHashCode() { return base.GetHashCode(); }
 
 			static ConnectionInfoBuffer() {
@@ -3003,13 +3371,13 @@ namespace Dataweb.NShape.Advanced {
 		// --- State after the last ProcessMouseEvent ---
 		// selected shape under the mouse cursor, being highlighted in the next drawing
 		private ShapeAtCursorInfo selShapeAtCursorInfo;
-		// rectangle that represents the transformed selection area in control coordinates
+		// Rectangle that represents the transformed selection area in control coordinates
 		private Rectangle frameRect;
-		// stores the distance the SelectedShape was moved on X-axis for snapping the nearest gridpoint
+		// Stores the distance the SelectedShape was moved on X-axis for snapping the nearest gridpoint
 		private int snapDeltaX;
-		// stores the distance the SelectedShape was moved on Y-axis for snapping the nearest gridpoint
+		// Stores the distance the SelectedShape was moved on Y-axis for snapping the nearest gridpoint
 		private int snapDeltaY;
-		// index of the controlPoint that snapped to grid/point/swimline
+		// Index of the controlPoint that snapped to grid/point/swimline
 		private int snapPtId;
 
 		// -- Definition of current action
@@ -3037,6 +3405,7 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public abstract class TemplateTool : Tool {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Template Template {
 			get { return template; }
 		}
@@ -3064,27 +3433,32 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected TemplateTool(Template template, string category)
 			: base(category) {
 			if (template == null) throw new ArgumentNullException("template");
 			this.template = template;
 			Title = string.IsNullOrEmpty(template.Title) ? template.Name : template.Title;
-			ToolTipText = string.IsNullOrEmpty(template.Description) ? string.Format("Insert {0}", Title)
-				: string.Format("Insert {0}: {1}", Title, template.Description);
+			ToolTipText = string.Format("Inserts a {0}.", Title);
+			if (!string.IsNullOrEmpty(template.Shape.Type.Description))
+				ToolTipText += Environment.NewLine + template.Shape.Type.Description;
 			RefreshIcons();
 		}
 
 
+		/// <override></override>
 		protected TemplateTool(Template template)
 			: this(template, (template != null) ? template.Shape.Type.DefaultCategoryTitle : null) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Shape PreviewShape {
 			get { return previewShape; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void CreatePreview(IDiagramPresenter diagramPresenter) {
 			using (Shape s = Template.CreateShape())
 				previewShape = Template.Shape.Type.CreatePreviewInstance(s);
@@ -3093,12 +3467,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual void ClearPreview() {
-			if (previewShape != null) {
-				previewShape.Invalidate();
-				previewShape.Dispose();
-				previewShape = null;
-			}
+			if (previewShape != null)
+				DeletePreviewShape(ref previewShape);
 		}
 
 
@@ -3116,17 +3488,21 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class LinearShapeCreationTool : TemplateTool {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LinearShapeCreationTool(Template template)
 			: this(template, null) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LinearShapeCreationTool(Template template, string category)
 			: base(template, category) {
 			if (!(template.Shape is ILinearShape))
 				throw new NShapeException("The template's shape does not implement {0}.", typeof(ILinearShape).Name);
-			if (template.Shape is PolylineBase)
-				ToolTipText += Environment.NewLine + "Polylines are finished by double clicking.";
+			ToolTipText += Environment.NewLine;
+			ToolTipText += Environment.NewLine + "Left click starts a new line or adds a point to the new line.";
+			ToolTipText += Environment.NewLine + "Right click ends the new line (last point will be discarded).";
+			ToolTipText += Environment.NewLine + "Double click ends the new line (including the last point).";
 		}
 
 
@@ -3228,11 +3604,13 @@ namespace Dataweb.NShape.Advanced {
 			}
 
 			// Highlight ConnectionPoints in range
-			if (Template.Shape.HasControlPointCapability(ControlPointId.LastVertex, ControlPointCapabilities.Glue)) {
-				if (PreviewShape == null) DrawConnectionTargets(diagramPresenter, CurrentMouseState.X, CurrentMouseState.Y);
-				else {
-					Point gluePtPos = PreviewShape.GetControlPointPosition(ControlPointId.LastVertex);
-					DrawConnectionTargets(diagramPresenter, PreviewShape, ControlPointId.LastVertex, gluePtPos);
+			if (!CurrentMouseState.IsEmpty) {
+				if (Template.Shape.HasControlPointCapability(ControlPointId.LastVertex, ControlPointCapabilities.Glue)) {
+					if (PreviewShape == null) DrawConnectionTargets(diagramPresenter, CurrentMouseState.X, CurrentMouseState.Y);
+					else {
+						Point gluePtPos = PreviewShape.GetControlPointPosition(ControlPointId.LastVertex);
+						DrawConnectionTargets(diagramPresenter, PreviewShape, ControlPointId.LastVertex, gluePtPos);
+					}
 				}
 			}
 		}
@@ -3250,8 +3628,9 @@ namespace Dataweb.NShape.Advanced {
 			Debug.Print("EndToolAction");
 			base.EndToolAction();
 			ClearPreview();
+			modifiedLinearShape = null;
+			pointAtCursor = ControlPointId.None;
 			lastInsertedPointId = ControlPointId.None;
-			action = Action.None;
 		}
 
 
@@ -3267,20 +3646,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		protected override void ClearPreview() {
-			if (PreviewShape != null) {
-				foreach (ControlPointId gluePtId in PreviewShape.GetControlPointIds(ControlPointCapabilities.Glue))
-					PreviewShape.Disconnect(gluePtId);
-				base.ClearPreview();
-			}
-		}
-
-
 		static LinearShapeCreationTool() {
 			cursors = new Dictionary<ToolCursor, int>(6);
 			cursors.Add(ToolCursor.Default, CursorProvider.DefaultCursorID);
 			cursors.Add(ToolCursor.Pen, CursorProvider.RegisterCursor(Properties.Resources.PenCursor));
-			cursors.Add(ToolCursor.MovePoint, CursorProvider.RegisterCursor(Properties.Resources.MovePointCursor));
+			cursors.Add(ToolCursor.ExtendLine, CursorProvider.RegisterCursor(Properties.Resources.PenPlusCursor));
 			cursors.Add(ToolCursor.Connect, CursorProvider.RegisterCursor(Properties.Resources.HandCursor));
 			cursors.Add(ToolCursor.Disconnect, CursorProvider.RegisterCursor(Properties.Resources.HandCursor));
 			cursors.Add(ToolCursor.NotAllowed, CursorProvider.RegisterCursor(Properties.Resources.ActionDeniedCursor));
@@ -3291,6 +3661,9 @@ namespace Dataweb.NShape.Advanced {
 		private bool ProcessMouseMove(IDiagramPresenter diagramPresenter, MouseState mouseState) {
 			bool result = false;
 			ShapeAtCursorInfo shapeAtCursorInfo = ShapeAtCursorInfo.Empty;
+			if (pointAtCursor != ControlPointId.None && ((modifiedLinearShape as Shape) != null || PreviewShape != null))
+				shapeAtCursorInfo = FindConnectionTarget(diagramPresenter, (modifiedLinearShape as Shape) ?? PreviewShape, pointAtCursor, mouseState.Position, false, true);
+			else shapeAtCursorInfo = FindShapeAtCursor(diagramPresenter, mouseState.X, mouseState.Y, ControlPointCapabilities.Connect | ControlPointCapabilities.Glue, diagramPresenter.ZoomedGripSize, false);
 
 			// set cursor depending on the object under the mouse cursor
 			int currentCursorId = DetermineCursor(diagramPresenter, shapeAtCursorInfo.Shape, shapeAtCursorInfo.ControlPointId);
@@ -3303,11 +3676,9 @@ namespace Dataweb.NShape.Advanced {
 					Invalidate(diagramPresenter);
 					break;
 
-				case Action.AddPoint:
+				case Action.CreateLine:
+				case Action.ExtendLine:
 					Invalidate(ActionDiagramPresenter);
-
-					// ToDo: Replace ControlPointId.LastVertex with a Property for the Vertex under the cursor
-					shapeAtCursorInfo = FindConnectionTarget(diagramPresenter, PreviewShape, ControlPointId.LastVertex, mouseState.Position, false);
 
 					// check for connectionpoints wihtin the snapArea
 					if (!shapeAtCursorInfo.IsEmpty) {
@@ -3318,7 +3689,7 @@ namespace Dataweb.NShape.Advanced {
 						// ToDo: Restore ResizeModifiers
 						Assert(PreviewShape != null);
 						if (PreviewShape != null)
-							PreviewShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
+							PreviewShape.MoveControlPointTo(pointAtCursor, p.X, p.Y, ResizeModifiers.None);
 					} else {
 						int snapDeltaX = 0, snapDeltaY = 0;
 						if (diagramPresenter.SnapToGrid)
@@ -3326,14 +3697,10 @@ namespace Dataweb.NShape.Advanced {
 						// ToDo: Restore ResizeModifiers
 						Assert(PreviewShape != null);
 						if (PreviewShape != null)
-							PreviewShape.MoveControlPointTo(ControlPointId.LastVertex, mouseState.X + snapDeltaX, mouseState.Y + snapDeltaY, ResizeModifiers.None);
+							PreviewShape.MoveControlPointTo(pointAtCursor, mouseState.X + snapDeltaX, mouseState.Y + snapDeltaY, ResizeModifiers.None);
 					}
 					Invalidate(ActionDiagramPresenter);
 					break;
-
-				case Action.DrawLine:
-				case Action.MovePoint:
-					throw new NotImplementedException();
 
 				default: throw new NShapeUnsupportedValueException(CurrentAction);
 			}
@@ -3347,11 +3714,22 @@ namespace Dataweb.NShape.Advanced {
 			switch (CurrentAction) {
 				case Action.None:
 					if (mouseState.IsButtonDown(MouseButtonsDg.Left)) {
-						// If no other ToolAction is in Progress (e.g. drawing a line or moving a point),
-						// a normal MouseClick starts a new line in Point-By-Point mode
-						if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
-							action = Action.AddPoint;
-							StartLine(diagramPresenter, mouseState);
+						if (diagramPresenter.SelectedShapes.Count > 0)
+							diagramPresenter.UnselectAll();
+
+						ShapeAtCursorInfo targetShapeInfo = FindShapeAtCursor(diagramPresenter, mouseState.X, mouseState.Y, ControlPointCapabilities.Glue, diagramPresenter.ZoomedGripSize, false);
+						if (IsExtendLineFeasible(CurrentAction, targetShapeInfo.Shape, targetShapeInfo.ControlPointId)) {
+							if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Layout)) {
+								ExtendLine(diagramPresenter, mouseState, targetShapeInfo);
+								result = true;
+							}
+						} else {
+							// If no other ToolAction is in Progress (e.g. drawing a line or moving a point),
+							// a normal MouseClick starts a new line in Point-By-Point mode
+							if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
+								CreateLine(diagramPresenter, mouseState);
+								result = true;
+							}
 						}
 					} else if (mouseState.IsButtonDown(MouseButtonsDg.Right)) {
 						Cancel();
@@ -3359,7 +3737,8 @@ namespace Dataweb.NShape.Advanced {
 					}
 					break;
 
-				case Action.AddPoint:
+				case Action.CreateLine:
+				case Action.ExtendLine:
 					if (mouseState.IsButtonDown(MouseButtonsDg.Left)) {
 						Invalidate(ActionDiagramPresenter);
 						bool doFinishLine = false;
@@ -3367,39 +3746,46 @@ namespace Dataweb.NShape.Advanced {
 						if (PreviewLinearShape.VertexCount >= PreviewLinearShape.MaxVertexCount)
 							doFinishLine = true;
 						else {
-							InsertNewPoint(ActionDiagramPresenter, mouseState);
 							// Check if it has to be connected to a shape or connection point
-							if (CurrentAction == Action.AddPoint) {
-								ShapeAtCursorInfo shapeAtCursorInfo = base.FindShapeAtCursor(ActionDiagramPresenter, mouseState.X, mouseState.Y, ControlPointCapabilities.Connect, diagramPresenter.ZoomedGripSize, false);
-								if (!shapeAtCursorInfo.IsEmpty && !shapeAtCursorInfo.IsCursorAtGluePoint)
-									doFinishLine = true;
-							}
+							ShapeAtCursorInfo shapeAtCursorInfo = base.FindShapeAtCursor(ActionDiagramPresenter, mouseState.X, mouseState.Y, ControlPointCapabilities.Connect, diagramPresenter.ZoomedGripSize, false);
+							if (!shapeAtCursorInfo.IsEmpty && !shapeAtCursorInfo.IsCursorAtGluePoint)
+								doFinishLine = true;
+							else AddNewPoint(ActionDiagramPresenter, mouseState);
 						}
 						// Create line if necessary
 						if (doFinishLine) {
-							FinishLine(ActionDiagramPresenter, mouseState, false);
+							if (CurrentAction == Action.CreateLine)
+								FinishLine(ActionDiagramPresenter, mouseState, false);
+							else FinishExtendLine(ActionDiagramPresenter, mouseState, false);
+
 							while (IsToolActionPending)
 								EndToolAction();
 							OnToolExecuted(ExecutedEventArgs);
 						}
-						result = true;
 					} else if (mouseState.IsButtonDown(MouseButtonsDg.Right)) {
 						Assert(PreviewShape != null);
-						if (PreviewLinearShape.VertexCount <= PreviewLinearShape.MinVertexCount)
-							Cancel();
-						else {
-							FinishLine(ActionDiagramPresenter, mouseState, false);
-							while (IsToolActionPending)
-								EndToolAction();
-							OnToolExecuted(ExecutedEventArgs);
+						// When creating a line, the new line has to have more than the minimum number of 
+						// vertices because the last vertex (sticking to the mouse cursor) will not be created.
+						if (CurrentAction == Action.CreateLine) {
+							if (PreviewLinearShape.VertexCount <= PreviewLinearShape.MinVertexCount)
+								Cancel();
+							else FinishLine(ActionDiagramPresenter, mouseState, true);
+						} else {
+							// When extending a line, the new line has to have more than the minimum number of 
+							// vertices and more than the original line because the last vertex will not be created.
+							if (PreviewLinearShape.VertexCount <= PreviewLinearShape.MinVertexCount
+								|| PreviewLinearShape.VertexCount - 1 == modifiedLinearShape.VertexCount)
+								Cancel();
+							else FinishExtendLine(ActionDiagramPresenter, mouseState, true);
 						}
-						result = true;
+
+						while (IsToolActionPending)
+							EndToolAction();
+						OnToolExecuted(ExecutedEventArgs);
 					}
+					result = true;
 					break;
 
-				case Action.DrawLine:
-				case Action.MovePoint:
-					throw new NotImplementedException();
 				default: throw new NShapeUnsupportedValueException(CurrentAction);
 			}
 			Invalidate(diagramPresenter);
@@ -3412,12 +3798,17 @@ namespace Dataweb.NShape.Advanced {
 			bool result = false;
 			if (IsToolActionPending) {
 				Assert(PreviewShape != null);
-				FinishLine(ActionDiagramPresenter, mouseState, true);
+				if (CurrentAction == Action.CreateLine)
+					FinishLine(ActionDiagramPresenter, mouseState, true);
+				else if (CurrentAction == Action.ExtendLine)
+					FinishExtendLine(ActionDiagramPresenter, mouseState, true);
+				
 				while (IsToolActionPending)
 					EndToolAction();
+
+				OnToolExecuted(ExecutedEventArgs);
 				result = true;
 			}
-			OnToolExecuted(ExecutedEventArgs);
 			return result;
 		}
 
@@ -3428,16 +3819,20 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private Action CurrentAction {
-			get { return action; }
+			get {
+				if (IsToolActionPending)
+					return (Action)CurrentToolAction.Action;
+				else return Action.None;
+			}
 		}
 
 
 		/// <summary>
 		/// Creates a new preview line shape
 		/// </summary>
-		private void StartLine(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		private void CreateLine(IDiagramPresenter diagramPresenter, MouseState mouseState) {
 			// Try to find a connection target
-			ShapeAtCursorInfo targetShapeInfo = FindConnectionTarget(diagramPresenter, mouseState.X, mouseState.Y, false);
+			ShapeAtCursorInfo targetShapeInfo = FindConnectionTargetFromPosition(diagramPresenter, mouseState.X, mouseState.Y, false, true);
 
 			int snapDeltaX = 0, snapDeltaY = 0;
 			if (diagramPresenter.SnapToGrid) {
@@ -3464,7 +3859,7 @@ namespace Dataweb.NShape.Advanced {
 				start.Offset(snapDeltaX, snapDeltaY);
 			}
 			// Start ToolAction
-			StartToolAction(diagramPresenter, (int)Action.AddPoint, mouseState, true);
+			StartToolAction(diagramPresenter, (int)Action.CreateLine, mouseState, true);
 
 			// create new preview shape
 			CreatePreview(diagramPresenter);
@@ -3477,28 +3872,62 @@ namespace Dataweb.NShape.Advanced {
 					PreviewShape.Connect(ControlPointId.FirstVertex, targetShapeInfo.Shape, targetShapeInfo.ControlPointId);
 			}
 			lastInsertedPointId = ControlPointId.FirstVertex;
+			pointAtCursor = ControlPointId.LastVertex;
+		}
+
+
+		/// <summary>
+		/// Creates a new preview line shape
+		/// </summary>
+		private void ExtendLine(IDiagramPresenter diagramPresenter, MouseState mouseState, ShapeAtCursorInfo targetShapeInfo) {
+			// Try to find a connection target
+			if (!targetShapeInfo.IsEmpty && targetShapeInfo.ControlPointId != ControlPointId.None) {
+				// Start ToolAction
+				StartToolAction(diagramPresenter, (int)Action.ExtendLine, mouseState, true);
+				modifiedLinearShape = (ILinearShape)targetShapeInfo.Shape;
+
+				// create new preview shape
+				CreatePreview(diagramPresenter);
+				PreviewShape.CopyFrom(targetShapeInfo.Shape);
+				PreviewShape.MakePreview(diagramPresenter.Project.Design);
+
+				pointAtCursor = targetShapeInfo.ControlPointId;
+				Point pointPos = targetShapeInfo.Shape.GetControlPointPosition(pointAtCursor);
+				if (pointAtCursor == ControlPointId.FirstVertex) {
+					ControlPointId insertId = PreviewLinearShape.GetNextVertexId(pointAtCursor);
+					lastInsertedPointId = PreviewLinearShape.InsertVertex(insertId, pointPos.X, pointPos.Y);
+				} else lastInsertedPointId = PreviewLinearShape.InsertVertex(pointAtCursor, pointPos.X, pointPos.Y);
+
+				PreviewShape.MoveControlPointTo(pointAtCursor, mouseState.X, mouseState.Y, ResizeModifiers.None);
+			}
 		}
 
 
 		/// <summary>
 		/// Inserts a new point into the current preview line before the end point (that is sticking to the mouse cursor).
 		/// </summary>
-		private void InsertNewPoint(IDiagramPresenter diagramPresenter, MouseState mouseState) {
+		private void AddNewPoint(IDiagramPresenter diagramPresenter, MouseState mouseState) {
 			Assert(PreviewLinearShape != null);
 			if (PreviewLinearShape.VertexCount < PreviewLinearShape.MaxVertexCount) {
 				ControlPointId existingPointId = ControlPointId.None;
-				Point pointPos = PreviewShape.GetControlPointPosition(ControlPointId.LastVertex);
+				Point pointPos = PreviewShape.GetControlPointPosition(pointAtCursor);
 				foreach (ControlPointId ptId in PreviewShape.GetControlPointIds(ControlPointCapabilities.All)) {
 					if (ptId == ControlPointId.Reference) continue;
-					if (ptId == ControlPointId.LastVertex) continue;
+					if (ptId == pointAtCursor) continue;
 					Point p = PreviewShape.GetControlPointPosition(ptId);
 					if (p == pointPos && ptId != ControlPointId.Reference) {
 						existingPointId = ptId;
 						break;
 					}
 				}
-				if (existingPointId == ControlPointId.None)
-					lastInsertedPointId = PreviewLinearShape.InsertVertex(ControlPointId.LastVertex, pointPos.X, pointPos.Y);
+				if (existingPointId == ControlPointId.None) {
+					//lastInsertedPointId = PreviewLinearShape.InsertVertex(ControlPointId.LastVertex, pointPos.X, pointPos.Y);
+					if (pointAtCursor == ControlPointId.FirstVertex) {
+						ControlPointId insertBeforeId = PreviewLinearShape.GetNextVertexId(pointAtCursor);
+						lastInsertedPointId = PreviewLinearShape.InsertVertex(insertBeforeId, pointPos.X, pointPos.Y);
+					} else
+						lastInsertedPointId = PreviewLinearShape.InsertVertex(pointAtCursor, pointPos.X, pointPos.Y);
+				}
 			} else throw new InvalidOperationException(string.Format("Maximum number of verticex reached: {0}", PreviewLinearShape.MaxVertexCount));
 		}
 
@@ -3506,9 +3935,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Creates a new LinearShape and inserts it into the diagram of the CurrentDisplay by executing a Command.
 		/// </summary>
-		/// <param name="createWithAllPoints">If true, the line will be created as a 
-		/// clone of the preview shape. If false, the line will be created until the 
-		/// last point inserted. The point at the mouse cursor will be skipped.</param>
 		private void FinishLine(IDiagramPresenter diagramPresenter, MouseState mouseState, bool ignorePointAtMouse) {
 			Assert(PreviewShape != null);
 			// Create a new shape from the template
@@ -3517,121 +3943,191 @@ namespace Dataweb.NShape.Advanced {
 			// The current EndPoint of the preview (sticking to the mouse cursor) will be discarded
 			foreach (ControlPointId pointId in PreviewShape.GetControlPointIds(ControlPointCapabilities.Resize)) {
 				Point p = PreviewShape.GetControlPointPosition(pointId);
-				// skip ReferencePoint and EndPoint
 				switch (pointId) {
-					case StartPointId:
-					case EndPointId:
-						// Check if there are any occurences left...
-						Assert(false);
-						break;
 					case ControlPointId.Reference:
+						// Skip ReferencePoint as it is not a physically existing vertex (identically to FirstVertex)
 						continue;
 					case ControlPointId.LastVertex:
-						// * If the line *has no* vertex limit, the last point (sticking to the mouse cursor) will 
-						//   always be discarded 
-						// * If the line *has a* vertex limit, the last point will be created
-						// * If the tool was cancelled, the last point will be discarded.
-						// * If the line has not enough vertices to discard one, the last will be created at the 
-						//	  position of the mouse
-						if ((PreviewLinearShape.VertexCount == PreviewLinearShape.MaxVertexCount && !ignorePointAtMouse)
-							|| PreviewLinearShape.VertexCount == PreviewLinearShape.MinVertexCount)
-							newShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
-						else continue;
+						if (ignorePointAtMouse) continue;
+						newShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
 						break;
 					case ControlPointId.FirstVertex:
 						newShape.MoveControlPointTo(ControlPointId.FirstVertex, p.X, p.Y, ResizeModifiers.None);
 						break;
 					default:
-						// treat the last inserted Point as EndPoint
-						if (ignorePointAtMouse && pointId == lastInsertedPointId)
+						// Treat the last inserted Point as EndPoint
+						if ((ignorePointAtMouse && pointId == lastInsertedPointId) || ((ILinearShape)newShape).VertexCount == ((ILinearShape)newShape).MaxVertexCount)
 							newShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
-						else {
-							if (pointId == lastInsertedPointId && PreviewLinearShape.VertexCount < PreviewLinearShape.MaxVertexCount)
-								newShape.MoveControlPointTo(ControlPointId.LastVertex, p.X, p.Y, ResizeModifiers.None);
-							else ((ILinearShape)newShape).InsertVertex(ControlPointId.LastVertex, p.X, p.Y);
-						}
+						else ((ILinearShape)newShape).InsertVertex(ControlPointId.LastVertex, p.X, p.Y);
 						break;
 				}
 			}
 
-			// Create an aggregated command which performs creation of the new shape and 
-			// connecting the new shapes to other shapes in one step
-			AggregatedCommand aggregatedCommand = new AggregatedCommand();
-			aggregatedCommand.Add(new InsertShapeCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, true, false));
+			// Insert the new linear shape
+			ActionDiagramPresenter.InsertShape(newShape);
 
+			// Create an aggregated command which performs connecting the new shape to other shapes in one step
+			AggregatedCommand aggregatedCommand = null;
 			// Create connections
 			foreach (ControlPointId gluePointId in newShape.GetControlPointIds(ControlPointCapabilities.Glue)) {
 				ShapeConnectionInfo sci = PreviewShape.GetConnectionInfo(gluePointId, null);
-				if (!sci.IsEmpty)
+				if (!sci.IsEmpty) {
+					if (aggregatedCommand == null) aggregatedCommand = new AggregatedCommand();
 					aggregatedCommand.Add(new ConnectCommand(newShape, gluePointId, sci.OtherShape, sci.OtherPointId));
-				else {
+				} else {
 					// Create connection for the last vertex
-					Point gluePtPos = PreviewShape.GetControlPointPosition(gluePointId);
-					ShapeAtCursorInfo targetInfo = FindConnectionTarget(ActionDiagramPresenter, PreviewShape, ControlPointId.LastVertex, gluePtPos, false);
+					Point gluePtPos = newShape.GetControlPointPosition(gluePointId);
+					ShapeAtCursorInfo targetInfo = FindConnectionTarget(ActionDiagramPresenter, newShape, ControlPointId.LastVertex, gluePtPos, false, true);
 					if (!targetInfo.IsEmpty &&
 						!targetInfo.IsCursorAtGluePoint &&
-						targetInfo.ControlPointId != ControlPointId.None)
+						targetInfo.ControlPointId != ControlPointId.None) {
+						if (aggregatedCommand == null) aggregatedCommand = new AggregatedCommand();
 						aggregatedCommand.Add(new ConnectCommand(newShape, gluePointId, targetInfo.Shape, targetInfo.ControlPointId));
+					}
 				}
 			}
-
 			// execute command and insert it into the history
-			ActionDiagramPresenter.Project.ExecuteCommand(aggregatedCommand);
-			// select the created ConnectorShape
-			ActionDiagramPresenter.SelectShape(newShape, false);
+			if (aggregatedCommand != null)
+				ActionDiagramPresenter.Project.ExecuteCommand(aggregatedCommand);
 		}
 
 
+		/// <summary>
+		/// Creates a new LinearShape and inserts it into the diagram of the CurrentDisplay by executing a Command.
+		/// </summary>
+		private void FinishExtendLine(IDiagramPresenter diagramPresenter, MouseState mouseState, bool ignorePointAtMouse) {
+			Assert(PreviewShape != null);
+			Assert(modifiedLinearShape != null);
+			Shape modifiedShape = (Shape)modifiedLinearShape;
+			
+			// Copy points from the PreviewShape to the new shape 
+			// Start at the opposite point of the point at mouse cursor and skip all existing points
+			ControlPointId pointId, endPointId;
+			bool firstToLast;
+			if (pointAtCursor == ControlPointId.FirstVertex) {
+				pointId = ControlPointId.LastVertex;
+				endPointId = ignorePointAtMouse ? lastInsertedPointId : (ControlPointId)ControlPointId.FirstVertex;
+				firstToLast = false;
+			} else {
+				pointId = ControlPointId.FirstVertex;
+				endPointId = ignorePointAtMouse ? lastInsertedPointId : (ControlPointId)ControlPointId.LastVertex;
+				firstToLast = true;
+			}
+
+			// Create an aggregated command which performs connecting the new shape to other shapes in one step
+			AggregatedCommand aggregatedCommand = null;
+
+			// Process all point id's
+			do {
+				ControlPointId nextPointId = GetNextControlPointId(PreviewLinearShape, pointId, firstToLast);
+				ControlPointId nextOrigPtId = GetNextControlPointId(modifiedLinearShape, pointId, firstToLast);
+				if (nextPointId != nextOrigPtId && nextPointId != endPointId) {
+					// If the next point id of the preview does not equal the original shape's point id,
+					// we have to create it...
+					Point p = PreviewShape.GetControlPointPosition(nextPointId);
+					ControlPointId beforePointId = (firstToLast) ? (ControlPointId)ControlPointId.LastVertex : pointId;
+					if (aggregatedCommand == null) aggregatedCommand = new AggregatedCommand();
+					aggregatedCommand.Add(new InsertVertexCommand(modifiedShape, beforePointId, p.X, p.Y));
+				}
+				pointId = nextPointId;
+			} while (pointId != endPointId);
+			// Set last point's position
+			ControlPointId lastPtId = firstToLast ? ControlPointId.LastVertex : ControlPointId.FirstVertex;
+			Point currPos = modifiedShape.GetControlPointPosition(lastPtId);
+			Point newPos = PreviewShape.GetControlPointPosition(endPointId);
+			Assert(aggregatedCommand != null);
+			aggregatedCommand.Add(new MoveControlPointCommand(modifiedShape, lastPtId, newPos.X - currPos.X, newPos.Y - currPos.Y, ResizeModifiers.None));
+
+			// Create connection for the last vertex
+			ShapeAtCursorInfo targetInfo = FindConnectionTarget(ActionDiagramPresenter, modifiedShape, lastPtId, newPos, false, true);
+			if (!targetInfo.IsEmpty &&
+				!targetInfo.IsCursorAtGluePoint &&
+				targetInfo.ControlPointId != ControlPointId.None) {
+				if (aggregatedCommand == null) aggregatedCommand = new AggregatedCommand();
+				aggregatedCommand.Add(new ConnectCommand(modifiedShape, lastPtId, targetInfo.Shape, targetInfo.ControlPointId));
+			}
+
+			// Execute command and insert it into the history
+			if (aggregatedCommand != null)
+				ActionDiagramPresenter.Project.ExecuteCommand(aggregatedCommand);
+		}
+
+
+		private ControlPointId GetNextControlPointId(ILinearShape lineShape, ControlPointId currentPointId, bool firstToLast) {
+			if (firstToLast) return lineShape.GetNextVertexId(currentPointId);
+			else return lineShape.GetPreviousVertexId(currentPointId);
+		}
+		
+		
 		/// <summary>
 		/// Set the cursor for the current action
 		/// </summary>
 		private int DetermineCursor(IDiagramPresenter diagramPresenter, Shape shape, ControlPointId pointId) {
 			switch (CurrentAction) {
 				case Action.None:
-				case Action.AddPoint:
-					if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Layout)) {
-						if (shape != null && shape is ILinearShape && pointId != ControlPointId.None)
-							return cursors[ToolCursor.MovePoint];
-						else if (pointId != ControlPointId.None) {
-							if (Template.Shape.HasControlPointCapability(ControlPointId.LastVertex, ControlPointCapabilities.Glue)
-								&& !shape.HasControlPointCapability(pointId, ControlPointCapabilities.Glue)
-								&& shape.HasControlPointCapability(pointId, ControlPointCapabilities.Connect)) {
-								return cursors[ToolCursor.Connect];
-							}
-						} else if (shape != null) {
-							if (shape.HasControlPointCapability(ControlPointId.Reference, ControlPointCapabilities.Connect))
-								return cursors[ToolCursor.Connect];
-						}
-						return cursors[ToolCursor.Pen];
+					if (IsExtendLineFeasible(CurrentAction, shape, pointId)) {
+						if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Layout))
+							return cursors[ToolCursor.ExtendLine];
+						else return cursors[ToolCursor.NotAllowed];
+					} else if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
+						if (shape != null && pointId != ControlPointId.None
+							&& IsConnectingFeasible(CurrentAction, shape, pointId))
+							return cursors[ToolCursor.Connect];
+						else return cursors[ToolCursor.Pen];
 					} else return cursors[ToolCursor.NotAllowed];
 
-				case Action.DrawLine:
-				case Action.MovePoint:
-					throw new NotImplementedException();
-				//if (display.Project.SecurityManager.IsGranted(Permission.Insert)) {
-				//   if (shape != null && pointId > 0 &&
-				//      !shape.HasControlPointCapability(pointId, ControlPointCapabilities.Glue) &&
-				//      shape.HasControlPointCapability(pointId, ControlPointCapabilities.Connect)) {
-				//      currentCursor = connectCursor;
-				//   }
-				//   else if (shape != null && shape.HasControlPointCapability(ControlPointId.Reference, ControlPointCapabilities.Connect)) 
-				//      currentCursor = connectCursor;
-				//   else currentCursor = penCursor;
-				//}
-				//else currentCursor = notAllowedCursor;
-				//break;
+				case Action.CreateLine:
+					if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Insert)) {
+						if (shape != null && pointId != ControlPointId.None
+							&& IsConnectingFeasible(CurrentAction, shape, pointId))
+							return cursors[ToolCursor.Connect];
+						else return cursors[ToolCursor.Pen];
+					} else return cursors[ToolCursor.NotAllowed];
 
-				default: throw new NShapeUnsupportedValueException(action);
+				case Action.ExtendLine:
+					if (diagramPresenter.Project.SecurityManager.IsGranted(Permission.Layout)) {
+						if (IsConnectingFeasible(CurrentAction, shape, pointId))
+							return cursors[ToolCursor.Connect];
+						else return cursors[ToolCursor.ExtendLine];
+					} else return cursors[ToolCursor.NotAllowed];
+
+				default: throw new NShapeUnsupportedValueException(CurrentAction);
 			}
 		}
 
 
-		private enum Action { None, DrawLine, AddPoint, MovePoint }
+		private bool IsExtendLineFeasible(Action action, Shape shape, ControlPointId pointId) {
+			if (action != Action.None && action != Action.ExtendLine) return false;
+			if ((shape as ILinearShape) == null) return false;
+			if (pointId == ControlPointId.None) return false;
+			if (shape.Type != Template.Shape.Type) return false;
+			if (((ILinearShape)shape).VertexCount >= ((ILinearShape)shape).MaxVertexCount) return false;
+			if (!shape.HasControlPointCapability(pointId, ControlPointCapabilities.Glue)) return false;
+			if (shape.IsConnected(pointId, null) != ControlPointId.None) return false;
+			return true;
+		}
+
+
+		private bool IsConnectingFeasible(Action action, Shape shape, ControlPointId pointId) {
+			if (shape != null && pointId != ControlPointId.None
+				&& Template.Shape.HasControlPointCapability(ControlPointId.LastVertex, ControlPointCapabilities.Glue)) {
+				if (shape.HasControlPointCapability(ControlPointId.Reference, ControlPointCapabilities.Connect))
+					return true;
+				else if (!shape.HasControlPointCapability(pointId, ControlPointCapabilities.Glue)
+					&& shape.HasControlPointCapability(pointId, ControlPointCapabilities.Connect))
+					return true;
+			}
+			return false;
+		}
+
+
+		private enum Action { None, ExtendLine, CreateLine }
+
 
 		private enum ToolCursor {
 			Default,
 			NotAllowed,
-			MovePoint,
+			ExtendLine,
 			Pen,
 			Connect,
 			Disconnect
@@ -3642,14 +4138,12 @@ namespace Dataweb.NShape.Advanced {
 
 		// Definition of the tool
 		private static Dictionary<ToolCursor, int> cursors;
-		//
-		private const int StartPointId = 1;
-		private const int EndPointId = 2;
 
 		// Tool's state definition
 		// stores the last inserted Point (and its coordinates), which will become the EndPoint when the CurrentTool is cancelled
+		private ControlPointId pointAtCursor;
 		private ControlPointId lastInsertedPointId;
-		private Action action;
+		private ILinearShape modifiedLinearShape = null;
 
 		#endregion
 	}
@@ -3660,12 +4154,14 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class PlanarShapeCreationTool : TemplateTool {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PlanarShapeCreationTool(Template template)
 			: base(template) {
 			Construct(template);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PlanarShapeCreationTool(Template template, string category)
 			: base(template, category) {
 			Construct(template);
@@ -3716,14 +4212,12 @@ namespace Dataweb.NShape.Advanced {
 							int x = PreviewShape.X;
 							int y = PreviewShape.Y;
 
-							ICommand cmd;
 							Shape newShape = Template.CreateShape();
 							newShape.ZOrder = ActionDiagramPresenter.Project.Repository.ObtainNewTopZOrder(ActionDiagramPresenter.Diagram);
-							cmd = new InsertShapeCommand(ActionDiagramPresenter.Diagram, ActionDiagramPresenter.ActiveLayers, newShape, true, true, x, y);
-							ActionDiagramPresenter.Project.ExecuteCommand(cmd);
+							newShape.MoveTo(x, y);
 
-							newShape = ActionDiagramPresenter.Diagram.Shapes.FindShape(x, y, ControlPointCapabilities.None, 0, null);
-							if (newShape != null) diagramPresenter.SelectShape(newShape, false);
+							ActionDiagramPresenter.InsertShape(newShape);
+
 							EndToolAction();
 							result = true;
 

@@ -153,11 +153,11 @@ namespace Dataweb.NShape {
 		//}
 
 
-		//public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+		//new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 		//   foreach (EntityPropertyDefinition pi in CaptionedShapeBase.GetPropertyDefinitions(version))
 		//      yield return pi;
 		//   yield return new EntityFieldDefinition("PointCount", typeof(int));
-		//   yield return new EntityInnerObjectsDefinition("Vertices", pointTypeName, pointAttrNames, pointAttrTypes);
+		//   yield return new EntityInnerObjectsDefinition(attrNameVertices, pointTypeName, pointAttrNames, pointAttrTypes);
 		//}
 
 		//#endregion
@@ -345,4 +345,5 @@ namespace Dataweb.NShape {
 		//private Point center = Point.Empty;
 
 		//#endregion
+
 }

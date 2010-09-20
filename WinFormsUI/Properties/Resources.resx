@@ -121,8 +121,14 @@
   <data name="ActivateDesign" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\ActivateDesign.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="AddToLayer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AddToLayer.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="AggregateShapeBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\AggregateShapeBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="AssignToLayer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AssignToLayer.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="CopyBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\CopyBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -171,6 +177,9 @@
   </data>
   <data name="RedoBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RedoBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RemoveFromAllLayers" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RemoveFromAllLayers.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="RenameBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\RenameBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

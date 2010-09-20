@@ -48,23 +48,23 @@ namespace Dataweb.NShape.Designer {
 			//ctrl.Cursor = Cursors.WaitCursor;
 			//Application.DoEvents();
 			//try {
-				FillDatabaseNameComboBox();
-				databaseNameComboBox.Text = DatabaseName;
+			FillDatabaseNameComboBox();
+			databaseNameComboBox.Text = DatabaseName;
 
-				switch (mode) {
-					case Mode.CreateSchema:
-						projectNameComboBox.Visible =
-							projectNameLabel.Visible = false;
-						Text = "Select Database";
-						break;
-					case Mode.CreateProject:
-					case Mode.OpenProject:
-						projectNameComboBox.Visible =
-							projectNameLabel.Visible = true; ;
-						Text = "Select Project";
-						break;
-				}
-				FillProjectNameComboBox();
+			switch (mode) {
+				case Mode.CreateSchema:
+					projectNameComboBox.Visible =
+						projectNameLabel.Visible = false;
+					Text = "Select Database";
+					break;
+				case Mode.CreateProject:
+				case Mode.OpenProject:
+					projectNameComboBox.Visible =
+						projectNameLabel.Visible = true; ;
+					Text = "Select Project";
+					break;
+			}
+			FillProjectNameComboBox();
 			//} finally { ctrl.Cursor = Cursors.Default; }
 		}
 
@@ -82,10 +82,10 @@ namespace Dataweb.NShape.Designer {
 
 
 		public string ProviderName {
-			get { return providerNameComboBox.Text;}
+			get { return providerNameComboBox.Text; }
 		}
-		
-		
+
+
 		public string ServerName {
 			get { return serverNameTextBox.Text; }
 		}
@@ -94,13 +94,13 @@ namespace Dataweb.NShape.Designer {
 		public string DatabaseName {
 			get { return databaseNameComboBox.Text; }
 		}
-		
-		
+
+
 		public string ProjectName {
 			get { return projectNameComboBox.Text; }
 		}
 
-		
+
 		private bool CreateDatabase(string providerName, string serverName, string databaseName) {
 			bool result = false;
 			if (DatabaseExists(providerName, serverName, databaseName))
@@ -155,10 +155,10 @@ namespace Dataweb.NShape.Designer {
 			if (!string.IsNullOrEmpty(providerName)
 				&& !string.IsNullOrEmpty(serverName)) {
 				string connectionString = string.Format(
-					"Data Source={0};Initial Catalog={1};Integrated Security=True;MultipleActiveResultSets=True;Pooling=False", 
+					"Data Source={0};Initial Catalog={1};Integrated Security=True;MultipleActiveResultSets=True;Pooling=False",
 					serverName, string.IsNullOrEmpty(databaseName) ? "master" : databaseName);
 				connection = new SqlConnection(connectionString);
-			} 
+			}
 			return connection;
 		}
 
@@ -235,7 +235,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void FillProjectNameComboBox() {
-			if (projectNameComboBox.Visible 
+			if (projectNameComboBox.Visible
 				&& !string.IsNullOrEmpty(ProviderName)
 				&& !string.IsNullOrEmpty(ServerName)
 				&& !string.IsNullOrEmpty(DatabaseName)) {
@@ -294,6 +294,7 @@ namespace Dataweb.NShape.Designer {
 			//} finally { ctrl.Cursor = Cursors.Default; }
 		}
 
+
 		private void serverNameTextBox_TextChanged(object sender, EventArgs e) {
 			ClearDatabaseNames();
 			ClearProjectNames();
@@ -303,8 +304,8 @@ namespace Dataweb.NShape.Designer {
 		private void providerNameComboBox_SelectedIndexChanged(object sender, EventArgs e) {
 			ClearProjectNames();
 		}
-		
-		
+
+
 		private void projectNameComboBox_DropDown(object sender, EventArgs e) {
 			if (projectNameComboBox.Items.Count == 0)
 				FillProjectNameComboBox();
@@ -321,16 +322,20 @@ namespace Dataweb.NShape.Designer {
 				FillDatabaseNameComboBox();
 		}
 
-		
+
 		private void createDbButton_Click(object sender, EventArgs e) {
-			if (CreateDatabase(ProviderName, ServerName, DatabaseName))
-				MessageBox.Show(this, "Database successfully created.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			if (mode == Mode.CreateSchema) {
+				if (CreateDatabase(ProviderName, ServerName, DatabaseName))
+					MessageBox.Show(this, "Database successfully created.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			} else MessageBox.Show(this, useDBGeneratorMsg, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 
 		private void dropDbButton_Click(object sender, EventArgs e) {
-			if (DropDatabase(ProviderName, ServerName, DatabaseName))
-				MessageBox.Show(this, "Database successfully dropped.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			if (mode == Mode.CreateSchema) {
+				if (DropDatabase(ProviderName, ServerName, DatabaseName))
+					MessageBox.Show(this, "Database successfully dropped.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+			} else MessageBox.Show(this, useDBGeneratorMsg, "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 		}
 
 
@@ -339,7 +344,7 @@ namespace Dataweb.NShape.Designer {
 				DialogResult = DialogResult.OK;
 			else {
 				DialogResult result = MessageBox.Show(
-					string.Format("Database '{0}' does not exist. Do you ant to create the database?", DatabaseName), 
+					string.Format("Database '{0}' does not exist. Do you ant to create the database?", DatabaseName),
 					"Create Database", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
 				switch (result) {
 					case DialogResult.Cancel:
@@ -360,6 +365,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private Mode mode;
+		private const string useDBGeneratorMsg = "Please use 'Tools / AdoNetStore.NET Database Generator' to drop or create a new database for the project.";
 	}
 
 }

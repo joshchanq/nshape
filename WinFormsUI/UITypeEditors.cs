@@ -30,8 +30,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	#region TypeConverters
 
-	public class TextConverter : TypeConverter {
+	/// <summary>
+	/// Converts all types of System.String and collections of System.String to System.String and collections of System.String.
+	/// </summary>
+	public class TextTypeConverter : TypeConverter {
 
+		/// <override></override>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string))
 				return true;
@@ -49,6 +53,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
 			if (destinationType == typeof(string)) {
 				if (value != null) {
@@ -74,6 +79,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) {
 			if (sourceType == typeof(string))
 				return true;
@@ -91,6 +97,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
 			if (value == null) return null;
 			List<string> lines = new List<string>();
@@ -109,33 +116,15 @@ namespace Dataweb.NShape.WinFormsUI {
 			else return lines;
 		}
 
-
-		//public override object CreateInstance(ITypeDescriptorContext context, System.Collections.IDictionary propertyValues) {
-		//   if (context == null) throw new ArgumentNullException("context");
-		//   if (propertyValues == null) throw new ArgumentNullException("propertyValues");
-		//   return null;
-		//}
-
-
-		//public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
-		//   return true;
-		//}
-
-
-		//public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
-		//   return base.GetProperties(context, value, attributes);
-		//}
-
-
-		//public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
-		//   return true;
-		//}
-	
 	}
 
 
-	public class NamedImageConverter : TypeConverter {
+	/// <summary>
+	/// Converts a Dataweb.NShape.Advanced.NamedImage to a System.Drawing.Image type or a System.String.
+	/// </summary>
+	public class NamedImageTypeConverter : TypeConverter {
 
+		/// <override></override>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)) return true;
 			if (destinationType == typeof(Image)) return true;
@@ -145,6 +134,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
 			if (value != null && value is NamedImage) {
 				NamedImage val = (NamedImage)value;
@@ -163,14 +153,19 @@ namespace Dataweb.NShape.WinFormsUI {
 	}
 
 
-	public class StyleConverter : TypeConverter {
+	/// <summary>
+	/// Converts a Dataweb.NShape.IStyle type to a System.String type.
+	/// </summary>
+	public class StyleTypeConverter : TypeConverter {
 
+		/// <override></override>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)) return true;
 			return base.CanConvertTo(context, destinationType);
 		}
 
 
+		/// <override></override>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
 			if (destinationType == typeof(string) && value is IStyle) return ((IStyle)value).Title;
 			return base.ConvertTo(context, culture, value, destinationType);
@@ -179,15 +174,19 @@ namespace Dataweb.NShape.WinFormsUI {
 	}
 
 
-	public class FontFamilyConverter : TypeConverter {
+	/// <summary>
+	/// Converts a System.Drawing.FontFamily type to a System.String type.
+	/// </summary>
+	public class FontFamilyTypeConverter : TypeConverter {
 
+		/// <override></override>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
-			if (destinationType == typeof(string))
-				return true;
+			if (destinationType == typeof(string)) return true;
 			return base.CanConvertTo(context, destinationType);
 		}
 
 
+		/// <override></override>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
 			if (destinationType == typeof(string) && value != null)
 				return ((FontFamily)value).Name;
@@ -197,8 +196,12 @@ namespace Dataweb.NShape.WinFormsUI {
 	}
 
 
-	public class TextPaddingConverter : TypeConverter {
+	/// <summary>
+	/// Converts a Dataweb.NShape.TextPadding type to a System.Windows.Forms.Padding or a System.String type and vice versa.
+	/// </summary>
+	public class TextPaddingTypeConverter : TypeConverter {
 
+		/// <override></override>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) {
 			return ((sourceType == typeof(string))
 					|| (sourceType == typeof(Padding))
@@ -206,6 +209,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
 			if (destinationType == typeof(string)
 				|| destinationType == typeof(Padding)
@@ -215,6 +219,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
 			TextPadding result = TextPadding.Empty;
 			if (value is string) {
@@ -231,12 +236,15 @@ namespace Dataweb.NShape.WinFormsUI {
 				TypeConverter converter = TypeDescriptor.GetConverter(typeof(int));
 				for (int i = 0; i < numArray.Length; i++)
 					numArray[i] = (int)converter.ConvertFromString(context, culture, strArray[i]);
-				if (numArray.Length != 4) throw new ArgumentException();
 
-				result.Left = numArray[0];
-				result.Top = numArray[1];
-				result.Right = numArray[2];
-				result.Bottom = numArray[3];
+				if (numArray.Length == 1)
+					result.All = numArray[0];
+				else if (numArray.Length == 4) {
+					result.Left = numArray[0];
+					result.Top = numArray[1];
+					result.Right = numArray[2];
+					result.Bottom = numArray[3];
+				} else throw new ArgumentException();
 			} else if (value is Padding) {
 				Padding padding = (Padding)value;
 				result.Left = padding.Left;
@@ -248,6 +256,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
 			if (destinationType == null) throw new ArgumentNullException("destinationType");
 			if (value is TextPadding) {
@@ -292,6 +301,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override object CreateInstance(ITypeDescriptorContext context, System.Collections.IDictionary propertyValues) {
 			if (context == null) throw new ArgumentNullException("context");
 			if (propertyValues == null) throw new ArgumentNullException("propertyValues");
@@ -310,11 +320,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool GetCreateInstanceSupported(ITypeDescriptorContext context) {
 			return true;
 		}
 
 
+		/// <override></override>
 		public override PropertyDescriptorCollection GetProperties(ITypeDescriptorContext context, object value, Attribute[] attributes) {
 			return TypeDescriptor.GetProperties(typeof(TextPadding), attributes).Sort(
 				new string[] { "All", "Left", "Top", "Right", "Bottom" }
@@ -322,6 +334,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool GetPropertiesSupported(ITypeDescriptorContext context) {
 			return true;
 		}
@@ -333,12 +346,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	#region UITypeEditors
 
-
 	/// <summary>
 	/// NShape UI type editor for choosing a character style's font from a drop down list.
 	/// </summary>
-	public class FontFamilyEditor : UITypeEditor {
-		
+	public class FontFamilyUITypeEditor : UITypeEditor {
+
+		/// <override></override>
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
 				IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
@@ -365,6 +378,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) {
 			if (context != null && context.Instance != null)
 				return UITypeEditorEditStyle.DropDown;
@@ -372,11 +386,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool GetPaintValueSupported(ITypeDescriptorContext context) {
 			return false;
 		}
 
 
+		/// <override></override>
 		public override void PaintValue(PaintValueEventArgs e) {
 			if (e != null && e.Value != null) {
 				// store original values;
@@ -413,6 +429,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool IsDropDownResizable {
 			get { return true; }
 		}
@@ -421,10 +438,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 	/// <summary>
-	/// NShape UI type editor for entering text.
+	/// NShape UI type editor for editing properties of type System.String or a System.String collection type.
 	/// </summary>
-	public class TextEditor : UITypeEditor {
+	public class TextUITypeEditor : UITypeEditor {
 
+		/// <override></override>
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
 				if (context.PropertyDescriptor.PropertyType == typeof(string)) {
@@ -454,6 +472,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) {
 			if (context != null && context.Instance != null)
 				return UITypeEditorEditStyle.Modal;
@@ -466,8 +485,9 @@ namespace Dataweb.NShape.WinFormsUI {
 	/// <summary>
 	/// NShape UI type editor for choosing an image and assinging a name.
 	/// </summary>
-	public class NamedImageEditor : UITypeEditor {
+	public class NamedImageUITypeEditor : UITypeEditor {
 
+		/// <override></override>
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (context != null && context.Instance != null && provider != null) {
 				IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
@@ -490,6 +510,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) {
 			if (context != null && context.Instance != null)
 				return UITypeEditorEditStyle.Modal;
@@ -497,11 +518,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool GetPaintValueSupported(ITypeDescriptorContext context) {
 			return true;
 		}
 
 
+		/// <override></override>
 		public override void PaintValue(PaintValueEventArgs e) {
 			base.PaintValue(e);
 			if (e != null && e.Value is NamedImage) {
@@ -531,19 +554,48 @@ namespace Dataweb.NShape.WinFormsUI {
 	/// <summary>
 	/// NShape UI type editor for choosing a style from a drop down list.
 	/// </summary>
-	public class StyleEditor : UITypeEditor {
+	public class StyleUITypeEditor : UITypeEditor {
 
-		public StyleEditor() {
-			if (designBuffer == null) throw new NShapeInternalException("Design is not set. Set the static property StyleEditor.Design to a reference of the current design before creating the UI type editor.");
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.Project" /> providing the <see cref="T:Dataweb.NShape.Design" /> for the <see cref="T:Dataweb.NShape.WinFormsUI.StyleUITypeEditor" />.
+		/// </summary>
+		public static Project Project {
+			set { 
+				projectBuffer = value;
+				Design = projectBuffer.Design;
+			}
+		}
+
+
+		/// <summary>
+		/// The design providing styles for the <see cref="T:Dataweb.NShape.WinFormsUI.StyleUITypeEditor" />.
+		/// </summary>
+		public static Design Design {
+			set { designBuffer = value; }
+		}
+
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.StyleUITypeEditor" />.
+		/// </summary>
+		public StyleUITypeEditor() {
+			if (designBuffer == null) {
+				string msg = string.Format("{0} is not set. Set the static property {1}.Design to a reference of the current design before creating the UI type editor.", typeof(Design).Name, GetType().Name);
+				throw new NShapeInternalException(msg);
+			}
+			this.project = projectBuffer;
 			this.design = designBuffer;
 		}
 
 
+		/// <override></override>
 		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
 			if (provider != null) {
+#if DEBUG
 				if (!(context.PropertyDescriptor is PropertyDescriptorDg))
 					System.Diagnostics.Debug.Print("### The given PropertyDescriptor for {0} is not of type {1}.", value, typeof(PropertyDescriptorDg).Name);
 				else System.Diagnostics.Debug.Print("### PropertyDescriptor is of type {1}.", value, typeof(PropertyDescriptorDg).Name);
+#endif
 
 				IWindowsFormsEditorService editorService = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
 				if (editorService != null) {
@@ -552,9 +604,9 @@ namespace Dataweb.NShape.WinFormsUI {
 						design = designBuffer;
 
 					// Examine edited instances and determine wether the list item "Default Style" should be displayed.
-					bool showItemDefaultStyle = false;
+					bool showSpecialItems = false;
 					if (context.Instance is Shape)
-						showItemDefaultStyle = ((Shape)context.Instance).Template != null;
+						showSpecialItems = ((Shape)context.Instance).Template != null;
 					// Does not work - SetValue will never be called for a null-value
 					//else if (context.Instance is object[]) {
 					//   object[] objArr = (object[])context.Instance;
@@ -584,19 +636,21 @@ namespace Dataweb.NShape.WinFormsUI {
 								styleType = typeof(LineStyle);
 							else if (context.PropertyDescriptor.PropertyType == typeof(IParagraphStyle))
 								styleType = typeof(ParagraphStyle);
-							else if (context.PropertyDescriptor.PropertyType == typeof(IShapeStyle))
-								styleType = typeof(ShapeStyle);
-							else
-								throw new NShapeException(string.Format("Unsupported Style Type {0}.", context.PropertyDescriptor.PropertyType));
+							else throw new NShapeUnsupportedValueException(context.PropertyDescriptor.PropertyType);
 
-							styleListBox = new StyleListBox(editorService, design, styleType, showItemDefaultStyle);
-						} else
-							styleListBox = new StyleListBox(editorService, design, value as Style, showItemDefaultStyle);
+							if (project != null)
+								styleListBox = new StyleListBox(editorService, project, styleType, showSpecialItems, showSpecialItems);
+							else styleListBox = new StyleListBox(editorService, design, styleType, showSpecialItems, showSpecialItems);
+						} else {
+							if (project != null)
+								styleListBox = new StyleListBox(editorService, project, value as Style, showSpecialItems, showSpecialItems);
+							else styleListBox = new StyleListBox(editorService, design, value as Style, showSpecialItems, showSpecialItems);
+						}
 
 						editorService.DropDownControl(styleListBox);
 						if (styleListBox.SelectedItem is IStyle)
 							value = styleListBox.SelectedItem;
-						 else value = null;
+						else value = null;
 					} finally {
 						if (styleListBox != null) styleListBox.Dispose();
 						styleListBox = null;
@@ -607,6 +661,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) {
 			if (context != null && context.Instance != null)
 				return UITypeEditorEditStyle.DropDown;
@@ -614,11 +669,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool GetPaintValueSupported(ITypeDescriptorContext context) {
 			return true;
 		}
 
 
+		/// <override></override>
 		public override void PaintValue(PaintValueEventArgs e) {
 			//base.PaintValue(e);
 			if (e != null && e.Value != null) {
@@ -650,9 +707,6 @@ namespace Dataweb.NShape.WinFormsUI {
 					DrawStyleItem(e.Graphics, previewRect, (ILineStyle)e.Value);
 				else if (e.Value is IParagraphStyle)
 					DrawStyleItem(e.Graphics, previewRect, (IParagraphStyle)e.Value);
-				else if (e.Value is IShapeStyle) {
-					// nothing to do				
-				}
 
 				// restore original values
 				e.Graphics.Transform = origTransform;
@@ -664,13 +718,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public override bool IsDropDownResizable {
 			get { return true; }
-		}
-
-
-		public static Design Design {
-			set { designBuffer = value; }
 		}
 
 
@@ -771,7 +821,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		static StyleEditor() {
+		static StyleUITypeEditor() {
 			previewText = "This is the first line of the sample text."
 				+ Environment.NewLine + "This is line 2 of the text."
 				+ Environment.NewLine + "Line 3 of the text.";
@@ -780,8 +830,10 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region Fields
 
+		private static Project projectBuffer;
 		private static Design designBuffer;
 		private static readonly string previewText;
+		private Project project;
 		private Design design;
 		private StringFormat formatter = new StringFormat(StringFormatFlags.NoWrap);
 

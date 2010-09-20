@@ -49,38 +49,86 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Constructs a shape type.
 		/// </summary>
-		public ShapeType(string name, string libraryName, ResourceString categoryTitle,
-			CreateShapeDelegate createShapeDelegate, GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate)
-			: this(name, libraryName, categoryTitle, createShapeDelegate, getPropertyDefinitionsDelegate, null, true) {
+		public ShapeType(string name, string libraryName,
+			ResourceString categoryTitle,
+			CreateShapeDelegate createShapeDelegate,
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate)
+			: this(name, libraryName, categoryTitle, string.Empty, createShapeDelegate, getPropertyDefinitionsDelegate, null, true) {
 		}
 
 
 		/// <summary>
 		/// Constructs a shape type.
 		/// </summary>
-		public ShapeType(string name, string libraryName, ResourceString categoryTitle,
-			CreateShapeDelegate createShapeDelegate, GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
-			Bitmap freehandReferenceImage)
-			: this(name, libraryName, categoryTitle, createShapeDelegate, getPropertyDefinitionsDelegate, freehandReferenceImage, true) {
+		public ShapeType(string name, string libraryName,
+			ResourceString categoryTitle,
+			ResourceString description,
+			CreateShapeDelegate createShapeDelegate,
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate)
+			: this(name, libraryName, categoryTitle, description, createShapeDelegate, getPropertyDefinitionsDelegate, null, true) {
 		}
 
 
 		/// <summary>
 		/// Constructs a shape type.
 		/// </summary>
-		public ShapeType(string name, string libraryName, ResourceString categoryTitle,
-			CreateShapeDelegate createShapeDelegate, GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
+		public ShapeType(string name, string libraryName,
+			ResourceString categoryTitle,
+			CreateShapeDelegate createShapeDelegate,
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
 			bool supportsTemplates)
-			: this(name, libraryName, categoryTitle, createShapeDelegate, getPropertyDefinitionsDelegate, null, supportsTemplates) {
+			: this(name, libraryName, categoryTitle, string.Empty, createShapeDelegate, getPropertyDefinitionsDelegate, null, supportsTemplates) {
 		}
 
 
 		/// <summary>
 		/// Constructs a shape type.
 		/// </summary>
-		public ShapeType(string name, string libraryName, ResourceString categoryTitle,
-			CreateShapeDelegate createShapeDelegate, GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
-			Bitmap freehandReferenceImage, bool supportsTemplates) {
+		public ShapeType(string name, string libraryName, 
+			ResourceString categoryTitle,
+			CreateShapeDelegate createShapeDelegate, 
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
+			Bitmap freehandReferenceImage)
+			: this(name, libraryName, categoryTitle, string.Empty, createShapeDelegate, getPropertyDefinitionsDelegate, freehandReferenceImage, true) {
+		}
+
+
+		/// <summary>
+		/// Constructs a shape type.
+		/// </summary>
+		public ShapeType(string name, string libraryName,
+			ResourceString categoryTitle,
+			ResourceString description,
+			CreateShapeDelegate createShapeDelegate,
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
+			Bitmap freehandReferenceImage)
+			: this(name, libraryName, categoryTitle, description, createShapeDelegate, getPropertyDefinitionsDelegate, freehandReferenceImage, true) {
+		}
+
+
+		/// <summary>
+		/// Constructs a shape type.
+		/// </summary>
+		public ShapeType(string name, string libraryName,
+			ResourceString categoryTitle,
+			CreateShapeDelegate createShapeDelegate,
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
+			Bitmap freehandReferenceImage,
+			bool supportsTemplates)
+			: this(name, libraryName, categoryTitle, string.Empty, createShapeDelegate, getPropertyDefinitionsDelegate, freehandReferenceImage, supportsTemplates) {
+		}
+
+
+		/// <summary>
+		/// Constructs a shape type.
+		/// </summary>
+		public ShapeType(string name, string libraryName,
+			ResourceString categoryTitle,
+			ResourceString description,
+			CreateShapeDelegate createShapeDelegate,
+			GetPropertyDefinitionsDelegate getPropertyDefinitionsDelegate,
+			Bitmap freehandReferenceImage,
+			bool supportsTemplates) {
 			// Sanity check
 			if (name == null) throw new ArgumentNullException("Shape type name");
 			if (!Project.IsValidName(name))
@@ -93,7 +141,8 @@ namespace Dataweb.NShape.Advanced {
 			//
 			this.name = name;
 			this.libraryName = libraryName;
-			this.categoryTitle = categoryTitle;
+			this.categoryTitle = categoryTitle ?? string.Empty;
+			this.description = description ?? string.Empty;
 			this.createShapeDelegate = createShapeDelegate;
 			this.getPropertyDefinitionsDelegate = getPropertyDefinitionsDelegate;
 			this.freehandReferenceImage = freehandReferenceImage;
@@ -134,7 +183,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Specifies the culture depending description of the model type.
+		/// Specifies the culture depending description of the shape type.
 		/// </summary>
 		public string Description {
 			get { return description.Value; }
@@ -196,11 +245,11 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Retrieves the property definitions of the shape type.
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.ShapeType" />.
 		/// </summary>
-		/// <param name="version">Repository version for which the property definitions 
-		/// are to be fetched.</param>
-		/// <returns></returns>
+		/// <param name="version">
+		/// Repository version for which the property definitions are to be fetched.
+		/// </param>
 		public IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			return getPropertyDefinitionsDelegate(version);
 		}
@@ -209,7 +258,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts the value of this instance to a string.
 		/// </summary>
-		/// <returns></returns>
 		public override string ToString() {
 			return FullName;
 		}
@@ -263,6 +311,7 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public interface IReadOnlyShapeTypeCollection : IReadOnlyCollection<ShapeType> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ShapeType this[string shapeTypeName] { get; }
 
 	}

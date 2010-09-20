@@ -24,24 +24,9 @@ namespace Dataweb.NShape.Advanced {
 	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class RectangleBase : CaptionedShapeBase {
 
-		protected internal override void InitializeToDefault(IStyleSet styleSet) {
-			base.InitializeToDefault(styleSet);
-			size.Width = 60;
-			size.Height = 40;
-		}
-
-
-		public override void CopyFrom(Shape source) {
-			base.CopyFrom(source);
-			if (source is RectangleBase) {
-				size.Width = ((RectangleBase)source).Width;
-				size.Height = ((RectangleBase)source).Height;
-			}
-		}
-
-
 		#region Properties
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Layout")]
 		[Description("The horizontal size of the Shape.")]
 		[PropertyMappingId(PropertyIdWidth)]
@@ -67,6 +52,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Layout")]
 		[Description("The vertical size of the Shape.")]
 		[PropertyMappingId(PropertyIdHeight)]
@@ -92,6 +78,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		[Browsable(false)]
 		protected internal override int ControlPointCount {
 			get { return 9; }
@@ -100,6 +87,17 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <override></override>
+		public override void CopyFrom(Shape source) {
+			base.CopyFrom(source);
+			if (source is RectangleBase) {
+				size.Width = ((RectangleBase)source).Width;
+				size.Height = ((RectangleBase)source).Height;
+			}
+		}
+
+
+		/// <override></override>
 		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
 			// The RelativePosition of a RectangleBased shape is:
 			// A = Tenths of percent of Width
@@ -112,6 +110,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
 			// The RelativePosition of a RectangleBased shape is:
 			// A = Tenths of percent of Width
@@ -128,6 +127,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -152,6 +152,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			// Set result to a default return value
 			Point result = Point.Empty;
@@ -222,6 +223,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Fit(int x, int y, int width, int height) {
 			float scale = Geometry.CalcScaleFactor(Width, Height, width, height);
 			int w = (int)Math.Floor(Width * scale);
@@ -232,6 +234,16 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
+		public override void Draw(Graphics graphics) {
+			if (graphics == null) throw new ArgumentNullException("graphics");
+			DrawPath(graphics, LineStyle, FillStyle);
+			DrawCaption(graphics);
+			base.Draw(graphics);
+		}
+
+
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			// Tight and loose bounding rectangles are equal
 			Rectangle result = Geometry.InvalidRectangle;
@@ -273,35 +285,41 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public override void Draw(Graphics graphics) {
-			if (graphics == null) throw new ArgumentNullException("graphics");
-			DrawPath(graphics, LineStyle, FillStyle);
-			DrawCaption(graphics);
-			base.Draw(graphics);
-		}
-
-
+		/// <override></override>
 		protected internal RectangleBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal RectangleBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 
 
+		/// <override></override>
+		protected internal override void InitializeToDefault(IStyleSet styleSet) {
+			base.InitializeToDefault(styleSet);
+			size.Width = 60;
+			size.Height = 40;
+		}
+
+
+		/// <override></override>
 		protected override int DivFactorX { get { return 2; } }
 
 
+		/// <override></override>
 		protected override int DivFactorY { get { return 2; } }
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
 			return Geometry.RectangleContainsPoint(X - (Width / 2), Y - (Height / 2), Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), x, y, true);
 		}
-		
-		
+
+
+		/// <override></override>
 		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
 			if (Angle % 900 == 0) {
 				Rectangle r = GetBoundingRectangle(true);
@@ -348,6 +366,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = true;
 			int dx = 0, dy = 0;
@@ -397,6 +416,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -431,6 +451,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			captionBounds = Rectangle.Empty;
@@ -441,9 +462,28 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
+		protected override void ProcessExecModelPropertyChange(IModelMapping propertyMapping) {
+			switch (propertyMapping.ShapePropertyId) {
+				case PropertyIdWidth:
+					Width = propertyMapping.GetInteger();
+					break;
+				case PropertyIdHeight :
+					Height = propertyMapping.GetInteger();
+					break;
+				default:
+					base.ProcessExecModelPropertyChange(propertyMapping);
+					break;
+			}
+		}
+
+
 		#region IEntity Members
 
-		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.RectangleBase" />.
+		/// </summary>
+		new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition pi in CaptionedShapeBase.GetPropertyDefinitions(version))
 				yield return pi;
 			yield return new EntityFieldDefinition("Width", typeof(int));
@@ -451,6 +491,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			base.LoadFieldsCore(reader, version);
 			Width = reader.ReadInt32();
@@ -458,6 +499,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
 			base.SaveFieldsCore(writer, version);
 			writer.WriteInt32(Width);
@@ -469,7 +511,9 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdWidth = 7;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected const int PropertyIdHeight = 8;
 
 		// ControlPoint Id Constants
@@ -490,11 +534,14 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public abstract class EllipseBase : RectangleBase {
 
+		/// <override></override>
 		protected internal override int ControlPointCount { get { return 13; } }
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -513,6 +560,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectEllipseLine(X, Y, Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), startX, startY, X, Y, false));
 			if (!Geometry.IsValid(result)) return Center;
@@ -520,16 +568,19 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal EllipseBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal EllipseBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 
 
+		/// <override></override>
 		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
 			Rectangle rectangle = Rectangle.Empty;
 			rectangle.Offset(x, y);
@@ -544,12 +595,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
 			if (!Geometry.IsValid(x, y)) return false;
 			return Geometry.EllipseContainsPoint(X, Y, Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), x, y);
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			if (tight) {
 				Rectangle result = Rectangle.Empty;
@@ -604,6 +657,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			double angle = Geometry.DegreesToRadians(45);
 			int dx = (int)Math.Round((Width / 2f) - ((Width / 2f) * Math.Cos(angle)));
@@ -655,6 +709,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			captionBounds = Rectangle.Empty;
@@ -677,8 +732,10 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public abstract class DiamondBase : RectangleBase {
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Point.Empty;
 			// Calculate current (unrotated) position of the shape's points
@@ -707,6 +764,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -725,21 +783,25 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal override int ControlPointCount {
 			get { return 13; }
 		}
 
 
+		/// <override></override>
 		protected internal DiamondBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal DiamondBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			if (tight) {
 				Rectangle bounds = Rectangle.Empty;
@@ -755,6 +817,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
 			Rectangle rectangle = Rectangle.Empty;
 			rectangle.X = x;
@@ -767,12 +830,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
 			CalcTransformedShapePoints();
-			return Geometry.QuadrangleContainsPoint(x, y, pointBuffer[0], pointBuffer[1], pointBuffer[2], pointBuffer[3]);
+			return Geometry.QuadrangleContainsPoint(pointBuffer[0], pointBuffer[1], pointBuffer[2], pointBuffer[3], x, y);
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			float insetX = Width / 8f;
@@ -785,6 +850,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -842,6 +908,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -890,6 +957,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Point[] pointBuffer = new Point[4];
 
 		// ControlPoint Id Constants
@@ -902,8 +970,10 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public abstract class IsoscelesTriangleBase : RectangleBase {
 
+		/// <override></override>
 		protected internal override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 40;
@@ -911,11 +981,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal override int ControlPointCount {
 			get { return 5; }
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case ControlPointId.Reference:
@@ -935,6 +1007,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Rectangle boundingRect = GetBoundingRectangle(true);
 			int x = boundingRect.X + (int)Math.Round(boundingRect.Width / 2f);
@@ -947,6 +1020,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Fit(int x, int y, int width, int height) {
 			float scale = Geometry.CalcScaleFactor(Width, Height, width, height);
 			this.Width = (int)Math.Floor(Width * scale);
@@ -955,22 +1029,37 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected internal IsoscelesTriangleBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal IsoscelesTriangleBase(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
 			CalculateTranslatedShapePoints();
-			return Geometry.TriangleContainsPoint(x, y, shapePoints[0], shapePoints[1], shapePoints[2]);
+			return Geometry.TriangleContainsPoint(shapePoints[0], shapePoints[1], shapePoints[2], x, y);
 		}
 
 
+		/// <override></override>
+		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
+			Rectangle r = Rectangle.Empty;
+			r.Offset(x, y);
+			r.Width=width;
+			r.Height = height;
+			CalculateTranslatedShapePoints();
+			return Geometry.PolygonIntersectsWithRectangle(shapePoints, r);
+		}
+
+
+		/// <override></override>
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = true;
 
@@ -1010,6 +1099,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height * centerPosFactorY);
@@ -1033,6 +1123,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			// Tight and loose fitting bounding rectangles are equal
 			Rectangle bounds = Geometry.InvalidRectangle;
@@ -1089,6 +1180,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void CalculateTranslatedShapePoints() {
 			CalculateShapePoints();
 			Matrix.Reset();
@@ -1098,6 +1190,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				CalculateShapePoints();
@@ -1111,18 +1204,23 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		protected override int DivFactorY { get { return 3; } }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual float CenterPosFactorX { get { return centerPosFactorX; } }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected virtual float CenterPosFactorY { get { return centerPosFactorY; } }
 
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Point[] shapePoints = new Point[3];
+		
 		private const float centerPosFactorX = 0.5f;
 		private const float centerPosFactorY = 0.66666666f;
 

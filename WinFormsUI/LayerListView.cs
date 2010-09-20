@@ -24,17 +24,33 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 	
+	/// <summary>
+	/// ListView component implementing the ILayerView interface.
+	/// </summary>
 	public partial class LayerListView : ListView, ILayerView {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.LayerListView" />.
+		/// </summary>
 		public LayerListView() {
 			DoubleBuffered = true;
 			InitializeComponent();
-			HeaderStyle = ColumnHeaderStyle.None;
+
+			enableRenameLayer = false;
 
 			selectedBrush = new SolidBrush(Color.FromArgb(128, Color.Gainsboro));
 			backgroundBrush = new SolidBrush(BackColor);
 			textBrush = new SolidBrush(ForeColor);
-			labelEditAllowed = LabelEdit;
+
+			// Fill image lists
+			if (visibilityImageList.Images.Count == 0) {
+				visibilityImageList.Images.Add(Properties.Resources.Invisible);
+				visibilityImageList.Images.Add(Properties.Resources.Visible);
+			}
+			if (stateImageList.Images.Count == 0) {
+				stateImageList.Images.Add(Properties.Resources.Disabled);
+				stateImageList.Images.Add(Properties.Resources.Enabled);
+			}
 
 			CreateColumns();
 		}
@@ -44,18 +60,39 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region Events
 
+		/// <summary>
+		/// Raised when a layer was selected.
+		/// </summary>
 		public event EventHandler<LayersEventArgs> SelectedLayerChanged;
 
+		/// <summary>
+		/// Raised when a layer was renamed.
+		/// </summary>
 		public event EventHandler<LayerRenamedEventArgs> LayerRenamed;
 
+		/// <summary>
+		/// Raised when the upper zoom treshold was changed.
+		/// </summary>
 		public event EventHandler<LayerZoomThresholdChangedEventArgs> LayerUpperZoomThresholdChanged;
 
+		/// <summary>
+		/// Raised when the lower zoom treshold was changed.
+		/// </summary>
 		public event EventHandler<LayerZoomThresholdChangedEventArgs> LayerLowerZoomThresholdChanged;
 
+		/// <summary>
+		/// Raised when a mouse button was pressed inside the control's boundaries.
+		/// </summary>
 		public event EventHandler<LayerMouseEventArgs> LayerViewMouseDown;
 
+		/// <summary>
+		/// Raised when the mouse was moved over the control.
+		/// </summary>
 		public event EventHandler<LayerMouseEventArgs> LayerViewMouseMove;
 
+		/// <summary>
+		/// Raised when a mouse button was released inside the control's boundaries.
+		/// </summary>
 		public event EventHandler<LayerMouseEventArgs> LayerViewMouseUp;
 
 		#endregion
@@ -76,8 +113,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public void AddLayer(Layer layer, bool isActive, bool isVisible) {
 			if (layer == null) throw new ArgumentNullException("layer");
+			if (FindItem(layer) != null) return;
+
 			ListViewItem item = new ListViewItem(layer.Name);
 			ListViewItem.ListViewSubItem subItem = null;
 			for (int i = 0; i < Columns.Count; ++i) {
@@ -101,6 +141,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public void RefreshLayer(Layer layer, bool isActive, bool isVisible) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			oldName = newName = string.Empty;
@@ -113,6 +154,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public void RemoveLayer(Layer layer) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			ListViewItem item = FindItem(layer);
@@ -123,13 +165,18 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public void BeginEditLayerName(Layer layer) {
-			if (layer == null) throw new ArgumentNullException("layer");
-			ListViewItem item = FindItem(layer);
-			if (item != null) item.BeginEdit();
+			if (LabelEdit) {
+				enableRenameLayer = true;
+				if (layer == null) throw new ArgumentNullException("layer");
+				ListViewItem item = FindItem(layer);
+				if (item != null && LabelEdit) item.BeginEdit();
+			}
 		}
 
 
+		/// <override></override>
 		public void BeginEditLayerMinZoomBound(Layer layer) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			ListViewItem item = FindItem(layer);
@@ -137,6 +184,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public void BeginEditLayerMaxZoomBound(Layer layer) {
 			if (layer == null) throw new ArgumentNullException("layer");
 			ListViewItem item = FindItem(layer);
@@ -144,6 +192,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		public void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> actions, Project project) {
 			if (actions == null) throw new ArgumentNullException("actions");
 			if (project == null) throw new ArgumentNullException("project");
@@ -158,7 +207,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
-		
+
+		/// <override></override>
 		void ILayerView.Invalidate() {
 		   Invalidate();
 		}
@@ -166,6 +216,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
@@ -195,6 +248,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		#region [Protected] Overridden Methods
 
+		/// <override></override>
 		protected override void OnMouseDown(MouseEventArgs e) {
 			base.OnMouseDown(e);
 			if (LayerViewMouseDown != null) 
@@ -202,6 +256,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnMouseMove(MouseEventArgs e) {
 			base.OnMouseMove(e);
 			if (LayerViewMouseMove != null)
@@ -209,45 +264,56 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnMouseUp(MouseEventArgs e) {
 			base.OnMouseUp(e);
 			if (LayerViewMouseUp!= null)
 				LayerViewMouseUp(this, GetMouseEventArgs(MouseEventType.MouseUp, e));
+			// If the selected item was changed, LabelEdit was deactivated so we have to reactivate it here
+			if (!LabelEdit) LabelEdit = true;
 		}
 
 
+		/// <override></override>
 		protected override void OnSelectedIndexChanged(EventArgs e) {
+			if (LabelEdit) LabelEdit = false;
 			base.OnSelectedIndexChanged(e);
 			if (SelectedLayerChanged != null) SelectedLayerChanged(this, new LayersEventArgs(GetSelectedLayers()));
 		}
 
 
+		/// <override></override>
 		protected override void OnBeforeLabelEdit(LabelEditEventArgs e) {
+			if (enableRenameLayer) {
+				LayerInfo layerInfo = (LayerInfo)Items[e.Item].Tag;
+				oldName = layerInfo.layer.Name;
+				newName = string.Empty;
+			} else e.CancelEdit = true;
 			base.OnBeforeLabelEdit(e);
-			LayerInfo layerInfo = (LayerInfo)Items[e.Item].Tag;
-			oldName = layerInfo.layer.Name;
-			newName = string.Empty;
 		}
 
 
+		/// <override></override>
 		protected override void OnAfterLabelEdit(LabelEditEventArgs e) {
 			base.OnAfterLabelEdit(e);
+			enableRenameLayer = false;
 			newName = e.Label;
 			if (newName != null && oldName != newName && LayerRenamed != null) {
 				LayerInfo layerInfo = (LayerInfo)Items[e.Item].Tag;
 				LayerRenamed(this, new LayerRenamedEventArgs(layerInfo.layer, oldName, newName));
 			}
 			oldName = newName = string.Empty;
-			if (!labelEditAllowed) LabelEdit = false;
 		}
 
 
+		/// <override></override>
 		protected override void OnDrawColumnHeader(DrawListViewColumnHeaderEventArgs e) {
 			e.DrawDefault = true;
 			base.OnDrawColumnHeader(e);
 		}
-		
-		
+
+
+		/// <override></override>
 		protected override void OnDrawItem(DrawListViewItemEventArgs e) {
 			base.OnDrawItem(e);
 
@@ -273,6 +339,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnDrawSubItem(DrawListViewSubItemEventArgs e) {
 			LayerInfo layerInfo = (LayerInfo)e.Item.Tag;
 			int imgIdx;
@@ -315,42 +382,28 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private LayerMouseEventArgs GetMouseEventArgs(MouseEventType eventType, MouseEventArgs eventArgs) {
 			// Find clicked layer item
-			Layer layer;
+			Layer layer = null;
 			LayerItem layerItem = LayerItem.None;
-			// Find clicked item
-			ListViewItem item = GetItemAt(eventArgs.X, eventArgs.Y);
-			if (item == null)
-				layer = null;
-			else {
+
+			ListViewHitTestInfo hitTestInfo = HitTest(eventArgs.Location);
+			if (hitTestInfo != null && hitTestInfo.Item != null) {
 				// Set Layer
-				layer = ((LayerInfo)item.Tag).layer;
-				// Find matching subItem
-				for (int i = Columns.Count - 1; i >= 0; --i) {
-					// get subItem's bounds
-					Rectangle subItemBounds = item.SubItems[i].Bounds;
-					// if click was inside the subItem's bounds, determine item type
-					if (Geometry.RectangleContainsPoint(subItemBounds, eventArgs.Location)) {
-						if (i == idxColumnState) {
-							layerItem = LayerItem.ActiveState;
-							break;
-						} else if (i == idxColumnVisibility) {
-							layerItem = LayerItem.Visibility;
-							break;
-						} else if (i == idxColumnName) {
-							// Check if the click was inside the layer name's text bounds
-							Size size = TextRenderer.MeasureText(item.SubItems[i].Text, Font);
-							if (Geometry.RectangleContainsPoint(eventArgs.X, eventArgs.Y, item.SubItems[i].Bounds.X, item.SubItems[i].Bounds.Y, size.Width, size.Height))
-								layerItem = LayerItem.Name;
-							break;
-						} else if (i == idxColumnLowerZoomBound) {
-							layerItem = LayerItem.MinZoom;
-							break;
-						} else if (i == idxColumnUpperZoomBound) {
-							layerItem = LayerItem.MaxZoom;
-							break;
-						}
-					}
-				}
+				layer = ((LayerInfo)hitTestInfo.Item.Tag).layer;
+				// Determine subitem type
+				int colIdx = hitTestInfo.Item.SubItems.IndexOf(hitTestInfo.SubItem);
+				if (colIdx == idxColumnState)
+					layerItem = LayerItem.ActiveState;
+				else if (colIdx == idxColumnVisibility)
+					layerItem = LayerItem.Visibility;
+				else if (colIdx == idxColumnName) {
+					// Check if the click was inside the layer name's text bounds
+					Size txtSize = TextRenderer.MeasureText(hitTestInfo.SubItem.Text, Font);
+					if (Geometry.RectangleContainsPoint(hitTestInfo.SubItem.Bounds.X, hitTestInfo.SubItem.Bounds.Y, txtSize.Width, txtSize.Height, eventArgs.X, eventArgs.Y))
+						layerItem = LayerItem.Name;
+				} else if (colIdx == idxColumnLowerZoomBound)
+					layerItem = LayerItem.MinZoom;
+				else if (colIdx == idxColumnUpperZoomBound)
+					layerItem = LayerItem.MaxZoom;
 			}
 			// Create EventArgs and fire event
 			layerItemMouseEventArgs.SetMouseEvent(layer, layerItem, eventType, eventArgs);
@@ -379,8 +432,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			Columns.Add(keyColumnName, "Name", 100);
 			Columns.Add(keyColumnState, "Active", 17);
 			Columns.Add(keyColumnVisibility, "Visible", 17);
-			Columns.Add(keyColumnLowerZoomBound, "LowerZoomBound", 50);
-			Columns.Add(keyColumnUpperZoomBound, "UpperZoomBound", 50);
+			Columns.Add(keyColumnLowerZoomBound, "Min Zoom", 50);
+			Columns.Add(keyColumnUpperZoomBound, "Max Zoom", 50);
 
 			idxColumnState = Columns.IndexOfKey(keyColumnState);
 			idxColumnVisibility = Columns.IndexOfKey(keyColumnVisibility);
@@ -544,7 +597,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private string oldName;
 		private string newName;
-		private bool labelEditAllowed;
+		private bool enableRenameLayer;
 		private bool showDefaultContextMenu = true;
 		private bool hideMenuItemsIfNotGranted = false;
 

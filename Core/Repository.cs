@@ -34,34 +34,33 @@ namespace Dataweb.NShape {
 		int Version { get; set; }
 
 		/// <summary>
-		/// Specifies the project for this cache. Null if not set.
+		/// Specifies the project for this repository. Null if not set.
 		/// </summary>
 		string ProjectName { get; set; }
 
 		/// <summary>
-		/// Registers an entity with the cache.
+		/// Registers an entity with the repository.
 		/// </summary>
 		/// <param name="entityType">Entity type names must be unique ignoring their casing.</param>
 		void AddEntityType(IEntityType entityType);
 
 		/// <summary>
-		/// Unregisters an entity with the cache.
+		/// Unregisters an entity with the repository.
 		/// </summary>
-		/// <param name="entityType">Name of entity type to remove with correct casing</param>
 		void RemoveEntityType(string entityTypeName);
 
+		// TODO 2: Unnecessary; remove them when closed.
 		/// <summary>
 		/// Removes all registered entity types.
 		/// </summary>
 		/// <remarks>This method must be called before different libraries are loaded
 		/// and their entities re-registered.</remarks>
-		// TODO 2: Unnecessary; remove them when closed.
 		void RemoveAllEntityTypes();
 
 		/// <summary>
-		/// Indicates whether the project exists in the persistent store of the cache.
+		/// Indicates whether the project exists in the persistent store of the repository.
 		/// </summary>
-		/// <returns>True, wenn the cache is connected to an existing persistent store.</returns>
+		/// <returns>True, wenn the repository is connected to an existing persistent store.</returns>
 		bool Exists();
 
 		/// <summary>
@@ -70,24 +69,24 @@ namespace Dataweb.NShape {
 		void ReadVersion();
 		
 		/// <summary>
-		/// Creates and opens a new project in the cache.
+		/// Creates and opens a new project in the repository.
 		/// </summary>
-		/// <remarks>Create does not actually create the cache. We want to give the client 
-		// a chance to not flush it and thereby not having performed any durable action.</remarks>
+		/// <remarks>Create does not actually create the repository. We want to give the client 
+		/// a chance to not flush it and thereby not having performed any durable action.</remarks>
 		void Create();
 
 		/// <summary>
-		/// Opens an existing project in the cache.
+		/// Opens an existing project in the repository.
 		/// </summary>
 		void Open();
 
 		/// <summary>
-		/// Closes the cache.
+		/// Closes the repository.
 		/// </summary>
 		void Close();
 
 		/// <summary>
-		/// Deletes the persistent store of the project from the cache.
+		/// Deletes the persistent store of the project from the repository.
 		/// </summary>
 		void Erase();
 
@@ -117,7 +116,7 @@ namespace Dataweb.NShape {
 		int ObtainNewTopZOrder(Diagram diagram);
 
 		/// <summary>
-		/// Submits all modifications in the cache to the data store.
+		/// Submits all modifications in the repository to the data store.
 		/// </summary>
 		void SaveChanges();
 
@@ -140,6 +139,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		void DeleteProject();
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryProjectEventArgs> ProjectUpdated;
 
 		#endregion
@@ -173,10 +173,13 @@ namespace Dataweb.NShape {
 		/// </summary>
 		void UndeleteModel(Model model);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryModelEventArgs> ModelInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryModelEventArgs> ModelUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryModelEventArgs> ModelDeleted;
 
 		#endregion
@@ -191,28 +194,33 @@ namespace Dataweb.NShape {
 		IEnumerable<Design> GetDesigns();
 
 		/// <summary>
-		/// Fetches a single design object from the cache.
+		/// Fetches a single design object from the repository.
 		/// </summary>
 		/// <param name="id">Id of design to fetch. Null to indicate the project design.</param>
 		/// <returns>Reference to object</returns>
 		Design GetDesign(object id);
 
 		/// <summary>
-		/// Inserts a new design into the cache.
+		/// Inserts a new design into the repository.
 		/// </summary>
-		/// <param name="design"></param>
 		void InsertDesign(Design design);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateDesign(Design design);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteDesign(Design design);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteDesign(Design design);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryDesignEventArgs> DesignInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryDesignEventArgs> DesignUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryDesignEventArgs> DesignDeleted;
 
 		#endregion
@@ -220,18 +228,25 @@ namespace Dataweb.NShape {
 
 		#region Styles
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertStyle(Design design, IStyle style);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateStyle(IStyle style);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteStyle(IStyle style);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteStyle(Design design, IStyle style);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryStyleEventArgs> StyleInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryStyleEventArgs> StyleUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryStyleEventArgs> StyleDeleted;
 
 		#endregion
@@ -240,7 +255,7 @@ namespace Dataweb.NShape {
 		#region Diagrams
 
 		/// <summary>
-		/// Fetches a single diagram object from the cache.
+		/// Fetches a single diagram object from the repository.
 		/// </summary>
 		/// <param name="id">Id of object to fetch</param>
 		/// <returns>Reference to object or null, if object was not found.</returns>
@@ -249,8 +264,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Fetches a single diagram identified by its projectName.
 		/// </summary>
-		/// <param name="projectName"></param>
-		/// <returns></returns>
 		Diagram GetDiagram(string name);
 
 		/// <summary>
@@ -262,19 +275,24 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Fügt dem Projekt ein neues Diagramm hinzu.
 		/// </summary>
-		/// <param name="image"></param>
 		void InsertDiagram(Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateDiagram(Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteDiagram(Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteDiagram(Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryDiagramEventArgs> DiagramInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryDiagramEventArgs> DiagramUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryDiagramEventArgs> DiagramDeleted;
 
 		#endregion
@@ -283,7 +301,7 @@ namespace Dataweb.NShape {
 		# region Templates
 
 		/// <summary>
-		/// Fetches a single object from the cache.
+		/// Fetches a single object from the repository.
 		/// </summary>
 		/// <param name="id">Id of object to fetch</param>
 		/// <returns>Reference to object or null, if object was not found.</returns>
@@ -292,38 +310,41 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Fetches a single template given its projectName.
 		/// </summary>
-		/// <param name="projectName"></param>
-		/// <returns></returns>
 		Template GetTemplate(string name);
 
 		/// <summary>
-		/// Fetches all Templates in the project from the cache.
+		/// Fetches all Templates in the project from the repository.
 		/// </summary>
 		/// <returns>Iterator to step through the Templates list.</returns>
 		IEnumerable<Template> GetTemplates();
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertTemplate(Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateTemplate(Template template);
 
 		/// <summary>
 		/// Replaces the shape of the template.
 		/// </summary>
-		/// <param name="template"></param>
-		/// <param name="oldShape"></param>
-		/// <param name="newShape"></param>
 		void ReplaceTemplateShape(Template template, Shape oldShape, Shape newShape);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteTemplate(Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteTemplate(Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateEventArgs> TemplateInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateEventArgs> TemplateUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateEventArgs> TemplateDeleted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateShapeReplacedEventArgs> TemplateShapeReplaced;
 
 		#endregion
@@ -331,26 +352,37 @@ namespace Dataweb.NShape {
 
 		#region ModelMappings
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertModelMapping(IModelMapping modelMapping, Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertModelMappings(IEnumerable<IModelMapping> modelMappings, Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateModelMapping(IModelMapping modelMapping);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateModelMappings(IEnumerable<IModelMapping> modelMappings);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteModelMapping(IModelMapping modelMapping);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteModelMappings(IEnumerable<IModelMapping> modelMappings);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteModelMapping(IModelMapping modelMapping, Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteModelMappings(IEnumerable<IModelMapping> modelMappings, Template template);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateEventArgs> ModelMappingsInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateEventArgs> ModelMappingsUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryTemplateEventArgs> ModelMappingsDeleted;
 
 		#endregion
@@ -364,16 +396,22 @@ namespace Dataweb.NShape {
 		/// </summary>
 		void GetDiagramShapes(Diagram diagram, params Rectangle[] rectangles);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertShape(Shape shape, Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertShape(Shape shape, Shape parentShape);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertShape(Shape shape, Template owningTemplate);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertShapes(IEnumerable<Shape> shapes, Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertShapes(IEnumerable<Shape> shapes, Shape parentShape);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateShape(Shape shape);
 
 		/// <summary>
@@ -390,41 +428,57 @@ namespace Dataweb.NShape {
 		/// <param name="parent">New parent of the shape</param>
 		void UpdateShapeOwner(Shape shape, Shape parent);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateShapes(IEnumerable<Shape> shapes);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteShape(Shape shape);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteShapes(IEnumerable<Shape> shapes);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteShape(Shape shape, Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteShape(Shape shape, Shape parent);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteShapes(IEnumerable<Shape> shapes, Diagram diagram);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteShapes(IEnumerable<Shape> shapes, Shape parent);
 
 		/// <summary>
-		/// Removes all shapes of the diagram from the cache cache.
+		/// Removes all shapes of the diagram from the repository.
 		/// </summary>
 		/// <param name="diagram"></param>
 		void UnloadDiagramShapes(Diagram diagram);
 
 		/// <summary>
-		/// Inserts a new shape connection into the cache.
+		/// Inserts a new shape connection into the repository.
 		/// </summary>
 		void InsertShapeConnection(Shape activeShape, ControlPointId gluePointId, Shape passiveShape, ControlPointId connectionPointId);
 
 		/// <summary>
-		/// Deletes a shape connection from the cache.
+		/// Deletes a shape connection from the repository.
 		/// </summary>
 		void DeleteShapeConnection(Shape activeShape, ControlPointId gluePointId, Shape passiveShape, ControlPointId connectionPointId);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryShapesEventArgs> ShapesInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryShapesEventArgs> ShapesUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryShapesEventArgs> ShapesDeleted;
+
+		/// <ToBeCompleted></ToBeCompleted>
+		event EventHandler<RepositoryShapeConnectionEventArgs> ShapeConnectionInserted;
+
+		/// <ToBeCompleted></ToBeCompleted>
+		event EventHandler<RepositoryShapeConnectionEventArgs> ShapeConnectionDeleted;
 
 		#endregion
 
@@ -432,42 +486,55 @@ namespace Dataweb.NShape {
 		#region ModelObjects
 
 		/// <summary>
-		/// Fetches a single object from the cache.
+		/// Fetches a single object from the repository.
 		/// </summary>
 		/// <param name="id">Id of object to fetch</param>
 		/// <returns>Reference to object or null, if object was not found.</returns>
 		IModelObject GetModelObject(object id);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerable<IModelObject> GetModelObjects(IModelObject parent);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertModelObject(IModelObject modelObject);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void InsertModelObjects(IEnumerable<IModelObject> modelObjects);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateModelObject(IModelObject modelObject);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateModelObjects(IEnumerable<IModelObject> modelObjects);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UpdateModelObjectParent(IModelObject modelObject, IModelObject parent);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteModelObject(IModelObject modelObject);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void DeleteModelObjects(IEnumerable<IModelObject> modelObjects);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteModelObject(IModelObject modelObject);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		void UndeleteModelObjects(IEnumerable<IModelObject> modelObjects);
 
 		/// <summary>
-		/// Removes the given model objects from the repository cache.
+		/// Removes the given model objects from the repository repository.
 		/// </summary>
 		/// <param name="modelObjects"></param>
 		void UnloadModelObjects(IEnumerable<IModelObject> modelObjects);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsInserted;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsUpdated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsDeleted;
 
 		#endregion
@@ -480,15 +547,17 @@ namespace Dataweb.NShape {
 	#region Repository events' EventArgs
 
 	/// <summary>
-	/// Encapsulates parameters for a project-related cache event.
+	/// Encapsulates parameters for a project-related respository event.
 	/// </summary>
 	public class RepositoryProjectEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryProjectEventArgs(ProjectSettings projectSettings) {
 			if (projectSettings == null) throw new ArgumentNullException("projectSettings");
 			this.projectSettings = projectSettings;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ProjectSettings Project {
 			get { return projectSettings; }
 			internal set { projectSettings = value; }
@@ -501,15 +570,17 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a project-related cache event.
+	/// Encapsulates parameters for a project-related respository event.
 	/// </summary>
 	public class RepositoryModelEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryModelEventArgs(Model model) {
 			if (model == null) throw new ArgumentNullException("model");
 			this.model = model;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Model Model {
 			get { return model; }
 			internal set { model = value; }
@@ -522,15 +593,17 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a design-related cache event.
+	/// Encapsulates parameters for a design-related respository event.
 	/// </summary>
 	public class RepositoryDesignEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryDesignEventArgs(Design design) {
 			if (design == null) throw new ArgumentNullException("design");
 			this.design = design;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Design Design {
 			get { return design; }
 			internal set { design = value; }
@@ -543,15 +616,17 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a project-related cache event.
+	/// Encapsulates parameters for a project-related respository event.
 	/// </summary>
 	public class RepositoryStyleEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryStyleEventArgs(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			this.style = style;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IStyle Style {
 			get { return style; }
 			internal set { style = value; }
@@ -564,15 +639,17 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a diagram-related cache event.
+	/// Encapsulates parameters for a diagram-related respository event.
 	/// </summary>
 	public class RepositoryDiagramEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryDiagramEventArgs(Diagram diagram) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			this.diagram = diagram;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram Diagram {
 			get { return diagram; }
 			internal set { diagram = value; }
@@ -585,15 +662,17 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a template-related cache event.
+	/// Encapsulates parameters for a template-related respository event.
 	/// </summary>
 	public class RepositoryTemplateEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryTemplateEventArgs(Template template) {
 			if (template == null) throw new ArgumentNullException("template");
 			this.template = template;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Template Template {
 			get { return template; }
 			internal set { template = value; }
@@ -606,10 +685,11 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a cache events raised when template shapes are exchanged.
+	/// Encapsulates parameters for respository events raised when template shapes are exchanged.
 	/// </summary>
 	public class RepositoryTemplateShapeReplacedEventArgs : RepositoryTemplateEventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryTemplateShapeReplacedEventArgs(Template template, Shape oldTemplateShape, Shape newTemplateShape)
 			: base(template) {
 			if (oldTemplateShape == null) throw new ArgumentNullException("oldTemplateShape");
@@ -618,12 +698,14 @@ namespace Dataweb.NShape {
 			this.newTemplateShape = newTemplateShape;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape OldTemplateShape {
 			get { return oldTemplateShape; }
 			internal set { oldTemplateShape = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape NewTemplateShape {
 			get { return newTemplateShape; }
 			internal set { newTemplateShape = value; }
@@ -638,22 +720,25 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a shape-related cache event.
+	/// Encapsulates parameters for a shape-related respository event.
 	/// </summary>
 	public class RepositoryShapeEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryShapeEventArgs(Shape shape, Diagram diagram) {
 			if (shape == null) throw new ArgumentNullException("shape");
 			this.shape = shape;
 			this.diagram = diagram;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Shape Shape {
 			get { return shape; }
 			internal set { shape = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram Diagram {
 			get { return Diagram; }
 		}
@@ -668,16 +753,18 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a shape-related cache event.
+	/// Encapsulates parameters for a shape-related respository event.
 	/// </summary>
 	public class RepositoryShapesEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryShapesEventArgs(IEnumerable<Shape> shapes, Diagram diagram) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			SetShapes(shapes, diagram);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryShapesEventArgs(IEnumerable<KeyValuePair<Shape, Diagram>> shapesWithDiagrams) {
 			if (shapesWithDiagrams == null) throw new ArgumentNullException("shapesWithDiagrams");
 			shapes.Clear();
@@ -686,11 +773,13 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<Shape> Shapes {
 			get { return shapes.Keys; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram GetDiagram(Shape s) {
 			Diagram d;
 			if (shapes.TryGetValue(s, out d)) return d;
@@ -698,6 +787,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int Count {
 			get { return shapes.Count; }
 		}
@@ -735,15 +825,17 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a modelobject-related cache event.
+	/// Encapsulates parameters for a modelobject-related respository event.
 	/// </summary>
 	public class RepositoryModelObjectEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryModelObjectEventArgs(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			this.modelObject = modelObject;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IModelObject ModelObject {
 			get { return modelObject; }
 			internal set { modelObject = value; }
@@ -756,20 +848,27 @@ namespace Dataweb.NShape {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a modelobject-related cache event.
+	/// Encapsulates parameters for a modelobject-related respository event.
 	/// </summary>
 	public class RepositoryModelObjectsEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public RepositoryModelObjectsEventArgs(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			this.modelObjects.AddRange(modelObjects);
 		}
 
 
-		public IEnumerable<IModelObject> ModelObjects { get { return modelObjects; } }
+		/// <ToBeCompleted></ToBeCompleted>
+		public IEnumerable<IModelObject> ModelObjects {
+			get { return modelObjects; }
+		}
 
 
-		public int Count { get { return modelObjects.Count; } }
+		/// <ToBeCompleted></ToBeCompleted>
+		public int Count {
+			get { return modelObjects.Count; }
+		}
 
 
 		internal RepositoryModelObjectsEventArgs() {
@@ -790,6 +889,83 @@ namespace Dataweb.NShape {
 
 
 		private List<IModelObject> modelObjects = new List<IModelObject>();
+	}
+
+
+	/// <summary>
+	/// Encapsulates parameters for a shape connection related respository event.
+	/// </summary>
+	public class RepositoryShapeConnectionEventArgs : EventArgs {
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public RepositoryShapeConnectionEventArgs(Shape connectorShape, ControlPointId gluePointId, Shape targetShape, ControlPointId targetPointId)
+			: this() {
+			if (connectorShape == null) throw new ArgumentNullException("connectorShape");
+			if (targetShape == null) throw new ArgumentNullException("targetShape");
+			if (gluePointId == ControlPointId.Any || gluePointId == ControlPointId.None)
+				throw new ArgumentException("gluePointId");
+			if (!connectorShape.HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
+				throw new ArgumentException(string.Format("{0} is not a glue point of {1}.", gluePointId, connectorShape.Type.FullName));
+			if (targetPointId == ControlPointId.Any || targetPointId == ControlPointId.None)
+				throw new ArgumentException("targetPointId");
+			if (!targetShape.HasControlPointCapability(targetPointId, ControlPointCapabilities.Connect))
+				throw new ArgumentException(string.Format("{0} is not a connection point of {1}.", targetPointId, targetShape.Type.FullName));
+
+			this.connection.ConnectorShape = connectorShape;
+			this.connection.GluePointId = gluePointId;
+			this.connection.TargetShape = targetShape;
+			this.connection.TargetPointId = targetPointId;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected internal RepositoryShapeConnectionEventArgs(ShapeConnection shapeConnection) 
+			: this(shapeConnection.ConnectorShape, shapeConnection.GluePointId, shapeConnection.TargetShape, shapeConnection.TargetPointId) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected internal RepositoryShapeConnectionEventArgs() {
+			this.connection = ShapeConnection.Empty;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public Shape ConnectorShape {
+			get { return connection.ConnectorShape; }
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public ControlPointId GluePointId {
+			get { return connection.GluePointId; }
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public Shape TargetShape {
+			get { return connection.TargetShape; }
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public ControlPointId TargetPointId {
+			get { return connection.TargetPointId; }
+		}
+
+
+		internal void Clear() {
+			connection = ShapeConnection.Empty;
+		}
+		
+		
+		internal void SetShapeConnection(ShapeConnection connection) {
+			System.Diagnostics.Debug.Assert(connection != ShapeConnection.Empty);
+			this.connection = connection;
+		}
+
+
+		private ShapeConnection connection;
 	}
 
 	#endregion

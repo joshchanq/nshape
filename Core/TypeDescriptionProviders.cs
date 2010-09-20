@@ -90,28 +90,40 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class TypeDescriptionProviderDg : TypeDescriptionProvider {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.TypeDescriptionProviderDg" />
+		/// </summary>
 		public TypeDescriptionProviderDg()
 			: base(TypeDescriptor.GetProvider(typeof(object))) {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.TypeDescriptionProviderDg" />
+		/// </summary>
 		public TypeDescriptionProviderDg(Type type)
 			: base(TypeDescriptor.GetProvider(type)) {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.TypeDescriptionProviderDg" />
+		/// </summary>
 		public TypeDescriptionProviderDg(TypeDescriptionProvider parent)
 			: base(parent) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IPropertyController PropertyController {
 			set { propertyController = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public override ICustomTypeDescriptor GetTypeDescriptor(Type objectType, object instance) {
 			ICustomTypeDescriptor baseTypeDescriptor = base.GetTypeDescriptor(objectType, instance);
 			if (propertyController != null)
@@ -124,8 +136,13 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class TypeDescriptorDg : CustomTypeDescriptor {
 
+		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.TypeDescriptorDg" />
+		/// </summary>
 		public TypeDescriptorDg(ICustomTypeDescriptor parent, IPropertyController propertyController)
 			: base(parent) {
 			if (propertyController == null) throw new ArgumentNullException("propertyController");
@@ -133,31 +150,37 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override AttributeCollection GetAttributes() {
 			return base.GetAttributes();
 		}
 
 
+		/// <override></override>
 		public override string GetClassName() {
 			return base.GetClassName();
 		}
 
 
+		/// <override></override>
 		public override string GetComponentName() {
 			return base.GetComponentName();
 		}
 
 
+		/// <override></override>
 		public override TypeConverter GetConverter() {
 			return base.GetConverter();
 		}
 
 
+		/// <override></override>
 		public override EventDescriptor GetDefaultEvent() {
 			return base.GetDefaultEvent();
 		}
 
 
+		/// <override></override>
 		public override PropertyDescriptor GetDefaultProperty() {
 			PropertyDescriptor propertyDescriptor = base.GetDefaultProperty();
 			if (propertyDescriptor != null && propertyController != null)
@@ -166,33 +189,39 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override object GetEditor(Type editorBaseType) {
 			return base.GetEditor(editorBaseType);
 		}
 
 
+		/// <override></override>
 		public override EventDescriptorCollection GetEvents() {
 			return base.GetEvents();
 		}
 
 
+		/// <override></override>
 		public override EventDescriptorCollection GetEvents(Attribute[] attributes) {
 			return base.GetEvents(attributes);
 		}
 
 
+		/// <override></override>
 		public override object GetPropertyOwner(PropertyDescriptor pd) {
 			return base.GetPropertyOwner(pd);
 		}
 
 
+		/// <override></override>
 		public override PropertyDescriptorCollection GetProperties() {
 			if (propertyController != null)
 				return DoGetProperties(base.GetProperties());
 			else return base.GetProperties();
 		}
-		
-		
+
+
+		/// <override></override>
 		public override PropertyDescriptorCollection GetProperties(Attribute[] attributes) {
 			if (propertyController != null) 
 				return DoGetProperties(base.GetProperties(attributes));
@@ -213,29 +242,37 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class PropertyDescriptorDg : PropertyDescriptor {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.PropertyDescriptorDg" />
+		/// </summary>
 		public PropertyDescriptorDg(PropertyDescriptor descriptor, IPropertyController controller)
 			: base(descriptor) {
 			Construct(controller, descriptor);
 		}
 
 
+		/// <override></override>
 		public override bool CanResetValue(object component) {
 			return descriptor.CanResetValue(component);
 		}
 
 
+		/// <override></override>
 		public override Type ComponentType {
 			get { return descriptor.ComponentType; }
 		}
 
 
+		/// <override></override>
 		public override object GetValue(object component) {
 			return descriptor.GetValue(component);
 		}
 
 
+		/// <override></override>
 		public override void SetValue(object component, object value) {
 			if (permissionAttr != null) {
 				if (controller.Project == null) throw new InvalidOperationException("PropertyController.Project is not set.");
@@ -249,21 +286,25 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool IsReadOnly {
 			get { return descriptor.IsReadOnly; }
 		}
 
 
+		/// <override></override>
 		public override Type PropertyType {
 			get { return descriptor.PropertyType; }
 		}
 
 
+		/// <override></override>
 		public override void ResetValue(object component) {
 			descriptor.ResetValue(component);
 		}
 
 
+		/// <override></override>
 		public override bool ShouldSerializeValue(object component) {
 			return descriptor.ShouldSerializeValue(component);
 		}

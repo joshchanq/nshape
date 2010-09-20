@@ -27,148 +27,236 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape {
 
+	/// <summary>
+	/// Provides a collection of styles implementing <see cref="T:Dataweb.NShape.ICapStyle" /> and direct access to the standard styles.
+	/// </summary>
 	public interface ICapStyles : IEnumerable<ICapStyle> {
 
+		/// <summary>
+		/// Provides read only access to the collections elements by the style name.
+		/// </summary>
 		ICapStyle this[string name] { get; }
 
+		/// <summary>No line cap.</summary>
 		ICapStyle None { get; }
 
+		/// <summary>Arrow shaped line cap.</summary>
 		ICapStyle Arrow { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICapStyle Special1 { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICapStyle Special2 { get; }
 
 	}
 
 
+	/// <summary>
+	/// Provides a collection of styles implementing <see cref="T:Dataweb.NShape.ICharacterStyle" /> and direct access to the standard styles.
+	/// </summary>
 	public interface ICharacterStyles : IEnumerable<ICharacterStyle> {
 
+		/// <summary>
+		/// Provides read only access to the collections elements by the style name.
+		/// </summary>
 		ICharacterStyle this[string name] { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle Caption { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle Heading1 { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle Heading2 { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle Heading3 { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle Normal { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle Subtitle { get; }
 
 	}
 
 
+	/// <summary>
+	/// Provides a collection of styles implementing <see cref="T:Dataweb.NShape.IColorStyle" /> and direct access to the standard styles.
+	/// </summary>
 	public interface IColorStyles : IEnumerable<IColorStyle> {
 
+		/// <summary>
+		/// Provides read only access to the collections elements by the style name.
+		/// </summary>
 		IColorStyle this[string name] { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Background { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Black { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Blue { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Gray { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Green { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Highlight { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle HighlightText { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle LightBlue { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle LightGray { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle LightGreen { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle LightRed { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle LightYellow { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Red { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Text { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Transparent { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle White { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle Yellow { get; }
 
 	}
 
 
+	/// <summary>
+	/// Provides a collection of styles implementing <see cref="T:Dataweb.NShape.IFillStyle" /> and direct access to the standard styles.
+	/// </summary>
 	public interface IFillStyles : IEnumerable<IFillStyle> {
 
+		/// <summary>
+		/// Provides read only access to the collections elements by the style name.
+		/// </summary>
 		IFillStyle this[string name] { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle Black { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle Blue { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle Green { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle Red { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle Transparent { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle White { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle Yellow { get; }
 
 	}
 
 
+	/// <summary>
+	/// Provides a collection of styles implementing <see cref="T:Dataweb.NShape.ILineStyle" /> and direct access to the standard styles.
+	/// </summary>
 	public interface ILineStyles : IEnumerable<ILineStyle> {
 
+		/// <summary>
+		/// Provides read only access to the collections elements by the style name.
+		/// </summary>
 		ILineStyle this[string name] { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Blue { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Dashed { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Dotted { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Green { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Highlight { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle HighlightDashed { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle HighlightDotted { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle HighlightThick { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle None { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Normal { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Red { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Special1 { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Special2 { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Thick { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle Yellow { get; }
 
 	}
 
 
+	/// <summary>
+	/// Provides a collection of styles implementing <see cref="T:Dataweb.NShape.IParagraphStyle" /> and direct access to the standard styles.
+	/// </summary>
 	public interface IParagraphStyles : IEnumerable<IParagraphStyle> {
 
+		/// <summary>
+		/// Provides read only access to the collections elements by the style name.
+		/// </summary>
 		IParagraphStyle this[string name] { get; }
 
 		// Standard Style Properties
+		/// <ToBeCompleted></ToBeCompleted>
 		IParagraphStyle Label { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IParagraphStyle Text { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IParagraphStyle Title { get; }
 
 	}
@@ -179,28 +267,40 @@ namespace Dataweb.NShape {
 	/// </summary>
 	public interface IStyleSet {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICapStyles CapStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyles CharacterStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyles ColorStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyles FillStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyles LineStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IParagraphStyles ParagraphStyles { get; }
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICapStyle GetPreviewStyle(ICapStyle colorStyle);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ICharacterStyle GetPreviewStyle(ICharacterStyle colorStyle);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IColorStyle GetPreviewStyle(IColorStyle colorStyle);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IFillStyle GetPreviewStyle(IFillStyle fillStyle);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		ILineStyle GetPreviewStyle(ILineStyle lineStyle);
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IParagraphStyle GetPreviewStyle(IParagraphStyle colorStyle);
 
 	}
@@ -213,16 +313,15 @@ namespace Dataweb.NShape {
 	public class Design : IStyleSet, IEntity {
 
 		/// <summary>
-		/// Creates an empty design for subsequent loading from the cache.
+		/// Creates an empty <see cref="T:Dataweb.NShape.Design" /> for subsequent loading from the <see cref="T:Dataweb.NShape.Advanced.IRepository" />.
 		/// </summary>
 		internal Design() {
 		}
 
 
 		/// <summary>
-		/// Creates a value design ready for use. It already includes the standard styles.
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Design" />. It already includes standard styles.
 		/// </summary>
-		/// <param name="projectName"></param>
 		public Design(string name)
 			: this() {
 			if (name == null) throw new ArgumentNullException("name");
@@ -237,13 +336,19 @@ namespace Dataweb.NShape {
 		}
 
 
-		#region IEntity Members
+		#region [Explicit] IEntity Members
 
+		/// <summary>
+		/// The entity type name of <see cref="T:Dataweb.NShape.Design" />.
+		/// </summary>
 		public static string EntityTypeName {
 			get { return "Core.Design"; }
 		}
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Design" />.
+		/// </summary>
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("Name", typeof(string));
 			yield return new EntityFieldDefinition("Description", typeof(string));
@@ -298,36 +403,42 @@ namespace Dataweb.NShape {
 
 		#region IStyleSet Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ICapStyle GetPreviewStyle(ICapStyle capStyle) {
 			if (capStyle == null) throw new ArgumentNullException("capStyle");
 			return capStyles.GetPreviewStyle(capStyle.Name);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ICharacterStyle GetPreviewStyle(ICharacterStyle characterStyle) {
 			if (characterStyle == null) throw new ArgumentNullException("characterStyle");
 			return characterStyles.GetPreviewStyle(characterStyle.Name);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IColorStyle GetPreviewStyle(IColorStyle colorStyle) {
 			if (colorStyle == null) throw new ArgumentNullException("colorStyle");
 			return colorStyles.GetPreviewStyle(colorStyle.Name);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IFillStyle GetPreviewStyle(IFillStyle fillStyle) {
 			if (fillStyle == null) throw new ArgumentNullException("fillStyle");
 			return fillStyles.GetPreviewStyle(fillStyle.Name);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ILineStyle GetPreviewStyle(ILineStyle lineStyle) {
 			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
 			return lineStyles.GetPreviewStyle(lineStyle.Name);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IParagraphStyle GetPreviewStyle(IParagraphStyle paragraphStyle) {
 			if (paragraphStyle == null) throw new ArgumentNullException("paragraphStyle");
 			return paragraphStyles.GetPreviewStyle(paragraphStyle.Name);
@@ -368,6 +479,9 @@ namespace Dataweb.NShape {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// The name of the <see cref="T:Dataweb.NShape.Design" />.
+		/// </summary>
 		public string Name {
 			get { return name; }
 			set { name = value; }
@@ -375,7 +489,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Returns all Styles of the design regardless of the style categoryTitle.
+		/// Returns all <see cref="T:Dataweb.NShape.IStyle" /> instances stored in the <see cref="T:Dataweb.NShape.Design" /> regardless of the style category.
 		/// </summary>
 		public IEnumerable<IStyle> Styles {
 			get {
@@ -389,31 +503,37 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CapStyleCollection CapStyles {
 			get { return capStyles; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CharacterStyleCollection CharacterStyles {
 			get { return characterStyles; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ColorStyleCollection ColorStyles {
 			get { return colorStyles; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FillStyleCollection FillStyles {
 			get { return fillStyles; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LineStyleCollection LineStyles {
 			get { return lineStyles; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ParagraphStyleCollection ParagraphStyles {
 			get { return paragraphStyles; }
 		}
@@ -428,7 +548,6 @@ namespace Dataweb.NShape {
 		/// </summary>
 		public void Clear() {
 			// Clear user defined styles
-			//shapeStyles.Clear();
 			paragraphStyles.Clear();
 			lineStyles.Clear();
 			characterStyles.Clear();
@@ -438,6 +557,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool ContainsStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			if (style is CapStyle)
@@ -452,13 +572,11 @@ namespace Dataweb.NShape {
 				return lineStyles.Contains((LineStyle)style);
 			else if (style is ParagraphStyle)
 				return paragraphStyles.Contains((ParagraphStyle)style);
-			else if (style is ShapeStyle)
-				return shapeStyles.Contains((ShapeStyle)style);
-			else
-				throw new NShapeInternalException(string.Format("Unexpected style type '{0}'.", style.GetType().Name));
+			else throw new NShapeUnsupportedValueException(style);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool IsStandardStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			if (style is CapStyle)
@@ -471,8 +589,6 @@ namespace Dataweb.NShape {
 				return fillStyles.IsStandardStyle((FillStyle)style);
 			else if (style is LineStyle)
 				return lineStyles.IsStandardStyle((LineStyle)style);
-			else if (style is ShapeStyle)
-				return shapeStyles.IsStandardStyle((ShapeStyle)style);
 			else if (style is ParagraphStyle)
 				return paragraphStyles.IsStandardStyle((ParagraphStyle)style);
 			else throw new NShapeUnsupportedValueException(style);
@@ -504,10 +620,6 @@ namespace Dataweb.NShape {
 				if (lineStyles.Contains(style.Name))
 					return lineStyles[style.Name];
 				else return null;
-			//} else if (style is ShapeStyle) {
-			//   if (ShapeStyles.Contains(style.Name))
-			//      return ShapeStyles[style.Name];
-			//   else return null;
 			} else if (style is ParagraphStyle) {
 				if (paragraphStyles.Contains(style.Name))
 					return paragraphStyles[style.Name];
@@ -516,6 +628,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IStyle FindStyleByName(string name, Type styleType) {
 			if (name == null) throw new ArgumentNullException("name");
 			if (styleType == null) throw new ArgumentNullException("styleType");
@@ -523,6 +636,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void AddStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			if (style is CapStyle) {
@@ -537,12 +651,11 @@ namespace Dataweb.NShape {
 				lineStyles.Add((LineStyle)style, CreatePreviewStyle((ILineStyle)style));
 			} else if (style is ParagraphStyle) {
 				paragraphStyles.Add((ParagraphStyle)style, CreatePreviewStyle((IParagraphStyle)style));
-			} else if (style is ShapeStyle) {
-				shapeStyles.Add((ShapeStyle)style, CreatePreviewStyle((IShapeStyle)style));
 			} else throw new NShapeUnsupportedValueException(style);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RemoveStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			if (style is CapStyle)
@@ -557,12 +670,11 @@ namespace Dataweb.NShape {
 				lineStyles.Remove((LineStyle)style);
 			else if (style is ParagraphStyle)
 				paragraphStyles.Remove((ParagraphStyle)style);
-			else if (style is ShapeStyle)
-				shapeStyles.Remove((ShapeStyle)style);
 			else throw new NShapeUnsupportedValueException(style);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RemoveStyle(string name, Type styleType) {
 			if (name == null) throw new ArgumentNullException("name");
 			if (styleType == null) throw new ArgumentNullException("styleType");
@@ -578,8 +690,6 @@ namespace Dataweb.NShape {
 				lineStyles.Remove(name);
 			else if (styleType == typeof(ParagraphStyle))
 				paragraphStyles.Remove(name);
-			else if (styleType == typeof(ShapeStyle))
-				shapeStyles.Remove(name);
 			else throw new NShapeUnsupportedValueException(styleType);
 		}
 
@@ -608,6 +718,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CapStyle CreatePreviewStyle(ICapStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			CapStyle result = new CapStyle(baseStyle.Name + previewNameSuffix);
@@ -619,6 +730,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ColorStyle CreatePreviewStyle(IColorStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			ColorStyle result = new ColorStyle(baseStyle.Name + previewNameSuffix);
@@ -629,6 +741,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FillStyle CreatePreviewStyle(IFillStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			FillStyle result = new FillStyle(baseStyle.Name + previewNameSuffix, ColorStyle.Empty, ColorStyle.Empty);
@@ -662,6 +775,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CharacterStyle CreatePreviewStyle(ICharacterStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			CharacterStyle result = new CharacterStyle(baseStyle.Name + previewNameSuffix);
@@ -674,6 +788,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LineStyle CreatePreviewStyle(ILineStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			LineStyle result = new LineStyle(baseStyle.Name + previewNameSuffix);
@@ -687,18 +802,7 @@ namespace Dataweb.NShape {
 		}
 
 
-		public ShapeStyle CreatePreviewStyle(IShapeStyle baseStyle) {
-			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
-			ShapeStyle result = new ShapeStyle(baseStyle.Name + previewNameSuffix);
-			result.RoundedCorners = baseStyle.RoundedCorners;
-			if (baseStyle.ShadowColor != null)
-				result.ShadowColor = CreatePreviewStyle(baseStyle.ShadowColor);
-			result.ShowGradients = baseStyle.ShowGradients;
-			result.ShowShadows = baseStyle.ShowShadows;
-			return result;
-		}
-
-
+		/// <ToBeCompleted></ToBeCompleted>
 		public ParagraphStyle CreatePreviewStyle(IParagraphStyle baseStyle) {
 			if (baseStyle == null) throw new ArgumentNullException("baseStyle");
 			ParagraphStyle result = new ParagraphStyle(baseStyle.Name + previewNameSuffix);
@@ -737,8 +841,6 @@ namespace Dataweb.NShape {
 				return lineStyles.Contains(name) ? lineStyles[name] : null;
 			else if (styleType == typeof(ParagraphStyle))
 				return paragraphStyles.Contains(name) ? paragraphStyles[name] : null;
-			else if (styleType == typeof(ShapeStyle))
-				return shapeStyles.Contains(name) ? shapeStyles[name] : null;
 			else throw new NShapeException("Unexpected style type '{0}'.", styleType.Name);
 		}
 
@@ -775,12 +877,7 @@ namespace Dataweb.NShape {
 				ParagraphStyle style = (ParagraphStyle)baseStyle;
 				ParagraphStyle previewStyle = CreatePreviewStyle(style);
 				paragraphStyles.SetPreviewStyle(style, previewStyle);
-			} else if (baseStyle is ShapeStyle) {
-				// ToDo: Implement ShapeStyles
-				//ShapeStyle style = (ShapeStyle)baseStyle;
-				//ShapeStyle previewStyle = CreatePreviewStyle(style);
-				//shapeStyles.SetPreviewStyle(style, previewStyle);
-			} else throw new NShapeException("Unexpected style type '{0}'.", baseStyle.GetType().Name);
+			} else throw new NShapeUnsupportedValueException(baseStyle);
 		}
 
 
@@ -1136,7 +1233,6 @@ namespace Dataweb.NShape {
 		private FillStyleCollection fillStyles = new FillStyleCollection();
 		private LineStyleCollection lineStyles = new LineStyleCollection();
 		private ParagraphStyleCollection paragraphStyles = new ParagraphStyleCollection();
-		private ShapeStyleCollection shapeStyles = new ShapeStyleCollection();
 		private const string previewNameSuffix = "";
 
 		#endregion

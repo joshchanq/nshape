@@ -22,88 +22,228 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
-	public enum ControlPointShape { Circle, Square, Diamond, Hexagon, RotateArrow };
+	/// <summary>
+	/// Defines the visual appearance of control point grips.
+	/// </summary>
+	public enum ControlPointShape { 
+		/// <summary>A circular grip.</summary>
+		Circle, 
+		/// <summary>A quadratic grip.</summary>
+		Square, 
+		/// <summary>A rhombical grip.</summary>
+		Diamond, 
+		/// <summary>A hexangular grip.</summary>
+		Hexagon, 
+		/// <summary>A circular arrow grip.</summary>
+		RotateArrow 
+	}
+
 
 	#region EventArgs
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DiagramPresenterShapeClickEventArgs : EventArgs {
 
-		public DiagramPresenterShapeClickEventArgs(Shape shape, MouseEventArgsDg mouseEventArgs) {
+		/// <summary>
+		/// Initializing a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramPresenterShapeClickEventArgs" />
+		/// </summary>
+		public DiagramPresenterShapeClickEventArgs(Shape shape, MouseEventArgsDg mouseEventArgs)
+			: this() {
 			this.shape = shape;
 			this.mouseEventArgs = mouseEventArgs;
 		}
 
-		public Shape Shape { get { return shape; } }
+		/// <summary>
+		/// Initializing a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramPresenterShapeClickEventArgs" />
+		/// </summary>
+		protected internal DiagramPresenterShapeClickEventArgs() {
+		}
 
-		public MouseEventArgsDg Mouse { get { return mouseEventArgs; } }
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public Shape Shape {
+			get { return shape; }
+			protected internal set { shape = value; }
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public MouseEventArgsDg Mouse {
+			get { return mouseEventArgs; }
+			protected internal set { mouseEventArgs = value; }
+		}
+
 
 		private Shape shape;
 		private MouseEventArgsDg mouseEventArgs;
 	}
 
 
-	public class DiagramPresenterShapeEventArgs : EventArgs {
+	/// <ToBeCompleted></ToBeCompleted>
+	public class DiagramPresenterShapesEventArgs : EventArgs {
 
-		public DiagramPresenterShapeEventArgs(Shape shape) {
-			this.shape = shape;
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramPresenterShapeEventArgs" />.
+		/// </summary>
+		public DiagramPresenterShapesEventArgs(Shape shape) {
+			this.shapes = new ReadOnlyList<Shape>(1);
+			this.shapes.Add(shape);
 		}
 
-		public Shape Shape { get { return shape; } }
 
-		private Shape shape;
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramPresenterShapeEventArgs" />.
+		/// </summary>
+		public DiagramPresenterShapesEventArgs(IEnumerable<Shape> shapes) {
+			this.shapes = new ReadOnlyList<Shape>(shapes);
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public IReadOnlyCollection<Shape> Shapes {
+			get { return shapes; }
+			set {
+				shapes.Clear();
+				shapes.AddRange(value);
+			}
+		}
+
+
+		private ReadOnlyList<Shape> shapes;
+	}
+
+
+	/// <ToBeCompleted></ToBeCompleted>
+	public class UserMessageEventArgs : EventArgs {
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.UserMessageEventArgs" />.
+		/// </summary>
+		public UserMessageEventArgs(string messageText) {
+			this.messageText = messageText;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public string MessageText {
+			get { return messageText; }
+			protected internal set {
+				messageText = value;
+			}
+		}
+
+
+		private string messageText;
 	}
 
 	#endregion
 
 
+	// IDiagramPresenter has to be a descendant of IDisplayService because Tools set their IDiagramPresenter as
+	// the preview shape's DisplayService
 	/// <summary>
 	/// Defines the interface between the tool and the diagram presenter.
 	/// </summary>
 	/// <status>reviewed</status>
-	// IDiagramPresenter has to be a descendant of IDisplayService because Tools set their IDiagramPresenter as
-	// the preview shape's DislpayService
 	public interface IDiagramPresenter {
 
 		#region Events
 
+		/// <summary>
+		/// Raised when the selected shapes changed.
+		/// </summary>
 		event EventHandler ShapesSelected;
 
+		/// <summary>
+		/// Raised when a shape was clicked.
+		/// </summary>
 		event EventHandler<DiagramPresenterShapeClickEventArgs> ShapeClick;
 
+		/// <summary>
+		/// Raised when a shape was double clicked.
+		/// </summary>
 		event EventHandler<DiagramPresenterShapeClickEventArgs> ShapeDoubleClick;
 
-		event EventHandler<DiagramPresenterShapeEventArgs> ShapeInsert;
+		/// <summary>
+		/// Raised when a shape was inserted into the diagram of this diagram presenter.
+		/// </summary>
+		event EventHandler<DiagramPresenterShapesEventArgs> ShapesInserted;
 
-		event EventHandler<DiagramPresenterShapeEventArgs> ShapeRemove;
+		/// <summary>
+		/// Raised when a shape was removed from the diagram of this diagram presenter.
+		/// </summary>
+		event EventHandler<DiagramPresenterShapesEventArgs> ShapesRemoved;
 
+		/// <summary>
+		/// Raised when the diagram is going to be changed.
+		/// </summary>
 		event EventHandler DiagramChanging;
 
+		/// <summary>
+		/// Raised when the diagram was changed.
+		/// </summary>
 		event EventHandler DiagramChanged;
 
+		/// <summary>
+		/// Raised when the visibility of layers changed.
+		/// </summary>
 		event EventHandler<LayersEventArgs> LayerVisibilityChanged;
 
+		/// <summary>
+		/// Raised when the active layers changed.
+		/// </summary>
 		event EventHandler<LayersEventArgs> ActiveLayersChanged;
 
+		/// <summary>
+		/// Raised when the zoom level changed.
+		/// </summary>
 		event EventHandler ZoomChanged;
+
+		/// <summary>
+		/// Raised when a non-visual component wants to display a message for the user. 
+		/// If this event is not handled by the application, a <see cref="T:System.ComponentModel.WarningException" /> will be thrown when opening or creating a project.
+		/// </summary>
+		event EventHandler<UserMessageEventArgs> UserMessage;
 
 		#endregion
 
 
 		#region Properties
 
+		/// <summary>
+		/// The DiagramSetController responsible for managing the diagrams in the repositoriy.
+		/// </summary>
 		DiagramSetController DiagramSetController { get; set; }
 
+		/// <summary>
+		/// The DiagramSetController's project.
+		/// </summary>
 		Project Project { get; }
 
+		/// <summary>
+		/// The currently displayed diagram.
+		/// </summary>
 		Diagram Diagram { get; }
 
+		/// <summary>
+		/// Gets the display service of this diagram presenter.
+		/// </summary>
 		IDisplayService DisplayService { get; }
 
+		/// <summary>
+		/// Collection of currently selected shapes.
+		/// </summary>
 		[Browsable(false)]
 		IShapeCollection SelectedShapes { get; }
 
+		/// <summary>
+		/// Gets all active layers.
+		/// </summary>
 		LayerIds ActiveLayers { get; }
 
+		/// <summary>
+		/// Gets all hidden layers.
+		/// </summary>
 		LayerIds HiddenLayers { get; }
 
 		#endregion
@@ -127,21 +267,39 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Properties: Behavior
 
+		/// <summary>
+		/// Specifies the distance for snapping shapes and control points to grid lines.
+		/// </summary>
 		[Category("Behavior")]
 		int SnapDistance { get; set; }
 
+		/// <summary>
+		/// Enables or disables snapping of shapes and control points to grid lines.
+		/// </summary>
 		[Category("Behavior")]
 		bool SnapToGrid { get; set; }
 
+		/// <summary>
+		/// The radius of a control point grip from the center to the outer handle bound.
+		/// </summary>
 		[Category("Appearance")]
 		int GridSize { get; set; }
 
+		/// <summary>
+		/// Specifies wether grid lines should be visible.
+		/// </summary>
 		[Category("Appearance")]
 		bool ShowGrid { get; set; }
 
+		/// <summary>
+		/// Specifies the shape of grips used for resizing shapes.
+		/// </summary>
 		[Category("Appearance")]
 		ControlPointShape ResizeGripShape { get; set; }
 
+		/// <summary>
+		/// Specifies the shape of connection points provided by a shape.
+		/// </summary>
 		[Category("Appearance")]
 		ControlPointShape ConnectionPointShape { get; set; }
 
@@ -151,6 +309,9 @@ namespace Dataweb.NShape.Controllers {
 		[Category("Appearance")]
 		int GripSize { get; set; }
 
+		/// <summary>
+		/// Provides the size (radius) of ControlPoint grips according to the current zoom in diagram coordinates.
+		/// </summary>
 		[Browsable(false)]
 		int ZoomedGripSize { get; }
 
@@ -159,8 +320,14 @@ namespace Dataweb.NShape.Controllers {
 		/// </summary>
 		int ZoomLevel { get; set; }
 
+		/// <summary>
+		/// Specifies wether the component has captured the mouse.
+		/// </summary>
 		bool Capture { get; set; }
 
+		/// <summary>
+		/// Specifies the minimum distance of the mouse cursor from the shape's rotate point while rotating.
+		/// </summary>
 		[Browsable(false)]
 		int MinRotateRange { get; }
 
@@ -188,21 +355,21 @@ namespace Dataweb.NShape.Controllers {
 		/// Selects the given shape.
 		/// </summary>
 		/// <param name="shape">Shape to be selected.</param>
-		/// <param name="addToCurrentSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
+		/// <param name="addToSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
 		void SelectShape(Shape shape, bool addToSelection);
 
 		/// <summary>
 		/// Selects the given shape.
 		/// </summary>
-		/// <param name="shape">Shape to be selected.</param>
-		/// <param name="addToCurrentSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
+		/// <param name="shapes">Shape to be selected.</param>
+		/// <param name="addToSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
 		void SelectShapes(IEnumerable<Shape> shapes, bool addToSelection);
 
 		/// <summary>
 		/// Selects all shapes within the given area.
 		/// </summary>
 		/// <param name="area">All shapes in the given rectangle will be selected.</param>
-		/// <param name="addToCurrentSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
+		/// <param name="addToSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
 		void SelectShapes(Rectangle area, bool addToSelection);
 
 		/// <summary>
@@ -293,7 +460,7 @@ namespace Dataweb.NShape.Controllers {
 		/// Calculate diagram coorinates from screen coordinates
 		/// </summary>
 		/// <param name="sPt">Point in Screen coordinates</param>
-		/// <param name="iPt">Point in diagram coordinates</param>
+		/// <param name="dPt">Point in diagram coordinates</param>
 		void ScreenToDiagram(Point sPt, out Point dPt);
 
 		/// <summary>
@@ -308,44 +475,110 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods: Drawing and Invalidating
 
-		void ResetTransformation();
+		/// <summary>
+		/// Draws rotation preview for the rotated shape.
+		/// </summary>
+		/// <param name="center">The rotation center.</param>
+		/// <param name="mousePos">The current position of the mouse.</param>
+		/// <param name="cursorId">The id of the registered cursor.</param>
+		/// <param name="startAngle">Initial rotation angle.</param>
+		/// <param name="sweepAngle">Rotation angle</param>
+		void DrawAnglePreview(Point center, Point mousePos, int cursorId, int startAngle, int sweepAngle);
 
-		void RestoreTransformation();
-
-		void DrawShape(Shape shape);
-
-		void DrawShapes(IEnumerable<Shape> shapes);
-
-		void DrawShapeOutline(IndicatorDrawMode drawMode, Shape shape);
-
-		void DrawConnectionPoint(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
-
-		void DrawRotateGrip(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
-
-		void DrawResizeGrip(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
-
+		/// <summary>
+		/// Draws the text bounds of the given caption.
+		/// </summary>
 		void DrawCaptionBounds(IndicatorDrawMode drawMode, ICaptionedShape shape, int captionIndex);
 
-		void DrawSnapIndicators(Shape shape);
+		/// <summary>
+		/// Draws a grip indicating a connection point at the position of the given control point.
+		/// </summary>
+		void DrawConnectionPoint(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
 
-		void DrawSelectionFrame(Rectangle frameRect);
-
-		void DrawAnglePreview(Point center, int radius, Point mousePos, int cursorId, int startAngle, int sweepAngle);
-
+		/// <summary>
+		/// Draws a line.
+		/// </summary>
 		void DrawLine(Point a, Point b);
 
+		/// <summary>
+		/// Draws a grip indicating a control point used for resizing shapes at the position of the given control point.
+		/// </summary>
+		void DrawResizeGrip(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
+
+		/// <summary>
+		/// Draws a grip indicating a control point used for rotating shapes at the position of the given control point.
+		/// </summary>
+		void DrawRotateGrip(IndicatorDrawMode drawMode, Shape shape, ControlPointId pointId);
+
+		/// <summary>
+		/// Draws a selection frame.
+		/// </summary>
+		/// <param name="frameRect">Bounds of the selection frame in diagram coordinates.</param>
+		void DrawSelectionFrame(Rectangle frameRect);
+
+		/// <summary>
+		/// Draws the given shape.
+		/// </summary>
+		void DrawShape(Shape shape);
+
+		/// <summary>
+		/// Draws the outline of the given shape.
+		/// </summary>
+		void DrawShapeOutline(IndicatorDrawMode drawMode, Shape shape);
+
+		/// <summary>
+		/// Draws all shapes of the given collection.
+		/// </summary>
+		void DrawShapes(IEnumerable<Shape> shapes);
+
+		/// <summary>
+		/// Draw lines and grips indicating that a dragged control point or shape has been snapped to a nearby grid line.
+		/// </summary>
+		void DrawSnapIndicators(Shape shape);
+
+		/// <summary>
+		/// Resets transformation of the graphics context.
+		/// </summary>
+		void ResetTransformation();
+
+		/// <summary>
+		/// Transforms the graphics context.
+		/// </summary>
+		void RestoreTransformation();
+
+		/// <summary>
+		/// Invalidate the given area of the diagram in order to cause redrawing.
+		/// </summary>
 		void InvalidateDiagram(Rectangle rect);
 
-		void InvalidateDiagram(int right, int top, int width, int height);
+		/// <summary>
+		/// Invalidate the given area of the diagram in order to cause redrawing.
+		/// </summary>
+		void InvalidateDiagram(int left, int top, int width, int height);
 
+		/// <summary>
+		/// Invalidates the bounding rectangle around the shape and all its (suitable) control points.
+		/// </summary>
 		void InvalidateGrips(Shape shape, ControlPointCapabilities controlPointCapability);
 
+		/// <summary>
+		/// Invalidates the bounding rectangle around all shapes and all their (suitable) control points.
+		/// </summary>
 		void InvalidateGrips(IEnumerable<Shape> shapes, ControlPointCapabilities controlPointCapability);
 
+		/// <summary>
+		/// Invalidate snap indicators drawn for the given shape.
+		/// </summary>
 		void InvalidateSnapIndicators(Shape preview);
 
+		/// <summary>
+		/// Ignores (and collects) calls of "InvalidateDiagram" until ResumeUpdate is called.
+		/// </summary>
 		void SuspendUpdate();
 
+		/// <summary>
+		/// Stops ignoring/collecting calls of "InvalidateDiagram" and executes the collected calls at once.
+		/// </summary>
 		void ResumeUpdate();
 
 		#endregion
@@ -353,11 +586,65 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods
 
+		/// <summary>
+		/// Inserts the given shape in the displayed diagram.
+		/// </summary>
+		void InsertShape(Shape shape);
+
+		/// <summary>
+		/// Inserts the given shapes in the displayed diagram.
+		/// </summary>
+		void InsertShapes(IEnumerable<Shape> shapes);
+
+		/// <summary>
+		/// Deletes the given shape in the displayed diagram.
+		/// </summary>
+		void DeleteShape(Shape shape, bool withModelObjects);
+
+		/// <summary>
+		/// Deletes the given shapes in the displayed diagram.
+		/// </summary>
+		void DeleteShapes(IEnumerable<Shape> shapes, bool withModelObjects);
+
+		/// <summary>
+		/// Cuts the selected shapes.
+		/// </summary>
+		void Cut();
+
+		/// <summary>
+		/// Copies the selected shapes.
+		/// </summary>
+		void Copy();
+
+		/// <summary>
+		/// Pastes the previously copied or cut shapes into the displayed diagram.
+		/// </summary>
+		void Paste();
+
+		/// <summary>
+		/// Opens a text editor for editing a caption of the given <see cref="T:Dataweb.NShape.Advanced.ICaptionedShape" /> instance located at the given position.
+		/// </summary>
 		void OpenCaptionEditor(ICaptionedShape shape, int x, int y);
 
+		/// <summary>
+		/// Opens a text editor for editing the indicated caption of the given <see cref="T:Dataweb.NShape.Advanced.ICaptionedShape" /> instance.
+		/// </summary>
 		void OpenCaptionEditor(ICaptionedShape shape, int labelIndex);
 
+		/// <summary>
+		/// Opens a text editor for editing the indicated caption of the given <see cref="T:Dataweb.NShape.Advanced.ICaptionedShape" /> instance.
+		/// </summary>
 		void OpenCaptionEditor(ICaptionedShape shape, int labelIndex, string newText);
+
+		///// <summary>
+		///// Notifies the DiagramPresenter that shapes have been inserted.
+		///// </summary>
+		//void NotifyShapesInserted(IEnumerable<Shape> shapes);
+
+		///// <summary>
+		///// Notifies the DiagramPresenter that shapes have been removed.
+		///// </summary>
+		//void NotifyShapesRemoved(IEnumerable<Shape> shapes);
 
 		/// <summary>
 		/// Ensures that the given point is visible. 
@@ -376,23 +663,49 @@ namespace Dataweb.NShape.Controllers {
 		/// If the given area is outside the displayed area, the diagram will be scrolled and/or zoomed.
 		/// </summary>
 		void EnsureVisible(Rectangle area);
-		
+
 		/// <summary>
 		/// Sets a previously registered cursor.
 		/// </summary>
-		/// <param name="cursor"></param>
+		/// <param name="cursorId">The id of the registered cursor to set.</param>
 		void SetCursor(int cursorId);
 
+		/// <summary>
+		/// Sets the visibility of the given layers.
+		/// </summary>
 		void SetLayerVisibility(LayerIds layerIds, bool visible);
 
+		/// <summary>
+		/// Sets the given layers as the active layers.
+		/// </summary>
 		void SetLayerActive(LayerIds layerIds, bool active);
 
+		/// <summary>
+		/// Checks wether any of the given layers is visible.
+		/// </summary>
 		bool IsLayerVisible(LayerIds layerId);
 
+		/// <summary>
+		/// Checks wether all of the given layers are active.
+		/// </summary>
 		bool IsLayerActive(LayerIds layerId);
 
 		#endregion
 
 	}
 
+
+	///// <ToBeCompleted></ToBeCompleted>
+	//public interface IDiagramPresenterNotificaton {
+
+	//   /// <ToBeCompleted></ToBeCompleted>
+	//   void NotifyUserMessage(string messageText);
+
+	//   /// <ToBeCompleted></ToBeCompleted>
+	//   void NotifyShapesInserted(IEnumerable<Shape> shapes);
+
+	//   /// <ToBeCompleted></ToBeCompleted>
+	//   void NotifyShapesRemoved(IEnumerable<Shape> shapes);
+
+	//}
 }

@@ -20,16 +20,29 @@ using Dataweb.NShape.Advanced;
 namespace Dataweb.NShape {
 
 	// TODO 3: Redesign exceptions
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
 	public class NShapeException : Exception {
 
-		public NShapeException(string message) : base(message) { }
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeException" />.
+		/// </summary>
+		public NShapeException(string message)
+			: base(message) {
+		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeException" />.
+		/// </summary>
 		public NShapeException(string format, params object[] args)
 			: base(string.Format(format, args), null) {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeException" />.
+		/// </summary>
 		public NShapeException(string format, Exception innerException, params object[] args)
 			: base(string.Format(format, args), innerException) {
 		}
@@ -37,12 +50,20 @@ namespace Dataweb.NShape {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
 	public class NShapeSecurityException : NShapeException {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeSecurityException" />.
+		/// </summary>
 		public NShapeSecurityException(Permission permission)
 			: base("Required permission '{0}' is not granted.", permission) {
 		}
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeSecurityException" />.
+		/// </summary>
 		public NShapeSecurityException(ICommand command)
 			: base((command is Command) ?
 			string.Format("'{0}' denied: Required permission '{1}' is not granted.", command.Description, ((Command)command).RequiredPermission)
@@ -52,47 +73,123 @@ namespace Dataweb.NShape {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
 	public class NShapeInternalException : Exception {
+		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInternalException" />.
+		/// </summary>
+		public NShapeInternalException(string message)
+			: base(message) {
+		}
 
-		public NShapeInternalException(string message) : base(message) { }
 
-
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInternalException" />.
+		/// </summary>
 		public NShapeInternalException(string format, params object[] args)
 			: base(string.Format(format, args), null) {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInternalException" />.
+		/// </summary>
 		public NShapeInternalException(string format, Exception innerException, params object[] args)
 			: base(string.Format(format, args), innerException) {
 		}
+
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
 	public class NShapeUnsupportedValueException : NShapeInternalException {
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeUnsupportedValueException" />.
+		/// </summary>
 		public NShapeUnsupportedValueException(Type type, object value)
 			: base("Unsupported {0} value '{1}'.", type.Name, value) {
 		}
+
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeUnsupportedValueException" />.
+		/// </summary>
 		public NShapeUnsupportedValueException(object value)
 			: base((value != null) ? string.Format("Unsupported {0} value '{1}'.", value.GetType().Name, value) : "Unsupported value.") {
+		}
+
+	}
+
+
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
+	public class NShapeInterfaceNotSupportedException : NShapeInternalException {
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInterfaceNotSupportedException" />.
+		/// </summary>
+		public NShapeInterfaceNotSupportedException(Type instanceType, Type neededInterface)
+			: base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) {
+		}
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInterfaceNotSupportedException" />.
+		/// </summary>
+		public NShapeInterfaceNotSupportedException(string instanceTypeName, Type neededInterface)
+			: base("Type '{0}' does not implement interface '{1}'.", instanceTypeName, neededInterface.FullName) {
+		}
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInterfaceNotSupportedException" />.
+		/// </summary>
+		public NShapeInterfaceNotSupportedException(ShapeType instanceType, Type neededInterface)
+			: base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) {
+		}
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInterfaceNotSupportedException" />.
+		/// </summary>
+		public NShapeInterfaceNotSupportedException(ModelObjectType instanceType, Type neededInterface)
+			: base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) {
 		}
 	}
 
 
-	public class NShapeInterfaceNotSupportedException : NShapeInternalException {
-		public NShapeInterfaceNotSupportedException(Type instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
-		public NShapeInterfaceNotSupportedException(string instanceTypeName, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceTypeName, neededInterface.FullName) { }
-		public NShapeInterfaceNotSupportedException(ShapeType instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
-		public NShapeInterfaceNotSupportedException(ModelObjectType instanceType, Type neededInterface) : base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) { }
-	}
-
-
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
 	public class NShapeMappingNotSupportedException : NShapeInternalException {
-		public NShapeMappingNotSupportedException(Type shapeType, Type modelType) : base("Mapping between proeprty types '{0}' and '{1}' are not supported.", modelType.Name, shapeType.Name) { }
+		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeMappingNotSupportedException" />.
+		/// </summary>
+		public NShapeMappingNotSupportedException(Type shapeType, Type modelType)
+			: base("Mapping between proeprty types '{0}' and '{1}' are not supported.", modelType.Name, shapeType.Name) {
+		}
+
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
+	[Serializable]
 	public class NShapePropertyNotSetException : NShapeInternalException {
-		public NShapePropertyNotSetException(string propertyName) : base("Property '{0}' is not set.") { }
-		public NShapePropertyNotSetException(object propertyOwner, string propertyName) : base("Property '{0}' of {1} is not set.", propertyName, propertyOwner.GetType().Name) { }
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapePropertyNotSetException" />.
+		/// </summary>
+		public NShapePropertyNotSetException(string propertyName)
+			: base("Property '{0}' is not set.") {
+		}
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapePropertyNotSetException" />.
+		/// </summary>
+		public NShapePropertyNotSetException(object propertyOwner, string propertyName)
+			: base("Property '{0}' of {1} is not set.", propertyName, propertyOwner.GetType().Name) {
+		}
+
 	}
 }

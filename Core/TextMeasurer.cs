@@ -47,7 +47,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <returns></returns>
 		public static Size MeasureText(string text, Font font, Size proposedSize, IParagraphStyle paragraphStyle) {
 			using (Graphics graphics = Graphics.FromHwnd(IntPtr.Zero))
-				return MeasureText(graphics, text, font, proposedSize, ToolCache.GetStringFormat(paragraphStyle));
+				return MeasureText(graphics, text, font, proposedSize, paragraphStyle);
 		}
 
 
@@ -75,6 +75,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="paragraphStyle">The paragraph layout of the text</param>
 		/// <returns></returns>
 		public static Size MeasureText(Graphics graphics, string text, ICharacterStyle characterStyle, Size proposedSize, IParagraphStyle paragraphStyle) {
+			if (paragraphStyle == null) throw new ArgumentNullException("paragraphStyle");
 			return MeasureText(graphics, text, ToolCache.GetFont(characterStyle), proposedSize, ToolCache.GetStringFormat(paragraphStyle));
 		}
 
@@ -89,6 +90,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="paragraphStyle">The paragraph layout of the text</param>
 		/// <returns></returns>
 		public static Size MeasureText(Graphics graphics, string text, Font font, Size proposedSize, IParagraphStyle paragraphStyle) {
+			if (paragraphStyle == null) throw new ArgumentNullException("paragraphStyle");
 			return MeasureText(graphics, text, font, proposedSize, ToolCache.GetStringFormat(paragraphStyle));
 		}
 
@@ -103,27 +105,42 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="format">StringFormat object defining the layout of the text</param>
 		/// <returns></returns>
 		public static Size MeasureText(Graphics graphics, string text, Font font, Size proposedSize, StringFormat format) {
-			if (text == null) throw new ArgumentNullException("text");
+			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (font == null) throw new ArgumentNullException("font");
+			if (text == null) throw new ArgumentNullException("text");
 			if (format == null) throw new ArgumentNullException("format");
 			// Add Flag "Measure Trailing Spaces" if not set
-			bool flagAdded = false;
-			if ((format.FormatFlags & StringFormatFlags.MeasureTrailingSpaces) == 0) {
-				format.FormatFlags |= StringFormatFlags.MeasureTrailingSpaces;
-				flagAdded = true;
-			}
+			StringFormatFlags flags = format.FormatFlags;
+			bool flagRemoved = RemoveFlag(ref flags, StringFormatFlags.MeasureTrailingSpaces);
+			if (flagRemoved) format.FormatFlags = flags;
 
 			Size result = Size.Empty;
+			// Workaround: Last Line break will be always be ignored when measuring the string, so add another line break
 			string measuredText = text.EndsWith("\n") ? text + "\n" : text;
 			if (proposedSize == Size.Empty)
 				result = Size.Ceiling(graphics.MeasureString(measuredText, font, PointF.Empty, format));
 			else result = Size.Ceiling(graphics.MeasureString(measuredText, font, proposedSize, format));
 
-			// remove flag if added before
-			if (flagAdded) format.FormatFlags ^= StringFormatFlags.MeasureTrailingSpaces;
-
+			// Restore StringFormatFlags
+			if (flagRemoved) {
+				AddFlag(ref flags, StringFormatFlags.MeasureTrailingSpaces);
+				format.FormatFlags = flags;
+			}
 			return result;
 		}
 
+
+		private static bool AddFlag(ref StringFormatFlags formatFlags, StringFormatFlags flag) {
+			if ((formatFlags & flag) == flag) return false;
+			formatFlags |= flag;
+			return true;
+		}
+
+
+		private static bool RemoveFlag(ref StringFormatFlags formatFlags, StringFormatFlags flag) {
+			if ((formatFlags & flag) != flag) return false;
+			formatFlags ^= flag;
+			return true;
+		}
 	}
 }

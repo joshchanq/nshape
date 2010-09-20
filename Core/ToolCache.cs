@@ -76,7 +76,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Releases resources used for styles of the the given StyleSet
+		/// Releases resources used for styles of the given <see cref="T:Dataweb.NShape.IStyleSet" />.
 		/// </summary>
 		public static void RemoveStyleSetTools(IStyleSet styleSet) {
 			if (styleSet == null) throw new ArgumentNullException("styleSet");
@@ -94,11 +94,12 @@ namespace Dataweb.NShape.Advanced {
 				ToolCache.NotifyLineStyleChanged(style);
 			foreach (IParagraphStyle style in styleSet.ParagraphStyles)
 				ToolCache.NotifyParagraphStyleChanged(style);
-			//foreach (IShapeStyle style in styleSet.ShapeStyles)
-			//   ToolCache.NotifyShapeStyleChanged(style);
 		}
 
 
+		/// <summary>
+		/// Deletes all cached instances of the given <see cref="T:Dataweb.NShape.IStyle" />.
+		/// </summary>
 		public static void NotifyStyleChanged(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
 			if (style is ICapStyle) NotifyCapStyleChanged((ICapStyle)style);
@@ -107,18 +108,18 @@ namespace Dataweb.NShape.Advanced {
 			else if (style is IFillStyle) NotifyFillStyleChanged((IFillStyle)style);
 			else if (style is ILineStyle) NotifyLineStyleChanged((ILineStyle)style);
 			else if (style is IParagraphStyle) NotifyParagraphStyleChanged((IParagraphStyle)style);
-			else if (style is IShapeStyle) NotifyShapeStyleChanged((IShapeStyle)style);
 			else throw new ArgumentException("style");
 		}
 
 
 		/// <summary>
-		/// Finds and returns the brush for the given FillStyle. The brush will be translated, scaled and rotated.
+		/// Finds and returns the <see cref="T:System.Drawing.Brush" /> for the given <see cref="T:Dataweb.NShape.IFillStyle" />. 
+		/// The <see cref="T:System.Drawing.Brush" /> will be translated, scaled and rotated.
 		/// </summary>
-		/// <param name="fillStyle">The FillStyle the brush belongs to.</param>
-		/// <param name="unrotatedBounds">BoundingRectangle of the unrotated shape.</param>
-		/// <param name="shapeAngle">Angle in tenths of degrees.</param>
-		/// <returns></returns>
+		/// <param name="fillStyle">Specifies the <see cref="T:Dataweb.NShape.IFillStyle" /> the brush belongs to.</param>
+		/// <param name="unrotatedBounds">Specifies the axis aligned bounding rectangle of the unrotated shape.</param>
+		/// <param name="center">Specifies the rotation center.</param>
+		/// <param name="angle">Specifies the rotation angle in tenths of degrees.</param>
 		public static Brush GetTransformedBrush(IFillStyle fillStyle, Rectangle unrotatedBounds, Point center, int angle) {
 			if (fillStyle == null) throw new ArgumentNullException("fillStyle");
 
@@ -134,6 +135,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Finds and returns the <see cref="T:System.Drawing.Drawing2D.CustomLineCap" /> for the given <see cref="T:Dataweb.NShape.ICapStyle" /> and <see cref="T:Dataweb.NShape.ILineStyle" />.
+		/// </summary>
 		public static CustomLineCap GetCustomLineCap(ICapStyle capStyle, ILineStyle lineStyle) {
 			if (capStyle == null) throw new ArgumentNullException("capStyle");
 			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
@@ -163,7 +167,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Returns the untransformed bounding rectangle of the line cap defined by the given style.
+		/// Returns the untransformed axis aligned bounding rectangle of the line cap defined by the given styles.
 		/// </summary>
 		public static Rectangle GetCapBounds(ICapStyle capStyle, ILineStyle lineStyle, float angleDeg) {
 			if (capStyle == null) throw new ArgumentNullException("capStyle");
@@ -184,6 +188,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void GetCapPoints(ICapStyle capStyle, ILineStyle lineStyle, ref PointF[] capPoints) {
 			if (capStyle == null) throw new ArgumentNullException("capStyle");
 			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
@@ -196,7 +201,8 @@ namespace Dataweb.NShape.Advanced {
 			Array.Copy(capPath.PathPoints, capPoints, capPoints.Length);
 		}
 
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Pen GetPen(ILineStyle lineStyle, ICapStyle startCapStyle, ICapStyle endCapStyle) {
 			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
 			
@@ -243,6 +249,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Brush GetBrush(IColorStyle colorStyle) {
 			if (colorStyle == null) throw new ArgumentNullException("colorStyle");
 			
@@ -257,6 +264,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Brush GetBrush(IFillStyle fillStyle) {
 			if (fillStyle == null) throw new ArgumentNullException("fillStyle");
 			BrushKey brushKey;
@@ -281,7 +289,7 @@ namespace Dataweb.NShape.Advanced {
 						brush = new LinearGradientBrush(rectBuffer, GetColor(fillStyle.AdditionalColorStyle, fillStyle.ConvertToGrayScale), GetColor(fillStyle.BaseColorStyle, fillStyle.ConvertToGrayScale), fillStyle.GradientAngle);
 						break;
 					case FillMode.Image:
-						if (fillStyle.Image == null || fillStyle.Image.Image == null)
+						if (NamedImage.IsNullOrEmpty(fillStyle.Image))
 							brush = new SolidBrush(Color.Transparent);
 						else {
 							// First, get ImageAttributes
@@ -313,6 +321,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static TextureBrush GetBrush(Image image, ImageLayoutMode imageLayout, float gamma, byte transparency, bool grayScale) {
 			if (image == null) throw new ArgumentNullException("image");
 			BrushKey brushKey;
@@ -346,6 +355,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Font GetFont(ICharacterStyle characterStyle) {
 			if (characterStyle == null) throw new ArgumentNullException("characterStyle");
 
@@ -388,6 +398,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static StringFormat GetStringFormat(IParagraphStyle paragraphStyle) {
 			if (paragraphStyle == null) throw new ArgumentNullException("paragraphStyle");
 			
@@ -438,7 +449,8 @@ namespace Dataweb.NShape.Advanced {
 				// LineLimit prevents the Title from being drawn outside the layout rectangle.
 				// If the layoutRectangle is too small, the text will not be rendered at all.
 				//stringFormat.FormatFlags = StringFormatFlags.MeasureTrailingSpaces | StringFormatFlags.FitBlackBox | StringFormatFlags.LineLimit;
-				stringFormat.FormatFlags = StringFormatFlags.MeasureTrailingSpaces | StringFormatFlags.FitBlackBox;
+				//stringFormat.FormatFlags = StringFormatFlags.MeasureTrailingSpaces | StringFormatFlags.FitBlackBox;
+				stringFormat.FormatFlags = StringFormatFlags.FitBlackBox;
 				if (!paragraphStyle.WordWrap)
 					stringFormat.FormatFlags |= StringFormatFlags.NoWrap;
 				stringFormat.Trimming = paragraphStyle.Trimming;
@@ -642,14 +654,6 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Deletes all tools based on the given ShapeStyle.
-		/// </summary>
-		private static void NotifyShapeStyleChanged(IShapeStyle shapeStyle) {
-			// ShapeStyles not yet implemented
-		}
-
-	
 		private static Color GetColor(IColorStyle colorStyle, bool convertToGray) {
 			Debug.Assert(colorStyle != null);
 
@@ -789,8 +793,10 @@ namespace Dataweb.NShape.Advanced {
 			
 			public ICapStyle EndCapStyle;
 
+			/// <override></override>
 			public override bool Equals(object obj) { return (obj is PenKey && this == (PenKey)obj); }
-			
+
+			/// <override></override>
 			public override int GetHashCode() {
 				int hashCode = 0;
 				if (LineStyle != null) hashCode ^= LineStyle.GetHashCode();
@@ -814,8 +820,10 @@ namespace Dataweb.NShape.Advanced {
 
 			public ILineStyle LineStyle;
 
+			/// <override></override>
 			public override bool Equals(object obj) { return (obj is CapKey && this == (CapKey)obj); }
 
+			/// <override></override>
 			public override int GetHashCode() {
 				int hashCode = 0;
 				if (LineStyle != null) hashCode ^= LineStyle.GetHashCode();
@@ -838,9 +846,11 @@ namespace Dataweb.NShape.Advanced {
 			public IFillStyle FillStyle;
 			
 			public Image Image;
-			
+
+			/// <override></override>
 			public override bool Equals(object obj) { return (obj is BrushKey && this == (BrushKey)obj); }
-			
+
+			/// <override></override>
 			public override int GetHashCode() {
 				int hashCode = 0;
 				if (FillStyle != null) hashCode ^= FillStyle.GetHashCode();

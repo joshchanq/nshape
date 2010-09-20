@@ -31,12 +31,14 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class FreeHandTool : Tool {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FreeHandTool(Project project)
 			: base("Standard") {
 			Construct(project);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FreeHandTool(Project project, string category)
 			: base(category) {
 			Construct(project);
@@ -162,6 +164,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override IEnumerable<MenuItemDef> GetMenuItemDefs(IDiagramPresenter diagramPresenter) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
 			yield break;
@@ -185,6 +188,7 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <override></override>
 		public override void Dispose() {
 			base.Dispose();
 

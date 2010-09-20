@@ -1,6 +1,7 @@
 namespace Dataweb.NShape.WinFormsUI {
 
 	partial class DesignEditorDialog {
+
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
@@ -75,8 +76,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// designsComboBox
 			// 
-			this.designsComboBox.Items.AddRange(new object[] {
-            "Current Design"});
 			this.designsComboBox.Name = "designsComboBox";
 			this.designsComboBox.Size = new System.Drawing.Size(121, 25);
 			this.designsComboBox.SelectedIndexChanged += new System.EventHandler(this.designsComboBox_SelectedIndexChanged);
@@ -219,4 +218,5 @@ namespace Dataweb.NShape.WinFormsUI {
 		private Dataweb.NShape.WinFormsUI.DesignPresenter designPresenter;
 		private Dataweb.NShape.Controllers.DesignController designController;
 	}
+
 }

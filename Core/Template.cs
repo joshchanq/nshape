@@ -22,12 +22,21 @@ namespace Dataweb.NShape.Advanced {
 
 	#region Property Mappings
 
+	/// <summary>
+	/// Indicates that a property can be used for model-to-shape property mappings.
+	/// </summary>
 	public class PropertyMappingIdAttribute : Attribute {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.PropertyMappingIdAttribute" />.
+		/// </summary>
 		public PropertyMappingIdAttribute(int id) {
 			this.id = id;
 		}
 
+		/// <summary>
+		/// The id value used for identifying the property.
+		/// </summary>
 		public int Id { get { return id; } }
 
 		private int id;
@@ -39,43 +48,97 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public interface IModelMapping: IEntity {
 
+		/// <summary>
+		/// The property of a <see cref="T:Dataweb.NShape.Advanced.Shape" /> with the specified <see cref="T:Dataweb.NShape.Advanced.PropertyMappingIdAttribute" /> value.
+		/// </summary>
 		int ShapePropertyId { get; }
 
+		/// <summary>
+		/// The property of a <see cref="T:Dataweb.NShape.Advanced.IModelObject" /> with the specified <see cref="T:Dataweb.NShape.Advanced.PropertyMappingIdAttribute" /> value.
+		/// </summary>
 		int ModelPropertyId { get; }
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> accepts <see cref="T:System.Int32" /> values from the associated <see cref="T:Dataweb.NShape.Advanced.IModelObject" />.
+		/// </summary>
 		bool CanSetInteger { get; }
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> accepts <see cref="T:System.Single" /> values from the associated <see cref="T:Dataweb.NShape.Advanced.IModelObject" />.
+		/// </summary>
 		bool CanSetFloat { get; }
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> accepts <see cref="T:System.String" /> values from the associated <see cref="T:Dataweb.NShape.Advanced.IModelObject" />.
+		/// </summary>
 		bool CanSetString { get; }
 
+		/// <summary>
+		/// Sets a <see cref="T:System.Int32" /> value provided by the <see cref="T:Dataweb.NShape.Advanced.IModelObject" />.
+		/// </summary>
 		void SetInteger(int value);
 
+		/// <summary>
+		/// Sets a <see cref="T:System.Single" /> value provided by the <see cref="T:Dataweb.NShape.Advanced.IModelObject" />.
+		/// </summary>
 		void SetFloat(float value);
 
+		/// <summary>
+		/// Sets a <see cref="T:System.String" /> value provided by the <see cref="T:Dataweb.NShape.Advanced.IModelObject" />.
+		/// </summary>
 		void SetString(string value);
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> can provide <see cref="T:System.Int32" /> values for the associated <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		bool CanGetInteger { get; }
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> can provide <see cref="T:System.Single" /> values for the associated <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		bool CanGetFloat { get; }
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> can provide <see cref="T:System.String" /> values for the associated <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		bool CanGetString { get; }
 
+		/// <summary>
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> can provide <see cref="T:Dataweb.NShape.IStyle" /> values for the associated <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		bool CanGetStyle { get; }
 
+		/// <summary>
+		/// Retrieves a converted <see cref="T:System.Int32" /> value for the <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		int GetInteger();
 
+		/// <summary>
+		/// Retrieves a converted <see cref="T:System.Single" /> value for the <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		float GetFloat();
 
+		/// <summary>
+		/// Retrieves a converted <see cref="T:System.String" /> value for the <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		string GetString();
 
+		/// <summary>
+		/// Retrieves a converted <see cref="T:Dataweb.NShape.IStyle" /> value for the <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+		/// </summary>
 		IStyle GetStyle();
 
 	}
 
 
+	/// <summary>
+	/// Provides a base class for <see cref="T:Dataweb.NShape.Advanced.ModelMappingBase" /> implementations.
+	/// </summary>
 	public abstract class ModelMappingBase : IModelMapping {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.ModelMappingBase" />.
+		/// </summary>
 		protected ModelMappingBase(int modelPropertyId, int shapePropertyId) {
 			this.shapePropertyId = shapePropertyId;
 			this.modelPropertyId = modelPropertyId;
@@ -83,7 +146,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Constructor for IEntity CreateInstanceDelegate: Creates an empty instance for loading from Repository
+		/// Creates an uninitialized instance of <see cref="T:Dataweb.NShape.Advanced.ModelMappingBase" /> used for loading from an <see cref="T:Dataweb.NShape.Advanced.IRepository" />.
 		/// </summary>
 		protected ModelMappingBase() {
 		}
@@ -91,38 +154,58 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IModelMapping Members
 
-		public int ShapePropertyId { get { return shapePropertyId; } }
+		/// <override></override>
+		public int ShapePropertyId {
+			get { return shapePropertyId; }
+		}
 
 
-		public int ModelPropertyId { get { return modelPropertyId; } }
+		/// <override></override>
+		public int ModelPropertyId {
+			get { return modelPropertyId; }
+		}
 
 
+		/// <override></override>
 		public abstract void SetInteger(int value);
 
+		/// <override></override>
 		public abstract void SetFloat(float value);
 
+		/// <override></override>
 		public abstract void SetString(string value);
 
+		/// <override></override>
 		public abstract int GetInteger();
 
+		/// <override></override>
 		public abstract float GetFloat();
 
+		/// <override></override>
 		public abstract string GetString();
 
+		/// <override></override>
 		public abstract IStyle GetStyle();
 
+		/// <override></override>
 		public abstract bool CanSetInteger { get; }
 
+		/// <override></override>
 		public abstract bool CanSetFloat { get; }
 
+		/// <override></override>
 		public abstract bool CanSetString { get; }
 
+		/// <override></override>
 		public abstract bool CanGetInteger { get; }
 
+		/// <override></override>
 		public abstract bool CanGetFloat { get; }
 
+		/// <override></override>
 		public abstract bool CanGetString { get; }
 
+		/// <override></override>
 		public abstract bool CanGetStyle { get; }
 
 		#endregion
@@ -130,17 +213,22 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.ModelMappingBase" />.
+		/// </summary>
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("ShapePropertyId", typeof(int));
 			yield return new EntityFieldDefinition("ModelPropertyId", typeof(int));
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public object Id {
 			get { return id; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void AssignId(object id) {
 			if (id == null) throw new ArgumentNullException("id");
 			if (this.id != null) throw new InvalidOperationException(string.Format("{0} has already a id.", GetType().Name));
@@ -148,6 +236,8 @@ namespace Dataweb.NShape.Advanced {
 
 		}
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void LoadFields(IRepositoryReader reader, int version) {
 			if (reader == null) throw new ArgumentNullException("reader");
 			shapePropertyId = reader.ReadInt32();
@@ -155,6 +245,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
 			if (propertyName == null) throw new ArgumentNullException("propertyName");
 			if (reader == null) throw new ArgumentNullException("reader");
@@ -162,6 +253,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void SaveFields(IRepositoryWriter writer, int version) {
 			if (writer == null) throw new ArgumentNullException("writer");
 			writer.WriteInt32(shapePropertyId);
@@ -169,6 +261,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
 			if (propertyName == null) throw new ArgumentNullException("propertyName");
 			if (writer == null) throw new ArgumentNullException("writer");
@@ -176,6 +269,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Delete(IRepositoryWriter writer, int version) {
 			if (writer == null) throw new ArgumentNullException("writer");
 			foreach (EntityPropertyDefinition pi in GetPropertyDefinitions(version)) {
@@ -194,13 +288,28 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <summary>
+	/// A <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> for mapping a numeric property of a <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> to a numeric property of a <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+	/// </summary>
 	public class NumericModelMapping : ModelMappingBase {
 
-		public enum MappingType { IntegerInteger, IntegerFloat, FloatInteger, FloatFloat };
+		/// <summary>
+		/// Specifies the mapping capabilities of the <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" />.
+		/// </summary>
+		public enum MappingType { 
+			/// <summary>Specifies a mapping from a <see cref="T:System.Int32" /> property to a <see cref="T:System.Int32" />.</summary>
+			IntegerInteger,
+			/// <summary>Specifies a mapping from a <see cref="T:System.Int32" /> property to a <see cref="T:System.Single" />.</summary>
+			IntegerFloat,
+			/// <summary>Specifies a mapping from a <see cref="T:System.Single" /> property to a <see cref="T:System.Int32" />.</summary>
+			FloatInteger,
+			/// <summary>Specifies a mapping from a <see cref="T:System.Single" /> property to a <see cref="T:System.Single" />.</summary>
+			FloatFloat 
+		};
 
 
 		/// <summary>
-		/// Constructs a new NumericModelMapping instance.
+		/// Constructs a new <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" /> instance.
 		/// </summary>
 		/// <param name="shapePropertyId">PropertyId of the shape's property.</param>
 		/// <param name="modelPropertyId">PropertyId of the model's property.</param>
@@ -214,7 +323,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Constructs a new NumericModelMapping instance.
+		/// Constructs a new <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" /> instance.
 		/// </summary>
 		/// <param name="shapePropertyId">PropertyId of the shape's property.</param>
 		/// <param name="modelPropertyId">PropertyId of the model's property.</param>
@@ -234,6 +343,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IModelMappping Members
 
+		/// <override></override>
 		public override bool CanGetInteger {
 			get {
 				return (mappingType == MappingType.FloatInteger
@@ -242,6 +352,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool CanSetInteger {
 			get {
 				return (mappingType == MappingType.IntegerFloat
@@ -250,6 +361,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool CanGetFloat {
 			get {
 				return (mappingType == MappingType.IntegerFloat
@@ -258,6 +370,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool CanSetFloat {
 			get {
 				return (mappingType == MappingType.FloatInteger
@@ -266,55 +379,67 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool CanGetString {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetString {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanGetStyle {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override int GetInteger() {
-			if (CanGetInteger) return (int)Math.Round(Intercept + (floatValue * Slope));
-			else throw new NotSupportedException();
+				if (CanGetInteger)
+					checked { return (int)Math.Round(Intercept + (value * Slope)); }
+				else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetInteger(int value) {
-			if (CanSetInteger) floatValue = value;
+			if (CanSetInteger) checked { this.value = value; }
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override float GetFloat() {
-			if (CanGetFloat) return Intercept + (floatValue * Slope);
+			if (CanGetFloat)
+				checked { return (float)Math.Round(Intercept + (value * Slope), 6); }
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetFloat(float value) {
-			if (CanSetFloat) floatValue = value;
+			if (CanSetFloat) checked { this.value = value; }
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override string GetString() {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetString(string value) {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override IStyle GetStyle() {
 			throw new NotSupportedException();
 		}
@@ -324,11 +449,17 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// The entity type name of <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" />.
+		/// </summary>
 		public static string EntityTypeName {
 			get { return entityTypeName; }
 		}
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" />.
+		/// </summary>
 		new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition propDef in ModelMappingBase.GetPropertyDefinitions(version))
 				yield return propDef;
@@ -343,6 +474,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void LoadFields(IRepositoryReader reader, int version) {
 			base.LoadFields(reader, version);
 			mappingType = (MappingType)reader.ReadInt32();
@@ -351,6 +483,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void SaveFields(IRepositoryWriter writer, int version) {
 			base.SaveFields(writer, version);
 			writer.WriteInt32((int)mappingType);
@@ -361,6 +494,9 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping.MappingType" /> specifying the mapping capabilities of this <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" />.
+		/// </summary>
 		public MappingType Type {
 			get { return mappingType; }
 		}
@@ -397,8 +533,7 @@ namespace Dataweb.NShape.Advanced {
 		private const string entityTypeName = "NumericModelMapping";
 		
 		private MappingType mappingType;
-		private int intValue = 0;
-		private float floatValue = 0;
+		private double value = 0;
 		private float slope = 1;
 		private float intercept = 0;
 
@@ -406,9 +541,22 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <summary>
+	/// A <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> for mapping a numeric or textual property of a <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> to a textual property of a <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+	/// </summary>
 	public class FormatModelMapping : ModelMappingBase {
 
-		public enum MappingType { IntegerString, FloatString, StringString };
+		/// <summary>
+		/// Specifies the mapping capabilities of the <see cref="T:Dataweb.NShape.Advanced.FormatModelMapping" />.
+		/// </summary>
+		public enum MappingType {
+			/// <summary>Specifies a mapping from a <see cref="T:System.Int32" /> property to a <see cref="T:System.String" /> property.</summary>
+			IntegerString,
+			/// <summary>Specifies a mapping from a <see cref="T:System.Float" /> property to a <see cref="T:System.String" /> property.</summary>
+			FloatString,
+			/// <summary>Specifies a mapping from a <see cref="T:System.String" /> property to a <see cref="T:System.String" /> property.</summary>
+			StringString
+		};
 
 
 		/// <summary>
@@ -444,63 +592,75 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IModelMapping Members
 
+		/// <override></override>
 		public override bool CanGetInteger {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetInteger {
 			get { return (mappingType == MappingType.IntegerString); }
 		}
 
 
+		/// <override></override>
 		public override bool CanGetFloat {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetFloat {
 			get { return (mappingType == MappingType.FloatString); }
 		}
 
 
+		/// <override></override>
 		public override bool CanGetString {
 			get { return true; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetString {
 			get { return (mappingType == MappingType.StringString); }
 		}
 
 
+		/// <override></override>
 		public override bool CanGetStyle {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override int GetInteger() {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetInteger(int value) {
 			if (CanSetInteger) intValue = value;
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override float GetFloat() {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetFloat(float value) {
 			if (CanSetFloat) floatValue = value;
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override string GetString() {
 			try {
 				switch (mappingType) {
@@ -518,12 +678,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void SetString(string value) {
 			if (CanSetString) stringValue = value;
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override IStyle GetStyle() {
 			throw new NotSupportedException();
 		}
@@ -533,11 +695,17 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// The entity type name of <see cref="T:Dataweb.NShape.Advanced.FormatModelMapping" />.
+		/// </summary>
 		public static string EntityTypeName {
 			get { return entityTypeName; }
 		}
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.FormatModelMapping" />.
+		/// </summary>
 		new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition propDef in ModelMappingBase.GetPropertyDefinitions(version))
 				yield return propDef;
@@ -547,6 +715,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void LoadFields(IRepositoryReader reader, int version) {
 			base.LoadFields(reader, version);
 			mappingType = (MappingType)reader.ReadInt32();
@@ -554,6 +723,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void SaveFields(IRepositoryWriter writer, int version) {
 			base.SaveFields(writer, version);
 			writer.WriteInt32((int)mappingType);
@@ -563,11 +733,15 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.Advanced.FormatModelMapping.MappingType" /> specifying the mapping capabilities of this <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" />.
+		/// </summary>
 		public MappingType Type {
 			get { return mappingType; }
 		}
 
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public string Format {
 			get { return format; }
 			set {
@@ -600,9 +774,20 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <summary>
+	/// A <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> for mapping a numeric property of a <see cref="T:Dataweb.NShape.Advanced.IModelMapping" /> to a <see cref="T:Dataweb.NShape.IStyle" /> property of a <see cref="T:Dataweb.NShape.Advanced.Shape" />.
+	/// </summary>
 	public class StyleModelMapping : ModelMappingBase {
 
-		public enum MappingType { IntegerStyle, FloatStyle };
+		/// <summary>
+		/// Specifies the mapping capabilities of the <see cref="T:Dataweb.NShape.Advanced.FormatModelMapping" />.
+		/// </summary>
+		public enum MappingType {
+			/// <summary>Specifies a mapping from a <see cref="T:System.Int32" /> property to a <see cref="T:Dataweb.NShape.IStyle" /> property.</summary>
+			IntegerStyle,
+			/// <summary>Specifies a mapping from a <see cref="T:System.Single" /> property to a <see cref="T:Dataweb.NShape.IStyle" /> property.</summary>
+			FloatStyle
+		};
 
 
 		/// <summary>
@@ -649,98 +834,116 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IModelMapping Members
 
+		/// <override></override>
 		public override bool CanGetInteger {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetInteger {
 			get { return (mappingType == MappingType.IntegerStyle); }
 		}
-		
 
+
+		/// <override></override>
 		public override bool CanGetFloat {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetFloat {
 			get { return (mappingType == MappingType.FloatStyle); }
 		}
 
 
+		/// <override></override>
 		public override bool CanGetString {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanSetString {
 			get { return false; }
 		}
 
 
+		/// <override></override>
 		public override bool CanGetStyle {
 			get { return true; }
 		}
 
 
+		/// <override></override>
 		public override int GetInteger() {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetInteger(int value) {
 			if (CanSetInteger) intValue = value;
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override float GetFloat() {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetFloat(float value) {
 			if (CanSetFloat) floatValue = value;
 			else throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override string GetString() {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override void SetString(string value) {
 			throw new NotSupportedException();
 		}
 
 
+		/// <override></override>
 		public override IStyle GetStyle() {
 			IStyle result;
 			if (mappingType == MappingType.IntegerStyle) {
-				int fromValue = int.MinValue;
 				result = defaultStyle;
-				foreach (KeyValuePair<int, IStyle> range in intRanges) {
-					if (fromValue == int.MinValue && intValue < range.Key)
+				int fromValue = int.MinValue;
+				foreach (KeyValuePair<int, IStyle> rangeItem in intRanges) {
+					if (fromValue == int.MinValue && intValue < rangeItem.Key)
 						break;
-					else if (fromValue <= intValue && intValue < range.Key) {
+					else if (fromValue <= intValue && intValue < rangeItem.Key) {
 						result = intRanges[fromValue];
 						break;
-					} else result = range.Value;
-					fromValue = range.Key;
+					} else result = rangeItem.Value;
+					fromValue = rangeItem.Key;
 				}
 			} else if (mappingType == MappingType.FloatStyle) {
-				float fromValue = float.MinValue;
 				result = defaultStyle;
-				foreach (KeyValuePair<float, IStyle> range in floatRanges) {
-					if (fromValue == float.MinValue && floatValue < range.Key)
+				if (float.IsNaN(floatValue)) 
+					return result;
+				//if (float.IsNegativeInfinity(floatValue))
+				//   return floatRanges.ContainsKey(floatValue) ? floatRanges[floatValue] : result;
+				float fromValue = float.NegativeInfinity;
+				foreach (KeyValuePair<float, IStyle> rangeItem in floatRanges) {
+					if (fromValue == float.NegativeInfinity && floatValue < rangeItem.Key)
 						break;
-					else if (fromValue <= floatValue && floatValue < range.Key) {
+					else if (fromValue <= floatValue && floatValue < rangeItem.Key) {
 						result = floatRanges[fromValue];
 						break;
-					} else result = range.Value;
-					fromValue = range.Key;
+					} else result = rangeItem.Value;
+					fromValue = rangeItem.Key;
 				}
 			} else throw new NotSupportedException();
 			return result;
@@ -751,11 +954,17 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.StyleModelMapping" />.
+		/// </summary>
 		public static string EntityTypeName {
 			get { return entityTypeName; }
 		}
-		
-		
+
+
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.StyleModelMapping" />.
+		/// </summary>
 		new public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition propDef in ModelMappingBase.GetPropertyDefinitions(version))
 				yield return propDef;
@@ -770,6 +979,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void LoadFields(IRepositoryReader reader, int version) {
 			base.LoadFields(reader, version);
 			mappingType = (MappingType)reader.ReadInt32();
@@ -780,6 +990,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void SaveFields(IRepositoryWriter writer, int version) {
 			base.SaveFields(writer, version);
 			writer.WriteInt32((int)mappingType);
@@ -787,6 +998,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
 			base.LoadInnerObjects(propertyName, reader, version);
 			Debug.Assert(propertyName == "ValueRanges");
@@ -814,6 +1026,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
 			base.SaveInnerObjects(propertyName, writer, version);
 			Debug.Assert(propertyName == "ValueRanges");
@@ -843,11 +1056,17 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.Advanced.StyleModelMapping.MappingType" /> specifying the mapping capabilities of this <see cref="T:Dataweb.NShape.Advanced.NumericModelMapping" />.
+		/// </summary>
 		public MappingType Type {
 			get { return mappingType; }
 		}
 
 	
+		/// <summary>
+		/// Get the number of range definitions.
+		/// </summary>
 		public int ValueRangeCount {
 			get {
 				if (mappingType == MappingType.IntegerStyle)
@@ -859,6 +1078,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Get the defined value ranges.
+		/// </summary>
 		public IEnumerable<object> ValueRanges {
 			get {
 				if (mappingType == MappingType.IntegerStyle) {
@@ -872,6 +1094,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Gets the <see cref="T:Dataweb.NShape.IStyle" /> associated with the given range key.
+		/// </summary>
 		public IStyle this[int key] {
 			get {
 				if (mappingType == MappingType.IntegerStyle)
@@ -881,6 +1106,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Gets the <see cref="T:Dataweb.NShape.IStyle" /> associated with the given range key.
+		/// </summary>
 		public IStyle this[float key] {
 			get {
 				if (mappingType == MappingType.FloatStyle)
@@ -890,6 +1118,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Deletes the current value ranges.
+		/// </summary>
 		public void ClearValueRanges() {
 			if (mappingType == MappingType.IntegerStyle) {
 				intRanges.Clear();
@@ -899,20 +1130,33 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public void AddValueRange(int value, IStyle style) {
+		/// <summary>
+		/// Adds a new value range.
+		/// </summary>
+		/// <param name="lowerValue">The lower bound of the value range.</param>
+		/// <param name="style">The <see cref="T:Dataweb.NShape.IStyle" /> representing the range of values.</param>
+		public void AddValueRange(int lowerValue, IStyle style) {
 			if (mappingType == MappingType.IntegerStyle)
-				intRanges.Add(value, style);
+				intRanges.Add(lowerValue, style);
 			else throw new NotSupportedException();
 		}
 
 
-		public void AddValueRange(float value, IStyle style) {
+		/// <summary>
+		/// Adds a new value range.
+		/// </summary>
+		/// <param name="lowerValue">The upper bound of the value range.</param>
+		/// <param name="style">The <see cref="T:Dataweb.NShape.IStyle" /> representing the range of values.</param>
+		public void AddValueRange(float lowerValue, IStyle style) {
 			if (mappingType == MappingType.FloatStyle)
-				floatRanges.Add(value, style);
+				floatRanges.Add(lowerValue, style);
 			else throw new NotSupportedException();
 		}
 
 
+		/// <summary>
+		/// Removes the value range assaciated with the given key.
+		/// </summary>
 		public bool RemoveValueRange(int value) {
 			if (mappingType == MappingType.IntegerStyle) 
 				return intRanges.Remove(value);
@@ -920,6 +1164,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Removes the value range assaciated with the given key.
+		/// </summary>
 		public bool RemoveValueRange(float value) {
 			if (mappingType == MappingType.FloatStyle)
 				return floatRanges.Remove(value);
@@ -943,8 +1190,6 @@ namespace Dataweb.NShape.Advanced {
 					result = reader.ReadLineStyle(); break;
 				case MappedStyleType.ParagraphStyle:
 					result = reader.ReadParagraphStyle(); break;
-				//case MappedStyleType.ShapeStyle:
-				//   result = reader.ReadShapeStyle(); break;
 				case MappedStyleType.Unassigned:
 					// Skip value - it does not matter what we read here
 					reader.ReadColorStyle();	// ToDo: Find a better solution for skipping an object id
@@ -970,7 +1215,6 @@ namespace Dataweb.NShape.Advanced {
 			else if (style is IFillStyle) return MappedStyleType.FillStyle;
 			else if (style is ILineStyle) return MappedStyleType.LineStyle;
 			else if (style is IParagraphStyle) return MappedStyleType.ParagraphStyle;
-			else if (style is IShapeStyle) return MappedStyleType.ShapeStyle;
 			else throw new NShapeUnsupportedValueException(style);
 		}
 		
@@ -982,8 +1226,7 @@ namespace Dataweb.NShape.Advanced {
 			ColorStyle, 
 			FillStyle, 
 			LineStyle, 
-			ParagraphStyle, 
-			ShapeStyle 
+			ParagraphStyle
 		}
 
 
@@ -1009,6 +1252,9 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class Template : IEntity {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.Template" />.
+		/// </summary>
 		public Template(string name, Shape shape) {
 			if (name == null) throw new ArgumentNullException("name");
 			if (shape == null) throw new ArgumentNullException("shape");
@@ -1017,6 +1263,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Creates a new <see cref="T:Dataweb.NShape.Advanced.Template" /> that is a copy of the current instance.
+		/// </summary>
 		public Template Clone() {
 			Template result = new Template();
 			result.CopyFrom(this);
@@ -1024,6 +1273,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Copies all properties and fields from the source template to this template.
+		/// The shape and the model obejcts will be cloned.
+		/// </summary>
 		public void CopyFrom(Template source) {
 			if (source == null) throw new ArgumentNullException("source");
 
@@ -1047,18 +1300,36 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Gets or sets an object that provides additional data.
+		/// </summary>
+		public object Tag {
+			get { return tag; }
+			set { tag = value; }
+		}
+		
+		
+		/// <summary>
+		/// Specifies the culture independent name.
+		/// </summary>
 		public string Name {
 			get { return name; }
 			set { name = value; }
 		}
 
 
+		/// <summary>
+		/// Specifies the culture dependent display name.
+		/// </summary>
 		public string Title {
 			get { return title; }
 			set { title = value; }
 		}
 
 
+		/// <summary>
+		/// A descriptive text for the template.
+		/// </summary>
 		public string Description {
 			get { return description; }
 			set { description = value; }
@@ -1106,12 +1377,17 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="size">Size of tumbnail in pixels</param>
 		/// <param name="margin">Size of margin around shape in pixels</param>
-		/// <returns></returns>
 		public Image CreateThumbnail(int size, int margin) {
 			return CreateThumbnail(size, margin, Color.White);
 		}
 
 
+		/// <summary>
+		/// Creates a thumbnail of the template shape.
+		/// </summary>
+		/// <param name="size">Size of tumbnail in pixels</param>
+		/// <param name="margin">Size of margin around shape in pixels</param>
+		/// <param name="transparentColor">Specifies a color that will be rendered transparent.</param>
 		public Image CreateThumbnail(int size, int margin, Color transparentColor) {
 			Image bmp = new Bitmap(size, size);
 			using (Shape shapeClone = Shape.Clone())
@@ -1120,6 +1396,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		public IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			yield break;
 		}
@@ -1127,11 +1406,13 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Visualization Mapping
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<IModelMapping> GetPropertyMappings() {
 			return propertyMappings.Values;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IModelMapping GetPropertyMapping(int modelPropertyId) {
 			IModelMapping result = null;
 			propertyMappings.TryGetValue(modelPropertyId, out result);
@@ -1139,6 +1420,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void MapProperties(IModelMapping propertyMapping) {
 			if (propertyMapping == null) throw new ArgumentNullException("propertyMapping");
 			if (propertyMappings.ContainsKey(propertyMapping.ModelPropertyId))
@@ -1148,12 +1430,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void UnmapProperties(IModelMapping propertyMapping) {
 			if (propertyMapping == null) throw new ArgumentNullException("propertyMapping");
 			propertyMappings.Remove(propertyMapping.ModelPropertyId);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void UnmapAllProperties() {
 			propertyMappings.Clear();
 		}
@@ -1163,6 +1447,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Terminal Mapping
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TerminalId GetMappedTerminalId(ControlPointId connectionPointId) {
 			// If there is a mapping, return it.
 			TerminalId result;
@@ -1182,6 +1467,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string GetMappedTerminalName(ControlPointId connectionPointId) {
 			TerminalId terminalId = GetMappedTerminalId(connectionPointId);
 			if (terminalId == TerminalId.Invalid)
@@ -1194,6 +1480,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void MapTerminal(TerminalId terminalId, ControlPointId connectionPointId) {
 			// check if terminalId and connectionPointId are valid values
 			if (shape == null)
@@ -1220,9 +1507,15 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntity Members
 
+		/// <summary>
+		/// The entity type name of <see cref="T:Dataweb.NShape.Advanced.Template" />.
+		/// </summary>
 		public static string EntityTypeName { get { return entityTypeName; } }
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.Advanced.Template" />.
+		/// </summary>
 		public static IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			yield return new EntityFieldDefinition("Name", typeof(string));
 			if (version > 2) yield return new EntityFieldDefinition("Title", typeof(string));
@@ -1231,11 +1524,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public object Id {
 			get { return id; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void AssignId(object id) {
 			if (id == null) throw new ArgumentNullException("id");
 			if (this.id != null) throw new InvalidOperationException("Template has already an id.");
@@ -1243,6 +1538,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SaveFields(IRepositoryWriter writer, int version) {
 			if (writer == null) throw new ArgumentNullException("writer");
 			writer.WriteString(name);
@@ -1251,6 +1547,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void LoadFields(IRepositoryReader reader, int version) {
 			if (reader == null) throw new ArgumentNullException("reader");
 			name = reader.ReadString();
@@ -1259,6 +1556,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SaveInnerObjects(string propertyName, IRepositoryWriter writer, int version) {
 			if (propertyName == null) throw new ArgumentNullException("propertyName");
 			if (writer == null) throw new ArgumentNullException("writer");
@@ -1277,6 +1575,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void LoadInnerObjects(string propertyName, IRepositoryReader reader, int version) {
 			if (propertyName == null) throw new ArgumentNullException("propertyName");
 			if (reader == null) throw new ArgumentNullException("reader");
@@ -1298,6 +1597,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Delete(IRepositoryWriter writer, int version) {
 			if (writer == null) throw new ArgumentNullException("writer");
 			foreach (EntityPropertyDefinition pi in GetPropertyDefinitions(version)) {
@@ -1354,6 +1654,7 @@ namespace Dataweb.NShape.Advanced {
 		private string title;
 		private string description;
 		private Shape shape;
+		private object tag;
 		
 		private Dictionary<ControlPointId, TerminalId> connectionPointMappings = new Dictionary<ControlPointId, TerminalId>();
 		private SortedList<int, IModelMapping> propertyMappings = new SortedList<int, IModelMapping>();

@@ -51,6 +51,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void AssertSupportedVersion(bool save, int version) {
 			if (save) {
 				if (version < FirstSupportedSaveVersion || version > LastSupportedSaveVersion)
@@ -117,6 +118,9 @@ namespace Dataweb.NShape {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
@@ -142,8 +146,8 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("NShape")]
 		[Description("A collection of paths where shape and model library assemblies are expected to be found.")]
-		[TypeConverter("Dataweb.NShape.WinFormsUI.TextConverter, Dataweb.NShape.WinFormsUI")]
-		[Editor("Dataweb.NShape.WinFormsUI.TextEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
+		[TypeConverter("Dataweb.NShape.WinFormsUI.TextTypeConverter, Dataweb.NShape.WinFormsUI")]
+		[Editor("Dataweb.NShape.WinFormsUI.TextUITypeEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public IList<string> LibrarySearchPaths {
 			get { return librarySearchPaths; }
 			set {
@@ -170,6 +174,7 @@ namespace Dataweb.NShape {
 				if (repository != null) {
 					repository.ProjectName = name;
 					repository.StyleUpdated += repository_StyleUpdated;
+					repository.StyleDeleted += repository_StyleDeleted;
 				}
 			}
 		}
@@ -285,7 +290,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Uses the given design for the project.
 		/// </summary>
-		/// <param name="newDesign"></param>
 		public void ApplyDesign(string designName) {
 			if (designName == null) throw new ArgumentNullException("designName");
 			Design design = null;
@@ -301,6 +305,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool IsValidLibrary(string assemblyPath) {
 			try {
 				string fullAssemblyPath = GetFullAssemblyPath(assemblyPath);
@@ -312,6 +317,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool IsValidLibrary(Assembly assembly) {
 			try {
 				return (GetInitializerType(assembly) != null);
@@ -324,7 +330,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Adds the given library assembly to the project.
 		/// </summary>
-		/// <param name="library"></param>
 		public void AddLibrary(Assembly assembly) {
 			if (assembly == null) throw new ArgumentNullException("assembly");
 			DoLoadLibrary(assembly);
@@ -615,8 +620,13 @@ namespace Dataweb.NShape {
 				for (int fileIdx = files.Length - 1; fileIdx >= 0; --fileIdx) {
 					try {
 						AssemblyName foundAssemblyName = AssemblyName.GetAssemblyName(files[fileIdx]);
-						if (AssemblyName.ReferenceMatchesDefinition(soughtAssemblyName, foundAssemblyName))
-							return Assembly.LoadFile(files[fileIdx]);
+						if (AssemblyName.ReferenceMatchesDefinition(soughtAssemblyName, foundAssemblyName)) {
+							// Use Assembly.Load() here, because otherwise the assembly will be loaded into a 
+							// different context which results in type conversion problems.
+							// See http://blogs.msdn.com/b/aszego/archive/2009/10/16/avoid-using-assembly-loadfrom.aspx
+							// for a detailed description on the problem.
+							return Assembly.Load(foundAssemblyName);
+						}
 					} catch (BadImageFormatException ex) {
 						Debug.Print(string.Format("An exception occured while searching assembly '{0}' in path {1}: {2}",
 							assemblyName, files[fileIdx], ex.Message));
@@ -641,6 +651,7 @@ namespace Dataweb.NShape {
 				repository.ProjectName = Name;
 			} else {
 				Debug.Assert(!repository.IsOpen);
+				repository.Close();
 				repository.RemoveAllEntityTypes();
 				libraries.Clear();
 			}
@@ -735,8 +746,6 @@ namespace Dataweb.NShape {
 				version, () => new LineStyle(), LineStyle.GetPropertyDefinitions(version)));
 			repository.AddEntityType(new EntityType(ParagraphStyle.EntityTypeName, EntityCategory.Style,
 				version, () => new ParagraphStyle(), ParagraphStyle.GetPropertyDefinitions(version)));
-			repository.AddEntityType(new EntityType(ShapeStyle.EntityTypeName, EntityCategory.Style,
-				version, () => new ShapeStyle(), ShapeStyle.GetPropertyDefinitions(version)));
 			repository.AddEntityType(new EntityType(Design.EntityTypeName, EntityCategory.Design,
 				version, () => new Design(), Design.GetPropertyDefinitions(version)));
 			repository.AddEntityType(new EntityType(ProjectSettings.EntityTypeName, EntityCategory.ProjectSettings,
@@ -802,6 +811,17 @@ namespace Dataweb.NShape {
 				initializingLibrary = null;
 			}
 		}
+
+
+		//private bool CanRemoveLibrary(Library library) {
+		//   if (library == null) throw new ArgumentNullException();
+		//   Type initializerType = GetInitializerType(library.Assembly);
+		//   if (initializerType == null) throw new ArgumentException();
+		//   foreach (ShapeType st in shapeTypes) {
+		//      if (st.LibraryName == library.Name) {
+		//      }
+		//   }
+		//}
 
 
 		// ToDo: Implement RemoveLibrary, RemoveLibraryByPath and RemoveLibraryByName
@@ -886,55 +906,64 @@ namespace Dataweb.NShape {
 		// Notify ToolCache that a style has changed
 		// Invalidate all (loaded) shapes using the changed style
 		private void repository_StyleUpdated(object sender, RepositoryStyleEventArgs e) {
-			Design design = repository.GetDesign(null);
-			if (design.ContainsStyle(e.Style)) {
-				IStyle changedStyle = e.Style;
-				ToolCache.NotifyStyleChanged(changedStyle);
-				if (changedStyle is CapStyle) {
-					CapStyle capStyle = (CapStyle)changedStyle;
-					// create and set new PreviewStyle if the style is in the currently active design
-					if (design.CapStyles.ContainsPreviewStyle(capStyle))
-						ToolCache.NotifyStyleChanged(design.CapStyles.GetPreviewStyle(capStyle));
-					design.CapStyles.SetPreviewStyle(capStyle, (CapStyle)design.CreatePreviewStyle(capStyle));
-				} else if (changedStyle is CharacterStyle) {
-					CharacterStyle charStyle = (CharacterStyle)changedStyle;
-					if (design.CharacterStyles.ContainsPreviewStyle(charStyle))
-						ToolCache.NotifyStyleChanged(design.CharacterStyles.GetPreviewStyle(charStyle));
-					design.CharacterStyles.SetPreviewStyle(charStyle, (CharacterStyle)design.CreatePreviewStyle(charStyle));
-				} else if (changedStyle is ColorStyle) {
-					ColorStyle colorStyle = (ColorStyle)changedStyle;
-					if (design.ColorStyles.ContainsPreviewStyle(colorStyle))
-						ToolCache.NotifyStyleChanged(design.ColorStyles.GetPreviewStyle(colorStyle));
-					design.ColorStyles.SetPreviewStyle(colorStyle, (ColorStyle)design.CreatePreviewStyle(colorStyle));
-				} else if (changedStyle is FillStyle) {
-					FillStyle fillStyle = (FillStyle)changedStyle;
-					if (design.FillStyles.ContainsPreviewStyle(fillStyle))
-						ToolCache.NotifyStyleChanged(design.FillStyles.GetPreviewStyle(fillStyle));
-					design.FillStyles.SetPreviewStyle(fillStyle, (FillStyle)design.CreatePreviewStyle(fillStyle));
-				} else if (changedStyle is LineStyle) {
-					LineStyle lineStyle = (LineStyle)changedStyle;
-					if (design.LineStyles.ContainsPreviewStyle(lineStyle))
-						ToolCache.NotifyStyleChanged(design.LineStyles.GetPreviewStyle(lineStyle));
-					design.LineStyles.SetPreviewStyle(lineStyle, (LineStyle)design.CreatePreviewStyle(lineStyle));
-				} else if (changedStyle is ShapeStyle) {
-					// there is no ShapeStyleCollection yet (ShapeStyles are not implemented yet)
-					//ShapeStyle shapeStyle = (ShapeStyle)style;
-					//ToolCache.NotifyStyleChanged(Design.ShapeStyles.GetPreviewStyle(shapeStyle));
-					//design.ShapeStyles.SetPreviewStyle(shapeStyle, (ShapeStyle)design.CreatePreviewStyle(shapeStyle));
-				} else if (changedStyle is ParagraphStyle) {
-					ParagraphStyle paragraphStyle = (ParagraphStyle)changedStyle;
-					if (design.ParagraphStyles.ContainsPreviewStyle(paragraphStyle))
-						ToolCache.NotifyStyleChanged(design.ParagraphStyles.GetPreviewStyle(paragraphStyle));
-					design.ParagraphStyles.SetPreviewStyle(paragraphStyle, (ParagraphStyle)design.CreatePreviewStyle(paragraphStyle));
+			IStyle changedStyle = e.Style;
+			Design design = null;
+			foreach (Design d in repository.GetDesigns()) {
+				if (d.ContainsStyle(changedStyle)) {
+					design = d;
+					break;
 				}
-				// If the style is contained in the current design, notify all shapes that the style has changed
-				foreach (Template template in repository.GetTemplates()) 
+			}
+			// Update Toolcache and PreviewStyle
+			if (design != null) {
+				if (changedStyle is CapStyle) {
+					DoNotifyStyleChanged(design.CapStyles, (CapStyle)changedStyle);
+					design.CapStyles.SetPreviewStyle((CapStyle)changedStyle, design.CreatePreviewStyle((ICapStyle)changedStyle));
+				} else if (changedStyle is CharacterStyle) {
+					DoNotifyStyleChanged(design.CharacterStyles, (CharacterStyle)changedStyle);
+					design.CharacterStyles.SetPreviewStyle((CharacterStyle)changedStyle, design.CreatePreviewStyle((ICharacterStyle)changedStyle));
+				} else if (changedStyle is ColorStyle) {
+					DoNotifyStyleChanged(design.ColorStyles, (ColorStyle)changedStyle);
+					design.ColorStyles.SetPreviewStyle((ColorStyle)changedStyle, design.CreatePreviewStyle((IColorStyle)changedStyle));
+				} else if (changedStyle is FillStyle) {
+					DoNotifyStyleChanged(design.FillStyles, (FillStyle)changedStyle);
+					design.FillStyles.SetPreviewStyle((FillStyle)changedStyle, design.CreatePreviewStyle((IFillStyle)changedStyle));
+				} else if (changedStyle is LineStyle) {
+					DoNotifyStyleChanged(design.LineStyles, (LineStyle)changedStyle);
+					design.LineStyles.SetPreviewStyle((LineStyle)changedStyle, design.CreatePreviewStyle((ILineStyle)changedStyle));
+				} else if (changedStyle is ParagraphStyle) {
+					DoNotifyStyleChanged(design.ParagraphStyles, (ParagraphStyle)changedStyle);
+					design.ParagraphStyles.SetPreviewStyle((ParagraphStyle)changedStyle, design.CreatePreviewStyle((IParagraphStyle)changedStyle));
+				}
+			}
+
+			// If the style is contained in the current design, notify all shapes that the style has changed
+			if (design == Design) {
+				foreach (Template template in repository.GetTemplates())
 					template.Shape.NotifyStyleChanged(changedStyle);
 				foreach (Diagram diagram in repository.GetDiagrams()) {
 					foreach (Shape shape in diagram.Shapes)
 						shape.NotifyStyleChanged(changedStyle);
 				}
 			}
+		}
+
+
+		private void DoNotifyStyleChanged<TStyle>(StyleCollection<TStyle> styleCollection, TStyle style) where TStyle : class, IStyle {
+			if (styleCollection == null) throw new ArgumentNullException("styleCollection");
+			if (style == null) throw new ArgumentNullException("style");
+			// create and set new PreviewStyle if the style is in the currently active design
+			if (styleCollection.ContainsPreviewStyle(style)) {
+				TStyle previewStyle = styleCollection.GetPreviewStyle(style);
+				Debug.Assert(previewStyle != null);
+				ToolCache.NotifyStyleChanged(previewStyle);
+			}
+			ToolCache.NotifyStyleChanged(style);
+		}
+
+
+		private void repository_StyleDeleted(object sender, RepositoryStyleEventArgs e) {
+			ToolCache.NotifyStyleChanged(e.Style);
 		}
 
 
@@ -953,11 +982,13 @@ namespace Dataweb.NShape {
 
 		// Supported repository versions of the Core library
 		internal const int FirstSupportedSaveVersion = 1;
-		internal const int LastSupportedSaveVersion = 3;
+		internal const int LastSupportedSaveVersion = 4;
 		internal const int FirstSupportedLoadVersion = 1;
-		internal const int LastSupportedLoadVersion = 3;
+		internal const int LastSupportedLoadVersion = 4;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public const string NShapeLibraryInitializerClassName = "NShapeLibraryInitializer";
+		/// <ToBeCompleted></ToBeCompleted>
 		public const string InitializeMethodName = "Initialize";
 
 		#region Fields
@@ -1006,11 +1037,13 @@ namespace Dataweb.NShape {
 	/// <status>reviewed</status>
 	public class LibraryLoadedEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LibraryLoadedEventArgs(string libraryName) { 
 			if (libraryName == null) throw new ArgumentNullException("libraryName");
 			this.libraryName = libraryName; 
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string LibraryName { 
 			get { return libraryName; } 
 		}

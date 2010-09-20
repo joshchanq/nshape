@@ -55,6 +55,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		
 		#region ICommand Members
 
+		/// <override></override>
 		public override void Execute() {
 			shape.AddColumn(ColumnText);
 			shape.Invalidate();
@@ -62,12 +63,14 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			shape.RemoveColumn(ColumnText);
 			if (Repository != null) Repository.UpdateShape(shape);
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -95,6 +98,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		#region ICommand Members
 
+		/// <override></override>
 		public override void Execute() {
 			shape.AddColumn(shape.GetCaptionText(shape.CaptionCount - 1));
 			for (int i = shape.CaptionCount - 2; i > beforeIndex; --i)
@@ -104,6 +108,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			for (int i = shape.CaptionCount - 1; i > beforeIndex; --i)
 				shape.SetCaptionText(i - 1, shape.GetCaptionText(i));
@@ -113,6 +118,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -140,6 +146,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		#region ICommand Members
 
+		/// <override></override>
 		public override void Execute() {
 			string[] columns = new string[shape.ColumnNames.Length];
 			Array.Copy(shape.ColumnNames, columns, shape.ColumnNames.Length);
@@ -151,6 +158,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			string[] columns = new string[shape.ColumnNames.Length];
 			Array.Copy(shape.ColumnNames, columns, shape.ColumnNames.Length);
@@ -164,6 +172,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -191,6 +200,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		#region ICommand Members
 
+		/// <override></override>
 		public override void Execute() {
 			for (int i = shape.CaptionCount - 1; i > removeIndex; --i)
 				shape.SetCaptionText(i - 1, shape.GetCaptionText(i));
@@ -202,6 +212,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void Revert() {
 			shape.AddColumn(shape.GetCaptionText(shape.CaptionCount - 1));
 			for (int i = shape.CaptionCount - 2; i > removeIndex; --i)
@@ -211,6 +222,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Permission RequiredPermission {
 			get { return Permission.ModifyData; }
 		}
@@ -229,6 +241,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class EntitySymbol : RectangleBase {
 
+		/// <override></override>
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
 
@@ -253,6 +266,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new EntitySymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -260,6 +274,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
 			base.MakePreview(styleSet);
 			privateColumnCharacterStyle = styleSet.GetPreviewStyle(ColumnCharacterStyle);
@@ -268,6 +283,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override bool NotifyStyleChanged(IStyle style) {
 			bool result = base.NotifyStyleChanged(style);
 			if (IsStyleAffected(ColumnBackgroundColorStyle, style)) {
@@ -286,6 +302,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		#region IEntity
 
+		/// <override></override>
 		protected override void SaveFieldsCore(IRepositoryWriter writer, int version) {
 			base.SaveFieldsCore(writer, version);
 			writer.WriteStyle(ColumnBackgroundColorStyle);
@@ -295,6 +312,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void LoadFieldsCore(IRepositoryReader reader, int version) {
 			base.LoadFieldsCore(reader, version);
 			ColumnBackgroundColorStyle = reader.ReadColorStyle();
@@ -306,8 +324,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void SaveInnerObjectsCore(string propertyName, IRepositoryWriter writer, int version) {
-			if (propertyName == "TableColumns") {
+			if (propertyName == attrNameColumns) {
 				writer.BeginWriteInnerObjects();
 				int cnt = CaptionCount;
 				for (int i = 1; i < cnt; ++i) {	// Skip first caption (title)
@@ -321,8 +340,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void LoadInnerObjectsCore(string propertyName, IRepositoryReader reader, int version) {
-			if (propertyName == "TableColumns") {
+			if (propertyName == attrNameColumns) {
 				reader.BeginReadInnerObjects();
 				while (reader.BeginReadInnerObject()) {
 					int colIdx = reader.ReadInt32();
@@ -335,14 +355,17 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <summary>
+		/// Retrieves the persistable properties of <see cref="T:Dataweb.NShape.SoftwareArchitectureShapes.EntitySymbol" />.
+		/// </summary>
 		public static new IEnumerable<EntityPropertyDefinition> GetPropertyDefinitions(int version) {
 			foreach (EntityPropertyDefinition pi in RectangleBase.GetPropertyDefinitions(version))
 				yield return pi;
-			yield return new EntityFieldDefinition("ColumnBackgroundColorStyleName", typeof(string));
-			yield return new EntityFieldDefinition("ColumnCharacterStyleName", typeof(string));
-			yield return new EntityFieldDefinition("ColumnParagraphStyleName", typeof(string));
+			yield return new EntityFieldDefinition("ColumnBackgroundColorStyle", typeof(object));
+			yield return new EntityFieldDefinition("ColumnCharacterStyle", typeof(object));
+			yield return new EntityFieldDefinition("ColumnParagraphStyle", typeof(object));
 			yield return new EntityFieldDefinition("ColumnCount", typeof(int));
-			yield return new EntityInnerObjectsDefinition("TableColumns", "Column", columnAttrNames, columnAttrTypes);
+			yield return new EntityInnerObjectsDefinition(attrNameColumns, attrNameColumn, columnAttrNames, columnAttrTypes);
 		}
 
 		#endregion
@@ -378,8 +401,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				CalcCaptionBounds(index, out bounds);
 				bounds = columnCaptions[idx].CalculateTextBounds(bounds, ColumnCharacterStyle, ColumnParagraphStyle, DisplayService);
 				Geometry.TransformRectangle(Center, Angle, bounds, out topLeft, out topRight, out bottomRight, out bottomLeft);
-				return (Geometry.QuadrangleContainsPoint(topLeft.X, topLeft.Y, columnFrame[0], columnFrame[1], columnFrame[2], columnFrame[3])
-					&& Geometry.QuadrangleContainsPoint(bottomRight.X, bottomRight.Y, columnFrame[0], columnFrame[1], columnFrame[2], columnFrame[3]));
+				return (Geometry.QuadrangleContainsPoint(columnFrame[0], columnFrame[1], columnFrame[2], columnFrame[3], topLeft.X, topLeft.Y)
+					&& Geometry.QuadrangleContainsPoint(columnFrame[0], columnFrame[1], columnFrame[2], columnFrame[3], bottomRight.X, bottomRight.Y));
 			}
 		}
 
@@ -442,7 +465,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		#region Properties
 		[Category("Appearance")]
-		[Description("Defines the appearence of the shape's interior. \nUse the design editor to modify and create styles.")]
+		[Description("Defines the appearence of the shape's interior.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdColumnBackgroundColorStyle)]
 		[RequiredPermission(Permission.Present)]
 		public virtual IColorStyle ColumnBackgroundColorStyle {
@@ -455,7 +478,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Text Appearance")]
-		[Description("Determines the style of the shape's column names.")]
+		[Description("Determines the style of the shape's column names.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdColumnCharacterStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICharacterStyle ColumnCharacterStyle {
@@ -470,7 +493,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Text Appearance")]
-		[Description("Determines the layout of the shape's column names.")]
+		[Description("Determines the layout of the shape's column names.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdColumnParagraphStyle)]
 		[RequiredPermission(Permission.Present)]
 		public IParagraphStyle ColumnParagraphStyle {
@@ -488,32 +511,26 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		[Category("Text Layout")]
 		[Description("The column names of this table.")]
 		[RequiredPermission(Permission.Present)]
-		[TypeConverter("Dataweb.NShape.WinFormsUI.TextConverter")]
-		[Editor("Dataweb.NShape.WinFormsUI.TextEditor", typeof(UITypeEditor))]
+		[TypeConverter("Dataweb.NShape.WinFormsUI.TextTypeConverter")]
+		[Editor("Dataweb.NShape.WinFormsUI.TextUITypeEditor", typeof(UITypeEditor))]
 		public string[] ColumnNames {
 			get { return columnNames; }
 			set {
+				if (value == null) throw new ArgumentNullException();
 				Invalidate();
 
-				columnNames = value;
-
-				// delete empty lines
-				for (int i = columnNames.Length - 1; i >= 0; --i) {
-					if (string.IsNullOrEmpty(columnNames[i])) {
-						if (i < columnNames.Length - 1)
-							Array.Copy(columnNames, i + 1, columnNames, i, (columnNames.Length - i - 1));
-						Array.Resize<string>(ref columnNames, columnNames.Length - 1);
-					}
+				// Remove columns that are no longer needed
+				int valueCnt = value.Length;
+				if (columnNames.Length > valueCnt) {
+					for (int i = columnNames.Length - 1; i >= valueCnt; --i)
+						RemoveColumnAt(i);
 				}
-
-				for (int i = 0; i < columnNames.Length; ++i) {
-					if (i >= columnCaptions.Count)
-						AddColumn(columnNames[i]);
-					else
-						columnCaptions[i].Text = columnNames[i];
+				// Replace existing and add new columns
+				for (int i = 0; i < valueCnt; ++i) {
+					if (i < columnNames.Length)
+						columnNames[i] = value[i];
+					else AddColumn(value[i]);
 				}
-				for (int i = columnCaptions.Count - 1; i >= columnNames.Length; --i)
-					RemoveColumnAt(i);
 
 				InvalidateDrawCache();
 				Invalidate();
@@ -559,10 +576,11 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			if (index < 0 || index > columnCaptions.Count)
 				throw new IndexOutOfRangeException();
 
-			int id = index + 1;
+			ControlPointId id;
+			id = GetControlPointId(base.ControlPointCount + (2 * index));
 			foreach (ShapeConnectionInfo sci in GetConnectionInfos(id, null))
 				DetachGluePointFromConnectionPoint(id, sci.OtherShape, sci.OtherPointId);
-			id = index + 2;
+			id = GetControlPointId(base.ControlPointCount + (2 * index) + 1);
 			foreach (ShapeConnectionInfo sci in GetConnectionInfos(id, null))
 				DetachGluePointFromConnectionPoint(id, sci.OtherShape, sci.OtherPointId);
 
@@ -587,19 +605,20 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		#endregion
 
 
+		/// <override></override>
 		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			// return actions of base class
 			IEnumerator<MenuItemDef> enumerator = GetBaseActions(mouseX, mouseY, range);
 			while (enumerator.MoveNext()) yield return enumerator.Current;
 			// return own actions
 
-			string newColumnTxt = string.Format("Column {0}", CaptionCount + 1);
+			string newColumnTxt = string.Format("Column {0}", CaptionCount);
 			int captionIdx = -1;
 			if (ContainsPoint(mouseX, mouseY)) {
 				Point tl, tr, bl, br;
 				for (int i = 0; i < columnCaptions.Count; ++i) {
 					GetCaptionBounds(i, out tl, out tr, out br, out bl);
-					if (Geometry.QuadrangleContainsPoint(mouseX, mouseY, tl, tr, br, bl)) {
+					if (Geometry.QuadrangleContainsPoint(tl, tr, br, bl, mouseX, mouseY)) {
 						captionIdx = i;
 						break;
 					}
@@ -642,6 +661,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Point.Empty;
 			result.X = X; result.Y = Y;
@@ -661,11 +681,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { 
 			get { return base.ControlPointCount + columnControlPoints.Length; } 
 		}
 
 
+		/// <override></override>
 		public override Point GetControlPointPosition(ControlPointId controlPointId) {
 			if (controlPointId <= base.ControlPointCount)
 				return base.GetControlPointPosition(controlPointId);
@@ -677,6 +699,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if (controlPointId <= base.ControlPointCount) {
 				switch (controlPointId) {
@@ -701,6 +724,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			base.Draw(graphics);
 
@@ -736,6 +760,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			privateColumnBackgroundColorStyle = styleSet.ColorStyles.White;
@@ -752,6 +777,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool IsConnectionPointEnabled(ControlPointId pointId) {
 			if (pointId <= base.ControlPointCount)
 				return base.IsConnectionPointEnabled(pointId);
@@ -760,6 +786,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = base.MovePointByCore(pointId, transformedDeltaX, transformedDeltaY, sin, cos, modifiers);
 			//for (int id = base.ControlPointCount + 1; id <= ControlPointCount; ++id) {
@@ -769,6 +796,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			base.CalcControlPoints();
 
@@ -800,6 +828,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {
 			base.TransformDrawCache(deltaX, deltaY, deltaAngle, rotationCenterX, rotationCenterY);
 			
@@ -824,6 +853,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -844,6 +874,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -928,6 +959,30 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
+		protected override void ProcessExecModelPropertyChange(IModelMapping propertyMapping) {
+			switch (propertyMapping.ShapePropertyId) {
+				case PropertyIdColumnBackgroundColorStyle:
+					privateColumnBackgroundColorStyle = (propertyMapping.GetStyle() as IColorStyle);
+					Invalidate();
+					break;
+				case PropertyIdColumnCharacterStyle:
+					privateColumnCharacterStyle = (propertyMapping.GetStyle() as ICharacterStyle);
+					InvalidateDrawCache();
+					Invalidate();
+					break;
+				case PropertyIdColumnParagraphStyle:
+					privateColumnParagraphStyle = (propertyMapping.GetStyle() as IParagraphStyle);
+					InvalidateDrawCache();
+					Invalidate();
+					break;
+				default:
+					base.ProcessExecModelPropertyChange(propertyMapping);
+					break;
+			}
+		}
+
+
 		private IEnumerator<MenuItemDef> GetBaseActions(int mouseX, int mouseY, int range) {
 			return base.GetMenuItemDefs(mouseX, mouseY, range).GetEnumerator();
 		}
@@ -977,6 +1032,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		private const int BottomRightControlPoint = 8;
 		private const int MiddleCenterControlPoint = 9;
 
+		private const string attrNameColumns = "TableColumns";
+		private const string attrNameColumn = "Column";
 		private static string[] columnAttrNames = new string[] { "ColumnIndex", "ColumnName" };
 		private static Type[] columnAttrTypes = new Type[] { typeof(int), typeof(string) };
 
@@ -996,9 +1053,10 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		#endregion
 	}
 
-	
+
 	public class AnnotationSymbol : RectangleBase {
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 120;
@@ -1007,6 +1065,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new AnnotationSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1014,6 +1073,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -1037,6 +1097,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			Point result = Point.Empty;
 			result.Offset(X, Y);
@@ -1058,8 +1119,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			}
 			return result;
 		}
-		
-		
+
+
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			base.Draw(graphics);
 			Pen pen = ToolCache.GetPen(LineStyle, null, null);
@@ -1072,12 +1134,14 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {
 			base.TransformDrawCache(deltaX, deltaY, deltaAngle, rotationCenterX, rotationCenterY);
 			Matrix.TransformPoints(foldingPoints);
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				CalculateShapePoints();
@@ -1141,6 +1205,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class CloudSymbol : RectangleBase {
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 120;
@@ -1148,6 +1213,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CloudSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1155,6 +1221,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case 1:
@@ -1182,6 +1249,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			UpdateDrawCache();
 			Point result = Geometry.GetNearestPoint(startX, startY, Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true));
@@ -1190,6 +1258,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			base.Draw(graphics);
 
@@ -1208,11 +1277,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount {
 			get { return 15; }
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			base.CalcControlPoints();
 			float w = Width / 128f;
@@ -1232,6 +1303,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			int left, right, top, bottom;
@@ -1255,6 +1327,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1327,6 +1400,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override void DrawOutline(Graphics graphics, Pen pen) {
 			base.DrawOutline(graphics, pen);
 
@@ -1362,6 +1436,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class DatabaseSymbol : RectangleBase {
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 80;
@@ -1369,6 +1444,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DatabaseSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1376,6 +1452,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
 			// First, calculate intersection point with the shape aligned bounding box (the bounding box that is rotated with the shape)
 			Point result = base.CalculateConnectionFoot(startX, startY);
@@ -1442,6 +1519,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			int left = (int)Math.Round(-Width / 2f);
@@ -1454,20 +1532,23 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
 				int left = (int)Math.Round(-Width / 2f);
 				int top = (int)Math.Round(-Height / 2f);
 				int bottom = top + Height;
+				float arcWidth = Math.Max(Width, 0.00001f);
+				float arcHeight = Math.Max(EllipseHeight, 0.00001f);
 
 				Path.StartFigure();
 				Path.AddEllipse(left, top, Width, EllipseHeight);
 				Path.CloseFigure();
 				Path.StartFigure();
-				Path.AddArc(left, top, Width, EllipseHeight, 0, 180);
+				Path.AddArc(left, top, arcWidth, arcHeight, 0, 180);
 				Path.AddLine(left, top + (EllipseHeight / 2), left, bottom - (EllipseHeight / 2));
-				Path.AddArc(left, bottom - EllipseHeight, Width, EllipseHeight, 180, -180);
+				Path.AddArc(left, bottom - EllipseHeight, arcWidth, arcHeight, 180, -180);
 				Path.AddLine(left + Width, bottom - (EllipseHeight / 2), left + Width, top + (EllipseHeight / 2));
 				Path.CloseAllFigures();
 				return true;
@@ -1494,6 +1575,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ClassSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1501,11 +1583,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override IEnumerable<MenuItemDef> GetMenuItemDefs(int mouseX, int mouseY, int range) {
 			return base.GetMenuItemDefs(mouseX, mouseY, range);
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Text = "Class";
@@ -1515,6 +1599,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class ComponentSymbol : RectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ComponentSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1522,11 +1607,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount {
 			get { return 34; }
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case 1:
@@ -1580,6 +1667,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			// calculate positions of standard drag- and rotate handles
 			base.CalcControlPoints();
@@ -1655,6 +1743,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			int left = (int)Math.Round(-Width / 2f);
@@ -1668,6 +1757,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1728,8 +1818,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 	/// <summary>
 	/// Displays a symbol for a document.
 	/// </summary>
-	public class DocumentSymbol: RectangleBase {
+	public class DocumentSymbol : RectangleBase {
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Height = 60;
@@ -1737,6 +1828,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DocumentSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1744,6 +1836,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -1763,6 +1856,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1822,6 +1916,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class DataFlowArrow : PolylineBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DataFlowArrow(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1830,7 +1925,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's beginning.")]
+		[Description("Defines the line cap appearance of the line's beginning.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdStartCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle StartCapStyle {
@@ -1845,7 +1940,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's ending.")]
+		[Description("Defines the line cap appearance of the line's ending.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdEndCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle EndCapStyle {
@@ -1865,8 +1960,9 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 	}
 
 
-	public class DependencyArrow: PolylineBase {
+	public class DependencyArrow : PolylineBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DependencyArrow(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1875,7 +1971,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's beginning.")]
+		[Description("Defines the line cap appearance of the line's beginning.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdStartCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle StartCapStyle {
@@ -1890,7 +1986,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		[Category("Appearance")]
-		[Description("Defines the line cap appearance of the line's ending.")]
+		[Description("Defines the line cap appearance of the line's ending.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdEndCapStyle)]
 		[RequiredPermission(Permission.Present)]
 		public ICapStyle EndCapStyle {
@@ -1913,6 +2009,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class InterfaceUsageSymbol : PolylineBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			InterfaceUsageSymbol result = new InterfaceUsageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1920,6 +2017,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			if (Template == null) {
@@ -1940,6 +2038,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public class InterfaceSymbol : PolylineBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new InterfaceSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1947,6 +2046,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			if (Template == null) {
@@ -1973,6 +2073,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		}
 
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new VectorImage(Type, (Template)null, resourceName, resourceAssembly);
 			result.CopyFrom(this);

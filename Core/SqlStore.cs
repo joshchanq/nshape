@@ -32,6 +32,9 @@ namespace Dataweb.NShape {
 	[ToolboxBitmap(typeof(SqlStore), "SqlStore.bmp")]
 	public class SqlStore : AdoNetStore {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.SqlStore" />.
+		/// </summary>
 		public SqlStore()
 			: base() {
 			ProviderName = "System.Data.SqlClient";
@@ -41,6 +44,9 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.SqlStore" />.
+		/// </summary>
 		public SqlStore(string serverName, string databaseName)
 			: base() {
 			if (serverName == null) throw new ArgumentNullException("serverName");
@@ -52,6 +58,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string DatabaseName {
 			get { return this.databaseName; }
 			set {
@@ -61,6 +68,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string ServerName {
 			get { return this.serverName; }
 			set {
@@ -70,6 +78,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override void CreateDbCommands(IStoreCache storeCache) {
 			base.CreateDbCommands(storeCache);
 			//
@@ -101,6 +110,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected IDbCommand CreateCreateTablesCommand(IStoreCache storeCache) {
 			StringBuilder cmdText = new StringBuilder();
 			//
@@ -172,6 +182,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string CreateCreateTableCommand(IEntityType entityType, string parentTableName, string parentColumnName) {
 			if (parentTableName == null) throw new ArgumentNullException("parentTableName");
 			StringBuilder sb = new StringBuilder();
@@ -191,8 +202,7 @@ namespace Dataweb.NShape {
 					 * Must be managed by the application not by the database.
 					if (DbTypeForDotNetType(((EntityFieldDefinition)pi).Type) != DbType.String && DbTypeForDotNetType(((EntityFieldDefinition)pi).Type) != DbType.Binary)
 						sb.Append(" NOT NULL");*/
-				}
-				else if (pi.Name == "Vertices") {
+				} else if (IsComposition(pi)) {
 					sb.Append(pi.Name);
 					sb.Append(" ");
 					sb.Append("NVARCHAR(1000)");
@@ -205,6 +215,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected IDbCommand CreateDropTablesCommand(IStoreCache storeCache) {
 			string dropCommand = "IF OBJECT_ID('[{0}]') IS NOT NULL DROP TABLE [{0}];" + Environment.NewLine;
 			StringBuilder cmdText = new StringBuilder();
@@ -253,6 +264,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override IDbCommand GetInsertSysCommandCommand() {
 			IDbCommand result = base.GetInsertSysCommandCommand();
 			((SqlParameter)result.Parameters[0]).Size = 40;
@@ -262,14 +274,16 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <override></override>
 		public override IDbCommand GetInsertSysParameterCommand() {
 			IDbCommand result = base.GetInsertSysParameterCommand();
 			((SqlParameter)result.Parameters[2]).Size = 40;
 			((SqlParameter)result.Parameters[3]).Size = 10;
 			return result;
 		}
-		
 
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string SqlTableNameForEntityName(string entityName) {
 			string result;
 			int idx = entityName.IndexOf('.');
@@ -283,6 +297,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected DbType DbTypeForDotNetType(Type type) {
 			if (type == typeof(Object))
 				return DbType.Int32;
@@ -313,6 +328,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string SqlTypeForDotNetType(Type type) {
 			if (type == typeof(Object))
 				return "INT";
@@ -343,6 +359,7 @@ namespace Dataweb.NShape {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected string CalcConnectionString(string serverName, string databaseName) {
 			return string.Format("Data Source={0};Initial Catalog={1};Integrated Security=True;MultipleActiveResultSets=True;Pooling=False", serverName, databaseName);
 		}
@@ -625,7 +642,7 @@ namespace Dataweb.NShape {
 					if (pi is EntityFieldDefinition) {
 						selectCmdText.Append(", S.");
 						selectCmdText.Append(pi.Name);
-					} else if (pi.Name == "Vertices") {
+					} else if (IsComposition(pi)) {
 						selectCmdText.Append(", S.");
 						selectCmdText.Append(pi.Name);
 					}
@@ -662,7 +679,7 @@ namespace Dataweb.NShape {
 						insertShapeCmdText2.Append(", ");
 						insertShapeCmdText2.Append("@" + pi.Name);
 						insertShapeCmd.Parameters.Add(CreateParameter(pi.Name, DbTypeForDotNetType(((EntityFieldDefinition)pi).Type)));
-					} else if (pi.Name == "Vertices") {
+					} else if (IsComposition(pi)) {
 						insertShapeCmdText1.Append(", ");
 						insertShapeCmdText1.Append(pi.Name);
 						insertShapeCmdText2.Append(", ");
@@ -704,7 +721,7 @@ namespace Dataweb.NShape {
 					if (pi is EntityFieldDefinition) {
 						cmdText.AppendFormat("[{0}] = @{0}, ", pi.Name);
 						updateShapeCmd.Parameters.Add(CreateParameter(pi.Name, DbTypeForDotNetType(((EntityFieldDefinition)pi).Type)));
-					} else if (pi.Name == "Vertices") {
+					} else if (IsComposition(pi)) {
 						cmdText.AppendFormat("[{0}] = @{0}, ", pi.Name);
 						updateShapeCmd.Parameters.Add(CreateParameter(pi.Name, DbType.String));
 					} else Debug.Fail("Unexpected inner objects type in CreateDbCommands.");
@@ -829,7 +846,7 @@ namespace Dataweb.NShape {
 						insertModelObjectCmdText2.Append(", ");
 						insertModelObjectCmdText2.Append("@" + pi.Name);
 						insertModelObjectCmd.Parameters.Add(CreateParameter(pi.Name, DbTypeForDotNetType(((EntityFieldDefinition)pi).Type)));
-					} else if (pi.Name == "Vertices") {
+					} else if (IsComposition(pi)) {
 						insertModelObjectCmdText1.Append(", ");
 						insertModelObjectCmdText1.Append(pi.Name);
 						insertModelObjectCmdText2.Append(", ");
@@ -871,7 +888,7 @@ namespace Dataweb.NShape {
 					if (pi is EntityFieldDefinition) {
 						cmdText.AppendFormat("[{0}] = @{0}, ", pi.Name);
 						updateModelObjectCmd.Parameters.Add(CreateParameter(pi.Name, DbTypeForDotNetType(((EntityFieldDefinition)pi).Type)));
-					} else if (pi.Name == "Vertices") {
+					} else if (IsComposition(pi)) {
 						cmdText.AppendFormat("[{0}] = @{0}, ", pi.Name);
 						updateModelObjectCmd.Parameters.Add(CreateParameter(pi.Name, DbType.String));
 					} else Debug.Fail("Unexpected inner objects type in CreateDbCommands.");

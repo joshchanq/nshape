@@ -21,6 +21,7 @@ using System.Drawing.Drawing2D;
 
 namespace Dataweb.NShape.Advanced {
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public static class Geometry {
 
 		/// <summary>
@@ -130,10 +131,8 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Corrects deltaX and deltaY in order to preserve the aspect ratio of the 
-		/// sources bounds when inflating by deltaX and deltaY.
+		/// Corrects deltaX and deltaY in order to preserve the aspect ratio of the sources bounds when inflating by deltaX and deltaY.
 		/// </summary>
-		/// <param name="deltaX"></param>
 		public static void MaintainAspectRatio(float width, float height, float dstWidth, 
 			float dstHeight, ref float deltaX, ref float deltaY) {
 			// TODO 2: This can be faster without calculating the GCF.
@@ -173,10 +172,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has 
-		/// to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has 
-		/// to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -197,6 +194,8 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="width">Width of the rectangle</param>
 		/// <param name="height">Height of the rectangle</param>
+		/// <param name="minValueX">Specifies the minimum width.</param>
+		/// <param name="minValueY">Specifies the minimum height.</param>
 		/// <param name="centerPosFactorX">Specifies where the center is located. Default value is 50% = 0.5</param>
 		/// <param name="centerPosFactorY">Specifies where the center is located. Default value is 50% = 0.5</param>
 		/// <param name="deltaX">Movement on X axis</param>
@@ -204,8 +203,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -267,10 +266,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="newWidth">New width of the rectangle</param>
-		/// <param name="newHeight">Nwe height of the rectangle</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
 		public static bool MoveRectangleTop(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newHeight) {
@@ -323,8 +321,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -396,10 +394,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
-		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. Returns 
 		/// false if the movement could not be performed completely because of movement 
 		/// restrictions</returns>
@@ -459,10 +456,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
-		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
 		public static bool MoveRectangleRight(int width, int height, float deltaX, 
@@ -519,8 +515,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -593,9 +589,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="newWidth">New width of the rectangle</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
@@ -651,8 +646,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">Nwe height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -743,17 +738,18 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <param name="width">Width of the rectangle</param>
-		/// <param name="height">Height of the rectangle</param>
+		/// <summary>
+		/// Moves the TopTeft corner of a (rotated) square in order to resize it
+		/// </summary>
+		/// <param name="size">Size of the square</param>
 		/// <param name="deltaX">Movement on X axis</param>
 		/// <param name="deltaY">Movement on Y axis</param>
-		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
-		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
+		/// <param name="cosAngle">Cosinus value of the square's rotation shapeAngle</param>
+		/// <param name="sinAngle">Sinus value of the square's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="newWidth">New width of the rectangle</param>
-		/// <param name="newHeight">Nwe height of the rectangle</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newSize">New size of the square</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
 		public static bool MoveSquareTopLeft(int size, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newSize) {
@@ -764,8 +760,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Moves the TopTeft corner of a (rotated) rectangle in order to resize it
 		/// </summary>
-		/// <param name="width">Width of the rectangle</param>
-		/// <param name="height">Height of the rectangle</param>
+		/// <param name="size">Size of the square</param>
+		/// <param name="minValue">Minimum size of the square.</param>
 		/// <param name="centerPosFactorX">Specifies where the center is located. Default value is 50% = 0.5</param>
 		/// <param name="centerPosFactorY">Specifies where the center is located. Default value is 50% = 0.5</param>
 		/// <param name="deltaX">Movement on X axis</param>
@@ -773,10 +769,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="cosAngle">Cosinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="sinAngle">Sinus value of the rectangle's rotation shapeAngle</param>
 		/// <param name="modifiers">Movement modifiers</param>
-		/// <param name="moveByX">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="moveByY">Specifies the movement the rectangle's center has to perform for resizing</param>
-		/// <param name="newWidth">New width of the rectangle</param>
-		/// <param name="newHeight">Nwe height of the rectangle</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newSize">New size of the square.</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
 		public static bool MoveSquareTopLeft(int size, int minValue, float centerPosFactorX, float centerPosFactorY, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newSize) {
@@ -939,9 +934,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Computes a point on the line segment ab located db% away from a
 		/// </summary>
-		/// <param name="A">Point defining one end of the line segment</param>
-		/// <param name="B">Point defining the other end of the line segment</param>
-		/// <param name="db">Position of the calculated point. E.g. 0.5 returns the middle of a and b.
+		/// <param name="a">Point defining one end of the line segment</param>
+		/// <param name="b">Point defining the other end of the line segment</param>
+		/// <param name="t">Position of the calculated point. E.g. 0.5 returns the middle of a and b.</param>
 		public static Point VectorLinearInterpolation(Point a, Point b, float t) {
 			return VectorLinearInterpolation(a.X, a.Y, b.X, b.Y, t);
 		}
@@ -950,11 +945,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Computes a point on the line segment ab located db% away from a
 		/// </summary>
-		/// <param name="A">X coordinate of the line's first point</param>
-		/// <param name="A">Y coordinate of the line's first point</param>
-		/// <param name="B">X coordinate of the line's second point</param>
-		/// <param name="B">Y coordinate of the line's second point</param>
-		/// <param name="db">Position of the calculated point. E.g. 0.5 returns the middle of a and b.
+		/// <param name="aX">X coordinate of the line's first point</param>
+		/// <param name="aY">Y coordinate of the line's first point</param>
+		/// <param name="bX">X coordinate of the line's second point</param>
+		/// <param name="bY">Y coordinate of the line's second point</param>
+		/// <param name="t">Position of the calculated point. E.g. 0.5 returns the middle of a and b.</param>
 		public static Point VectorLinearInterpolation(int aX, int aY, int bX, int bY, float t) {
 			Point result = Point.Empty;
 			int dX = bX - aX;
@@ -968,9 +963,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Computes a point on the line segment ab located (t * 100)% away from a
 		/// </summary>
-		/// <param name="A">Point defining one end of the line segment</param>
-		/// <param name="B">Point defining the other end of the line segment</param>
-		/// <param name="t">Position of the calculated point. E.g. 0.5 returns the middle of a and b.
+		/// <param name="a">Point defining one end of the line segment</param>
+		/// <param name="b">Point defining the other end of the line segment</param>
+		/// <param name="t">Position of the calculated point. E.g. 0.5 returns the middle of a and b.</param>
 		public static PointF VectorLinearInterpolation(PointF a, PointF b, float t) {
 			return VectorLinearInterpolation(a.X, a.Y, b.X, b.Y, t);
 		}
@@ -979,11 +974,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Computes a point on the line segment ab located db% away from a
 		/// </summary>
-		/// <param name="A">X coordinate of the line's first point</param>
-		/// <param name="A">Y coordinate of the line's first point</param>
-		/// <param name="B">X coordinate of the line's second point</param>
-		/// <param name="B">Y coordinate of the line's second point</param>
-		/// <param name="db">Position of the calculated point. E.g. 0.5 returns the middle of a and b.
+		/// <param name="aX">X coordinate of the line's first point</param>
+		/// <param name="aY">Y coordinate of the line's first point</param>
+		/// <param name="bX">X coordinate of the line's second point</param>
+		/// <param name="bY">Y coordinate of the line's second point</param>
+		/// <param name="t">Position of the calculated point. E.g. 0.5 returns the middle of a and b.</param>
 		public static PointF VectorLinearInterpolation(float aX, float aY, float bX, float bY, float t) {
 			PointF result = Point.Empty;
 			float dX = bX - aX;
@@ -1031,16 +1026,16 @@ namespace Dataweb.NShape.Advanced {
 				Point center = Point.Empty, p = Point.Empty;
 				center.X = x + (width / 2); center.Y = y + (height / 2);
 				p.X = ptX; p.Y = ptY;
-				if (TriangleContainsPoint(p, topLeft, topRight, center)) {
+				if (TriangleContainsPoint(topLeft, topRight, center, p)) {
 					normalVector.X = ptX;
 					normalVector.Y = y - vectorLength;
-				} else if (TriangleContainsPoint(p, bottomLeft, bottomRight, center)) {
+				} else if (TriangleContainsPoint(bottomLeft, bottomRight, center, p)) {
 					normalVector.X = ptX;
 					normalVector.Y = y + height + vectorLength;
-				} else if (TriangleContainsPoint(p, topLeft, bottomLeft, center)) {
+				} else if (TriangleContainsPoint(topLeft, bottomLeft, center, p)) {
 					normalVector.X = x - vectorLength;
 					normalVector.Y = ptY;
-				} else if (TriangleContainsPoint(p, topRight, bottomRight, center)) {
+				} else if (TriangleContainsPoint(topRight, bottomRight, center, p)) {
 					normalVector.X = x + width + vectorLength;
 					normalVector.Y = ptY;
 				} else Debug.Fail(string.Format("Unable to calculate normal vector of {0}", new Point(ptX, ptY)));
@@ -1056,7 +1051,7 @@ namespace Dataweb.NShape.Advanced {
 		public static Point CalcNormalVectorOfCircle(int centerX, int centerY, int radius, int ptX, int ptY, int vectorLength) {
 			Point normalVector = Point.Empty;
 			normalVector.Offset(ptX, ptY);
-			if (CircleContainsPoint(centerX, centerY, radius, 0, ptX, ptY)) {
+			if (CircleContainsPoint(centerX, centerY, radius, ptX, ptY, 0)) {
 				Point intersectionPt = IntersectCircleWithLine(centerX, centerY, radius, ptX, ptY, centerX, centerY, false);
 				if (IsValid(intersectionPt)) {
 					float d = (float)radius / vectorLength;
@@ -1072,28 +1067,28 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Returns true if point p is inside or on the bounds of the triangle a/b/c
 		/// </summary>
-		/// <param name="p">The testee</param>
 		/// <param name="a">First point of the triangle</param>
 		/// <param name="b">Second point of the triangle</param>
 		/// <param name="c">Third point of the triangle</param>
+		/// <param name="p">The testee</param>
 		/// <returns></returns>
-		public static bool TriangleContainsPoint(Point p, Point a, Point b, Point c) {
-			return TriangleContainsPoint(p.X, p.Y, a.X, a.Y, b.X, b.Y, c.X, c.Y);
+		public static bool TriangleContainsPoint(Point a, Point b, Point c, Point p) {
+			return TriangleContainsPoint(a.X, a.Y, b.X, b.Y, c.X, c.Y, p.X, p.Y);
 		}
 
 
 		/// <summary>
 		/// Returns true if point x/y is inside or on the bounds of the triangle a/b/c
 		/// </summary>
-		public static bool TriangleContainsPoint(int x, int y, Point a, Point b, Point c) {
-			return TriangleContainsPoint(x, y, a.X, a.Y, b.X, b.Y, c.X, c.Y);
+		public static bool TriangleContainsPoint(Point a, Point b, Point c, int x, int y) {
+			return TriangleContainsPoint(a.X, a.Y, b.X, b.Y, c.X, c.Y, x, y);
 		}
 
 
 		/// <summary>
 		/// Returns true if point x/y is inside or on the bounds of the triangle a/b/c
 		/// </summary>
-		public static bool TriangleContainsPoint(int x, int y, int aX, int aY, int bX, int bY, int cX, int cY) {
+		public static bool TriangleContainsPoint(int aX, int aY, int bX, int bY, int cX, int cY, int x, int y) {
 			bool ab = VectorCrossProduct(aX, aY, bX, bY, x, y) < 0;
 			bool bc = VectorCrossProduct(bX, bY, cX, cY, x, y) < 0;
 			bool ca = VectorCrossProduct(cX, cY, aX, aY, x, y) < 0;
@@ -1104,20 +1099,20 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Returns true if point p is inside or on the bounds of the triangle a/b/c
 		/// </summary>
-		/// <param name="p">The testee</param>
 		/// <param name="a">First point of the triangle</param>
 		/// <param name="b">Second point of the triangle</param>
 		/// <param name="c">Third point of the triangle</param>
+		/// <param name="p">The testee</param>
 		/// <returns></returns>
-		public static bool TriangleContainsPoint(PointF p, PointF a, PointF b, PointF c) {
-			return TriangleContainsPoint(p.X, p.Y, a.X, a.Y, b.X, b.Y, c.X, c.Y);
+		public static bool TriangleContainsPoint(PointF a, PointF b, PointF c, PointF p) {
+			return TriangleContainsPoint(a.X, a.Y, b.X, b.Y, c.X, c.Y, p.X, p.Y);
 		}
 
 
 		/// <summary>
 		/// Returns true if point x/y is inside or on the bounds of the triangle a/b/c
 		/// </summary>
-		public static bool TriangleContainsPoint(float x, float y, float aX, float aY, float bX, float bY, float cX, float cY) {
+		public static bool TriangleContainsPoint(float aX, float aY, float bX, float bY, float cX, float cY, float x, float y) {
 			bool ab = VectorCrossProduct(aX, aY, bX, bY, x, y) < 0;
 			bool bc = VectorCrossProduct(bX, bY, cX, cY, x, y) < 0;
 			bool ca = VectorCrossProduct(cX, cY, aX, aY, x, y) < 0;
@@ -1126,23 +1121,23 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Returns true if point p is inside or on the bounds of the quadrangle a/b/c/d
+		/// Returns true if point x/y is inside or on the bounds of the quadrangle a/b/c/d
 		/// </summary>
-		/// <param name="p">The testee</param>
 		/// <param name="a">First point of the quadrangle</param>
 		/// <param name="b">Second point of the quadrangle</param>
 		/// <param name="c">Third point of the quadrangle</param>
-		/// <param name="c">Fourth point of the quadrangle</param>
-		/// <returns></returns>
-		public static bool QuadrangleContainsPoint(int x, int y, Point a, Point b, Point c, Point d) {
-			return QuadrangleContainsPoint(x, y, a.X, a.Y, b.X, b.Y, c.X, c.Y, d.X, d.Y);
+		/// <param name="d">Fourth point of the quadrangle</param>
+		/// <param name="x">X coordinate to test.</param>
+		/// <param name="y">Y coordinate to test.</param>
+		public static bool QuadrangleContainsPoint(Point a, Point b, Point c, Point d, int x, int y) {
+			return QuadrangleContainsPoint(a.X, a.Y, b.X, b.Y, c.X, c.Y, d.X, d.Y, x, y);
 		}
 
 
 		/// <summary>
 		/// Returns true if point x/y is inside or on the bounds of the quadrangle a/b/c/d
 		/// </summary>
-		public static bool QuadrangleContainsPoint(int x, int y, int aX, int aY, int bX, int bY, int cX, int cY, int dX, int dY) {
+		public static bool QuadrangleContainsPoint(int aX, int aY, int bX, int bY, int cX, int cY, int dX, int dY, int x, int y) {
 			// ToDo: Check wether shuffling points affects the result
 			bool ab = VectorCrossProduct(aX, aY, bX, bY, x, y) < 0;
 			bool bc = VectorCrossProduct(bX, bY, cX, cY, x, y) < 0;
@@ -1155,21 +1150,22 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Returns true if point p is inside or on the bounds of the quadrangle a/b/c/d
 		/// </summary>
-		/// <param name="p">The testee</param>
 		/// <param name="a">First point of the quadrangle</param>
 		/// <param name="b">Second point of the quadrangle</param>
 		/// <param name="c">Third point of the quadrangle</param>
-		/// <param name="c">Fourth point of the quadrangle</param>
+		/// <param name="d">Fourth point of the quadrangle</param>
+		/// <param name="x">X coordinate to test.</param>
+		/// <param name="y">Y coordinate to test.</param>
 		/// <returns></returns>
-		public static bool QuadrangleContainsPoint(float x, float y, PointF a, PointF b, PointF c, PointF d) {
-			return QuadrangleContainsPoint(x, y, a.X, a.Y, b.X, b.Y, c.X, c.Y, d.X, d.Y);
+		public static bool QuadrangleContainsPoint(PointF a, PointF b, PointF c, PointF d, float x, float y) {
+			return QuadrangleContainsPoint(a.X, a.Y, b.X, b.Y, c.X, c.Y, d.X, d.Y, x, y);
 		}
 
 
 		/// <summary>
 		/// Returns true if point x/y is inside or on the bounds of the quadrangle a/b/c/d
 		/// </summary>
-		public static bool QuadrangleContainsPoint(float x, float y, float aX, float aY, float bX, float bY, float cX, float cY, float dX, float dY) {
+		public static bool QuadrangleContainsPoint(float aX, float aY, float bX, float bY, float cX, float cY, float dX, float dY, float x, float y) {
 			if ((x == aX || x == bX || x == cX || x == dX) && (y == aY || y == bY || y == cY || y == dY))
 				return true;
 			bool ab = VectorCrossProduct(aX, aY, bX, bY, x, y) < 0;
@@ -1183,7 +1179,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Tests if point p is inside or on the bounds of the given rectangle.
 		/// </summary>
-		public static bool RectangleContainsPoint(int pX, int pY, int rX, int rY, int rWidth, int rHeight) {
+		public static bool RectangleContainsPoint(int rX, int rY, int rWidth, int rHeight, int pX, int pY) {
 			return RectangleContainsPoint(rX, rY, rWidth, rHeight, pX, pY, true);
 		}
 
@@ -1213,20 +1209,20 @@ namespace Dataweb.NShape.Advanced {
 				float y = pY;
 				RotatePoint(rectX + (rectWidth / 2f), rectY + (rectHeight / 2f), -rectRotationAngle, ref x, ref y);
 				return RectangleContainsPoint(rectX, rectY, rectWidth, rectHeight, x, y);
-			} else return RectangleContainsPoint(pX, pY, rectX, rectY, rectWidth, rectHeight);
+			} else return RectangleContainsPoint(rectX, rectY, rectWidth, rectHeight, pX, pY);
 		}
 
 
 		/// <summary>
 		/// Tests if point p is inside the given rectangle. The bounds of the rectangle can be excluded.
 		/// </summary>
-		public static bool RectangleContainsPoint(int rX, int rY, int rWidth, int rHeight, int pX, int pY, bool withBounds) {
+		public static bool RectangleContainsPoint(int rectX, int rectY, int rWidth, int rHeight, int pX, int pY, bool withBounds) {
 			bool result = false;
 			if (withBounds) {
-				if ((pX >= rX && pX <= rX + rWidth) && (pY >= rY && pY <= rY + rHeight))
+				if ((pX >= rectX && pX <= rectX + rWidth) && (pY >= rectY && pY <= rectY + rHeight))
 					result = true;
 			} else {
-				if ((pX > rX && pX < rX + rWidth) && (pY > rY && pY < rY + rHeight))
+				if ((pX > rectX && pX < rectX + rWidth) && (pY > rectY && pY < rectY + rHeight))
 					result = true;
 			}
 			return result;
@@ -1252,27 +1248,30 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Tests if point p is inside the given rectangle
 		/// </summary>
-		public static bool RectangleContainsPoint(float rX, float rY, float rWidth, float rHeight, float pX, float pY) {
-			return RectangleContainsPoint(rX, rY, rWidth, rHeight, pX, pY, true);
+		public static bool RectangleContainsPoint(float rectX, float rectY, float rWidth, float rHeight, float pX, float pY) {
+			return RectangleContainsPoint(rectX, rectY, rWidth, rHeight, pX, pY, true);
 		}
 
 
 		/// <summary>
 		/// Tests if point p is inside the given rectangle. The bounds of the rectangle can be excluded.
 		/// </summary>
-		public static bool RectangleContainsPoint(float rX, float rY, float rWidth, float rHeight, float pX, float pY, bool withBounds) {
+		public static bool RectangleContainsPoint(float rectX, float rectY, float rWidth, float rHeight, float pX, float pY, bool withBounds) {
 			bool result = false;
 			if (withBounds) {
-				if ((pX >= rX && pX <= rX + rWidth) && (pY >= rY && pY <= rY + rHeight))
+				if ((pX >= rectX && pX <= rectX + rWidth) && (pY >= rectY && pY <= rectY + rHeight))
 					result = true;
 			} else {
-				if ((pX > rX && pX < rX + rWidth) && (pY > rY && pY < rY + rHeight))
+				if ((pX > rectX && pX < rectX + rWidth) && (pY > rectY && pY < rectY + rHeight))
 					result = true;
 			}
 			return result;
 		}
 
 
+		/// <summary>
+		/// Tests if the given point array is a convex polygon.
+		/// </summary>
 		public static bool PolygonIsConvex(Point[] points) {
 			if (points == null) throw new ArgumentNullException("points");
 			int convex = 0;
@@ -1455,33 +1454,34 @@ namespace Dataweb.NShape.Advanced {
 		//}
 		#endregion
 
+
 		/// <summary>
 		/// Determines if the point is on the line (segment).
 		/// </summary>
-		/// <param name="x">The x-coordinate of the point to test</param>
-		/// <param name="y">The y-coordinate of the point to test</param>
 		/// <param name="p1x">The x-coordinate of the first point that defines the line</param>
 		/// <param name="p1y">The y-coordinate of the first point that defines the line</param>
 		/// <param name="p2x">The x-coordinate of the second point that defines the line</param>
 		/// <param name="p2y">The y-coordinate of the second point that defines the line</param>
 		/// <param name="isSegment">Specifies if the line is a line or a line segment.</param>
-		public static bool LineContainsPoint(int x, int y, int p1x, int p1y, int p2x, int p2y, bool isSegment) {
-			return LineContainsPoint(x, y, p1x, p1y, p2x, p2y, 0.1f, isSegment);
+		/// <param name="x">The x-coordinate of the point to test</param>
+		/// <param name="y">The y-coordinate of the point to test</param>
+		public static bool LineContainsPoint(int p1x, int p1y, int p2x, int p2y, bool isSegment, int x, int y) {
+			return LineContainsPoint(p1x, p1y, p2x, p2y, isSegment, x, y, 0.1f);
 		}
 
 
 		/// <summary>
 		/// Determines if the point is on the line (segment).
 		/// </summary>
-		/// <param name="x">The x-coordinate of the point to test</param>
-		/// <param name="y">The y-coordinate of the point to test</param>
 		/// <param name="p1x">The x-coordinate of the first point that defines the line</param>
 		/// <param name="p1y">The y-coordinate of the first point that defines the line</param>
 		/// <param name="p2x">The x-coordinate of the second point that defines the line</param>
 		/// <param name="p2y">The y-coordinate of the second point that defines the line</param>
-		/// <param name="delta">Specifies the tolerance of the calculation</param>
 		/// <param name="isSegment">Specifies if the line is a line or a line segment</param>
-		public static bool LineContainsPoint(int x, int y, int p1x, int p1y, int p2x, int p2y, float delta, bool isSegment) {
+		/// <param name="x">The x-coordinate of the point to test</param>
+		/// <param name="y">The y-coordinate of the point to test</param>
+		/// <param name="delta">Specifies the tolerance of the calculation</param>
+		public static bool LineContainsPoint(int p1x, int p1y, int p2x, int p2y, bool isSegment, int x, int y, float delta) {
 			return DistancePointLine(x, y, p1x, p1y, p2x, p2y, true) <= delta;
 		}
 
@@ -1489,14 +1489,14 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Determines if the point is on the line (segment).
 		/// </summary>
-		/// <param name="x">The x-coordinate of the point to test</param>
-		/// <param name="y">The y-coordinate of the point to test</param>
 		/// <param name="p1x">The x-coordinate of the first point that defines the line</param>
 		/// <param name="p1y">The y-coordinate of the first point that defines the line</param>
 		/// <param name="p2x">The x-coordinate of the second point that defines the line</param>
 		/// <param name="p2y">The y-coordinate of the second point that defines the line</param>
 		/// <param name="isSegment">Specifies if the line is a line or a line segment.</param>
-		public static bool LineContainsPoint(float x, float y, float p1x, float p1y, float p2x, float p2y, bool isSegment) {
+		/// <param name="x">The x-coordinate of the point to test</param>
+		/// <param name="y">The y-coordinate of the point to test</param>
+		public static bool LineContainsPoint(float p1x, float p1y, float p2x, float p2y, bool isSegment, float x, float y) {
 			if (p2x == p1x) 
 				return (p1x == x);
 			// check if point is inside the bounds of the line segment
@@ -1515,15 +1515,15 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Determines if the point is on the line (segment).
 		/// </summary>
-		/// <param name="x">The x-coordinate of the point to test</param>
-		/// <param name="y">The y-coordinate of the point to test</param>
 		/// <param name="p1x">The x-coordinate of the first point that defines the line</param>
 		/// <param name="p1y">The y-coordinate of the first point that defines the line</param>
 		/// <param name="p2x">The x-coordinate of the second point that defines the line</param>
 		/// <param name="p2y">The y-coordinate of the second point that defines the line</param>
-		/// <param name="delta">Specifies the tolerance of the calculation</param>
 		/// <param name="isSegment">Specifies if the line is a line or a line segment</param>
-		public static bool LineContainsPoint(float x, float y, float p1x, float p1y, float p2x, float p2y, float delta, bool isSegment) {
+		/// <param name="x">The x-coordinate of the point to test</param>
+		/// <param name="y">The y-coordinate of the point to test</param>
+		/// <param name="delta">Specifies the tolerance of the calculation</param>
+		public static bool LineContainsPoint(float p1x, float p1y, float p2x, float p2y, bool isSegment, float x, float y, float delta) {
 			if (p2x == p1x)
 				return (p1x - delta <= x && x <= p1x + delta);
 			// check if point is inside the bounds of the line segment
@@ -1553,6 +1553,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Returns true if the rectanlge defined by x, y, width and height contains the given rectangle.
+		/// </summary>
 		public static bool RectangleContainsRectangle(int x, int y, int width, int height, Rectangle rectangle) {
 			if (!IsValid(x, y, width, height)) throw new ArgumentException(string.Format("{0} is not a valid rectangle.", new Rectangle(x, y, width, height)));
 			if (!IsValid(rectangle)) throw new ArgumentException("rectangle");
@@ -1560,6 +1563,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Returns true if the given rectangle contains the rectanlge defined by x, y, width and height.
+		/// </summary>
 		public static bool RectangleContainsRectangle(Rectangle rectangle, int x, int y, int width, int height) {
 			if (!IsValid(x, y, width, height)) throw new ArgumentException(string.Format("{0} is not a valid rectangle.", new Rectangle(x, y, width, height)));
 			if (!IsValid(rectangle)) throw new ArgumentException("InvalidRectangle is not a valid value.", "rectangle");
@@ -1570,6 +1576,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Returns true if rectangle rect1 contains rectangle rect2.
+		/// </summary>
 		public static bool RectangleContainsRectangle(int rect1X, int rect1Y, int rect1Width, int rect1Height, int rect2X, int rect2Y, int rect2Width, int rect2Height) {
 			if (rect1Width < 0) throw new ArgumentException(string.Format("{0} is not a valid value.", rect1Width), "rect1Width");
 			if (rect1Height < 0) throw new ArgumentException(string.Format("{0} is not a valid value.", rect1Height), "rect1Height");
@@ -1668,10 +1677,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="centerX">The x-coordinate of the circle's center</param>
 		/// <param name="centerY">The y-coordinate of the circle's center</param>
 		/// <param name="radius">The radius of the circle</param>
-		/// <param name="delta">The tolerance of the calculation</param>
 		/// <param name="pointX">The x-coordinate of the point to test</param>
 		/// <param name="pointY">The y-coordinate of the point to test</param>
-		public static bool CircleContainsPoint(float centerX, float centerY, float radius, float delta, float pointX, float pointY) {
+		/// <param name="delta">The tolerance of the calculation</param>
+		public static bool CircleContainsPoint(float centerX, float centerY, float radius, float pointX, float pointY, float delta) {
 			float pDistance = Math.Abs(DistancePointPoint(pointX, pointY, centerX, centerY));
 			return pDistance <= radius + delta;
 		}
@@ -1683,10 +1692,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="centerX">The x-coordinate of the circle's center</param>
 		/// <param name="centerY">The y-coordinate of the circle's center</param>
 		/// <param name="radius">The radius of the circle</param>
-		/// <param name="delta">The tolerance of the calculation</param>
 		/// <param name="pointX">The x-coordinate of the point to test</param>
 		/// <param name="pointY">The y-coordinate of the point to test</param>
-		public static bool CircleContainsPoint(int centerX, int centerY, float radius, float delta, int pointX, int pointY) {
+		/// <param name="delta">The tolerance of the calculation</param>
+		public static bool CircleContainsPoint(int centerX, int centerY, float radius, int pointX, int pointY, float delta) {
 			float pDistance = Math.Abs(DistancePointPoint(pointX, pointY, centerX, centerY));
 			return pDistance <= radius + delta;
 		}
@@ -1698,10 +1707,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="centerX">The x-coordinate of the circle's center</param>
 		/// <param name="centerY">The y-coordinate of the circle's center</param>
 		/// <param name="radius">The radius of the circle</param>
+		/// <param name="pX">The x-coordinate of the point to test</param>
+		/// <param name="pY">The y-coordinate of the point to test</param>
 		/// <param name="delta">The tolerance of the calculation</param>
-		/// <param name="pointX">The x-coordinate of the point to test</param>
-		/// <param name="pointY">The y-coordinate of the point to test</param>
-		public static bool CircleOutlineContainsPoint(int centerX, int centerY, float radius, float delta, int pX, int pY) {
+		public static bool CircleOutlineContainsPoint(int centerX, int centerY, float radius, int pX, int pY, float delta) {
 			float pDistance = Math.Abs(DistancePointPoint(pX, pY, centerX, centerY));
 			if ((pDistance <= radius + delta) && (pDistance >= radius - delta))
 				return true;
@@ -1710,12 +1719,23 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		public static bool ArcContainsPoint(Point arcCenter, Point startPoint, Point endPoint, Point radiusPoint, float delta, Point point) {
+		/// <summary>
+		/// Returns true if the arc defined by arcCenter and the three points startPoint, endPoint and radiusPoint contains the given point.
+		/// </summary>
+		public static bool ArcContainsPoint(Point arcCenter, Point startPoint, Point endPoint, Point radiusPoint, Point point, float delta) {
 			return ArcContainsPoint(arcCenter.X, arcCenter.Y, startPoint.X, startPoint.Y, endPoint.X, endPoint.Y, delta, point.X, point.Y);
 		}
 
 
-		public static bool ArcContainsPoint(PointF startPoint, PointF radiusPoint, PointF endPoint, float delta, PointF point) {
+		/// <summary>
+		/// Determines if an arc, defined by three points, contains a point
+		/// </summary>
+		/// <param name="startPoint">The point defining the beginning of the arc</param>
+		/// <param name="radiusPoint">The point defining the radius of the arc</param>
+		/// <param name="endPoint">The point defining end of the arc</param>
+		/// <param name="point">The point to test</param>
+		/// <param name="delta">The tolerance of the calculation</param>
+		public static bool ArcContainsPoint(PointF startPoint, PointF radiusPoint, PointF endPoint, PointF point, float delta) {
 			return ArcContainsPoint(startPoint.X, startPoint.Y, radiusPoint.X, radiusPoint.Y, endPoint.X, endPoint.Y, delta, point.X, point.Y);
 		}
 
@@ -1727,15 +1747,15 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="startPointY">The y-coordinate of the point defining  the beginning of the arc</param>
 		/// <param name="radiusPointX">The x-coordinate of the point defining the radius of the arc</param>
 		/// <param name="radiusPointY">The y-coordinate of the point defining the radius of the arc</param>
-		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param></param>
-		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param></param>
+		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param>
+		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param>
 		/// <param name="delta">The tolerance of the calculation</param>
 		/// <param name="pointX">The x-coordinate of the point to test</param>
 		/// <param name="pointY">The y-coordinate of the point to test</param>
 		public static bool ArcContainsPoint(float startPointX, float startPointY, float radiusPointX, float radiusPointY, float endPointX, float endPointY, float delta, float pointX, float pointY) {
 			float radius;
 			PointF center = CalcArcCenterAndRadius(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, out radius);
-			return ArcContainsPoint(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, center.X, center.Y, radius, delta, pointX, pointY);
+			return ArcContainsPoint(startPointX, startPointY, radiusPointX, radiusPointY, endPointX, endPointY, center.X, center.Y, radius, pointX, pointY, delta);
 		}
 
 		
@@ -1746,14 +1766,14 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="arcCenterY">The y-coordinate of the arc's center point</param>
 		/// <param name="startPointX">The x-coordinate of the point defining the beginning of the arc</param>
 		/// <param name="startPointY">The y-coordinate of the point defining  the beginning of the arc</param>
-		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param></param>
-		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param></param>
+		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param>
+		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param>
 		/// <param name="radiusPointX">The x-coordinate of the point defining the radius of the arc</param>
 		/// <param name="radiusPointY">The y-coordinate of the point defining the radius of the arc</param>
-		/// <param name="delta">The tolerance of the calculation</param>
 		/// <param name="pointX">The x-coordinate of the point to test</param>
 		/// <param name="pointY">The y-coordinate of the point to test</param>
-		public static bool ArcContainsPoint(int arcCenterX, int arcCenterY, int startPointX, int startPointY, int endPointX, int endPointY, int radiusPointX, int radiusPointY, float delta, int pointX, int pointY) {
+		/// <param name="delta">The tolerance of the calculation</param>
+		public static bool ArcContainsPoint(int arcCenterX, int arcCenterY, int startPointX, int startPointY, int endPointX, int endPointY, int radiusPointX, int radiusPointY, int pointX, int pointY, float delta) {
 			//if the point is on the arc's circle...
 			float distance = Math.Abs(DistancePointPoint(pointX, pointY, arcCenterX, arcCenterY));
 			float radius = Math.Abs(DistancePointPoint(startPointX, startPointY, arcCenterX, arcCenterY));
@@ -1775,15 +1795,15 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="startPointY">The y-coordinate of the point defining  the beginning of the arc</param>
 		/// <param name="radiusPointX">The x-coordinate of the point defining the radius of the arc</param>
 		/// <param name="radiusPointY">The y-coordinate of the point defining the radius of the arc</param>
-		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param></param>
-		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param></param>
+		/// <param name="endPointX">The x-coordinate of the point defining end of the arc</param>
+		/// <param name="endPointY">The x-coordinate of the point defining end of the arc</param>
 		/// <param name="arcCenterX">The x-coordinate of the arc's center point</param>
 		/// <param name="arcCenterY">The y-coordinate of the arc's center point</param>
 		/// <param name="arcRadius">The radius of the arc</param>
-		/// <param name="delta">The tolerance of the calculation</param>
 		/// <param name="pointX">The x-coordinate of the point to test</param>
 		/// <param name="pointY">The y-coordinate of the point to test</param>
-		public static bool ArcContainsPoint(float startPointX, float startPointY, float radiusPointX, float radiusPointY, float endPointX, float endPointY, float arcCenterX, float arcCenterY, float arcRadius, float delta, float pointX, float pointY) {
+		/// <param name="delta">The tolerance of the calculation</param>
+		public static bool ArcContainsPoint(float startPointX, float startPointY, float radiusPointX, float radiusPointY, float endPointX, float endPointY, float arcCenterX, float arcCenterY, float arcRadius, float pointX, float pointY, float delta) {
 			// check if the point is on the arc's circle
 			float distance = Math.Abs(DistancePointPoint(pointX, pointY, arcCenterX, arcCenterY));
 			if (arcRadius - delta <= distance && distance <= arcRadius + delta) {
@@ -1838,6 +1858,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Intersection test functions
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool PolygonIntersectsWithRectangle(Point[] points, Rectangle rectangle) {
 			int left = int.MaxValue;
 			int top = int.MaxValue;
@@ -1876,11 +1897,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool PolygonIntersectsWithRectangle(PointF[] pointFs, Rectangle rectangle) {
 			return PolygonIntersectsWithRectangle(pointFs, (RectangleF)rectangle);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool PolygonIntersectsWithRectangle(PointF[] points, RectangleF rectangle) {
 			if (points == null) throw new ArgumentNullException("points");
 			if (points.Length <= 0) return false;
@@ -2269,16 +2292,19 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithLine(PointF center, float radius, PointF p1, PointF p2, bool isSegment) {
 			return Math.Abs(DistancePointLine(center.X, center.Y, p1.X, p1.Y, p2.X, p2.Y, isSegment)) <= radius;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithLine(float centerX, float centerY, float radius, float x1, float y1, float x2, float y2, bool isSegment) {
 			return Math.Abs(DistancePointLine(centerX, centerY, x1, y1, x2, y2, isSegment)) <= radius;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool ArcIntersectsWithLine(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, float x1, float y1, float x2, float y2, bool isSegment) {
 			foreach (PointF p in IntersectArcLine(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, x1, y1, x2, y2, isSegment))
 				return true;
@@ -2346,6 +2372,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool ArcIntersectsWithRectangle(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, float centerX, float centerY, float radius, Rectangle rect) {
 			float left = rect.Left;
 			float top = rect.Top;
@@ -2361,32 +2388,35 @@ namespace Dataweb.NShape.Advanced {
 			// check the sides of the rectangle if one one of then intersects with the arc
 			PointF p;
 			p = IntersectCircleWithLine(centerX, centerY, radius, left, top, right, top, true);
-			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.X, p.Y))
+			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, p.X, p.Y, 0.01f))
 				return true;
 			p = IntersectCircleWithLine(centerX, centerY, radius, right, top, right, bottom, true);
-			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.X, p.Y))
+			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, p.X, p.Y, 0.01f))
 				return true;
 			p = IntersectCircleWithLine(centerX, centerY, radius, right, bottom, left, bottom, true);
-			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.X, p.Y))
+			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, p.X, p.Y, 0.01f))
 				return true;
 			p = IntersectCircleWithLine(centerX, centerY, radius, left, bottom, left, top, true);
-			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, 0.01f, p.X, p.Y))
+			if (IsValid(p) && ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, centerX, centerY, radius, p.X, p.Y, 0.01f))
 				return true;
 			return false;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithCircle(PointF center1, float radius1, PointF center2, float radius2) {
 			float distance = DistancePointPoint(center1, center2);
 			return (distance <= radius1 || distance <= radius2);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithRectangle(Rectangle rect, Point center, float radius) {
 			return CircleIntersectsWithRectangle(rect, center.X, center.Y, radius);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithRectangle(Rectangle rect, int centerX, int centerY, float radius) {
 			float radiusSq = radius * radius;
 
@@ -2434,11 +2464,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithRectangle(Rectangle rect, PointF center, float radius) {
 			return CircleIntersectsWithRectangle(rect, center.X, center.Y, radius);
 		}
 
-	
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool CircleIntersectsWithRectangle(Rectangle rect, float centerX, float centerY, float radius) {
 			float radiusSq = radius * radius;
 
@@ -2502,21 +2534,25 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(Point center, int ellipseWidth, int ellipseHeight, Point p1, Point p2, bool isSegment) {
 			return EllipseIntersectsWithLine(center.X, center.Y, ellipseWidth, ellipseHeight, 0, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(Point center, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, Point p1, Point p2, bool isSegment) {
 			return EllipseIntersectsWithLine(center.X, center.Y, ellipseWidth, ellipseHeight, ellipseAngleDeg, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(int centerX, int centerY, int ellipseWidth, int ellipseHeight, int x1, int y1, int x2, int y2, bool isSegment) {
 			return EllipseIntersectsWithLine(centerX, centerY, ellipseWidth, ellipseHeight, 0, x1, y1, x2, y2, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(int centerX, int centerY, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, int x1, int y1, int x2, int y2, bool isSegment) {
 			Point result = Point.Empty;
 			float radiusX = ellipseWidth / 2f;
@@ -2549,22 +2585,26 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(Point center, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, PointF p1, PointF p2, bool isSegment) {
 			return EllipseIntersectsWithLine(center.X, center.Y, ellipseWidth, ellipseHeight, ellipseAngleDeg, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(Point center, int ellipseWidth, int ellipseHeight, PointF p1, PointF p2, bool isSegment) {
 			return EllipseIntersectsWithLine(center.X, center.Y, ellipseWidth, ellipseHeight, 0, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(int centerX, int centerY, int ellipseWidth, int ellipseHeight, float x1, float y1, float x2, float y2, bool isSegment) {
 			// instead of rotating the ellipse, we rotate the line in the opposite direction
 			return EllipseIntersectsWithLine(centerX, centerY, ellipseWidth, ellipseHeight, 0, x1, y1, x2, y2, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithLine(int centerX, int centerY, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, float x1, float y1, float x2, float y2, bool isSegment) {
 			Point result = Point.Empty;
 			float radiusX = ellipseWidth / 2f;
@@ -2600,6 +2640,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool EllipseIntersectsWithRectangle(int ellipseCenterX, int ellipseCenterY, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, Rectangle rectangle) {
 			// At least one point of the rectangle is inside the ellipse
 			if (EllipseContainsPoint(ellipseCenterX, ellipseCenterY, ellipseWidth, ellipseHeight, ellipseAngleDeg, rectangle.Left, rectangle.Top)
@@ -2643,6 +2684,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool PolygonIntersectsWithEllipse(int ellipseCenterX, int ellipseCenterY, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, PointF[] polygon) {
 			if (ellipseAngleDeg != 0) {
 				// instead of rotating the ellipse, we rotate the polygon in the opposite direction and calculate 
@@ -2667,6 +2709,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool PolygonIntersectsWithEllipse(int ellipseCenterX, int ellipseCenterY, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, Point[] polygon) {
 			if (ellipseAngleDeg != 0) {
 				// instead of rotating the ellipse, we rotate the polygon in the opposite direction and calculate 
@@ -2690,11 +2733,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool RectangleIntersectsWithRectangle(Rectangle rect1, Rectangle rect2) {
 			 return ((((rect2.X <= rect1.Right) && (rect1.X <= rect2.Right)) && (rect2.Y <= rect1.Bottom)) && (rect1.Y <= rect2.Bottom));
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool RectangleIntersectsWithRectangle(Rectangle rect, int x, int y, int width, int height) {
 			Rectangle rect2 = Rectangle.Empty;
 			rect2.Offset(x, y);
@@ -2704,6 +2749,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool RectangleIntersectsWithRectangle(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
 			Rectangle r1 = Rectangle.Empty, r2 = Rectangle.Empty;
 			r1.Offset(x1, y1);
@@ -2716,11 +2762,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool RectangleIntersectsWithRectangle(RectangleF rect1, RectangleF rect2) {
 			return ((((rect2.X <= rect1.Right) && (rect1.X <= rect2.Right)) && (rect2.Y <= rect1.Bottom)) && (rect1.Y <= rect2.Bottom));
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool RectangleIntersectsWithRectangle(RectangleF rect, float x, float y, float width, float height) {
 			RectangleF rect2 = RectangleF.Empty;
 			rect2.Offset(x, y);
@@ -2730,6 +2778,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool RectangleIntersectsWithRectangle(float x1, float y1, float w1, float h1, float x2, float y2, float w2, float h2) {
 			RectangleF r1 = RectangleF.Empty, r2 = RectangleF.Empty;
 			r1.Offset(x1, y1);
@@ -2746,6 +2795,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Intersection calculation functions
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool IntersectLineWithLineSegment(int aLine, int bLine, int cLine, Point p1, Point p2, out int x, out int y) {
 			int aSegment, bSegment, cSegment;
 			CalcLine(p1.X, p1.Y, p2.X, p2.Y, out aSegment, out bSegment, out cSegment);
@@ -2756,6 +2806,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool IntersectLineWithLineSegment(float aLine, float bLine, float cLine, PointF p1, PointF p2, out float x, out float y) {
 			float aSegment, bSegment, cSegment;
 			CalcLine(p1.X, p1.Y, p2.X, p2.Y, out aSegment, out bSegment, out cSegment);
@@ -2766,6 +2817,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLineWithLineSegment(int aLine, int bLine, int cLine, Point p1, Point p2) {
 			Point result = InvalidPoint;
 			int x, y, aSegment, bSegment, cSegment;
@@ -2781,6 +2833,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLineWithLineSegment(float aLine, float bLine, float cLine, PointF p1, PointF p2) {
 			PointF result = InvalidPointF;
 			float x, y, aSegment, bSegment, cSegment;
@@ -2796,11 +2849,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLineSegments(Point p1, Point p2, Point p3, Point p4) {
 			return IntersectLineSegments(p1.X, p1.Y, p2.X, p2.Y, p3.X, p3.Y, p4.X, p4.Y);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLineSegments(int p1X, int p1Y, int p2X, int p2Y, int p3X, int p3Y, int p4X, int p4Y) {
 			Point result = InvalidPoint;
 			int x21 = p2X - p1X;
@@ -2824,11 +2879,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLineSegments(PointF p1, PointF p2, PointF p3, PointF p4) {
 			return IntersectLineSegments(p1.X, p1.Y, p2.X, p2.Y, p3.X, p3.Y, p4.X, p4.Y);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLineSegments(float p1X, float p1Y, float p2X, float p2Y, float p3X, float p3Y, float p4X, float p4Y) {
 			float x21 = p2X - p1X;
 			float y21 = p2Y - p1Y;
@@ -2852,6 +2909,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLineWithLineSegment(int lineStartX, int lineStartY, int lineEndX, int lineEndY, int lineSegmentStartX, int lineSegmentStartY, int lineSegmentEndX, int lineSegmentEndY) {
 			Point result = InvalidPoint;
 			float a1, b1, c1, a2, b2, c2;
@@ -2869,6 +2927,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLineWithLineSegment(float lineStartX, float lineStartY, float lineEndX, float lineEndY, float lineSegmentStartX, float lineSegmentStartY, float lineSegmentEndX, float lineSegmentEndY) {
 			PointF result = InvalidPointF;
 			float a1, b1, c1, a2, b2, c2;
@@ -2887,6 +2946,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool IntersectLines(int a1, int b1, int c1, int a2, int b2, int c2, out int x, out int y) {
 			// Explaination:
 			// a1 * x + b1 * y = -c1   multiplied by b2
@@ -2910,6 +2970,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool IntersectLines(float a1, float b1, float c1, float a2, float b2, float c2, out float x, out float y) {
 			x = InvalidPointF.X; y = InvalidPointF.Y;
 			double det = (float)a1 * (float)b2 - (float)a2 * (float)b1;
@@ -2922,6 +2983,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLines(int a1, int b1, int c1, int a2, int b2, int c2) {
 			Point result = InvalidPoint;
 			int x, y;
@@ -2933,6 +2995,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLines(int a1, int b1, int c1, Point a, Point b) {
 			Point result = InvalidPoint;
 			int a2, b2, c2;
@@ -2946,6 +3009,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLines(float a1, float b1, float c1, PointF a, PointF b) {
 			PointF result = InvalidPointF;
 			float a2, b2, c2;
@@ -2959,6 +3023,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLines(float a1, float b1, float c1, float a2, float b2, float c2) {
 			PointF result = InvalidPointF;
 			float x, y;
@@ -2970,6 +3035,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static PointF IntersectLines(float line1StartX, float line1StartY, float line1EndX, float line1EndY, float line2StartX, float line2StartY, float line2EndX, float line2EndY) {
 			PointF result = InvalidPointF;
 			float a1, b1, c1, a2, b2, c2;
@@ -2984,6 +3050,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectLines(int line1StartX, int line1StartY, int line1EndX, int line1EndY, int line2StartX, int line2StartY, int line2EndX, int line2EndY) {
 			Point result = InvalidPoint;
 			int a1, b1, c1, a2, b2, c2;
@@ -3058,7 +3125,8 @@ namespace Dataweb.NShape.Advanced {
 			return result;
 		}
 
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Point IntersectCircleWithLine(Point center, int radius, Point p1, Point p2, bool isSegment) {
 			return IntersectCircleWithLine(center.X, center.Y, radius, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
@@ -3133,11 +3201,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> GetAllCircleLineIntersections(PointF center, float radius, PointF pt1, PointF pt2, bool isSegment) {
 			return GetAllCircleLineIntersections(center.X, center.Y, radius, pt1.X, pt1.Y, pt2.X, pt2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> GetAllCircleLineIntersections(float centerX, float centerY, float radius, float x1, float y1, float x2, float y2, bool isSegment) {
 			PointF result = PointF.Empty; 
 			double rr = radius * radius;
@@ -3167,17 +3237,20 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> GetAllCircleLineIntersections(Point center, float radius, Point pt1, Point pt2, bool isSegment) {
 			return GetAllCircleLineIntersections(center.X, center.Y, radius, pt1.X, pt1.Y, pt2.X, pt2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> GetAllCircleLineIntersections(int centerX, int centerY, float radius, int x1, int y1, int x2, int y2, bool isSegment) {
 			foreach (PointF p in GetAllCircleLineIntersections((float)centerX, (float)centerY, (float)radius, (float)x1, (float)y1, (float)x2, (float)y2, isSegment))
 				yield return Point.Round(p);
 		}
 
-
+		
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> IntersectCircles(int center1X, int center1Y, int radius1, int center2X, int center2Y, int radius2) {
 			PointF result = Point.Empty;
 			double a1, a2, b1, b2, c1, c2, d, e, f;			
@@ -3219,6 +3292,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> IntersectCircles(float center1X, float center1Y, float radius1, float center2X, float center2Y, float radius2) {
 			PointF result = Point.Empty;
 			double a1, a2, b1, b2, c1, c2, d, e, f;
@@ -3260,6 +3334,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectCircleArc(int circleCenterX, int circleCenterY, int circleRadius, int arcStartPtX, int arcStartPtY, int arcRadiusPtX, int arcRadiusPtY, int arcEndPtX, int arcEndPtY) {
 			float arcRadius;
 			PointF arcCenter = CalcArcCenterAndRadius(arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, out arcRadius);
@@ -3267,64 +3342,73 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectCircleArc(int circleCenterX, int circleCenterY, int circleRadius, int arcStartPtX, int arcStartPtY, int arcRadiusPtX, int arcRadiusPtY, int arcEndPtX, int arcEndPtY, float arcCenterX, float arcCenterY, float arcRadius) {
 			foreach (PointF p in IntersectCircles(circleCenterX, circleCenterY, circleRadius, arcCenterX, arcCenterY, arcRadius)) {
-				if (ArcContainsPoint(arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, arcCenterX, arcCenterY, arcRadius, 0.1f, p.X, p.Y))
+				if (ArcContainsPoint(arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, arcCenterX, arcCenterY, arcRadius, p.X, p.Y, 0.1f))
 					yield return Point.Round(p);
 			}
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> IntersectCircleArc(float circleCenterX, float circleCenterY, float circleRadius, float arcStartPtX, float arcStartPtY, float arcRadiusPtX, float arcRadiusPtY, float arcEndPtX, float arcEndPtY) {
 			float arcRadius;
 			PointF arcCenter = CalcArcCenterAndRadius(arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, out arcRadius);
 			return IntersectCircleArc(circleCenterX, circleCenterY, circleRadius, arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, arcCenter.X, arcCenter.Y, arcRadius);
 		}
-		
-		
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> IntersectCircleArc(float circleCenterX, float circleCenterY, float circleRadius, float arcStartPtX, float arcStartPtY, float arcRadiusPtX, float arcRadiusPtY, float arcEndPtX, float arcEndPtY, float arcCenterX, float arcCenterY, float arcRadius) {
 			foreach (PointF p in IntersectCircles(circleCenterX, circleCenterY, circleRadius, arcCenterX, arcCenterY, arcRadius)) {
-				if (ArcContainsPoint(arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, arcCenterX, arcCenterY, arcRadius, 0.1f, p.X, p.Y))
+				if (ArcContainsPoint(arcStartPtX, arcStartPtY, arcRadiusPtX, arcRadiusPtY, arcEndPtX, arcEndPtY, arcCenterX, arcCenterY, arcRadius, p.X, p.Y, 0.1f))
 					yield return p;
 			}
 		}
-		
-		
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectArcLine(Point startPt, Point radiusPt, Point endPt, Point p1, Point p2, bool isSegment) {
 			return IntersectArcLine(startPt.X, startPt.Y, radiusPt.X, radiusPt.Y, endPt.X, endPt.Y, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectArcLine(int startPtX, int startPtY, int radiusPtX, int radiusPtY, int endPtX, int endPtY, int x1, int y1, int x2, int y2, bool isSegment) {
 			// calculate center point and radius
 			float radius;
 			PointF center = CalcArcCenterAndRadius((float)startPtX, (float)startPtY, (float)radiusPtX, (float)radiusPtY, (float)endPtX, (float)endPtY, out radius);
 			foreach (PointF p in GetAllCircleLineIntersections(center.X, center.Y, radius, x1, y1, x2, y2, isSegment))
-				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.1f, p.X, p.Y))
+				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, p.X, p.Y, 0.1f))
 					yield return Point.Round(p);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> IntersectArcLine(PointF startPt, PointF radiusPt, PointF endPt, PointF p1, PointF p2, bool isSegment) {
 			return IntersectArcLine(startPt.X, startPt.Y, radiusPt.X, radiusPt.Y, endPt.X, endPt.Y, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> IntersectArcLine(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, float x1, float y1, float x2, float y2, bool isSegment) {
 			// calculate center point and radius
 			float radius;
 			PointF center = CalcArcCenterAndRadius(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, out radius);
 			foreach (PointF p in GetAllCircleLineIntersections(center.X, center.Y, radius, x1, y1, x2, y2, isSegment))
-				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.1f, p.X, p.Y))
+				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, p.X, p.Y, 0.1f))
 					yield return p;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectPolygonLine(Point[] points, Point p1, Point p2, bool isSegment) {
 			return IntersectPolygonLine(points, p1.X, p1.Y, p2.X, p2.Y, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectPolygonLine(Point[] points, int pt1X, int pt1Y, int pt2X, int pt2Y, bool isSegment) {
 			if (points == null) throw new ArgumentNullException("points");
 			Point result = Point.Empty;
@@ -3377,11 +3461,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectPolygonLine(PointF[] points, PointF p1, PointF p2, bool isSegment) {
 			return IntersectPolygonLine(points, p1, p2, isSegment);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> IntersectPolygonLine(PointF[] points, float pt1X, float pt1Y, float pt2X, float pt2Y, bool isSegment) {
 			if (points == null) throw new ArgumentNullException("points");
 			Point result = Point.Empty;
@@ -3443,6 +3529,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="ellipseAngleDeg">Rotation shapeAngle of the ellipse in degrees.</param>
 		/// <param name="p1">First point of the line segment.</param>
 		/// <param name="p2">Second point of the line segment.</param>
+		/// <param name="isSegment">Specifies wether the tested line should be treated as line or as line segment.</param>
 		/// <returns>Intersection points of the line with the ellipse.</returns>		
 		public static IEnumerable<Point> IntersectEllipseLine(Point center, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, Point p1, Point p2, bool isSegment) {
 			return IntersectEllipseLine(center.X, center.Y, ellipseWidth, ellipseHeight, ellipseAngleDeg, p1.X, p1.Y, p2.X, p2.Y, isSegment);
@@ -3457,6 +3544,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="ellipseHeight">Height of the ellipse.</param>
 		/// <param name="p1">First point of the line segment.</param>
 		/// <param name="p2">Second point of the line segment.</param>
+		/// <param name="isSegment">Specifies wether the tested line should be treated as line or as line segment.</param>
 		/// <returns>Intersection points of the line with the ellipse.</returns>		
 		public static IEnumerable<Point> IntersectEllipseLine(Point center, int ellipseWidth, int ellipseHeight, Point p1, Point p2, bool isSegment) {
 			return IntersectEllipseLine(center.X, center.Y, ellipseWidth, ellipseHeight, 0, p1.X, p1.Y, p2.X, p2.Y, isSegment);
@@ -3470,12 +3558,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="centerY">Y coordinate of the ellipse center point.</param>
 		/// <param name="ellipseWidth">Width of the ellipse.</param>
 		/// <param name="ellipseHeight">Height of the ellipse.</param>
-		/// <param name="ellipseAngleDeg">Rotation shapeAngle of the ellipse in degrees.</param>
 		/// <param name="x1">X coordinate of the line segments first point.</param>
-		/// <param name="Y1">Y coordinate of the line segments first point.</param>
+		/// <param name="y1">Y coordinate of the line segments first point.</param>
 		/// <param name="x2">X coordinate of the line segments second point.</param>
-		/// <param name="Y2">Y coordinate of the line segments second point.</param>
-		/// <param name="isSegment">Specifies if the line is a line or a line segment.</param>
+		/// <param name="y2">Y coordinate of the line segments second point.</param>
+		/// <param name="isSegment">Specifies wether the tested line should be treated as line or as line segment.</param>
 		/// <returns>Intersection points of the line with the ellipse.</returns>		
 		public static IEnumerable<Point> IntersectEllipseLine(int centerX, int centerY, int ellipseWidth, int ellipseHeight, int x1, int y1, int x2, int y2, bool isSegment) {
 			return IntersectEllipseLine(centerX, centerY, ellipseWidth, ellipseHeight, 0, x1, y1, x2, y2, isSegment);
@@ -3489,10 +3576,12 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="centerY">Y coordinate of the ellipse center point.</param>
 		/// <param name="ellipseWidth">Width of the ellipse.</param>
 		/// <param name="ellipseHeight">Height of the ellipse.</param>
+		/// <param name="ellipseAngleDeg">Specifies the rotation angle of the ellipse in degrees.</param>
 		/// <param name="x1">X coordinate of the line segments first point.</param>
-		/// <param name="Y1">Y coordinate of the line segments first point.</param>
+		/// <param name="y1">Y coordinate of the line segments first point.</param>
 		/// <param name="x2">X coordinate of the line segments second point.</param>
-		/// <param name="Y2">Y coordinate of the line segments second point.</param>
+		/// <param name="y2">Y coordinate of the line segments second point.</param>
+		/// <param name="isSegment">Specifies wether the tested line should be treated as line or as line segment.</param>
 		/// <returns>Intersection points of the line with the ellipse.</returns>		
 		public static IEnumerable<Point> IntersectEllipseLine(int centerX, int centerY, int ellipseWidth, int ellipseHeight, float ellipseAngleDeg, int x1, int y1, int x2, int y2, bool isSegment) {
 			Point result = Point.Empty;
@@ -3547,9 +3636,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="ellipseHeight">Height of the ellipse.</param>
 		/// <param name="ellipseAngleDeg">Rotation shapeAngle of the ellipse.</param>
 		/// <param name="x1">X coordinate of the line segments first point.</param>
-		/// <param name="Y1">Y coordinate of the line segments first point.</param>
+		/// <param name="y1">Y coordinate of the line segments first point.</param>
 		/// <param name="x2">X coordinate of the line segments second point.</param>
-		/// <param name="Y2">Y coordinate of the line segments second point.</param>
+		/// <param name="y2">Y coordinate of the line segments second point.</param>
+		/// <param name="isSegment">Specifies wether the tested line should be treated as line or as line segment.</param>
 		/// <returns>Intersection points of the line with the ellipse.</returns>		
 		public static IEnumerable<PointF> IntersectEllipseLine(float centerX, float centerY, float ellipseWidth, float ellipseHeight, float ellipseAngleDeg, float x1, float y1, float x2, float y2, bool isSegment) {
 			PointF result = PointF.Empty;
@@ -3664,6 +3754,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Calculates the approximate distance between the two points {x1 | y1} and {x2 | y2}
+		/// </summary>
 		public static int DistancePointPointFast(int x, int y, Point p) {
 			return DistancePointPointFast(x, y, p.X, p.Y);
 		}
@@ -3736,9 +3829,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		///// <summary>
-		///// Calculates the distance of point p from the line segment a to b. The result is always >= 0.
-		///// </summary>
+		/// <summary>
+		/// Calculates the distance of point p from the line segment a to b. The result is always >= 0.
+		/// </summary>
 		public static float DistancePointLineLineSegment2(int pX, int pY, int aX, int aY, int bX, int bY) {
 			float result;
 			// Liegt der Lotpunkt auf der Strecke?
@@ -3877,18 +3970,24 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Berechnet den Winkel (in Radians) von linePt1 zum Scheitelpunkt center.
+		/// Calculates the angle (in radians) between p1 and the center point p0.
 		/// </summary>
 		public static float Angle(PointF p0, PointF p1) {
 			return (float)Math.Atan2(p1.Y - p0.Y, p1.X - p0.X);
 		}
 
 
+		/// <summary>
+		/// Calculates the angle (in radians) between p1 and the center point p0.
+		/// </summary>
 		public static float Angle(int p0x, int p0y, int p1x, int p1y) {
 			return (float) Math.Atan2(p1y - p0y, p1x - p0x);
 		}
 
 
+		/// <summary>
+		/// Calculates the angle (in radians) between p1 and the center point p0.
+		/// </summary>
 		public static float Angle(float p0x, float p0y, float p1x, float p1y) {
 		   return (float)Math.Atan2(p1y - p0y, p1x - p0x);
 		}
@@ -4003,7 +4102,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Rotates the given rectangle around the given center
 		/// </summary>
 		/// <param name="rectangle">Rectangle to rotate</param>
-		/// <param name="center">Center of rotation</param>
+		/// <param name="rotationCenter">Center of rotation</param>
 		/// <param name="angleDeg">Rotation shapeAngle</param>
 		/// <param name="topLeft">Rotated top left corner of the rectangle</param>
 		/// <param name="topRight">Rotated top right corner of the rectangle</param>
@@ -4018,8 +4117,8 @@ namespace Dataweb.NShape.Advanced {
 		/// Rotates the given rectangle around the given center
 		/// </summary>
 		/// <param name="rectangle">Rectangle to rotate</param>
-		/// <param name="centerX">X coordinate of the rotation center</param>
-		/// <param name="centerY">Y coordinate of the rotation center</param>
+		/// <param name="rotationCenterX">X coordinate of the rotation center</param>
+		/// <param name="rotationCenterY">Y coordinate of the rotation center</param>
 		/// <param name="angleDeg">Rotation shapeAngle</param>
 		/// <param name="topLeft">Rotated top left corner of the rectangle</param>
 		/// <param name="topRight">Rotated top right corner of the rectangle</param>
@@ -4049,7 +4148,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Rotates the given rectangle around the given center
 		/// </summary>
 		/// <param name="rectangle">Rectangle to rotate</param>
-		/// <param name="center">Center of rotation</param>
+		/// <param name="rotationCenter">Center of rotation</param>
 		/// <param name="angleDeg">Rotation shapeAngle</param>
 		/// <param name="topLeft">Rotated top left corner of the rectangle</param>
 		/// <param name="topRight">Rotated top right corner of the rectangle</param>
@@ -4064,8 +4163,8 @@ namespace Dataweb.NShape.Advanced {
 		/// Rotates the given rectangle around the given center
 		/// </summary>
 		/// <param name="rectangle">Rectangle to rotate</param>
-		/// <param name="centerX">X coordinate of the rotation center</param>
-		/// <param name="centerY">Y coordinate of the rotation center</param>
+		/// <param name="rotationCenterX">X coordinate of the rotation center</param>
+		/// <param name="rotationCenterY">Y coordinate of the rotation center</param>
 		/// <param name="angleDeg">Rotation shapeAngle</param>
 		/// <param name="topLeft">Rotated top left corner of the rectangle</param>
 		/// <param name="topRight">Rotated top right corner of the rectangle</param>
@@ -4180,7 +4279,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts and shapeAngle measured in tenths of degrees to an shapeAngle measured in radians.
 		/// </summary>
-		/// <param name="shapeAngle">Angle measured in tenths of degree</param>
+		/// <param name="angle">Angle measured in tenths of degree.</param>
 		/// <returns>Angle measured in radians</returns>
 		public static float TenthsOfDegreeToRadians(int angle) {
 			return (float)(angle * (RadiansFactor / 10));
@@ -4190,7 +4289,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts and shapeAngle measured in tenths of degrees to an shapeAngle measured in degrees.
 		/// </summary>
-		/// <param name="shapeAngle">Angle measured in tenths of degree</param>
+		/// <param name="angle">Angle measured in tenths of degree.</param>
 		/// <returns>Angle measured in degrees</returns>
 		public static float TenthsOfDegreeToDegrees(int angle) {
 			return angle / 10f;
@@ -4200,7 +4299,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts and shapeAngle measured in degrees to an shapeAngle measured in radians.
 		/// </summary>
-		/// <param name="shapeAngle">Angle measured in degrees</param>
+		/// <param name="angle">Angle measured in degrees</param>
 		/// <returns>Angle measured in radians</returns>
 		public static float DegreesToRadians(float angle) {
 			return (float)(angle * RadiansFactor);
@@ -4210,7 +4309,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts and shapeAngle measured in degrees to an shapeAngle measured in tenths of degree.
 		/// </summary>
-		/// <param name="shapeAngle">Angle measured in degrees</param>
+		/// <param name="angle">Angle measured in degrees</param>
 		/// <returns>Angle measured in tenths of degree</returns>
 		public static int DegreesToTenthsOfDegree(float angle) {
 			return (int)Math.Round(angle * 10);
@@ -4220,7 +4319,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts and shapeAngle measured in radians to an shapeAngle measured in degrees.
 		/// </summary>
-		/// <param name="shapeAngle">Angle measured in radians</param>
+		/// <param name="angle">Angle measured in radians</param>
 		/// <returns>Angle measured in degrees</returns>
 		public static float RadiansToDegrees(float angle) {
 			return (float)(angle / RadiansFactor);
@@ -4230,7 +4329,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Converts and shapeAngle measured in radians to an shapeAngle measured in tenths of degree.
 		/// </summary>
-		/// <param name="shapeAngle">Angle measured in radians</param>
+		/// <param name="angle">Angle measured in radians</param>
 		/// <returns>Angle measured in tenths of degree</returns>
 		public static int RadiansToTenthsOfDegree(float angle) {
 			return (int)Math.Round(angle / (RadiansFactor / 10));
@@ -4244,7 +4343,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="srcWidth">Width of the source rectangle</param>
 		/// <param name="srcHeight">Height of the source rectangle</param>
-		/// <param name="destWidth">Width of the destinalion rectangle</param>
+		/// <param name="dstWidth">Width of the destinalion rectangle</param>
 		/// <param name="dstHeight">Height of the destinalion rectangle</param>
 		public static float CalcScaleFactor(int srcWidth, int srcHeight, int dstWidth, int dstHeight) {
 			return Math.Min((float)dstWidth / (float)srcWidth, (float)dstHeight / (float)srcHeight);
@@ -4256,7 +4355,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="srcWidth">Width of the source rectangle</param>
 		/// <param name="srcHeight">Height of the source rectangle</param>
-		/// <param name="destWidth">Width of the destinalion rectangle</param>
+		/// <param name="dstWidth">Width of the destinalion rectangle</param>
 		/// <param name="dstHeight">Height of the destinalion rectangle</param>
 		public static float CalcScaleFactor(float srcWidth, float srcHeight, float dstWidth, float dstHeight) {
 			return Math.Min(dstWidth / srcWidth, dstHeight / srcHeight);
@@ -4271,7 +4370,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="C">The third interpolation point of the bezier curve</param>
 		/// <param name="D">The fourth interpolation point of the bezier curve</param>
 		/// <param name="distance">the distance of the point to calculate</param>
-		/// <param name="p">The calculated point</param>
 		public static PointF BezierPoint(PointF A, PointF B, PointF C, PointF D, float distance) {
 			PointF p = Point.Empty;
 			int n = 200;
@@ -4442,7 +4540,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Returns the bounding rectangle of a point array.
 		/// </summary>
-		/// <param name="points">The point array</param>
+		/// <param name="p1">The top left corner of the rectangle.</param>
+		/// <param name="p2">The top right corner of the rectangle.</param>
+		/// <param name="p3">The bottom right corner of the rectangle.</param>
+		/// <param name="p4">The bottom left corner of the rectangle.</param>
 		/// <param name="rectangle">The resulting bounding rectangle</param>
 		public static void CalcBoundingRectangle(Point p1, Point p2, Point p3, Point p4, out Rectangle rectangle) {
 			int left = Math.Min(Math.Min(p1.X, p2.X), Math.Min(p3.X, p4.X));
@@ -4620,10 +4721,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Berechnet die Lotrechte durch den Punkt x1/y1 
-		/// Das Ergebnis ist die Normalform der Geraden ax + by + c = 0
-		/// </summary>
+		// Berechnet die Lotrechte durch den Punkt x1/y1 
+		// Das Ergebnis ist die Normalform der Geraden ax + by + c = 0
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CalcPerpendicularLine(int x1, int y1, int x2, int y2, out int a, out int b, out int c) {
 			// Steigung
 			a = x1 - x2;
@@ -4633,6 +4733,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CalcPerpendicularLine(float x1, float y1, float x2, float y2, out float a, out float b, out float c) {
 			// Steigung
 			a = x1 - x2;
@@ -4642,6 +4743,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CalcPerpendicularLine(int x, int y, int a, int b, int c, out int aP, out int bP, out int cP) {
 			aP = b;
 			bP = -a;
@@ -4653,6 +4755,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CalcPerpendicularLine(float x, float y, float a, float b, float c, out float aP, out float bP, out float cP) {
 			aP = b;
 			bP = -a;
@@ -4666,11 +4769,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Berechnet die Gerade (2D), welche im Mittelpunkt zwischen linePt1 und linePt2 senkrecht 
-		/// auf der Verbindungsstrecke steht. Das Ergebnis ist die Normalform der Geraden
-		/// ax + by + c = 0
-		/// </summary>
+		// Berechnet die Gerade (2D), welche im Mittelpunkt zwischen linePt1 und linePt2 senkrecht 
+		// auf der Verbindungsstrecke steht. Das Ergebnis ist die Normalform der Geraden
+		// ax + by + c = 0
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CalcPerpendicularBisector(int x1, int y1, int x2, int y2, out int a, out int b, out int c) {
 			// Steigung
 			a = x1 - x2;
@@ -4680,6 +4782,10 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		// Berechnet die Gerade (2D), welche im Mittelpunkt zwischen linePt1 und linePt2 senkrecht 
+		// auf der Verbindungsstrecke steht. Das Ergebnis ist die Normalform der Geraden
+		// ax + by + c = 0
+		/// <ToBeCompleted></ToBeCompleted>
 		public static void CalcPerpendicularBisector(float x1, float y1, float x2, float y2, out float a, out float b, out float c) {
 			// Steigung
 			a = x1 - x2;
@@ -4707,6 +4813,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> CalcCircleTangentThroughPoint(float centerX, float centerY, float radius, int ptX, int ptY) {
 			float distance = (float)Math.Abs(DistancePointPoint(centerX, centerY, ptX, ptY));
 			PointF p = VectorLinearInterpolation(centerX, centerY, ptX, ptY, 0.5f);
@@ -4714,13 +4821,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<PointF> CalcArcTangentThroughPoint(float startPtX, float startPtY, float radiusPtX, float radiusPtY, float endPtX, float endPtY, int ptX, int ptY) {
 			float radius;
 			PointF center = CalcArcCenterAndRadius(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, out radius);
 			float distance = (float)Math.Abs(DistancePointPoint(center.X, center.Y, ptX, ptY));
 			PointF pC = VectorLinearInterpolation(center.X, center.Y, ptX, ptY, 0.5f);
 			foreach (PointF pT in IntersectCircles(center.X, center.Y, radius, pC.X, pC.Y, distance / 2f)) {
-				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.1f, pT.X, pT.Y))
+				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, pT.X, pT.Y, 0.1f))
 					yield return pT;
 				else {
 					PointF result = PointF.Empty;
@@ -4755,13 +4863,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static IEnumerable<Point> CalcArcTangentThroughPoint(int startPtX, int startPtY, int radiusPtX, int radiusPtY, int endPtX, int endPtY, int ptX, int ptY) {
 			float radius;
 			PointF center = CalcArcCenterAndRadius(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, out radius);
 			float distance = Math.Abs(DistancePointPoint(center.X, center.Y, ptX, ptY));
 			PointF pC = VectorLinearInterpolation(center.X, center.Y, ptX, ptY, 0.5f);
 			foreach (PointF pT in IntersectCircles(center.X, center.Y, radius, pC.X, pC.Y, distance / 2f)) {
-				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, 0.1f, pT.X, pT.Y))
+				if (ArcContainsPoint(startPtX, startPtY, radiusPtX, radiusPtY, endPtX, endPtY, center.X, center.Y, radius, pT.X, pT.Y, 0.1f))
 					yield return Point.Round(pT);
 				else {
 					Point result = Point.Empty;
@@ -4796,9 +4905,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Löst das lineare Gleichungssystem Ax + b = 0
-		/// </summary>
+		// Löst das lineare Gleichungssystem Ax + b = 0
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool SolveLinear22System(int a11, int a12, int a21, int a22, int b1, int b2, out int x, out int y) {
 			bool result = false;
 			x = InvalidPoint.X; y = InvalidPoint.Y;
@@ -4813,6 +4921,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static bool SolveLinear22System(float a11, float a12, float a21, float a22, float b1, float b2, out float x, out float y) {
 			bool result = false;
 			x = InvalidPointF.X; y = InvalidPointF.Y;
@@ -4842,12 +4951,12 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		public static Point GetNearestPoint(int pX, int pY, int p1X, int p1Y, int p2X, int p2Y) {
 			Point result = InvalidPoint;
-			// VectorCrossProduct liefert leider manchmal abweichende Ergebnisse...
-			int d1 = Math.Abs(VectorCrossProduct(pX, pY, p1X, p1Y));
-			int d2 = Math.Abs(VectorCrossProduct(pX, pY, p2X, p2Y));
+			//// VectorCrossProduct liefert leider manchmal abweichende Ergebnisse...
+			//int d1 = Math.Abs(VectorCrossProduct(pX, pY, p1X, p1Y));
+			//int d2 = Math.Abs(VectorCrossProduct(pX, pY, p2X, p2Y));
 			
-			//float d1 = DistancePointPoint(pX, pY, p1X, p1Y);
-			//float d2 = DistancePointPoint(pX, pY, p2X, p2Y);
+			float d1 = DistancePointPoint(pX, pY, p1X, p1Y);
+			float d2 = DistancePointPoint(pX, pY, p2X, p2Y);
 			if (d1 <= d2) {
 				result.X = p1X;
 				result.Y = p1Y;
@@ -5024,61 +5133,98 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Check methods if a geometric struct has valid values
 
+		
+		/// <summary>
+		/// Tests if the given point has valid coordinates.
+		/// </summary>
 		public static bool IsValid(Point p) {
 			return IsValidCoordinate(p.X) && IsValidCoordinate(p.Y);
 		}
 
 
+		/// <summary>
+		/// Tests if the given point has valid coordinates.
+		/// </summary>
 		public static bool IsValid(PointF p) {
 			return IsValidCoordinate(p.X) && IsValidCoordinate(p.Y);
 		}
 
 
+		/// <summary>
+		/// Tests if the given coordinates are considered as valid.
+		/// </summary>
 		public static bool IsValid(int x, int y) {
 			return IsValidCoordinate(x) && IsValidCoordinate(y);
 		}
 
 
+		/// <summary>
+		/// Tests if the given coordinates are considered as valid.
+		/// </summary>
 		public static bool IsValid(float x, float y) {
 			return IsValidCoordinate(x) && IsValidCoordinate(y);
 		}
 
 
+		/// <summary>
+		/// Tests if the given coordinate is considered as valid.
+		/// </summary>
 		private static bool IsValidCoordinate(int c) {
 			return c > InvalidCoordinateValue;
 		}
 
 
+		/// <summary>
+		/// Tests if the given coordinate is considered as valid.
+		/// </summary>
 		private static bool IsValidCoordinate(float c) {
 			return !float.IsNaN(c) && !float.IsInfinity(c) && c > InvalidCoordinateValue;
 		}
 
 
+		/// <summary>
+		/// Tests if the given rectangle has valid coordinates and a valid size.
+		/// </summary>
 		public static bool IsValid(Rectangle r) {
 			return IsValid(r.Location) && IsValid(r.Size);
 		}
 
 
+		/// <summary>
+		/// Tests if the given rectangle has valid coordinates and a valid size.
+		/// </summary>
 		public static bool IsValid(RectangleF r) {
 			return IsValid(r.Location) && IsValid(r.Size);
 		}
 
 
+		/// <summary>
+		/// Tests if the given rectangle has valid coordinates and a valid size.
+		/// </summary>
 		public static bool IsValid(int x, int y, int width, int height) {
 			return IsValidCoordinate(x) && IsValidCoordinate(y) && IsValidSize(width) && IsValidSize(height);
 		}
 
 
+		/// <summary>
+		/// Tests if the given rectangle has valid coordinates and a valid size.
+		/// </summary>
 		public static bool IsValid(float x, float y, float width, float height) {
 			return IsValidCoordinate(x) && IsValidCoordinate(y) && IsValidSize(width) && IsValidSize(height);
 		}
 
 
+		/// <summary>
+		/// Tests if the given size is considered as valid.
+		/// </summary>
 		public static bool IsValid(Size s) {
 			return IsValidSize(s.Width) && IsValidSize(s.Height);
 		}
 
 
+		/// <summary>
+		/// Tests if the given size is considered as valid.
+		/// </summary>
 		public static bool IsValid(SizeF s) {
 			return IsValidSize(s.Width) && IsValidSize(s.Height);
 		}
@@ -5088,16 +5234,22 @@ namespace Dataweb.NShape.Advanced {
 
 		#region Definitions for invalid geometric structs
 
+		/// <summary>Defines a point considered as invalid.</summary>
 		public static readonly Point InvalidPoint;
 
+		/// <summary>Defines a point considered as invalid.</summary>
 		public static readonly PointF InvalidPointF;
 
+		/// <summary>Defines a size considered as invalid.</summary>
 		public static readonly Size InvalidSize;
 
+		/// <summary>Defines a size considered as invalid.</summary>
 		public static readonly SizeF InvalidSizeF;
-		
+
+		/// <summary>Defines a rectangle considered as invalid.</summary>
 		public static readonly Rectangle InvalidRectangle;
 
+		/// <summary>Defines a rectangle considered as invalid.</summary>
 		public static readonly RectangleF InvalidRectangleF;
 
 		#endregion

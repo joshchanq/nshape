@@ -30,72 +30,22 @@ namespace Dataweb.NShape.Controllers {
 	[ToolboxBitmap(typeof(ToolSetController), "ToolSetController.bmp")]
 	public class ToolSetController : Component, IDisplayService, IDisposable {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.ToolSetController" />.
+		/// </summary>
 		public ToolSetController() {
 			infoGraphics = Graphics.FromHwnd(IntPtr.Zero);
 		}
 
 
+		/// <summary>
+		/// Finalizer of <see cref="T:Dataweb.NShape.Controllers.ToolSetController" />.
+		/// </summary>
 		~ToolSetController() {
 			Dispose();
 			infoGraphics.Dispose();
 			infoGraphics = null;
 		}
-
-
-		#region IDisposable Members
-
-		/// <summary> 
-		/// Clean up any resources being used.
-		/// </summary>
-		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
-		protected override void Dispose(bool disposing) {
-			if (disposing) Clear();
-			base.Dispose(disposing);
-		}
-
-		#endregion
-
-
-		#region IDisplayService Members
-
-		/// <override></override>
-		void IDisplayService.Invalidate(int x, int y, int width, int height) { /* nothing to do */ }
-
-
-		/// <override></override>
-		void IDisplayService.Invalidate(Rectangle rectangle) { /* nothing to do */ }
-
-
-		/// <override></override>
-		void IDisplayService.NotifyBoundsChanged() { /* nothing to do */ }
-
-
-		/// <override></override>
-		Graphics IDisplayService.InfoGraphics {
-			get { return infoGraphics; }
-		}
-
-
-		/// <override></override>
-		IFillStyle IDisplayService.HintBackgroundStyle {
-			get {
-				if (Project != null && Project.IsOpen)
-					return Project.Design.FillStyles.White;
-				else return null;
-			}
-		}
-
-
-		/// <override></override>
-		ILineStyle IDisplayService.HintForegroundStyle {
-			get {
-				if (Project != null && Project.IsOpen)
-					return Project.Design.LineStyles.Normal;
-				else return null;
-			}
-		}
-
-		#endregion
 
 
 		#region [Public] Events
@@ -108,22 +58,22 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Occurs when a tool has been selected.
 		/// </summary>
-		public event ToolEventHandler ToolSelected;
+		public event EventHandler<ToolEventArgs> ToolSelected;
 
 		/// <summary>
 		/// Occurs when a tool has been added to the toolbox.
 		/// </summary>
-		public event ToolEventHandler ToolAdded;
+		public event EventHandler<ToolEventArgs> ToolAdded;
 
 		/// <summary>
 		/// Occurs when a tool has been removed from the toolbox.
 		/// </summary>
-		public event ToolEventHandler ToolRemoved;
+		public event EventHandler<ToolEventArgs> ToolRemoved;
 
 		/// <summary>
 		/// Occurs when a CurrentTool has been changed.
 		/// </summary>
-		public event ToolEventHandler ToolChanged;
+		public event EventHandler<ToolEventArgs> ToolChanged;
 
 		/// <summary>
 		/// Occurs when the sesign editor has to be shown.
@@ -138,19 +88,25 @@ namespace Dataweb.NShape.Controllers {
 		/// <summary>
 		/// Occurs when the template editor has to be shown.
 		/// </summary>
-		public event TemplateEditorSelectedEventHandler TemplateEditorSelected;
+		public event EventHandler<TemplateEditorEventArgs> TemplateEditorSelected;
 
 		#endregion
 
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <summary>
+		/// The <see cref="T:Dataweb.NShape.Controllers.DiagramSetController" /> that uses the SelectedTool for editing diagrams.
+		/// </summary>
 		[Category("NShape")]
 		[Description("Specifies the NShape DiagramSetController to which this toolbox belongs. This is a mandotory property.")]
 		public DiagramSetController DiagramSetController {
@@ -167,18 +123,27 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Provides access to the <see cref="T:Dataweb.NShape.Project" /> of the current <see cref="T:Dataweb.NShape.Controllers.DiagramSetController" />.
+		/// </summary>
 		[Browsable(false)]
 		public Project Project {
 			get { return (diagramSetController == null) ? null : diagramSetController.Project; }
 		}
 
 
+		/// <summary>
+		/// Provides a collection of tools.
+		/// </summary>
 		[Browsable(false)]
 		public IEnumerable<Tool> Tools {
 			get { return tools; }
 		}
 
 
+		/// <summary>
+		/// The currently selected tool.
+		/// </summary>
 		[ReadOnly(true)]
 		[Browsable(false)]
 		public Tool SelectedTool {
@@ -190,6 +155,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// The default tool that will be selected after a tool was executed or canceled.
+		/// </summary>
 		[Browsable(false)]
 		public Tool DefaultTool {
 			get { return defaultTool; }
@@ -204,6 +172,8 @@ namespace Dataweb.NShape.Controllers {
 		/// Removes all tools.
 		/// </summary>
 		public void Clear() {
+			for (int i = tools.Count - 1; i >= 0; --i)
+				tools[i].Dispose();
 			tools.Clear();
 			toolBoxInitialized = false;
 			if (Cleared != null) Cleared(this, eventArgs);
@@ -298,6 +268,7 @@ namespace Dataweb.NShape.Controllers {
 			if (tool == defaultTool)
 				if (tools.Count <= 0) defaultTool = null;
 				else defaultTool = tools[0];
+			tools.Remove(tool);
 			if (ToolRemoved != null) {
 				toolEventArgs.Tool = tool;
 				ToolRemoved(this, toolEventArgs);
@@ -322,6 +293,7 @@ namespace Dataweb.NShape.Controllers {
 		/// <param name="multiUse">If false, the default tool will be selected after executing the tool.</param>
 		public void SelectTool(Tool tool, bool multiUse) {
 			if (tool == null) throw new ArgumentNullException("tool");
+			// If the tool to select equals the currently selected tool, skip tool selection
 			if (tool != selectedTool) {
 				// CurrentTool.Cancel would normally select the default tool.
 				selecting = true;
@@ -332,10 +304,8 @@ namespace Dataweb.NShape.Controllers {
 					selecting = false;
 				}
 				DoSelectTool(tool, multiUse, true);
-			} else
-				// If the tool to select equals the currently selected tool, 
-				// skip tool selection but do set the multiUse field
-				executeOnce = !multiUse;
+			}
+			executeOnce = !multiUse;
 		}
 
 
@@ -359,7 +329,7 @@ namespace Dataweb.NShape.Controllers {
 		public void ShowDesignEditor() {
 			// Select Default CurrentTool before calling the Editor
 			DoSelectTool(defaultTool, false, true);
-			OnShowDesignEditorDialog(eventArgs);
+			OnDesignEditorSelected(eventArgs);
 		}
 
 
@@ -370,7 +340,7 @@ namespace Dataweb.NShape.Controllers {
 		public void ShowLibraryManager() {
 			// Select Default CurrentTool before calling the Editor
 			DoSelectTool(defaultTool, false, true);
-			OnShowLibraryManagerDialog(eventArgs);
+			OnLibraryManagerSelected(eventArgs);
 		}
 
 
@@ -380,14 +350,14 @@ namespace Dataweb.NShape.Controllers {
 		public void ShowTemplateEditor(bool editSelectedTemplate) {
 			if (editSelectedTemplate) {
 				if (selectedTool != null && selectedTool is TemplateTool) {
-					ShowTemplateEditorEventArgs e = new ShowTemplateEditorEventArgs(Project, ((TemplateTool)selectedTool).Template);
+					TemplateEditorEventArgs e = new TemplateEditorEventArgs(Project, ((TemplateTool)selectedTool).Template);
 					DoSelectTool(defaultTool, true, false);
-					OnShowTemplateEditorDialog(e);
+					OnTemplateEditorSelected(e);
 				}
 			} else {
-				ShowTemplateEditorEventArgs e = new ShowTemplateEditorEventArgs(Project);
+				TemplateEditorEventArgs e = new TemplateEditorEventArgs(Project);
 				DoSelectTool(defaultTool, true, false);
-				OnShowTemplateEditorDialog(e);
+				OnTemplateEditorSelected(e);
 			}
 		}
 
@@ -410,7 +380,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Get actions provided by the toolset controller.
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
 		/// </summary>
 		public IEnumerable<MenuItemDef> GetMenuItemDefs(Tool clickedTool) {
 			// menu structure:
@@ -430,13 +400,13 @@ namespace Dataweb.NShape.Controllers {
 			isFeasible = true;
 			description = "Create a new Template";
 			yield return new DelegateMenuItemDef("Create Template...", null, description, isFeasible, Permission.Templates,
-				(action, project) => OnShowTemplateEditorDialog(new ShowTemplateEditorEventArgs(project)));
+				(action, project) => OnTemplateEditorSelected(new TemplateEditorEventArgs(project)));
 
 			isFeasible = (clickedTool is TemplateTool);
 			description = isFeasible ? string.Format("Edit Template '{0}'", clickedTemplate.Name) :
 				"No template tool selected";
 			yield return new DelegateMenuItemDef("Edit Template...", null, description, isFeasible, Permission.Templates,
-				(action, project) => OnShowTemplateEditorDialog(new ShowTemplateEditorEventArgs(project, clickedTemplate)));
+				(action, project) => OnTemplateEditorSelected(new TemplateEditorEventArgs(project, clickedTemplate)));
 
 			isFeasible = (clickedTool is TemplateTool);
 			description = isFeasible ? string.Format("Delete Template '{0}'", clickedTemplate.Name) :
@@ -450,13 +420,27 @@ namespace Dataweb.NShape.Controllers {
 			description = "Edit the current design or create new designs";
 			yield return new DelegateMenuItemDef("Show Design Editor...", Properties.Resources.DesignEditorBtn,
 				description, isFeasible, Permission.Present,
-				(action, project) => OnShowDesignEditorDialog(new EventArgs()));
+				(action, project) => OnDesignEditorSelected(new EventArgs()));
 
 			isFeasible = true;
 			description = "Load and unload shape and/or model libraries";
 			yield return new DelegateMenuItemDef("Show Library Manager...", Properties.Resources.LibrariesBtn,
 				description, isFeasible, Permission.Templates,
-				(action, project) => OnShowLibraryManagerDialog(new EventArgs()));
+				(action, project) => OnLibraryManagerSelected(new EventArgs()));
+		}
+
+		#endregion
+
+
+		#region [Protected] IDisposable Members
+
+		/// <summary> 
+		/// Clean up any resources being used.
+		/// </summary>
+		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+		protected override void Dispose(bool disposing) {
+			if (disposing) Clear();
+			base.Dispose(disposing);
 		}
 
 		#endregion
@@ -464,22 +448,72 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Protected] Methods
 
-		protected virtual void OnShowDesignEditorDialog(EventArgs e) {
+		/// <summary>
+		/// Raises the <see cref="E:Dataweb.NShape.ToolSetController.DesignEditorSelected" /> event.
+		/// </summary>
+		protected virtual void OnDesignEditorSelected(EventArgs e) {
 			if (DesignEditorSelected != null && Project.SecurityManager.IsGranted(Permission.Designs))
 				DesignEditorSelected(this, e);
 		}
 
 
-		protected virtual void OnShowLibraryManagerDialog(EventArgs e) {
+		/// <summary>
+		/// Raises the <see cref="E:Dataweb.NShape.ToolSetController.LibraryManagerSelected" /> event.
+		/// </summary>
+		protected virtual void OnLibraryManagerSelected(EventArgs e) {
 			if (LibraryManagerSelected != null && Project.SecurityManager.IsGranted(Permission.Templates))
 				LibraryManagerSelected(this, e);
 		}
 
 
-		// Show registered TemplateEditor for creating or editing a Template
-		protected virtual void OnShowTemplateEditorDialog(ShowTemplateEditorEventArgs e) {
-			if (Project.SecurityManager.IsGranted(Permission.Templates))
-				if (TemplateEditorSelected != null) TemplateEditorSelected(this, e);
+		/// <summary>
+		/// Raises the <see cref="E:Dataweb.NShape.ToolSetController.TemplateEditorSelected" /> event.
+		/// </summary>
+		protected virtual void OnTemplateEditorSelected(TemplateEditorEventArgs e) {
+			if (TemplateEditorSelected != null && Project.SecurityManager.IsGranted(Permission.Templates))
+				 TemplateEditorSelected(this, e);
+		}
+
+		#endregion
+
+
+		#region [Explicit] IDisplayService Members
+
+		/// <override></override>
+		void IDisplayService.Invalidate(int x, int y, int width, int height) { /* nothing to do */ }
+
+
+		/// <override></override>
+		void IDisplayService.Invalidate(Rectangle rectangle) { /* nothing to do */ }
+
+
+		/// <override></override>
+		void IDisplayService.NotifyBoundsChanged() { /* nothing to do */ }
+
+
+		/// <override></override>
+		Graphics IDisplayService.InfoGraphics {
+			get { return infoGraphics; }
+		}
+
+
+		/// <override></override>
+		IFillStyle IDisplayService.HintBackgroundStyle {
+			get {
+				if (Project != null && Project.IsOpen)
+					return Project.Design.FillStyles.White;
+				else return null;
+			}
+		}
+
+
+		/// <override></override>
+		ILineStyle IDisplayService.HintForegroundStyle {
+			get {
+				if (Project != null && Project.IsOpen)
+					return Project.Design.LineStyles.Normal;
+				else return null;
+			}
 		}
 
 		#endregion
@@ -493,10 +527,12 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private void RefreshTool(Tool tool) {
-			tool.RefreshIcons();
-			if (tool != null && ToolChanged != null) {
-				toolEventArgs.Tool = tool;
-				ToolChanged(this, toolEventArgs);
+			if (tool != null) {
+				tool.RefreshIcons();
+				if (tool != null && ToolChanged != null) {
+					toolEventArgs.Tool = tool;
+					ToolChanged(this, toolEventArgs);
+				}
 			}
 		}
 
@@ -747,15 +783,18 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
-	#region EventArgs and Delegates
+	#region EventArgs
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ToolEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ToolEventArgs(Tool tool) {
 			if (tool == null) throw new ArgumentNullException("tool");
 			this.tool = tool;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Tool Tool {
 			get { return tool; }
 			internal set { tool = value; }
@@ -767,24 +806,31 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
-	public class ShowTemplateEditorEventArgs : EventArgs {
+	/// <ToBeCompleted></ToBeCompleted>
+	public class TemplateEditorEventArgs : EventArgs {
 
-		public ShowTemplateEditorEventArgs(Project project) {
+		/// <ToBeCompleted></ToBeCompleted>
+		public TemplateEditorEventArgs(Project project) {
 			if (project == null) throw new ArgumentNullException("project");
 			this.project = project;
 		}
 
-		public ShowTemplateEditorEventArgs(Project project, Template template) {
+		/// <ToBeCompleted></ToBeCompleted>
+		public TemplateEditorEventArgs(Project project, Template template) {
 			if (project == null) throw new ArgumentNullException("project");
 			this.project = project;
-			this.Template = template;
+			this.template = template;
 		}
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		public Project Project {
 			get { return project; }
 			internal set { project = value; }
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Template Template {
 			get { return template; }
 			internal set { template = value; }
@@ -793,12 +839,6 @@ namespace Dataweb.NShape.Controllers {
 		private Project project = null;
 		private Template template = null;
 	}
-
-
-	public delegate void TemplateEditorSelectedEventHandler(object sender, ShowTemplateEditorEventArgs e);
-
-
-	public delegate void ToolEventHandler(object sender, ToolEventArgs e);
 
 	#endregion
 

@@ -24,7 +24,6 @@
 		/// </summary>
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LayerListView));
 			this.contextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
 			this.stateImageList = new System.Windows.Forms.ImageList(this.components);
 			this.visibilityImageList = new System.Windows.Forms.ImageList(this.components);
@@ -37,17 +36,15 @@
 			// 
 			// stateImageList
 			// 
-			this.stateImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("stateImageList.ImageStream")));
+			this.stateImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth24Bit;
+			this.stateImageList.ImageSize = new System.Drawing.Size(16, 16);
 			this.stateImageList.TransparentColor = System.Drawing.Color.Fuchsia;
-			this.stateImageList.Images.SetKeyName(0, "Disabled.bmp");
-			this.stateImageList.Images.SetKeyName(1, "Enabled.bmp");
 			// 
 			// visibilityImageList
 			// 
-			this.visibilityImageList.ImageStream = ((System.Windows.Forms.ImageListStreamer)(resources.GetObject("visibilityImageList.ImageStream")));
+			this.visibilityImageList.ColorDepth = System.Windows.Forms.ColorDepth.Depth24Bit;
+			this.visibilityImageList.ImageSize = new System.Drawing.Size(16, 16);
 			this.visibilityImageList.TransparentColor = System.Drawing.Color.Fuchsia;
-			this.visibilityImageList.Images.SetKeyName(0, "Invisible.bmp");
-			this.visibilityImageList.Images.SetKeyName(1, "Visible.bmp");
 			// 
 			// LayerListView
 			// 

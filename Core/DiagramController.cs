@@ -20,8 +20,14 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class DiagramController {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.DiagramController" />.
+		/// </summary>
+		/// <param name="owner"></param>
+		/// <param name="diagram"></param>
 		public DiagramController(DiagramSetController owner, Diagram diagram) {
 			if (owner == null) throw new ArgumentNullException("owner");
 			this.owner = owner;
@@ -29,14 +35,12 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
-		~DiagramController() {
-		}
-
-
 		#region [Public] Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler DiagramChanging;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler DiagramChanged;
 
 		#endregion
@@ -44,16 +48,21 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DiagramSetController Owner {
 			get { return owner; }
 		}
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		public Project Project {
 			get { return (owner == null) ? null : owner.Project; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Diagram Diagram { 
 			get { return diagram; }
 			set {
@@ -64,6 +73,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Tool Tool {
 			get { return owner.ActiveTool; }
 			set { owner.ActiveTool = value; }
@@ -74,6 +84,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CreateDiagram(string name) {
 			diagram = new Diagram(name);
 			owner.Project.Repository.InsertDiagram(diagram);
@@ -81,11 +92,15 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void OpenDiagram(string name) {
 			Diagram = owner.Project.Repository.GetDiagram(name);
 		}
 
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		public IEnumerable<MenuItemDef> GetMenuItemDefs(IShapeCollection selectedShapes) {
 			// ToDo: No actions at the moment
 			yield break;

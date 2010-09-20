@@ -34,6 +34,9 @@ namespace Dataweb.NShape.Designer {
 			this.okButton = new System.Windows.Forms.Button();
 			this.label3 = new System.Windows.Forms.Label();
 			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.chooseGridColorButton = new System.Windows.Forms.Button();
+			this.gridColorLabel = new System.Windows.Forms.Label();
+			this.label6 = new System.Windows.Forms.Label();
 			this.groupBox2 = new System.Windows.Forms.GroupBox();
 			this.pointSizeUpDown = new System.Windows.Forms.NumericUpDown();
 			this.connectionPointCombo = new System.Windows.Forms.ComboBox();
@@ -43,6 +46,7 @@ namespace Dataweb.NShape.Designer {
 			this.groupBox3 = new System.Windows.Forms.GroupBox();
 			this.showDynamicContextMenu = new System.Windows.Forms.CheckBox();
 			this.hideDeniedMenuItemsCheckBox = new System.Windows.Forms.CheckBox();
+			this.colorDialog = new System.Windows.Forms.ColorDialog();
 			((System.ComponentModel.ISupportInitialize)(this.gridSizeUpDown)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.snapDistanceUpDown)).BeginInit();
 			this.groupBox1.SuspendLayout();
@@ -65,9 +69,19 @@ namespace Dataweb.NShape.Designer {
 			// 
 			this.gridSizeUpDown.AutoSize = true;
 			this.gridSizeUpDown.Location = new System.Drawing.Point(225, 18);
+			this.gridSizeUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
 			this.gridSizeUpDown.Name = "gridSizeUpDown";
 			this.gridSizeUpDown.Size = new System.Drawing.Size(41, 20);
 			this.gridSizeUpDown.TabIndex = 7;
+			this.gridSizeUpDown.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
 			// 
 			// snapDistanceUpDown
 			// 
@@ -76,6 +90,12 @@ namespace Dataweb.NShape.Designer {
 			this.snapDistanceUpDown.Name = "snapDistanceUpDown";
 			this.snapDistanceUpDown.Size = new System.Drawing.Size(41, 20);
 			this.snapDistanceUpDown.TabIndex = 8;
+			this.snapDistanceUpDown.Value = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+			this.snapDistanceUpDown.ValueChanged += new System.EventHandler(this.snapDistanceUpDown_ValueChanged);
 			// 
 			// label1
 			// 
@@ -108,7 +128,7 @@ namespace Dataweb.NShape.Designer {
 			// cancelButton
 			// 
 			this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cancelButton.Location = new System.Drawing.Point(209, 322);
+			this.cancelButton.Location = new System.Drawing.Point(227, 337);
 			this.cancelButton.Name = "cancelButton";
 			this.cancelButton.Size = new System.Drawing.Size(75, 23);
 			this.cancelButton.TabIndex = 14;
@@ -119,7 +139,7 @@ namespace Dataweb.NShape.Designer {
 			// okButton
 			// 
 			this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.okButton.Location = new System.Drawing.Point(128, 322);
+			this.okButton.Location = new System.Drawing.Point(146, 337);
 			this.okButton.Name = "okButton";
 			this.okButton.Size = new System.Drawing.Size(75, 23);
 			this.okButton.TabIndex = 15;
@@ -140,6 +160,9 @@ namespace Dataweb.NShape.Designer {
 			// 
 			this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
 							| System.Windows.Forms.AnchorStyles.Right)));
+			this.groupBox1.Controls.Add(this.chooseGridColorButton);
+			this.groupBox1.Controls.Add(this.gridColorLabel);
+			this.groupBox1.Controls.Add(this.label6);
 			this.groupBox1.Controls.Add(this.label1);
 			this.groupBox1.Controls.Add(this.label2);
 			this.groupBox1.Controls.Add(this.showGridCheckBox);
@@ -148,10 +171,38 @@ namespace Dataweb.NShape.Designer {
 			this.groupBox1.Controls.Add(this.snapToGridCheckBox);
 			this.groupBox1.Location = new System.Drawing.Point(12, 12);
 			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(271, 72);
+			this.groupBox1.Size = new System.Drawing.Size(289, 98);
 			this.groupBox1.TabIndex = 17;
 			this.groupBox1.TabStop = false;
 			this.groupBox1.Text = "Grid Settings";
+			// 
+			// chooseGridColorButton
+			// 
+			this.chooseGridColorButton.Location = new System.Drawing.Point(93, 67);
+			this.chooseGridColorButton.Name = "chooseGridColorButton";
+			this.chooseGridColorButton.Size = new System.Drawing.Size(24, 23);
+			this.chooseGridColorButton.TabIndex = 16;
+			this.chooseGridColorButton.Text = "...";
+			this.chooseGridColorButton.UseVisualStyleBackColor = true;
+			this.chooseGridColorButton.Click += new System.EventHandler(this.chooseGridColorButton_Click);
+			// 
+			// gridColorLabel
+			// 
+			this.gridColorLabel.BackColor = System.Drawing.Color.White;
+			this.gridColorLabel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.gridColorLabel.Location = new System.Drawing.Point(64, 67);
+			this.gridColorLabel.Name = "gridColorLabel";
+			this.gridColorLabel.Size = new System.Drawing.Size(23, 23);
+			this.gridColorLabel.TabIndex = 15;
+			// 
+			// label6
+			// 
+			this.label6.AutoSize = true;
+			this.label6.Location = new System.Drawing.Point(6, 72);
+			this.label6.Name = "label6";
+			this.label6.Size = new System.Drawing.Size(52, 13);
+			this.label6.TabIndex = 14;
+			this.label6.Text = "Grid color";
 			// 
 			// groupBox2
 			// 
@@ -163,9 +214,9 @@ namespace Dataweb.NShape.Designer {
 			this.groupBox2.Controls.Add(this.label5);
 			this.groupBox2.Controls.Add(this.label4);
 			this.groupBox2.Controls.Add(this.label3);
-			this.groupBox2.Location = new System.Drawing.Point(12, 90);
+			this.groupBox2.Location = new System.Drawing.Point(12, 116);
 			this.groupBox2.Name = "groupBox2";
-			this.groupBox2.Size = new System.Drawing.Size(271, 100);
+			this.groupBox2.Size = new System.Drawing.Size(289, 100);
 			this.groupBox2.TabIndex = 18;
 			this.groupBox2.TabStop = false;
 			this.groupBox2.Text = "Control Point Settings";
@@ -173,16 +224,26 @@ namespace Dataweb.NShape.Designer {
 			// pointSizeUpDown
 			// 
 			this.pointSizeUpDown.Location = new System.Drawing.Point(134, 67);
+			this.pointSizeUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
 			this.pointSizeUpDown.Name = "pointSizeUpDown";
 			this.pointSizeUpDown.Size = new System.Drawing.Size(37, 20);
 			this.pointSizeUpDown.TabIndex = 21;
+			this.pointSizeUpDown.Value = new decimal(new int[] {
+            3,
+            0,
+            0,
+            0});
 			// 
 			// connectionPointCombo
 			// 
 			this.connectionPointCombo.FormattingEnabled = true;
 			this.connectionPointCombo.Location = new System.Drawing.Point(134, 40);
 			this.connectionPointCombo.Name = "connectionPointCombo";
-			this.connectionPointCombo.Size = new System.Drawing.Size(131, 21);
+			this.connectionPointCombo.Size = new System.Drawing.Size(132, 21);
 			this.connectionPointCombo.TabIndex = 20;
 			// 
 			// resizePointCombo
@@ -190,7 +251,7 @@ namespace Dataweb.NShape.Designer {
 			this.resizePointCombo.FormattingEnabled = true;
 			this.resizePointCombo.Location = new System.Drawing.Point(134, 13);
 			this.resizePointCombo.Name = "resizePointCombo";
-			this.resizePointCombo.Size = new System.Drawing.Size(131, 21);
+			this.resizePointCombo.Size = new System.Drawing.Size(132, 21);
 			this.resizePointCombo.TabIndex = 19;
 			// 
 			// label5
@@ -217,9 +278,9 @@ namespace Dataweb.NShape.Designer {
 							| System.Windows.Forms.AnchorStyles.Right)));
 			this.groupBox3.Controls.Add(this.showDynamicContextMenu);
 			this.groupBox3.Controls.Add(this.hideDeniedMenuItemsCheckBox);
-			this.groupBox3.Location = new System.Drawing.Point(12, 196);
+			this.groupBox3.Location = new System.Drawing.Point(12, 222);
 			this.groupBox3.Name = "groupBox3";
-			this.groupBox3.Size = new System.Drawing.Size(271, 100);
+			this.groupBox3.Size = new System.Drawing.Size(289, 100);
 			this.groupBox3.TabIndex = 19;
 			this.groupBox3.TabStop = false;
 			this.groupBox3.Text = "Permissions";
@@ -240,17 +301,22 @@ namespace Dataweb.NShape.Designer {
 							| System.Windows.Forms.AnchorStyles.Right)));
 			this.hideDeniedMenuItemsCheckBox.Location = new System.Drawing.Point(6, 19);
 			this.hideDeniedMenuItemsCheckBox.Name = "hideDeniedMenuItemsCheckBox";
-			this.hideDeniedMenuItemsCheckBox.Size = new System.Drawing.Size(259, 30);
+			this.hideDeniedMenuItemsCheckBox.Size = new System.Drawing.Size(277, 30);
 			this.hideDeniedMenuItemsCheckBox.TabIndex = 0;
 			this.hideDeniedMenuItemsCheckBox.Text = "Hide menu items that are not allowed due to insufficent permissions.";
 			this.hideDeniedMenuItemsCheckBox.UseVisualStyleBackColor = true;
+			// 
+			// colorDialog
+			// 
+			this.colorDialog.AnyColor = true;
+			this.colorDialog.FullOpen = true;
 			// 
 			// DisplaySettingsForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.AutoSize = true;
-			this.ClientSize = new System.Drawing.Size(295, 357);
+			this.ClientSize = new System.Drawing.Size(313, 372);
 			this.Controls.Add(this.groupBox3);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
@@ -295,5 +361,9 @@ namespace Dataweb.NShape.Designer {
 		private System.Windows.Forms.GroupBox groupBox3;
 		private System.Windows.Forms.CheckBox showDynamicContextMenu;
 		private System.Windows.Forms.CheckBox hideDeniedMenuItemsCheckBox;
+		private System.Windows.Forms.Label gridColorLabel;
+		private System.Windows.Forms.Label label6;
+		private System.Windows.Forms.ColorDialog colorDialog;
+		private System.Windows.Forms.Button chooseGridColorButton;
 	}
 }

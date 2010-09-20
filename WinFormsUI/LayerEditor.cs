@@ -20,13 +20,22 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// UserControl for editing layers.
+	/// </summary>
 	public partial class LayerEditor : UserControl {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.LayerEditor" />.
+		/// </summary>
 		public LayerEditor() {
 			InitializeComponent();
 		}
 
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
@@ -34,6 +43,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the DiagramPresenter for this layer editor.
+		/// </summary>
 		[Category("NShape")]
 		public IDiagramPresenter DiagramPresenter {
 			get { return presenter.DiagramPresenter; }
@@ -41,6 +53,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies a DiagramSetController which provides the diagrams, this layer editor refers to.
+		/// </summary>
 		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
 			get { return controller.DiagramSetController; }

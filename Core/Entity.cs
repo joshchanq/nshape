@@ -83,6 +83,9 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public abstract class EntityPropertyDefinition {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.EntityPropertyDefinition" />.
+		/// </summary>
 		protected EntityPropertyDefinition(string name) {
 			this.name = name;
 		}
@@ -123,6 +126,9 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public class EntityFieldDefinition : EntityPropertyDefinition {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.EntityFieldDefinition" />.
+		/// </summary>
 		public EntityFieldDefinition(string name, Type type)
 			: base(name) {
 			if (type == null) throw new ArgumentNullException("type");
@@ -130,6 +136,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Specifies the property type.
+		/// </summary>
 		public Type Type {
 			get { return type; }
 		}
@@ -147,10 +156,13 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public class EntityInnerObjectsDefinition : EntityPropertyDefinition {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.EntityInnerObjectsDefinition" />.
+		/// </summary>
 		public EntityInnerObjectsDefinition(string name, string entityTypeName, string[] innerFieldNames, Type[] innerFieldTypes)
 			: base(name) {
 			if (innerFieldNames.Length != innerFieldTypes.Length)
-				throw new NShapeException("Numeric of field names does not match number of field types.");
+				throw new NShapeException("Number of field names does not match number of field types.");
 			this.entityTypeName = entityTypeName;
 			this.fieldInfos = new EntityFieldDefinition[innerFieldNames.Length];
 			for (int i = 0; i < innerFieldNames.Length; ++i)
@@ -279,11 +291,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Constructs an entity type.
 		/// </summary>
-		/// <param name="entityTypeName">Name of the entity type</param>
-		/// <param name="category">Category of the entity type</param>
-		/// <param name="version">Storage format version to use with this entity type</param>
-		/// <param name="createInstanceDelegate">Method to call to create an instance of the type</param>
-		/// <param name="propertyInfos">Properties of the entities</param>
 		public EntityType(string entityTypeName, EntityCategory category, int version, 
 			CreateInstanceDelegate createInstanceDelegate, IEnumerable<EntityPropertyDefinition> propertyDefinitions) {
 			if (entityTypeName == null) throw new ArgumentNullException("entityTypeName");
@@ -299,7 +306,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEntityType Members
 
-		/// <override></óverride>
+		/// <override></override>
 		public string FullName {
 			get { return name; }
 		}
@@ -371,44 +378,10 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public interface IRepositoryWriter {
 
-		void WriteBool(bool value);
-
-		void WriteByte(byte value);
-
-		void WriteInt16(short value);
-
-		void WriteInt32(int value);
-
-		void WriteInt64(long value);
-
-		void WriteFloat(float value);
-
-		void WriteDouble(double value);
-
-		void WriteChar(char value);
-
-		void WriteString(string value);
-
-		void WriteDate(DateTime date);
-
-		void WriteImage(Image image);
-
-		void WriteTemplate(Template template);
-
-		void WriteStyle(IStyle style);
-
-		void WriteModelObject(IModelObject modelObject);
-
 		/// <summary>
-		/// Starts writing the next set of inner objects through an additional cache 
-		/// repositoryWriter.
+		/// Starts writing the next set of inner objects through an additional cache repositoryWriter.
 		/// </summary>
 		void BeginWriteInnerObjects();
-
-		/// <summary>
-		/// Terminates writing the current type of inner objects.
-		/// </summary>
-		void EndWriteInnerObjects();
 
 		/// <summary>
 		/// Starts writing an inner object to the cache.
@@ -416,12 +389,62 @@ namespace Dataweb.NShape.Advanced {
 		void BeginWriteInnerObject();
 
 		/// <summary>
+		/// Deletes the current set of inner objects.
+		/// </summary>
+		void DeleteInnerObjects();
+
+		/// <summary>
 		/// Commits the current inner object to the data store and prepares the inner
 		/// repositoryWriter for the next inner object.
 		/// </summary>
 		void EndWriteInnerObject();
 
-		void DeleteInnerObjects();
+		/// <summary>
+		/// Terminates writing the current type of inner objects.
+		/// </summary>
+		void EndWriteInnerObjects();
+
+		/// <summary>Writes a boolean value.</summary>
+		void WriteBool(bool value);
+
+		/// <summary>Writes a byte value.</summary>
+		void WriteByte(byte value);
+
+		/// <summary>Writes a character value.</summary>
+		void WriteChar(char value);
+
+		/// <summary>Writes a date and time value.</summary>
+		void WriteDate(DateTime date);
+
+		/// <summary>Writes a double precision floating point number.</summary>
+		void WriteDouble(double value);
+
+		/// <summary>Writes a single precision floating point number.</summary>
+		void WriteFloat(float value);
+
+		/// <summary>Writes an image value.</summary>
+		void WriteImage(Image image);
+
+		/// <summary>Writes a 16 bit integer value.</summary>
+		void WriteInt16(short value);
+
+		/// <summary>Writes a 32 bit integer value.</summary>
+		void WriteInt32(int value);
+
+		/// <summary>Writes a 64 bit integer value.</summary>
+		void WriteInt64(long value);
+
+		/// <summary>Writes a model object.</summary>
+		void WriteModelObject(IModelObject modelObject);
+
+		/// <summary>Writes a string value.</summary>
+		void WriteString(string value);
+
+		/// <summary>Writes a style.</summary>
+		void WriteStyle(IStyle style);
+
+		/// <summary>Writes a template.</summary>
+		void WriteTemplate(Template template);
 
 	}
 
@@ -432,52 +455,11 @@ namespace Dataweb.NShape.Advanced {
 	/// <status>reviewed</status>
 	public interface IRepositoryReader {
 
-		// -- Methods for reading fields --
-
-		bool ReadBool();
-
-		byte ReadByte();
-
-		short ReadInt16();
-
-		int ReadInt32();
-
-		long ReadInt64();
-
-		float ReadFloat();
-
-		double ReadDouble();
-
-		char ReadChar();
-
-		string ReadString();
-
-		DateTime ReadDate();
-
-		Template ReadTemplate();
-
-		Shape ReadShape();
-
-		IModelObject ReadModelObject();
-
-		Image ReadImage();
-
-		IColorStyle ReadColorStyle();
-
-		ICapStyle ReadCapStyle();
-
-		IFillStyle ReadFillStyle();
-
-		ICharacterStyle ReadCharacterStyle();
-
-		ILineStyle ReadLineStyle();
-
-		//IShapeStyle ReadShapeStyle();
-
-		IParagraphStyle ReadParagraphStyle();
-
-
-		// -- Methods for reading inner objects --
+		/// <summary>
+		/// Fetches the next inner object in a set of inner object.
+		/// </summary>
+		/// <returns></returns>
+		bool BeginReadInnerObject();
 
 		/// <summary>
 		/// Fetches the next set of inner objects and prepares them for reading.
@@ -486,19 +468,74 @@ namespace Dataweb.NShape.Advanced {
 		void BeginReadInnerObjects();
 
 		/// <summary>
+		/// Finishes reading an inner object.
+		/// </summary>
+		void EndReadInnerObject();
+
+		/// <summary>
 		/// Finishes reading the current set of inner objects.
 		/// </summary>
 		void EndReadInnerObjects();
 
-		/// <summary>
-		/// Fetches the next inner object in a set of inner object.
-		/// </summary>
-		/// <returns></returns>
-		bool BeginReadInnerObject();
+		/// <summary>Reads a boolean value.</summary>
+		bool ReadBool();
 
-		/// <summary>
-		/// Finishes reading an inner object.
-		/// </summary>
-		void EndReadInnerObject();
+		/// <summary>Reads a byte value.</summary>
+		byte ReadByte();
+
+		/// <summary>Reads a cap style.</summary>
+		ICapStyle ReadCapStyle();
+
+		/// <summary>Reads a character value.</summary>
+		char ReadChar();
+
+		/// <summary>Reads a character style.</summary>
+		ICharacterStyle ReadCharacterStyle();
+
+		/// <summary>Reads a color style.</summary>
+		IColorStyle ReadColorStyle();
+
+		/// <summary>Reads a date and time value.</summary>
+		DateTime ReadDate();
+
+		/// <summary>Reads a double precision floating point number.</summary>
+		double ReadDouble();
+
+		/// <summary>Reads a fill style.</summary>
+		IFillStyle ReadFillStyle();
+
+		/// <summary>Reads a single precision floating point number.</summary>
+		float ReadFloat();
+
+		/// <summary>Reads an image value.</summary>
+		Image ReadImage();
+
+		/// <summary>Reads a 16 bit integer value.</summary>
+		short ReadInt16();
+
+		/// <summary>Reads a 32 bit integer value.</summary>
+		int ReadInt32();
+
+		/// <summary>Reads a 64 bit integer value.</summary>
+		long ReadInt64();
+
+		/// <summary>Reads a line style.</summary>
+		ILineStyle ReadLineStyle();
+
+		/// <summary>Reads a model object.</summary>
+		IModelObject ReadModelObject();
+
+		/// <summary>Reads a paragraph style.</summary>
+		IParagraphStyle ReadParagraphStyle();
+
+		/// <summary>Reads a shape.</summary>
+		Shape ReadShape();
+
+		/// <summary>Reads a string value.</summary>
+		string ReadString();
+
+		/// <summary>Reads a template.</summary>
+		Template ReadTemplate();
+
 	}
 }

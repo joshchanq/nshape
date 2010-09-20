@@ -24,14 +24,23 @@ using Dataweb.NShape.Layouters;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// A dialog used for layouting shapes on a diagram.
+	/// </summary>
 	public partial class LayoutDialog : Form {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.LayoutDialog" />.
+		/// </summary>
 		public LayoutDialog() {
 			InitializeComponent();
 			Icon = System.Drawing.Icon.ExtractAssociatedIcon(this.GetType().Assembly.Location);
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.LayoutDialog" />.
+		/// </summary>
 		public LayoutDialog(ILayouter layouter)
 			: this() {
 			if (layouter == null) throw new ArgumentNullException("layouter");
@@ -63,21 +72,33 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Raised when the layout changed.
+		/// </summary>
 		public event EventHandler LayoutChanged;
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		public Project Project {
 			get { return project; }
 			set { project = value; }
 		}
 
 
+		/// <summary>
+		/// Specifies the diagram of the layouted shapes.
+		/// </summary>
 		public Diagram Diagram {
 			get { return diagram; }
 			set { diagram = value; }
 		}
 
 
+		/// <summary>
+		/// Specifies the shapes to be layouted.
+		/// </summary>
 		public IEnumerable<Shape> SelectedShapes {
 			get { return selectedShapes; }
 			set {
@@ -86,6 +107,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+
+		#region [Private] Methods
 
 		private void PrepareLayouter() {
 			switch ((string)currentPanel.Tag) {
@@ -213,8 +236,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			previewButton.Text = "Preview";
 		}
 
+		#endregion
 
-		#region Form Event Handlers
+
+		#region [Private] Form Event Handlers
 
 		private void LayoutControlForm_Load(object sender, EventArgs e) {
 			if (algorithmListBox.SelectedIndex < 0) 
@@ -234,6 +259,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void centerButton_Click(object sender, EventArgs e) {
 			PrepareLayouter();
+			SetShapes();
 			layouter.Prepare();
 			layouter.Fit(0, 0, diagram.Size.Width, diagram.Size.Height);
 		}
@@ -314,7 +340,8 @@ namespace Dataweb.NShape.WinFormsUI {
 					layouter.Prepare();
 					previewButton.Text = "Running";
 #if DEBUG
-					layoutTimer.Interval = 1000;
+					//layoutTimer.Interval = 1000;
+					layoutTimer.Interval = 50;
 #else
 					layoutTimer.Interval = 50;
 #endif

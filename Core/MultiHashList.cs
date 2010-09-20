@@ -22,6 +22,10 @@ namespace Dataweb.Utilities {
 	/// </summary>
 	public class MultiHashList<T>  {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.Utilities.MultiHashList`1" />.
+		/// </summary>
+		/// <param name="capacity"></param>
 		public MultiHashList(int capacity) {
 			int listCapacity = capacity / order;
 			list = new List<Element>(listCapacity);
@@ -29,6 +33,7 @@ namespace Dataweb.Utilities {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Add(uint key, T value) {
 			Element newElement = new Element(key, value);
 			if (list[(int)(key % list.Capacity)] == null)
@@ -50,6 +55,7 @@ namespace Dataweb.Utilities {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool Remove(uint key, T value) {
 			if (list[(int)(key % list.Capacity)] == null) return false;
 			Element e;
@@ -68,12 +74,14 @@ namespace Dataweb.Utilities {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Clear() {
 			// Clear list by overwriting all items with null
 			for (int i = list.Count - 1; i >= 0; --i) list[i] = null;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<T> this[uint key] {
 			get {
 				if (list[(int)(key % list.Capacity)] == null) yield break;

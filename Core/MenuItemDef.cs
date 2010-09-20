@@ -18,26 +18,45 @@ using System.Drawing;
 
 namespace Dataweb.NShape.Advanced {
 
+	/// <summary>
+	/// Represents a possible action. Used to define a button, toolbar button or menu item that is linked to diagramming actions.
+	/// </summary>
 	public abstract class MenuItemDef {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+		/// </summary>
 		protected MenuItemDef() {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+		/// </summary>
 		protected MenuItemDef(string title)
 			: this() {
 			this.title = title;
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+		/// </summary>
 		protected MenuItemDef(string title, Bitmap image, Color imageTransparentColor)
 			: this(title) {
 			this.image = image;
 			this.transparentColor = imageTransparentColor;
-			if (this.image != null) this.image.MakeTransparent(this.transparentColor);
+			if (this.image != null) {
+				if (this.transparentColor.IsEmpty)
+					this.image.MakeTransparent();
+				else  this.image.MakeTransparent(this.transparentColor);
+			}
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+		/// </summary>
 		protected MenuItemDef(string title, Bitmap image, string description, bool isFeasible)
 			: this(title) {
 			this.image = image;
@@ -46,6 +65,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+		/// </summary>
 		protected MenuItemDef(string title, Bitmap image, Color transparentColor,
 			string name, string description, bool isChecked, bool isFeasible)
 			: this(title, image, transparentColor) {
@@ -56,6 +78,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Gets or sets an object that provides additional data.
+		/// </summary>
 		public object Tag {
 			get { return tag; }
 			set { tag = value; }
@@ -140,6 +165,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public virtual Color ImageTransparentColor {
 			get { return transparentColor; }
 			set {
@@ -150,11 +176,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public abstract void Execute(MenuItemDef action, Project project);
 
 
 		#region Fields
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected MenuItemDef[] subItems = null;
 
 		private object tag = null;
@@ -175,9 +203,11 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class SeparatorMenuItemDef : MenuItemDef {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public SeparatorMenuItemDef() : base() { }
 
 
+		/// <override></override>
 		public override void Execute(MenuItemDef action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
@@ -185,48 +215,56 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override string Name {
 			get { return name; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override string Title {
 			get { return title; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get { return string.Empty; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
 			return true;
 		}
 
 
+		/// <override></override>
 		public override bool IsFeasible {
 			get { return true; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override bool Checked {
 			get { return false; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override Bitmap Image {
 			get { return null; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override Color ImageTransparentColor {
 			get { return Color.Empty; }
 			set { /* nothing to do */ }
@@ -244,10 +282,12 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class NotImplementedMenuItemDef : MenuItemDef {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public NotImplementedMenuItemDef(string title)
 			: base(title) {
 		}
 
+		/// <override></override>
 		public override void Execute(MenuItemDef action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
@@ -255,30 +295,35 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
 			return true;
 		}
 
 
+		/// <override></override>
 		public override bool IsFeasible {
 			get { return false; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override bool Checked {
 			get { return false; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override Bitmap Image {
 			get { return null; }
 			set { /* nothing to do */ }
 		}
 
 
+		/// <override></override>
 		public override Color ImageTransparentColor {
 			get { return Color.Empty; }
 			set { /* nothing to do */ }
@@ -289,33 +334,42 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <summary>
+	/// Defines a group of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+	/// </summary>
 	public class GroupMenuItemDef : MenuItemDef {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef()
 			: base() {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef(string title)
 			: base(title) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef(string title, Bitmap image, Color imageTransparentColor)
 			: base(title, image, imageTransparentColor) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef(string title, Bitmap image, string description, bool isFeasible)
 			: base(title, image, description, isFeasible) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible)
 			: base(title, image, transparentColor, name, description, isChecked, isFeasible) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef(string title, Bitmap image, string description, bool isFeasible, MenuItemDef[] actions, int defaultActionIndex)
 			: base(title, image, description, isFeasible) {
 			this.subItems = actions;
@@ -323,6 +377,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public GroupMenuItemDef(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible, MenuItemDef[] actions, int defaultActionIndex)
 			: base(title, image, transparentColor, name, description, isChecked, isFeasible) {
 			this.subItems = actions;
@@ -330,12 +385,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
 			return true;
 		}
 
 
+		/// <override></override>
 		public override void Execute(MenuItemDef action, Project project) {
 			//if (action == null) throw new ArgumentNullException("action");
 			//if (project == null) throw new ArgumentNullException("project");
@@ -343,6 +400,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public MenuItemDef DefaultAction {
 			get { return (subItems == null || defaultActionIdx < 0 || defaultActionIdx >= subItems.Length) ? null : subItems[defaultActionIdx]; }
 		}
@@ -357,26 +415,37 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class DelegateMenuItemDef : MenuItemDef {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public delegate void ActionExecuteDelegate(MenuItemDef action, Project project);
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DelegateMenuItemDef(string text)
 			: base(text, null, Color.Empty) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DelegateMenuItemDef(string text, Bitmap image, Color imageTransparentColor)
 			: base(text, image, imageTransparentColor) {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public DelegateMenuItemDef(string title, Bitmap image, string description, bool isFeasible, Permission requiredPermission, ActionExecuteDelegate executeDelegate)
-			: base(title, image, Color.Fuchsia, string.Format("{0} Action", title), description, false, isFeasible) {
+			: base(title, image, Color.Empty, string.Format("{0} Action", title), description, false, isFeasible) {
 			this.requiredPermission = requiredPermission;
 			this.executeDelegate = executeDelegate;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
+		public DelegateMenuItemDef(string title, Bitmap image, string name, string description, bool isChecked, bool isFeasible, Permission requiredPermission, ActionExecuteDelegate executeDelegate)
+			: this(title, image, Color.Empty, name, description, isChecked, isFeasible, requiredPermission, executeDelegate) {
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DelegateMenuItemDef(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible, Permission requiredPermission, ActionExecuteDelegate executeDelegate)
 			: base(title, image, transparentColor, name, description, isChecked, isFeasible) {
 			this.requiredPermission = requiredPermission;
@@ -384,6 +453,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override void Execute(MenuItemDef action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
@@ -391,18 +461,21 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
 			return securityManager.IsGranted(requiredPermission);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Permission RequiredPermission {
 			get { return requiredPermission; }
 			set { requiredPermission = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ActionExecuteDelegate Delegate {
 			get { return executeDelegate; }
 			set { executeDelegate = value; }
@@ -420,30 +493,36 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class CommandMenuItemDef : MenuItemDef {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CommandMenuItemDef()
 			: base() { }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CommandMenuItemDef(string title)
 			: base(title) { }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CommandMenuItemDef(string title, Bitmap image, Color transparentColor)
 			: base(title, image, transparentColor) { }
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CommandMenuItemDef(string title, Bitmap image, string notFeasibleDescription, bool isFeasible, ICommand command)
 			: base(title, image, notFeasibleDescription, isFeasible) {
 			this.command = command;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public CommandMenuItemDef(string title, Bitmap image, Color transparentColor, string name, string notFeasibleDescription, bool isChecked, bool isFeasible, ICommand command)
 			: base(title, image, transparentColor, name, notFeasibleDescription, isChecked, isFeasible) {
 			this.command = command;
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get {
 				if (IsFeasible) return command.Description;
@@ -453,12 +532,14 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
 			return (command != null) ? command.IsAllowed(securityManager) : false;
 		}
 
 
+		/// <override></override>
 		public override void Execute(MenuItemDef action, Project project) {
 			if (action == null) throw new ArgumentNullException("action");
 			if (project == null) throw new ArgumentNullException("project");
@@ -466,6 +547,9 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Specifies the command executed by the <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" />.
+		/// </summary>
 		public ICommand Command {
 			get { return command; }
 		}

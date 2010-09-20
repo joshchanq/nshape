@@ -21,9 +21,14 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// A dialog used for creating and editing designs and styles
+	/// </summary>
 	public partial class DesignEditorDialog : Form {
 
-
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.DesignEditorDialog" />.
+		/// </summary>
 		public DesignEditorDialog() {
 			SetStyle(ControlStyles.ResizeRedraw
 				| ControlStyles.AllPaintingInWmPaint
@@ -40,6 +45,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.DesignEditorDialog" />.
+		/// </summary>
 		public DesignEditorDialog(Project project)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
@@ -47,13 +55,25 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.DesignEditorDialog" />.
+		/// </summary>
+		public DesignEditorDialog(Project project, StyleCategory styleCategory)
+			: this(project) {
+			designPresenter.SelectedStyleCategory = styleCategory;
+		}
+
+
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return designController.Project; }
 			set { designController.Project = value; }
 		}
-		
-		
+
+
 		/// <summary>
 		/// Clean up any resources being used.
 		/// </summary>
@@ -75,7 +95,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			designsComboBox.Items.Clear();
 			foreach (Design design in Project.Repository.GetDesigns())
 				if (design != null) designsComboBox.Items.Add(design.Name);
-			
 		}
 
 
@@ -93,9 +112,12 @@ namespace Dataweb.NShape.WinFormsUI {
 					break;
 				}
 			}
-			activateButton.Enabled = designsComboBox.Text != projectDesignName;
-			deleteDesignButton.Enabled = designController.CanDelete(designPresenter.SelectedDesign);
-			deleteStyleButton.Enabled = designController.CanDelete(designPresenter.SelectedDesign, designPresenter.SelectedStyle);
+			if (designPresenter != null) {
+				if (designPresenter.Project != null)
+					activateButton.Enabled = designsComboBox.Text != designPresenter.Project.Design.Name;
+				deleteDesignButton.Enabled = designController.CanDelete(designPresenter.SelectedDesign);
+				deleteStyleButton.Enabled = designController.CanDelete(designPresenter.SelectedDesign, designPresenter.SelectedStyle);
+			}
 		}
 
 
@@ -195,7 +217,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void designPresenter_DesignSelected(object sender, EventArgs e) {
-			StyleEditor.Design = designPresenter.SelectedDesign;
+			StyleUITypeEditor.Design = designPresenter.SelectedDesign;
+			int idx = designsComboBox.Items.IndexOf(designPresenter.SelectedDesign.Name);
+			if (idx >= 0) designsComboBox.SelectedIndex = idx;
 			SetButtonStates();
 		}
 

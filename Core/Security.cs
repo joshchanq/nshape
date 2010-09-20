@@ -20,84 +20,81 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape {
 
-	[Flags()]
+	/// <summary>
+	/// Specifies the permission.
+	/// </summary>
+	[Flags]
 	public enum Permission {
+		/// <summary>No permissions are granted.</summary>
 		None = 0x0000,
-		/// <summary>
-		/// Copy another permission set
-		/// </summary>
+		/// <summary>Copy another permission set.</summary>
 		ModifyPermissionSet = 0x0001,
-		/// <summary>
-		/// Modify position, size, rotation or z-order of shapes
-		/// </summary>
+		/// <summary>Modify position, size, rotation or z-order of shapes.</summary>
 		Layout = 0x0002,
-		/// <summary>
-		/// Modify the appearance of the shape (color, line thickness etc.) and assign another design
-		/// </summary>
+		/// <summary>Modify the appearance of the shape (color, line thickness etc.) and assign another design.</summary>
 		Present = 0x0004,
-		/// <summary>
-		/// Modify data properties
-		/// </summary>
+		/// <summary>Modify data properties.</summary>
 		ModifyData = 0x0008,
-		/// <summary>
-		/// Insert shape into diagram
-		/// </summary>
+		/// <summary>Insert shape into diagram.</summary>
 		Insert = 0x0010,
-		/// <summary>
-		/// Remove shape from diagram
-		/// </summary>
+		/// <summary>Remove shape from diagram.</summary>
 		Delete = 0x0020,
-		/// <summary>
-		/// Connect or disconnect shapes
-		/// </summary>
+		/// <summary>Connect or disconnect shapes.</summary>
 		Connect = 0x0040,
-		/// <summary>
-		/// Edit, insert and delete templates
-		/// </summary>
+		/// <summary>Edit, insert and delete templates.</summary>
 		Templates = 0x0080,
-		/// <summary>
-		/// Edit, insert and delete designs
-		/// </summary>
+		/// <summary>Edit, insert and delete designs.</summary>
 		Designs = 0x0100,
-		/// <summary>Everything</summary>
+		/// <summary>All available permissions are granted.</summary>
 		All = 0xffff
 	}
 
 
+	/// <summary>
+	/// Specifies the set of <see cref="T:Dataweb.NShape.Permission" /> required for changing a property.
+	/// </summary>
 	public class RequiredPermissionAttribute : Attribute {
 		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.RequiredPermissionAttribute" />.
+		/// </summary>
 		public RequiredPermissionAttribute(Permission requiredPermission) {
 			permission = requiredPermission;
 		}
 
-		public Permission Permission { get { return permission; } }
+		/// <summary>
+		/// Specifies the set of <see cref="T:Dataweb.NShape.Permission" /> required required.
+		/// </summary>
+		public Permission Permission {
+			get { return permission; }
+		}
 
 		private Permission permission;
 	}
 
 
-	public class QueryPermissionEventArgs : EventArgs {
+	//public class QueryPermissionEventArgs : EventArgs {
 
-		public QueryPermissionEventArgs(Permission permissionSet) {
-			this.permissionSet = permissionSet;
-		}
+	//   public QueryPermissionEventArgs(Permission permissionSet) {
+	//      this.permissionSet = permissionSet;
+	//   }
 
-		public Permission PermissionSet { get { return permissionSet; } }
+	//   public Permission PermissionSet { get { return permissionSet; } }
 
-		private Permission permissionSet;
-	}
+	//   private Permission permissionSet;
+	//}
 
 
-	public delegate void QueryPermissionHandler(object sender, QueryPermissionEventArgs eventArgs);
+	//public delegate void QueryPermissionHandler(object sender, QueryPermissionEventArgs eventArgs);
 
 
 	/// <summary>
 	/// Controls the access to diagram operations.
 	/// </summary>
 	public interface ISecurityManager {
-
+	
 		/// <summary>
-		/// Checks whether the given domain-independent permission is granted by for the current role.
+		/// Checks whether the given domain-independent  is granted by for the current role.
 		/// </summary>
 		bool IsGranted(Permission permission);
 
@@ -117,15 +114,25 @@ namespace Dataweb.NShape {
 		/// the current user permissions.
 		/// </summary>
 		bool IsGranted(Permission permission, IEnumerable<Shape> shapes);
+
 	}
 
 
+	/// <summary>
+	/// Defines a standard user role
+	/// </summary>
 	public enum StandardRole {
+		/// <summary>All permissions are granted.</summary>
 		Administrator,
+		/// <summary>Most permissions are granted.</summary>
 		SuperUser,
+		/// <summary>Permissions required for designing diagrams are granted.</summary>
 		Designer,
+		/// <summary>Permissions needed for changing the state of objects are granted.</summary>
 		Operator,
+		/// <summary>Nearly no permissions are granted.</summary>
 		Guest,
+		/// <summary>Custom permissons are granted.</summary>
 		Custom
 	}
 	
@@ -263,8 +270,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Adds a domain to the security.
 		/// </summary>
-		/// <param name="projectName"></param>
-		/// <param name="description"></param>
 		public void AddDomain(char name, string description) {
 			if (!IsValidDomainName(name)) throw new ArgumentException("This is not an allowed domain name.");
 			if (description == null) throw new ArgumentNullException("description");
@@ -276,7 +281,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Removes a domain from the security.
 		/// </summary>
-		/// <param name="projectName"></param>
 		public void RemoveDomain(char name) {
 			if (!IsValidDomainName(name)) throw new ArgumentException("This is not an allowed domain name.");
 			if (domains[name - 'A'] == null) throw new ArgumentException("A domain with this name does not exist.");
@@ -287,8 +291,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Adds a role to the security.
 		/// </summary>
-		/// <param name="projectName"></param>
-		/// <param name="description"></param>
 		public void AddRole(string name, string description) {
 			if (name == null) throw new ArgumentNullException("name");
 			roles.Add(new SecurityManagerRole(name, description));
@@ -298,15 +300,15 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Adds a new security role by copying an existing one.
 		/// </summary>
-		/// <param name="projectName">Name of the new role</param>
-		/// <param name="description">Description for the new role</param>
-		/// <param name="sourceRole">Name of the role to copy</param>
 		public void AddRole(string name, string description, string sourceRoleName) {
 			if (name == null) throw new ArgumentNullException("name");
 			roles.Add(GetRole(sourceRoleName, true).Clone());
 		}
 
 
+		/// <summary>
+		/// Adds permissions for the given domain and role.
+		/// </summary>
 		public void AddPermissions(char domain, StandardRole role, Permission permissions) {
 			string roleName = GetRoleName(role);
 			AddPermissions(domain, role, permissions);
@@ -316,9 +318,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Adds permissions for the given domain and role.
 		/// </summary>
-		/// <param name="domain"></param>
-		/// <param name="roleName"></param>
-		/// <param name="permissions"></param>
 		public void AddPermissions(char domain, string roleName, Permission permissions) {
 			if (roleName == null) throw new ArgumentNullException("role");
 			GetRole(roleName, true).AddPermissions(domain, permissions);
@@ -337,9 +336,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Redefines the permissions of the given domain and role.
 		/// </summary>
-		/// <param name="domain"></param>
-		/// <param name="roleName"></param>
-		/// <param name="permissions"></param>
 		public void SetPermissions(char domain, string roleName, Permission permissions) {
 			if (roleName == null) throw new ArgumentNullException("role");
 			GetRole(roleName, true).SetPermissions(domain, permissions);
@@ -358,9 +354,6 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Removes permissions from the given domain and role.
 		/// </summary>
-		/// <param name="domain"></param>
-		/// <param name="roleName"></param>
-		/// <param name="permissions"></param>
 		public void RemovePermissions(char domain, string roleName, Permission permissions) {
 			if (roleName == null) throw new ArgumentNullException("role");
 			GetRole(roleName, true).RemovePermissions(domain, permissions);

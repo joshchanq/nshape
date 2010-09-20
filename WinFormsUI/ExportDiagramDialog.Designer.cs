@@ -1,4 +1,5 @@
 ﻿namespace Dataweb.NShape.WinFormsUI {
+
 	partial class ExportDiagramDialog {
 		/// <summary>
 		/// Required designer variable.
@@ -10,8 +11,23 @@
 		/// </summary>
 		/// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
 		protected override void Dispose(bool disposing) {
-			if (disposing && (components != null)) {
-				components.Dispose();
+			if (disposing){
+				if (components != null) {
+					components.Dispose();
+					components = null;
+				}
+				if (imgAttribs != null) {
+					imgAttribs.Dispose();
+					imgAttribs = null;
+				}
+				if (colorLabelBackBrush != null) {
+					colorLabelBackBrush.Dispose();
+					colorLabelBackBrush = null;
+				}
+				if (colorLabelFrontBrush != null) {
+					colorLabelFrontBrush.Dispose();
+					colorLabelFrontBrush = null;
+				}
 			}
 			base.Dispose(disposing);
 		}

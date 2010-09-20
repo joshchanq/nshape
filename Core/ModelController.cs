@@ -23,15 +23,22 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+	/// <ToBeCompleted></ToBeCompleted>
 	[ToolboxItem(true)]
 	[ToolboxBitmap(typeof(ModelController), "ModelController.bmp")]
 	public class ModelController : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.ModelController" />.
+		/// </summary>
 		public ModelController()
 			: base() {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.ModelController" />.
+		/// </summary>
 		public ModelController(DiagramSetController diagramSetController)
 			: this() {
 			if (diagramSetController == null) throw new ArgumentNullException("diagramSetController");
@@ -39,6 +46,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.ModelController" />.
+		/// </summary>
 		public ModelController(Project project)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
@@ -48,14 +58,19 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler Initialized;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler Uninitialized;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsCreated;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<RepositoryModelObjectsEventArgs> ModelObjectsDeleted;
 
 		/// <summary>
@@ -68,12 +83,18 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[ReadOnly(true)]
 		[Category("NShape")]
 		public Project Project {
@@ -92,6 +113,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("NShape")]
 		public DiagramSetController DiagramSetController {
 			get { return diagramSetController; }
@@ -111,11 +133,13 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Methods
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CreateModelObject() {
 			throw new NotImplementedException();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RenameModelObject(IModelObject modelObject, string newName) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			throw new NotImplementedException();
@@ -133,6 +157,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void SetModelObjectParent(IModelObject modelObject, IModelObject parent) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			ICommand cmd = new SetModelObjectParentCommand(modelObject, parent);
@@ -140,6 +165,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Copy(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			copyPasteBuffer.Clear();
@@ -147,6 +173,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Copy(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			copyPasteBuffer.Clear();
@@ -155,6 +182,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Paste(IModelObject parent) {
 			// Set parent
 			for (int i = copyPasteBuffer.Count - 1; i >= 0; --i)
@@ -168,12 +196,14 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<IModelObject> GetChildModelObjects(IModelObject modelObject) {
 			if (modelObject == null) throw new ArgumentNullException("modelObject");
 			return Project.Repository.GetModelObjects(modelObject);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void FindShapes(IEnumerable<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			if (diagramSetController == null) throw new InvalidOperationException("DiagramSetController is not set");
@@ -181,6 +211,9 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		public IEnumerable<MenuItemDef> GetMenuItemDefs(IReadOnlyCollection<IModelObject> modelObjects) {
 			if (modelObjects == null) throw new ArgumentNullException("modelObjects");
 			
@@ -373,19 +406,19 @@ namespace Dataweb.NShape.Controllers {
 			if (modelObjects != null && modelObjects.Count > 0) {
 				isFeasible = true;
 				description = string.Format("Delete {0} model object{1}.", modelObjects.Count, (modelObjects.Count > 0) ? "s" : string.Empty);
-				foreach (IModelObject modelObject in modelObjects)
+				foreach (IModelObject modelObject in modelObjects) {
 					foreach (IModelObject mo in Project.Repository.GetModelObjects(modelObject))
-						foreach (Shape s in mo.Shapes) {
+						if (mo.ShapeCount > 0) {
 							isFeasible = false;
 							description = "One or more child model objects are attached to shapes.";
-							break;
 						}
+				}
 			} else {
 				isFeasible = false;
 				description = "No model objects selected";
 			}
 
-			return new DelegateMenuItemDef("Delete", null, Color.Empty, "DeleteModelObjectsAction",
+			return new DelegateMenuItemDef("Delete", Properties.Resources.DeleteBtn, "DeleteModelObjectsAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => DeleteModelObjects(modelObjects));
 		}
@@ -397,7 +430,7 @@ namespace Dataweb.NShape.Controllers {
 			if (isFeasible)
 				description = string.Format("Copy {0} model object{1}.", modelObjects.Count, (modelObjects.Count > 1) ? "s" : string.Empty);
 			else description = "No model objects selected";
-			return new DelegateMenuItemDef("Copy", null, Color.Empty, "CopyModelObjectsAction",
+			return new DelegateMenuItemDef("Copy", Properties.Resources.CopyBtn, "CopyModelObjectsAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => Copy(modelObjects));
 		}
@@ -415,7 +448,7 @@ namespace Dataweb.NShape.Controllers {
 				parent = mo;
 				break;
 			}
-			return new DelegateMenuItemDef("Paste", null, Color.Empty, "DeleteModelObjectsAction",
+			return new DelegateMenuItemDef("Paste", Properties.Resources.PasteBtn, "DeleteModelObjectsAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => Paste(parent));
 		}
@@ -424,7 +457,7 @@ namespace Dataweb.NShape.Controllers {
 		private MenuItemDef CreateFindShapesAction(IReadOnlyCollection<IModelObject> modelObjects) {
 			bool isFeasible = (diagramSetController != null);
 			string description = "Find and select all assigned shapes.";
-			return new DelegateMenuItemDef("Find assigned shapes", null, Color.Empty, "FindShapesAction",
+			return new DelegateMenuItemDef("Find assigned shapes", Properties.Resources.FindShapes, "FindShapesAction",
 				description, false, isFeasible, Permission.None,
 				(a, p) => FindShapes(modelObjects));
 		}
@@ -442,14 +475,17 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class ModelObjectSelectedEventArgs : EventArgs {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public ModelObjectSelectedEventArgs(IEnumerable<IModelObject> selectedModelObjects, bool ensureVisibility) {
 			if (selectedModelObjects == null) throw new ArgumentNullException("selectedModelObjects");
 			this.modelObjects = new List<IModelObject>(selectedModelObjects);
 			this.ensureVisibility = ensureVisibility;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<IModelObject> SelectedModelObjects {
 			get { return modelObjects; }
 			internal set {
@@ -458,6 +494,7 @@ namespace Dataweb.NShape.Controllers {
 			}
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool EnsureVisibility {
 			get { return ensureVisibility; }
 			internal set { ensureVisibility = value; }

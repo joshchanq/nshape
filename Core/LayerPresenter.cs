@@ -22,10 +22,17 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.Controllers {
 
+	/// <summary>
+	/// Non-visual component implementing the functionality of a layer presenter.
+	/// Provides methods and properties for connecting an ILayerView user interface widget with a LayerController.
+	/// </summary>
 	[ToolboxItem(true)]
 	[ToolboxBitmap("LayerPresenter.bmp")]
 	public class LayerPresenter : Component {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Controllers.LayerPresenter" />.
+		/// </summary>
 		public LayerPresenter()
 			: base() {
 		}
@@ -33,6 +40,7 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<LayersEventArgs> LayerSelectionChanged;
 
 		#endregion
@@ -40,12 +48,16 @@ namespace Dataweb.NShape.Controllers {
 
 		#region [Public] Properties
 
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		public string ProductVersion {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("NShape")]
 		public LayerController LayerController {
 			get { return layerController; }
@@ -57,6 +69,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("NShape")]
 		public IDiagramPresenter DiagramPresenter {
 			get { return diagramPresenter; }
@@ -75,12 +88,16 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return (layerController == null) ? null : layerController.Project; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Category("NShape")]
 		public ILayerView LayerView {
 			get { return layerView; }
@@ -110,6 +127,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		[Browsable(false)]
 		public IReadOnlyCollection<Layer> SelectedLayers {
 			get { return selectedLayers; }
@@ -120,6 +138,9 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods (protected)
 
+		/// <summary>
+		/// Returns a collection of <see cref="T:Dataweb.NShape.Advanced.MenuItemDef" /> for constructing context menus etc.
+		/// </summary>
 		protected IEnumerable<MenuItemDef> GetMenuItemDefs() {
 			if (layerController == null || diagramPresenter == null)
 				yield break;
@@ -177,11 +198,13 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void OnSelectedLayersChanged(object sender, LayersEventArgs e) {
 			if (LayerSelectionChanged != null) LayerSelectionChanged(sender, e);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void ShowSelectedLayers() {
 			AssertLayerControllerIsSet();
 			for (int i = selectedLayers.Count - 1; i >= 0; --i)
@@ -189,6 +212,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void HideSelectedLayers() {
 			AssertLayerControllerIsSet();
 			for (int i = selectedLayers.Count - 1; i >= 0; --i)
@@ -196,6 +220,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void ActivateSelectedLayers() {
 			AssertLayerControllerIsSet();
 			for (int i = selectedLayers.Count - 1; i >= 0; --i)
@@ -203,6 +228,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void DeactivateSelectedLayers() {
 			AssertLayerControllerIsSet();
 			for (int i = selectedLayers.Count - 1; i >= 0; --i)
@@ -210,6 +236,7 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected void BeginRenameSelectedLayer() {
 			if (selectedLayers.Count == 0) throw new NShapeException("No layers selected.");
 			layerView.BeginEditLayerName(selectedLayers[0]);
@@ -363,7 +390,7 @@ namespace Dataweb.NShape.Controllers {
 
 		private void layerController_LayerAdded(object sender, LayersEventArgs e) {
 			// Create LayerView items for the new layers
-			if (e.Layers != null && layerView != null) 
+			if (e.Layers != null && layerView != null)
 				AddLayerItemsToLayerView(e.Layers);
 		}
 
@@ -433,29 +460,40 @@ namespace Dataweb.NShape.Controllers {
 				case MouseButtonsDg.Left:
 					switch (e.Item) {
 						case LayerItem.Name:
-							if (e.Layer != null && selectedLayers.Contains(e.Layer)) layerView.BeginEditLayerName(e.Layer);
+							if (e.Layer != null && selectedLayers.Contains(e.Layer)) 
+								layerView.BeginEditLayerName(e.Layer);
 							break;
-
 						case LayerItem.ActiveState:
-							if (e.Layer != null) diagramPresenter.SetLayerActive(e.Layer.Id, !diagramPresenter.IsLayerActive(e.Layer.Id));
+							if (e.Layer != null) 
+								diagramPresenter.SetLayerActive(e.Layer.Id, !diagramPresenter.IsLayerActive(e.Layer.Id));
 							break;
-
 						case LayerItem.Visibility:
-							if (e.Layer != null) diagramPresenter.SetLayerVisibility(e.Layer.Id, !diagramPresenter.IsLayerVisible(e.Layer.Id));
+							if (e.Layer != null) 
+								diagramPresenter.SetLayerVisibility(e.Layer.Id, !diagramPresenter.IsLayerVisible(e.Layer.Id));
 							break;
-
 						case LayerItem.MinZoom:
-							if (e.Layer != null && selectedLayers.Contains(e.Layer)) layerView.BeginEditLayerMinZoomBound(e.Layer);
+							if (e.Layer != null && selectedLayers.Contains(e.Layer)) 
+								layerView.BeginEditLayerMinZoomBound(e.Layer);
 							break;
-
 						case LayerItem.MaxZoom:
-							if (e.Layer != null && selectedLayers.Contains(e.Layer)) layerView.BeginEditLayerMaxZoomBound(e.Layer);
+							if (e.Layer != null && selectedLayers.Contains(e.Layer)) 
+								layerView.BeginEditLayerMaxZoomBound(e.Layer);
 							break;
+						case LayerItem.None:
+							// nothing to do
+							break;
+						default: 
+							throw new NShapeUnsupportedValueException(e.Item);
 					}
 					break;
 
+					// Open context menu
 				case MouseButtonsDg.Right:
 					layerView.OpenContextMenu(e.Position.X, e.Position.Y, GetMenuItemDefs(), LayerController.DiagramSetController.Project);
+					break;
+
+				default:
+					// Ignore all other buttons as well as combinations of buttons
 					break;
 			}
 		}
@@ -493,22 +531,32 @@ namespace Dataweb.NShape.Controllers {
 	}
 
 
+	/// <summary>
+	/// Interface for a layer presenter's user interface implementation.
+	/// </summary>
 	public interface ILayerView {
 
 		#region Events
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayersEventArgs> SelectedLayerChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayerRenamedEventArgs> LayerRenamed;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayerZoomThresholdChangedEventArgs> LayerUpperZoomThresholdChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayerZoomThresholdChangedEventArgs> LayerLowerZoomThresholdChanged;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayerMouseEventArgs> LayerViewMouseDown;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayerMouseEventArgs> LayerViewMouseMove;
 
+		/// <ToBeCompleted></ToBeCompleted>
 		event EventHandler<LayerMouseEventArgs> LayerViewMouseUp;
 
 		#endregion
@@ -516,44 +564,91 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Methods
 
+		/// <summary>
+		/// Clears the contents of the layer view.
+		/// </summary>
 		void Clear();
 
+		/// <summary>
+		/// Signals that the user interface is going to be updated.
+		/// </summary>
 		void BeginUpdate();
 
+		/// <summary>
+		/// Signals that the user interface was updated.
+		/// </summary>
 		void EndUpdate();
 
+		/// <summary>
+		/// Adds a new item to the user interface representing the given layer.
+		/// </summary>
 		void AddLayer(Layer layer, bool isActive, bool isVisible);
 
+		/// <summary>
+		/// Removes the item representing the given layer from the layerView's content.
+		/// </summary>
+		/// <param name="layer"></param>
 		void RemoveLayer(Layer layer);
 
+		/// <summary>
+		/// Refreshes the contents of the item representing the given layer.
+		/// </summary>
 		void RefreshLayer(Layer layer, bool isActive, bool isVisible);
 
+		/// <summary>
+		/// Signals that the given layer is going to be renamed.
+		/// </summary>
 		void BeginEditLayerName(Layer layer);
 
+		/// <summary>
+		/// Signals that the lower zoom treshold of the given layer is going to be changed.
+		/// </summary>
 		void BeginEditLayerMinZoomBound(Layer layer);
 
+		/// <summary>
+		/// Signals that the upper zoom treshold of the given layer is going to be changed.
+		/// </summary>
 		void BeginEditLayerMaxZoomBound(Layer layer);
 
+		/// <summary>
+		/// Signals that the user interface should be redrawn.
+		/// </summary>
 		void Invalidate();
 
-		void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> contextMenuActions, Project project);
+		/// <summary>
+		/// Signals that a context menu buildt from the given contextMenuItemDefs should be opened at the given coordinates.
+		/// </summary>
+		void OpenContextMenu(int x, int y, IEnumerable<MenuItemDef> contextMenuItemDefs, Project project);
 
 		#endregion
 	}
 
 
+	/// <summary>
+	/// Specifies the type of user interface item.
+	/// </summary>
 	public enum LayerItem {
+		/// <summary>Specifies the user iterface item displaying the layer's name.</summary>
 		Name,
+		/// <summary>Specifies the user iterface item displaying the layer's visibility state.</summary>
 		Visibility,
+		/// <summary>Specifies the user iterface item displaying the layer's active state.</summary>
 		ActiveState,
+		/// <summary>Specifies the user iterface item displaying the layer's lower zoom treshold.</summary>
 		MinZoom,
+		/// <summary>Specifies the user iterface item displaying the layer's upper zoom treshold.</summary>
 		MaxZoom,
+		/// <summary>No user iterface item.</summary>
 		None
 	}
 	
 	
+	/// <summary>
+	/// Mouse event args for layer view inplementations.
+	/// </summary>
 	public class LayerMouseEventArgs : MouseEventArgsDg {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerMouseEventArgs(Layer layer, LayerItem item, 
 			MouseEventType eventType, MouseButtonsDg buttons, int clickCount, int wheelDelta, 
 			Point position, KeysDg modifiers)
@@ -561,8 +656,9 @@ namespace Dataweb.NShape.Controllers {
 			this.layer = layer;
 			this.item = item;
 		}
-		
-		
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerMouseEventArgs(Layer layer, LayerItem item, MouseEventArgsDg mouseEventArgs)
 			: this(layer, item, mouseEventArgs.EventType, mouseEventArgs.Buttons, mouseEventArgs.Clicks, mouseEventArgs.WheelDelta, mouseEventArgs.Position, mouseEventArgs.Modifiers) {
 			if (layer == null) throw new ArgumentNullException("layer");
@@ -571,25 +667,29 @@ namespace Dataweb.NShape.Controllers {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Layer Layer {
 			get { return layer; }
 			protected internal set { layer = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LayerItem Item {
 			get { return item; }
 			protected internal set { item = value; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal LayerMouseEventArgs()
 			: base() {
 			layer = null;
 			item = LayerItem.None;
 		}
 
-		
+
+		/// <ToBeCompleted></ToBeCompleted>
 		protected internal void SetMouseEvent(MouseEventType eventType, MouseButtonsDg buttons, 
 			int clickCount, int wheelDelta, Point position, KeysDg modifiers){
 			this.eventType = eventType;

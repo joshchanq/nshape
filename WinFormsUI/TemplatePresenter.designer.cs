@@ -82,7 +82,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.nameTextBox.Location = new System.Drawing.Point(50, 57);
 			this.nameTextBox.Name = "nameTextBox";
 			this.nameTextBox.Size = new System.Drawing.Size(309, 20);
-			this.nameTextBox.TabIndex = 1;
+			this.nameTextBox.TabIndex = 2;
 			this.nameTextBox.TextChanged += new System.EventHandler(this.nameTextBox_TextChanged);
 			// 
 			// label4
@@ -101,7 +101,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.titleTextBox.Location = new System.Drawing.Point(50, 83);
 			this.titleTextBox.Name = "titleTextBox";
 			this.titleTextBox.Size = new System.Drawing.Size(309, 20);
-			this.titleTextBox.TabIndex = 6;
+			this.titleTextBox.TabIndex = 3;
 			this.titleTextBox.TextChanged += new System.EventHandler(this.titleTextBox_TextChanged);
 			// 
 			// descriptionTextBox
@@ -112,7 +112,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.descriptionTextBox.Multiline = true;
 			this.descriptionTextBox.Name = "descriptionTextBox";
 			this.descriptionTextBox.Size = new System.Drawing.Size(355, 81);
-			this.descriptionTextBox.TabIndex = 8;
+			this.descriptionTextBox.TabIndex = 4;
 			this.descriptionTextBox.TextChanged += new System.EventHandler(this.descriptionTextBox_TextChanged);
 			// 
 			// label5
@@ -148,6 +148,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.headerSplitContainer.Size = new System.Drawing.Size(731, 111);
 			this.headerSplitContainer.SplitterDistance = 362;
 			this.headerSplitContainer.TabIndex = 4;
+			this.headerSplitContainer.TabStop = false;
 			// 
 			// modelObjectComboBox
 			// 
@@ -169,7 +170,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.shapeComboBox.MaxDropDownItems = 15;
 			this.shapeComboBox.Name = "shapeComboBox";
 			this.shapeComboBox.Size = new System.Drawing.Size(309, 21);
-			this.shapeComboBox.TabIndex = 3;
+			this.shapeComboBox.TabIndex = 0;
 			this.shapeComboBox.SelectedIndexChanged += new System.EventHandler(this.shapesComboBox_SelectedIndexChanged);
 			this.shapeComboBox.Click += new System.EventHandler(this.shapesComboBox_SelectedIndexChanged);
 			// 
@@ -202,7 +203,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.tabControl.Name = "tabControl";
 			this.tabControl.SelectedIndex = 0;
 			this.tabControl.Size = new System.Drawing.Size(365, 396);
-			this.tabControl.TabIndex = 8;
+			this.tabControl.TabIndex = 11;
 			this.tabControl.SelectedIndexChanged += new System.EventHandler(this.tabControl_SelectedIndexChanged);
 			// 
 			// shapePropertiesTab
@@ -222,7 +223,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.shapePropertyGrid.Location = new System.Drawing.Point(3, 3);
 			this.shapePropertyGrid.Name = "shapePropertyGrid";
 			this.shapePropertyGrid.Size = new System.Drawing.Size(351, 364);
-			this.shapePropertyGrid.TabIndex = 2;
+			this.shapePropertyGrid.TabIndex = 6;
 			// 
 			// modelPropertiesTab
 			// 
@@ -241,7 +242,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.modelPropertyGrid.Location = new System.Drawing.Point(3, 3);
 			this.modelPropertyGrid.Name = "modelPropertyGrid";
 			this.modelPropertyGrid.Size = new System.Drawing.Size(351, 364);
-			this.modelPropertyGrid.TabIndex = 0;
+			this.modelPropertyGrid.TabIndex = 8;
 			// 
 			// controlPointsTab
 			// 
@@ -268,7 +269,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.controlPointMappingGrid.Name = "controlPointMappingGrid";
 			this.controlPointMappingGrid.RowHeadersVisible = false;
 			this.controlPointMappingGrid.Size = new System.Drawing.Size(351, 364);
-			this.controlPointMappingGrid.TabIndex = 8;
+			this.controlPointMappingGrid.TabIndex = 10;
 			this.controlPointMappingGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.controlPointMappingGrid_CellValueChanged);
 			this.controlPointMappingGrid.Resize += new System.EventHandler(this.dataGridView_Resize);
 			// 
@@ -334,7 +335,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.propertyMappingGrid.RowHeadersVisible = false;
 			this.propertyMappingGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			this.propertyMappingGrid.Size = new System.Drawing.Size(349, 156);
-			this.propertyMappingGrid.TabIndex = 5;
+			this.propertyMappingGrid.TabIndex = 12;
 			this.propertyMappingGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.propertyMappingGrid_CellValueChanged);
 			this.propertyMappingGrid.Resize += new System.EventHandler(this.dataGridView_Resize);
 			this.propertyMappingGrid.SelectionChanged += new System.EventHandler(this.propertyMappingGrid_SelectionChanged);
@@ -386,7 +387,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.valueMappingGrid.RowHeadersVisible = false;
 			this.valueMappingGrid.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
 			this.valueMappingGrid.Size = new System.Drawing.Size(349, 166);
-			this.valueMappingGrid.TabIndex = 1;
+			this.valueMappingGrid.TabIndex = 13;
 			this.valueMappingGrid.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.valueMappingGrid_CellValueChanged);
 			this.valueMappingGrid.Resize += new System.EventHandler(this.dataGridView_Resize);
 			// 
@@ -443,6 +444,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.splitContainer1.Size = new System.Drawing.Size(731, 396);
 			this.splitContainer1.SplitterDistance = 362;
 			this.splitContainer1.TabIndex = 0;
+			this.splitContainer1.TabStop = false;
 			// 
 			// propertyController
 			// 

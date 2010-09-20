@@ -1,5 +1,18 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
+﻿/******************************************************************************
+  Copyright 2009 dataweb GmbH
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  NShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 // General Information about an library is controlled through the following 
@@ -8,11 +21,8 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("NShape WinForms UI Components")]
 [assembly: AssemblyDescription("NShape UI Components for .NET 2.0")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("dataweb - www.dataweb.de")]
 [assembly: AssemblyProduct("NShape UI Components for .NET 2.0")]
-[assembly: AssemblyCopyright("Copyright © dataweb GmbH 2009")]
 [assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this library not visible 
 // to COM components.  If you need to access a type in this library from 
@@ -21,16 +31,3 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("727cde07-6a54-4ac1-b95d-6c466890cecb")]
-
-// Version information for an library consists of the following four values:
-//
-//      Major Version
-//      Minor Version 
-//      Build Numeric
-//      Revision
-//
-// You can specify all the values or you can default the Build and Revision Numbers 
-// by using the '*' as shown below:
-// [library: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.4.0")]
-[assembly: AssemblyFileVersion("1.0.4.0")]

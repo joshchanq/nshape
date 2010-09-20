@@ -24,15 +24,24 @@ using Dataweb.NShape.Advanced;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// List box for displaying available font families including preview.
+	/// </summary>
 	[ToolboxItem(false)]
 	public partial class FontFamilyListBox : ListBox {
 		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.FontFamilyListBox" />.
+		/// </summary>
 		public FontFamilyListBox(IWindowsFormsEditorService editorService) {
 			InitializeComponent();
 			Construct(editorService);
 		}
 
-		
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.FontFamilyListBox" />.
+		/// </summary>
 		public FontFamilyListBox(IWindowsFormsEditorService editorService, IContainer container) {
 			container.Add(this);
 			InitializeComponent();
@@ -40,16 +49,21 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		#region [Public] Properties
+
+		/// <summary>
+		/// Specifies the version of the assembly containing the component.
+		/// </summary>
 		[Category("NShape")]
 		[Browsable(true)]
 		public new string ProductVersion {
-			get { 
-				//return this.GetType().Assembly.GetName().Version.ToString();
-				return base.ProductVersion;
-			}
+			get { return base.ProductVersion; }
 		}
 
 
+		/// <summary>
+		/// Specifies if 
+		/// </summary>
 		[Category("Behavior")]
 		public bool HighlightItems {
 			get { return highlightItems; }
@@ -57,6 +71,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the background color for normal items.
+		/// </summary>
 		public Color ItemBackgroundColor {
 			get { return itemBackgroundColor; }
 			set {
@@ -69,6 +86,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the background color for highlighted items.
+		/// </summary>
 		public Color ItemHighlightedColor {
 			get { return itemHighlightedColor; }
 			set {
@@ -81,6 +101,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the background color for selected items.
+		/// </summary>
 		public Color ItemSelectedColor {
 			get { return itemSelectedColor; }
 			set {
@@ -93,6 +116,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the background color of focused items.
+		/// </summary>
 		public Color ItemFocusedColor {
 			get { return itemFocusedColor; }
 			set {
@@ -105,6 +131,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the border color for focused items.
+		/// </summary>
 		public Color FocusBorderColor {
 			get { return focusBorderColor; }
 			set {
@@ -117,6 +146,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Spacifies the border color for normal items.
+		/// </summary>
 		public Color ItemBorderColor {
 			get { return itemBorderColor; }
 			set {
@@ -129,6 +161,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the text color of all items.
+		/// </summary>
 		public Color TextColor {
 			get { return textColor; }
 			set {
@@ -140,6 +175,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+		#endregion
+
+
+		#region [Protected] Methods: Overrides
 
 		/// <summary> 
 		/// Clean up any resources being used.
@@ -161,12 +200,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 	
-		//protected override void OnSelectedIndexChanged(EventArgs e) {
-		//   base.OnSelectedIndexChanged(e);
-		//   ExecuteSelection();
-		//}
-
-
+		/// <override></override>
 		protected override void OnKeyUp(KeyEventArgs e) {
 			base.OnKeyUp(e);
 			if (e.KeyData == Keys.Return || e.KeyData == Keys.Space) {
@@ -175,6 +209,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnMouseUp(MouseEventArgs e) {
 			base.OnMouseUp(e);
 			if (e.Button == MouseButtons.Left) {
@@ -188,6 +223,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnMeasureItem(MeasureItemEventArgs e) {
 			if (e.Index >= 0) {
 				e.ItemHeight = (int)Math.Ceiling(fonts[e.Index].GetHeight(e.Graphics));
@@ -197,6 +233,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		protected override void OnDrawItem(DrawItemEventArgs e) {
 			itemBounds = e.Bounds;
 			itemBounds.Inflate(-3, -1);
@@ -228,45 +265,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			else base.OnDrawItem(e);
 		}
 
-
-		private void Construct(IWindowsFormsEditorService editorService) {
-			if (editorService == null) throw new ArgumentNullException("editorService");
-			this.editorService = editorService;
-
-			this.IntegralHeight = false;
-			this.DrawMode = DrawMode.OwnerDrawVariable;
-			this.SelectionMode = SelectionMode.One;
-			this.DoubleBuffered = true;
-
-			formatter.Alignment = StringAlignment.Near;
-			formatter.LineAlignment = StringAlignment.Near;
-			int fontSize = 10;
-			int cnt = FontFamily.Families.Length;
-			for (int i = 0; i < cnt; ++i) {
-				Font font = null;
-				if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Regular))
-					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Regular);
-				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Italic))
-					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Italic);
-				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Bold))
-					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Bold);
-				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Strikeout))
-					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Strikeout);
-				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Underline))
-					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Underline);
-				else
-					font = Font;
-				fonts.Add(font);
-			}
-		}
+		#endregion
 
 
-		private void ExecuteSelection() {
-			if (editorService != null) editorService.CloseDropDown();
-		}
-
-
-		#region Pens and Brushes
+		#region [Private] Properties: Pens and Brushes
 
 		private Brush ItemBackgroundBrush {
 			get {
@@ -332,6 +334,47 @@ namespace Dataweb.NShape.WinFormsUI {
 				}
 				return itemBorderPen;
 			}
+		}
+
+		#endregion
+
+
+		#region [Private] Methods
+
+		private void Construct(IWindowsFormsEditorService editorService) {
+			if (editorService == null) throw new ArgumentNullException("editorService");
+			this.editorService = editorService;
+
+			this.IntegralHeight = false;
+			this.DrawMode = DrawMode.OwnerDrawVariable;
+			this.SelectionMode = SelectionMode.One;
+			this.DoubleBuffered = true;
+
+			formatter.Alignment = StringAlignment.Near;
+			formatter.LineAlignment = StringAlignment.Near;
+			int fontSize = 10;
+			int cnt = FontFamily.Families.Length;
+			for (int i = 0; i < cnt; ++i) {
+				Font font = null;
+				if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Regular))
+					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Regular);
+				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Italic))
+					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Italic);
+				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Bold))
+					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Bold);
+				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Strikeout))
+					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Strikeout);
+				else if (FontFamily.Families[i].IsStyleAvailable(FontStyle.Underline))
+					font = new Font(FontFamily.Families[i].Name, fontSize, FontStyle.Underline);
+				else
+					font = Font;
+				fonts.Add(font);
+			}
+		}
+
+
+		private void ExecuteSelection() {
+			if (editorService != null) editorService.CloseDropDown();
 		}
 
 		#endregion

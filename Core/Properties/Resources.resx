@@ -127,12 +127,6 @@
   <data name="DesignEditorBtn" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DesignEditorBtn.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="Disabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Disabled.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="Enabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Enabled.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="GridLayouter_Description" xml:space="preserve">
     <value>Arranges shapes along the nodes of a rectangular grid.</value>
   </data>
@@ -147,9 +141,6 @@
   </data>
   <data name="LockIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\LockIcon.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
-  <data name="NewLayer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\NewLayer.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="PointerIconLarge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\PointerIconLarge.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
@@ -231,5 +222,20 @@
   </data>
   <data name="DefaultBitmapSmall" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\DefaultBitmapSmall.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Disabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Disabled.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="Enabled" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Enabled.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="NewLayer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\NewLayer.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="FindShapes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\FindShapes.bmp;System.Drawing.Bitmap, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PenPlusCursor" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PenPlusCursor.cur;System.Byte[], mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

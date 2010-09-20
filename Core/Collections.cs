@@ -27,14 +27,31 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// A list based class implementing the IReadOnlyCollection interface
 	/// </summary>
-	/// <typeparam projectName="T"></typeparam>
 	public class ReadOnlyList<T> : List<T>, IReadOnlyCollection<T> {
-		/// <override></override>
-		public ReadOnlyList() : base() { }
+		
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.ReadOnlyList`1" />.
+		/// </summary>
+		public ReadOnlyList()
+			: base() {
+		}
 
-		public ReadOnlyList(int capacity) : base(capacity) { }
 
-		public ReadOnlyList(IEnumerable<T> collection) : base(collection) { }
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.ReadOnlyList`1" />.
+		/// </summary>
+		public ReadOnlyList(int capacity)
+			: base(capacity) {
+		}
+
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.ReadOnlyList`1" />.
+		/// </summary>
+		public ReadOnlyList(IEnumerable<T> collection)
+			: base(collection) {
+		}
+
 	}
 
 }

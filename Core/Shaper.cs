@@ -20,11 +20,13 @@ using System.Drawing;
 
 
 namespace Dataweb.NShape.Advanced {
+
 	/// <summary>
-	/// Beschreibt einen Zug beim Zeichnen als Folge von Pixel-Koordinaten
+	/// Describes a stroke as sequence of coordinates.
 	/// </summary>
 	public class Stroke : IEnumerable<Point> {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static Stroke CreateStroke(sbyte[,] pixels, sbyte color) {
 			if (pixels == null) throw new ArgumentNullException("pixels");
 			Stroke result = new Stroke();
@@ -48,9 +50,11 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public const sbyte jokerColor = 127;
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int Count {
 			get { return pixels.Count; }
 		}
@@ -111,11 +115,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Point this[int index] {
 			get { return pixels[index]; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Clear() {
 			pixels.Clear();
 		}
@@ -123,11 +129,13 @@ namespace Dataweb.NShape.Advanced {
 
 		#region IEnumerable Members
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerator<Point> GetEnumerator() {
 			for (int i = 0; i < pixels.Count; ++i)
 				yield return pixels[i];
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		IEnumerator IEnumerable.GetEnumerator() {
 			for (int i = 0; i < pixels.Count; ++i)
 				yield return pixels[i];
@@ -220,30 +228,35 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// Beschreibt eine Zeichnung als eine Abfolge von Zügen. 
+	/// Describes a drawing as sequence of strokes.
 	/// </summary>
 	public class StrokeSequence {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Add(Stroke stroke) {
 			strokes.Add(stroke);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Stroke this[int index] {
 			get { return strokes[index]; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public int Count {
 			get { return strokes.Count; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Clear() {
 			strokes.Clear();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerator<Stroke> GetEnumerator() {
 			foreach (Stroke s in strokes)
 				yield return s;
@@ -254,37 +267,51 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
-	public enum Bowing { Left, Straight, Right, Wave };
+	/// <ToBeCompleted></ToBeCompleted>
+	public enum Bowing {
+		/// <ToBeCompleted></ToBeCompleted>
+		Left,
+		/// <ToBeCompleted></ToBeCompleted>
+		Straight,
+		/// <ToBeCompleted></ToBeCompleted>
+		Right,
+		/// <ToBeCompleted></ToBeCompleted>
+		Wave 
+	};
 
 
 	/// <summary>
-	/// Geometrische Grundform wie z.B. Kreis, Rechteck usw. oder ganz allgemein
-	/// ein Pfad.
+	/// Describes a geometric primitive such as circle, rectangle, triangle or, in general, a path.
 	/// </summary>
 	public class FigureShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FigureShape(string typeName) {
 			if (typeName == null) throw new ArgumentNullException("typeName");
 			this.typeName = typeName;
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public string TypeName {
 			get { return typeName; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public virtual string Description {
 			get { return TypeName; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public byte Matches(FigureShape other) {
 			if (other == null) throw new ArgumentNullException("other");
 			return (byte)(other.TypeName == TypeName ? 100 : 0);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		protected Point[] points;
 		private string typeName;
 
@@ -292,11 +319,12 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// Beschreibt eine Reihe von Ecken mit geraden oder gebogenen Linien dazwischen.
+	/// Describes a sequence of coordinates with straight or bowed lines between.
 	/// </summary>
 	public class PathFigureShape : FigureShape {
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public class Line {
 
 			internal Line(Bowing bowing) {
@@ -308,6 +336,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public class Node {
 
 			internal Node(int x, int y) {
@@ -345,11 +374,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PathFigureShape()
 			: base("PathShape") {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public PathFigureShape(PathFigureShape source)
 			: base("PathShape") {
 			if (source == null) throw new ArgumentNullException("source");
@@ -357,21 +388,25 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Node this[int index] {
 			get { return nodes[index]; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Clear() {
 			nodes.Clear();
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Node LastNode {
 			get { return nodes.Count > 0 ? nodes[nodes.Count - 1] : null; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool IsClosed {
 			get {
 				bool result = false;
@@ -382,6 +417,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Point[] CreateEnclosingRectangle() {
 			Point[] result = new Point[2];
 			result[0].X = int.MaxValue;
@@ -398,6 +434,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public List<Node> nodes = new List<Node>(20);
 
 	}
@@ -408,6 +445,7 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class TriangleFigureShape : FigureShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static TriangleFigureShape CreateFromPath(PathFigureShape path) {
 			if (path == null) throw new ArgumentNullException("path");
 			TriangleFigureShape result = null;
@@ -426,6 +464,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public TriangleFigureShape(int x1, int y1, int x2, int y2, int x3, int y3)
 			: base("TriangleShape") {
 			points = new Point[3];
@@ -471,6 +510,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get {
 				string result = "TriangleShape";
@@ -537,6 +577,7 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class QuadrangleFigureShape : FigureShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static QuadrangleFigureShape CreateFromPath(PathFigureShape path) {
 			if (path == null) throw new ArgumentNullException("path");
 			QuadrangleFigureShape result = null;
@@ -556,6 +597,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public QuadrangleFigureShape(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4)
 			: base("QuadrangleShape") {
 			points = new Point[4];
@@ -577,6 +619,7 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class EllipseFigureShape : FigureShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static EllipseFigureShape CreateFromPath(PathFigureShape path) {
 			if (path == null) throw new ArgumentNullException("path");
 			EllipseFigureShape result = null;
@@ -612,6 +655,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public EllipseFigureShape(int x1, int y1, int x2, int y2)
 			: base("EllipseShape") {
 			points = new Point[2];
@@ -622,6 +666,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public EllipseFigureShape(Point[] points)
 			: base("EllipseShape") {
 			this.points = new Point[points.Length];
@@ -636,6 +681,7 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	public class LineFigureShape : FigureShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static LineFigureShape CreateFromPath(PathFigureShape path) {
 			if (path == null) throw new ArgumentNullException("path");
 			LineFigureShape result = null;
@@ -645,6 +691,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public LineFigureShape(int x1, int y1, int x2, int y2, Bowing bowing)
 			: base("LineShape") {
 			points = new Point[2];
@@ -656,6 +703,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
 		public override string Description {
 			get {
 				string result;
@@ -672,6 +720,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		// Die Linien sind parallel, wenn der Abstand der Endpunkte von other ungefähr gleich ist
+		/// <ToBeCompleted></ToBeCompleted>
 		public byte IsParallelTo(LineFigureShape other) {
 			if (other == null) throw new ArgumentNullException("other");
 			float d0 = CalcDistance(other.points[0]);
@@ -680,6 +729,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public byte Crosses(LineFigureShape line) {
 			if (line == null) throw new ArgumentNullException("line");
 			// TODO: Implement
@@ -687,11 +737,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		/// <summary>
-		/// Berechnet den Abstand des Punktes von der Linie
-		/// </summary>
-		/// <param name="point"></param>
-		/// <returns></returns>
+		// Berechnet den Abstand des Punktes von der Linie
+		/// <ToBeCompleted></ToBeCompleted>
 		public float CalcDistance(Point point) {
 			return Geometry.DistancePointLine(point, points[0], points[1], true);
 		}
@@ -703,10 +750,11 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// Beschreibt eine Linie mit mehreren Segmenten.
+	/// Describes a multi segment line.
 	/// </summary>
 	public class MultiLineFigureShape : FigureShape {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static MultiLineFigureShape CreateFromPath(PathFigureShape path) {
 			if (path == null) throw new ArgumentNullException("path");
 			MultiLineFigureShape result = null;
@@ -722,6 +770,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public MultiLineFigureShape(Point[] points)
 			: base(String.Format("Multiline with {0} segments", (points != null) ? points.Length - 1 : 0)) {
 			if (points == null) throw new ArgumentNullException("points");
@@ -731,14 +780,33 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
-	public enum FigureShapeRelationType { Crosses, ParallelTo, InsideCenter, Above, Below, Left, Right, Undefined };
+	/// <ToBeCompleted></ToBeCompleted>
+	public enum FigureShapeRelationType {
+		/// <ToBeCompleted></ToBeCompleted>
+		Crosses,
+		/// <ToBeCompleted></ToBeCompleted>
+		ParallelTo,
+		/// <ToBeCompleted></ToBeCompleted>
+		InsideCenter,
+		/// <ToBeCompleted></ToBeCompleted>
+		Above,
+		/// <ToBeCompleted></ToBeCompleted>
+		Below,
+		/// <ToBeCompleted></ToBeCompleted>
+		Left,
+		/// <ToBeCompleted></ToBeCompleted>
+		Right,
+		/// <ToBeCompleted></ToBeCompleted>
+		Undefined
+	};
 
 
 	/// <summary>
-	/// Beschreibt die Beziehung zweier Grundformen (selectedShapes) untereinander.
+	/// Describes the relation between two shapes.
 	/// </summary>
 	public class FigureShapeRelation {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public static FigureShapeRelation CreateFromShapes(FigureShape referenceShape, FigureShape relatedShape) {
 			if (referenceShape == null) throw new ArgumentNullException("referenceShape");
 			if (relatedShape == null) throw new ArgumentNullException("relatedShape");
@@ -763,6 +831,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FigureShapeRelation(FigureShape referenceShape, FigureShape relatedShape, FigureShapeRelationType type) {
 			if (referenceShape == null) throw new ArgumentNullException("referenceShape");
 			if (relatedShape == null) throw new ArgumentNullException("relatedShape");
@@ -772,6 +841,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FigureShapeRelation CloneFor(FigureShape referenceShape, FigureShape relatedShape) {
 			if (referenceShape == null) throw new ArgumentNullException("referenceShape");
 			if (relatedShape == null) throw new ArgumentNullException("relatedShape");
@@ -779,21 +849,25 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FigureShape ReferenceShape {
 			get { return referenceShape; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FigureShape RelatedShape {
 			get { return relatedShape; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public FigureShapeRelationType Type {
 			get { return type; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public byte IsValid() {
 			return IsValidRelation(referenceShape, relatedShape, type);
 		}
@@ -807,16 +881,17 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// Beschreibt eine Figur als Ansammlung von Grundformen mit Beziehungen
-	/// dazwischen.
+	/// Describes a figure as collection of related shapes
 	/// </summary>
 	public class Figure {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IList<FigureShape> Shapes {
 			get { return shapes; }
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IList<FigureShapeRelation> Relations {
 			get { return relations; }
 		}
@@ -888,11 +963,11 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// Verwaltet eine Liste von registrierten Figuren und bestimmt die ähnlichste
-	/// zu einem gegebenen Pfad.
+	/// Manages a list of registered figures and determines the most akin one.
 	/// </summary>
 	public class Shaper {
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RegisterFigure(string name, Bitmap bitmap) {
 			if (bitmap != null) {
 				StrokeSequence strokeSet = CreateStrokeSetFromBitmap(bitmap);
@@ -902,6 +977,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public bool IsRegistered(string name) {
 			foreach (NamedFigure figure in figureList)
 				if (string.Compare(figure.name, name, StringComparison.InvariantCultureIgnoreCase) == 0)
@@ -910,17 +986,15 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void RegisterShapeSet(string name, Figure figure) {
 			if (figure == null) throw new ArgumentNullException("figure");
 			figureList.Add(new NamedFigure(name, figure));
 		}
 
 
-		/// <summary>
-		/// Liefert die Figur aus der Liste der registrierten Figure, die figure entspricht.
-		/// </summary>
-		/// <param name="figure"></param>
-		/// <returns></returns>
+		// Liefert die Figur aus der Liste der registrierten Figure, die figure entspricht.
+		/// <ToBeCompleted></ToBeCompleted>
 		public Figure FindFigure(Figure figure) {
 			if (figure == null) throw new ArgumentNullException("figure");
 			Figure result = null;
@@ -936,6 +1010,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<string> GetFigureNames(Figure figure) {
 			if (figure == null) throw new ArgumentNullException("figure");
 			for (int i = 0; i < figureList.Count; ++i) {
@@ -945,6 +1020,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public Figure IdentifyShapes(StrokeSequence strokes) {
 			if (strokes == null) throw new ArgumentNullException("strokes");
 			Figure result = new Figure();
@@ -977,6 +1053,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void CreatePolygone(Stroke stroke, PathFigureShape polygone) {
 			if (stroke == null) throw new ArgumentNullException("stroke");
 			if (polygone == null) throw new ArgumentNullException("polygone");
@@ -998,6 +1075,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public StrokeSequence CreateStrokeSetFromBitmap(Bitmap bitmap) {
 			if (bitmap == null) throw new ArgumentNullException("bitmap");
 			// Wir lassen einen leeren Rand
@@ -1100,20 +1178,21 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Übersetzt das Bitmap in ein Pixel-Array
+		/// Translates the bitmap into a pixel array.
 		/// </summary>
-		/// <param name="bitmap"></param>
-		/// <returns></returns>
 		private struct NamedFigure {
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public NamedFigure(string name, Figure figure) {
 				this.name = name;
 				this.figure = figure;
 			}
 
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public string name;
 
+			/// <ToBeCompleted></ToBeCompleted>
 			public Figure figure;
 		}
 

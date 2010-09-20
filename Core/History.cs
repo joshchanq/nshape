@@ -19,8 +19,14 @@ using System.Diagnostics;
 
 namespace Dataweb.NShape.Advanced {
 	
+	/// <summary>
+	/// Provides data for events concerning a <see cref="T:Dataweb.NShape.ICommand" />.
+	/// </summary>
 	public class CommandEventArgs : EventArgs {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.CommandEventArgs" />.
+		/// </summary>
 		public CommandEventArgs(ICommand command, bool reverted)
 			: this() {
 			if (command == null) throw new ArgumentNullException("command");
@@ -29,12 +35,18 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <summary>
+		/// Gets the <see cref="T:Dataweb.NShape.ICommand"></see> processed by the action that raised the event.
+		/// </summary>
 		public ICommand Command { 
 			get { return this.command; }
 			internal set { command = value; }
 		}
 
 
+		/// <summary>
+		/// Specifies if the <see cref="T:Dataweb.NShape.ICommand" /> was reverted.
+		/// </summary>
 		public bool Reverted {
 			get { return reverted; }
 			internal set { reverted = value; }
@@ -50,19 +62,31 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
+	/// <summary>
+	/// Provides data for events concerning a collection of <see cref="T:Dataweb.NShape.ICommand" />.
+	/// </summary>
 	public class CommandsEventArgs : EventArgs {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.CommandsEventArgs" />.
+		/// </summary>
 		public CommandsEventArgs(IEnumerable<ICommand> commands, bool reverted) {
 			if (commands == null) throw new ArgumentNullException("commands");
 			AddRange(commands);
 		}
 
 
+		/// <summary>
+		/// Gets a <see cref="T:Dataweb.NShape.Advanced.IReadOnlyCollection" /> of <see cref="T:Dataweb.NShape.ICommand" /> processed by the action that raised the event.
+		/// </summary>
 		public IReadOnlyCollection<ICommand> Commands {
 			get { return commands; }
 		}
 
 
+		/// <summary>
+		/// Specifies if the command was reverted.
+		/// </summary>
 		public bool Reverted {
 			get { return reverted; }
 			internal set { reverted = value; }
@@ -102,18 +126,20 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Constructs a new history.
 		/// </summary>
-		/// <param name="capacity"></param>
 		public History() {
 			commands = new List<ICommand>(100);
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<CommandEventArgs> CommandAdded;
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<CommandEventArgs> CommandExecuted;
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public event EventHandler<CommandsEventArgs> CommandsExecuted;
 
 
@@ -300,7 +326,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="command"></param>
 		public void ExecuteAndAddCommand(ICommand command) {
 			if (command == null) throw new ArgumentNullException("command");
+			
 			command.Execute();
+			if (CommandExecuted != null) 
+				CommandExecuted(this, GetCommandEventArgs(command, false));
+			
 			AddCommand(command);
 		}
 		

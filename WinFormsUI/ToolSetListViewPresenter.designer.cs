@@ -46,7 +46,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
 			this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
-			this.adapterContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.presenterPrivateContextMenu = new System.Windows.Forms.ContextMenuStrip(this.components);
 			// 
 			// menuItemLoadLibrary
 			// 
@@ -130,8 +130,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// adapterContextMenu
 			// 
-			this.adapterContextMenu.Name = "adapterContextMenuStrip";
-			this.adapterContextMenu.Size = new System.Drawing.Size(61, 4);
+			this.presenterPrivateContextMenu.Name = "adapterContextMenuStrip";
+			this.presenterPrivateContextMenu.Size = new System.Drawing.Size(61, 4);
 
 		}
 
@@ -153,6 +153,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem5;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 		private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem6;
-		private System.Windows.Forms.ContextMenuStrip adapterContextMenu;
+		private System.Windows.Forms.ContextMenuStrip presenterPrivateContextMenu;
 	}
 }

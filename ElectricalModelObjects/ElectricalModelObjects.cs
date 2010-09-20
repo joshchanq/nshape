@@ -35,6 +35,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Connector result = new Connector(this);
 			return result;
@@ -56,6 +57,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Feeder result = new Feeder(this);
 			return result;
@@ -76,6 +78,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 			this.terminalCount = 1;
 		}
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Earth result = new Earth(this);
 			return result;
@@ -98,6 +101,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Line result = new Line(this);
 			return result;
@@ -119,6 +123,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Disconnector result = new Disconnector(this);
 			return result;
@@ -140,6 +145,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Transformer result = new Transformer(this);
 			return result;
@@ -161,6 +167,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Switch result = new Switch(this);
 			return result;
@@ -182,6 +189,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			AutoSwitch result = new AutoSwitch(this);
 			return result;
@@ -203,6 +211,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			AutoDisconnector result = new AutoDisconnector(this);
 			return result;
@@ -224,6 +233,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Measurement result = new Measurement(this);
 			return result;
@@ -244,6 +254,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			Label result = new Label(this);
 			return result;
@@ -263,6 +274,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			return new Picture(this);
 		}
@@ -281,6 +293,7 @@ namespace Dataweb.NShape.ElectricalModelObjects {
 		}
 
 
+		/// <override></override>
 		public override IModelObject Clone() {
 			return new BusBar(this);
 		}

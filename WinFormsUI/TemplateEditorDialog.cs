@@ -22,8 +22,14 @@ using Dataweb.NShape.Controllers;
 
 namespace Dataweb.NShape.WinFormsUI {
 
+	/// <summary>
+	/// Dialog used for creating and editing templates.
+	/// </summary>
 	public partial class TemplateEditorDialog : Form {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TemplateEditorDialog" />.
+		/// </summary>
 		public TemplateEditorDialog() {
 			InitializeComponent();
 			DoubleBuffered = true;
@@ -31,6 +37,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TemplateEditorDialog" />.
+		/// </summary>
 		public TemplateEditorDialog(Project project, Template template)
 			: this() {
 			if (project == null) throw new ArgumentNullException("project");
@@ -38,10 +47,16 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.WinFormsUI.TemplateEditorDialog" />.
+		/// </summary>
 		public TemplateEditorDialog(Project project)
 			: this(project, null) { }
 
 
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		[Category("NShape")]
 		public Project Project {
 			get { return templateController.Project; }
@@ -49,6 +64,9 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <summary>
+		/// Specifies the template being edited.
+		/// </summary>
 		public Template Template {
 			get { return template; }
 			set { 
@@ -58,11 +76,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 		
-		
-		public TemplateController TemplateController {
-			get { return templateController; }
-		}
-
 
 		private void EnableButtons() {
 			if (templateController.Project != null) {

@@ -23,9 +23,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartRectangleBase : RectangleBase {
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -71,7 +73,8 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 	public abstract class FlowChartSquareBase : SquareBase {
-		
+
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -85,6 +88,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -107,7 +111,8 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 	public abstract class FlowChartEllipseBase : EllipseBase {
-		
+
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -121,6 +126,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -144,6 +150,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartCircleBase : CircleBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftControlPoint:
@@ -157,6 +164,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 9; } }
 
 
@@ -180,6 +188,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartDiamondBase : DiamondBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -195,6 +204,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount {
 			get { return 9; }
 		}
@@ -221,6 +231,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public abstract class FlowChartTriangleBase : IsoscelesTriangleBase {
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case ControlPointId.Reference:
@@ -236,6 +247,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return 5; } }
 
 
@@ -262,6 +274,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class TerminatorSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new TerminatorSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -279,6 +292,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			int left = (int)Math.Round(-Width / 2f);
@@ -291,6 +305,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -326,6 +341,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class ProcessSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ProcessSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -333,9 +349,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return base.ControlPointCount + 4; } }
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopLeftConnectionPoint:
@@ -349,6 +367,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			base.CalcControlPoints();
 
@@ -368,6 +387,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -409,6 +429,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class PredefinedProcessSymbol : ProcessSymbol {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new PredefinedProcessSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -426,6 +447,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
@@ -434,6 +456,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -465,6 +488,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class DecisionSymbol : FlowChartDiamondBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DecisionSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -472,6 +496,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		public override void Draw(Graphics graphics) {
 			base.Draw(graphics);
 		}
@@ -495,6 +520,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class InputOutputSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new InputOutputSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -512,6 +538,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int offset = Height / 4;
 			if (offset > Width)
@@ -550,12 +577,14 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -595,6 +624,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class DocumentSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DocumentSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -602,6 +632,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if (controlPointId == BottomCenterControlPoint && (controlPointCapability & ControlPointCapabilities.Connect) != 0)
 				return false;
@@ -619,6 +650,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
@@ -626,6 +658,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -656,6 +689,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class ConnectorSymbol : FlowChartCircleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ConnectorSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -673,6 +707,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -689,6 +724,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class OffpageConnectorSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new OffpageConnectorSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -696,6 +732,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			if ((controlPointCapability & ControlPointCapabilities.Connect) != 0
 				|| (controlPointCapability & ControlPointCapabilities.Resize) != 0)
@@ -709,6 +746,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount {
 			get { return 7; }
 		}
@@ -724,6 +762,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -753,6 +792,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
@@ -763,6 +803,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -806,6 +847,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class ExtractSymbol : FlowChartTriangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ExtractSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -813,6 +855,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -830,6 +873,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return base.ControlPointCount + 2; } }
 
 
@@ -843,6 +887,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			base.CalcControlPoints();
 
@@ -873,6 +918,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class MergeSymbol : FlowChartTriangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new MergeSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -880,6 +926,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -897,6 +944,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount { get { return base.ControlPointCount + 2; } }
 
 
@@ -910,6 +958,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = true;
 			int dx = 0, dy = 0;
@@ -948,6 +997,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			// tight and loose fitting bounding rectangles are equal
 			if (Angle == 0 || Angle == 900 || Angle == 1800 || Angle == 2700)
@@ -977,6 +1027,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height * CenterPosFactorY);
@@ -1000,6 +1051,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalculateShapePoints() {
 			int left = (int)Math.Round(-Width * CenterPosFactorX);
 			int top = (int)Math.Round(-Height * CenterPosFactorY);
@@ -1013,8 +1065,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 			shapePoints[2].X = 0;
 			shapePoints[2].Y = bottom;
 		}
-		
-		
+
+
+		/// <override></override>
 		protected override float CenterPosFactorY { get { return centerPosFactorY; } }
 
 
@@ -1035,6 +1088,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class OnlineStorageSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new OnlineStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1052,6 +1106,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
@@ -1064,6 +1119,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -1096,6 +1152,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class OfflineStorageSymbol : MergeSymbol {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new OfflineStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1113,6 +1170,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width * CenterPosFactorX);
@@ -1152,6 +1210,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class DrumStorageSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DrumStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1169,6 +1228,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			int left = (int)Math.Round(-Width / 2f);
@@ -1181,6 +1241,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1216,6 +1277,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class DiskStorageSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DiskStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1233,6 +1295,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Height = 40;
@@ -1240,6 +1303,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
@@ -1253,6 +1317,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1295,6 +1360,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class TapeStorageSymbol : FlowChartCircleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new TapeStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1312,6 +1378,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool IntersectsWithCore(int x, int y, int width, int height) {
 			if (base.IntersectsWithCore(x, y, width, height))
 				return true;
@@ -1323,6 +1390,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			base.CalcControlPoints();
 
@@ -1333,6 +1401,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1354,6 +1423,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class PreparationSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new PreparationSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1374,6 +1444,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		private int CalcEdgeInset() { return Height / 6; }
 
 
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -1408,6 +1479,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -1445,6 +1517,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class ManualInputSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ManualInputSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1462,6 +1535,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				int left = (int)Math.Round(-Width / 2f);
@@ -1495,6 +1569,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class CoreSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CoreSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1512,6 +1587,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1548,6 +1624,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class DisplaySymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new DisplaySymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1565,6 +1642,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1611,6 +1689,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class TapeSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new TapeSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1628,6 +1707,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 60;
@@ -1635,6 +1715,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
@@ -1642,6 +1723,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1678,6 +1760,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class ManualOperationSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new ManualOperationSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1695,6 +1778,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1733,6 +1817,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class SortSymbol : FlowChartDiamondBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new SortSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1750,6 +1835,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Width = 40;
@@ -1757,6 +1843,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1793,6 +1880,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class CollateSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CollateSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1810,6 +1898,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -1829,13 +1918,14 @@ namespace Dataweb.NShape.FlowChartShapes {
 			if (Angle != 0) Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, MatrixOrder.Append);
 			Matrix.TransformPoints(shapePointBuffer);
 
-			if (Geometry.TriangleContainsPoint(x, y, shapePointBuffer[0], shapePointBuffer[1], Center)
-				|| Geometry.TriangleContainsPoint(x, y, Center, shapePointBuffer[2], shapePointBuffer[3]))
+			if (Geometry.TriangleContainsPoint(shapePointBuffer[0], shapePointBuffer[1], Center, x, y)
+				|| Geometry.TriangleContainsPoint(Center, shapePointBuffer[2], shapePointBuffer[3], x, y))
 				return true;
 			else return false;
 		}
-		
-		
+
+
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			Height = 40;
@@ -1843,6 +1933,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1868,6 +1959,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class CardSymbol : FlowChartRectangleBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CardSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1888,6 +1980,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		private int CalcEdgeSize() { return (int)Math.Round(Math.Min(Width / 4f, Height / 4f)); }
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				Path.Reset();
@@ -1912,6 +2005,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 	public class CommLinkSymbol : FlowChartDiamondBase {
 
+		/// <override></override>
 		public override Shape Clone() {
 			Shape result = new CommLinkSymbol(Type, (Template)null);
 			result.CopyFrom(this);
@@ -1919,6 +2013,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
 			switch (controlPointId) {
 				case TopCenterControlPoint:
@@ -1948,11 +2043,13 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override int ControlPointCount {
 			get { return 5; }
 		}
 
 
+		/// <override></override>
 		protected override void InitializeToDefault(IStyleSet styleSet) {
 			base.InitializeToDefault(styleSet);
 			pointBuffer = new Point[6];
@@ -1961,6 +2058,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = true;
 			int dx = 0, dy = 0;
@@ -1997,6 +2095,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			Rectangle bounds;
 			CalculalteTranslatedShapePoints();
@@ -2005,6 +2104,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
 			CalculalteTranslatedShapePoints();
 			bool result = Geometry.PolygonContainsPoint(pointBuffer, x, y);
@@ -2016,8 +2116,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 			} else pt = Point.Empty;
 			return result;
 		}
-		
-		
+
+
+		/// <override></override>
 		protected override void CalcControlPoints() {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -2037,6 +2138,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
 				CalculateShapePoints();

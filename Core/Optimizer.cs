@@ -23,24 +23,34 @@ namespace Dataweb.Utilities {
 	/// Defines the problem for the simulated annealing algorithm.
 	/// </summary>
 	public interface ISimulatedAnnealingProblem {
+		/// <ToBeCompleted></ToBeCompleted>
 		object FindInitialState();
+		/// <ToBeCompleted></ToBeCompleted>
 		object FindNeighbourState(object state);
+		/// <ToBeCompleted></ToBeCompleted>
 		object SetState(object state);
+		/// <ToBeCompleted></ToBeCompleted>
 		float CalculateEnergy(object state);
 	}
 
 
+	/// <ToBeCompleted></ToBeCompleted>
 	public class SimulatedAnnealingSolver {
 
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.Utilities.SimulatedAnnealingSolver" />.
+		/// </summary>
 		public SimulatedAnnealingSolver() {
 		}
 
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Reset(ISimulatedAnnealingProblem problem, float maxEnergy) {
 			this.problem = problem;
 			this.maxEnergy = maxEnergy;
 		}
 
+		/// <ToBeCompleted></ToBeCompleted>
 		public void Run() {
 			object state = problem.FindInitialState();
 			float energy = problem.CalculateEnergy(state);
