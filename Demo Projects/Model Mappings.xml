@@ -315,7 +315,7 @@
       </template>
     </templates>
     <diagrams>
-      <diagram id="4e5abb7d-8d49-4174-92f2-3f29b6de4d89" name="Diagram 1" width="1000" height="1000" background_color="-4144960" background_gradient_end_color="-657931" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="4e5abb7d-8d49-4174-92f2-3f29b6de4d89" name="Diagram 1" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers />
         <shapes>
           <ellipse id="1e6313be-59d6-460c-9f9e-41c8a0826050" template="5b8baafc-a7b5-41d1-9c9d-c6b90abe1b90" model_object="c9a4d0d3-a4f3-41cb-9dc0-80a8dd3cc5fd" x="638" y="360" z_order="10" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="500,00" width="120" height="40"></ellipse>
@@ -333,7 +333,7 @@
         </shapes>
         <shape_connections></shape_connections>
       </diagram>
-      <diagram id="c44f104a-7409-4215-9afa-0a48556cce52" name="Diagram 2" width="1000" height="1000" background_color="-4144960" background_gradient_end_color="-657931" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="c44f104a-7409-4215-9afa-0a48556cce52" name="Diagram 2" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers />
         <shapes>
           <isosceles_triangle id="1c2f5cb3-cd29-44f3-9bb5-a153a38e441f" template="8a6fe101-85c6-4fc1-af25-99286a417122" model_object="dd59a19f-19b0-422f-8919-0291f15a3a38" x="580" y="367" z_order="10" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="40" height="40"></isosceles_triangle>
@@ -363,7 +363,7 @@
         </shapes>
         <shape_connections></shape_connections>
       </diagram>
-      <diagram id="ec8ff0a3-a132-45e9-a39a-e5b182c9106f" name="Diagram 3" width="1000" height="1000" background_color="-4144960" background_gradient_end_color="-657931" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="ec8ff0a3-a132-45e9-a39a-e5b182c9106f" name="Diagram 3" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers />
         <shapes>
           <text id="bbaa48b1-622b-401e-9b4c-c3e562aac416" template="77d2f8cd-b6e3-4e85-9ff2-addcf2d5b04b" model_object="00000000-0000-0000-0000-000000000000" x="580" y="380" z_order="10" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="Model 3" width="80" height="40" auto_size="False"></text>

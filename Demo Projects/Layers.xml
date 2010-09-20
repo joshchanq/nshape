@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <dataweb_nshape version="2">
-  <project id="eaaa8518-c3ca-4e27-a0f4-6d293584e514" last_saved_utc="2010-02-15 13:19:45">
+  <project id="eaaa8518-c3ca-4e27-a0f4-6d293584e514" last_saved_utc="2010-03-23 16:05:20">
     <libraries>
       <library name="GeneralShapes" assembly_name="Dataweb.NShape.GeneralShapes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c" repository_version="2" />
     </libraries>
@@ -68,7 +68,6 @@
       <paragraph_style id="09d503c2-d4ae-4d82-895c-fe3a52c62bd9" name="Text" alignment="1" trimming="3" padding_left="3" padding_top="3" padding_right="3" padding_bottom="3" word_wrap="True"></paragraph_style>
       <paragraph_style id="1c448ad6-cc54-4008-8b53-bfecccf02ca5" name="Title" alignment="32" trimming="3" padding_left="3" padding_top="3" padding_right="3" padding_bottom="3" word_wrap="True"></paragraph_style>
     </paragraph_styles>
-    <shape_styles></shape_styles>
     <model id="7bf56d16-f388-4f86-9800-b35d693f3316">
       <model_objects></model_objects>
     </model>
@@ -249,7 +248,7 @@
       </template>
     </templates>
     <diagrams>
-      <diagram id="38fae413-6c9e-4236-a986-a40f864bc4fc" name="Arc Gluepoint Calculation" width="600" height="800" background_color="-4144960" background_gradient_end_color="-657931" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="38fae413-6c9e-4236-a986-a40f864bc4fc" name="Arc Gluepoint Calculation" width="600" height="800" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers>
           <layer id="1" name="Before Movement" title="Before Movement" lower_visibility_threshold="0" upper_visibility_threshold="5000" />
           <layer id="2" name="After Movement" title="After Movement" lower_visibility_threshold="0" upper_visibility_threshold="5000" />
