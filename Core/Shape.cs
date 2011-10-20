@@ -58,8 +58,8 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <summary>
 		/// Creates a clone, which owns clones of all composite objects in the shape.
+		/// This method creates a copy of the shape without Template!
 		/// </summary>
-		/// <returns></returns>
 		public abstract Shape Clone();
 
 		/// <summary>

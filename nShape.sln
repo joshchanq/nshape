@@ -21,8 +21,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareArchitectureShapes"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShapeTest", "DiagrammingTest\NShapeTest.csproj", "{32FE8B99-4091-4B3B-95EF-53976217B8EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SidyTrackShapes", "SidyTrackShapes\SidyTrackShapes.csproj", "{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}"
-EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -95,12 +93,6 @@ Global
 		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{32FE8B99-4091-4B3B-95EF-53976217B8EB}.Release|x86.ActiveCfg = Release|Any CPU
-		{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A5FAE259-2685-494B-AB9A-2B64EB47B1F1}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
