@@ -85,12 +85,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\n_Shape.csproj">
-      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>n_Shape</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="..\Dataweb.NShape.ico">
       <Link>Resources\Dataweb.NShape.ico</Link>
     </Content>
@@ -99,6 +93,12 @@
     <None Include="..\Dataweb.NShape.snk">
       <Link>Dataweb.NShape.snk</Link>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NShape\Core\NShape.csproj">
+      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
+      <Name>NShape</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -334,12 +334,6 @@
     <EmbeddedResource Include="Resources\RemoveFromAllLayers.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\n_Shape.csproj">
-      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>n_Shape</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\Checked.bmp" />
   </ItemGroup>
   <ItemGroup>
@@ -347,6 +341,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\CopyAsImage.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\NShape\Core\NShape.csproj">
+      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
+      <Name>NShape</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
