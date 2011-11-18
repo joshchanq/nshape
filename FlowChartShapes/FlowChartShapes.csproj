@@ -95,7 +95,7 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\NShape\Core\NShape.csproj">
+    <ProjectReference Include="..\Core\NShape.csproj">
       <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
       <Name>NShape</Name>
     </ProjectReference>

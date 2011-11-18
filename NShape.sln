@@ -19,7 +19,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareArchitectureShapes"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShapeTest", "DiagrammingTest\NShapeTest.csproj", "{32FE8B99-4091-4B3B-95EF-53976217B8EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShape", "..\NShape\Core\NShape.csproj", "{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShape", "Core\NShape.csproj", "{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
