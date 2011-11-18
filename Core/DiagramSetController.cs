@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -88,11 +88,11 @@ namespace Dataweb.NShape.Controllers {
 		public Project Project {
 			get { return project; }
 			set {
-				if (ProjectChanging != null) ProjectChanging(this, new EventArgs());
+				if (ProjectChanging != null) ProjectChanging(this, EventArgs.Empty);
 				if (project != null) UnregisterProjectEvents();
 				project = value;
 				if (project != null) RegisterProjectEvents();
-				if (ProjectChanged != null) ProjectChanged(this, new EventArgs());
+				if (ProjectChanged != null) ProjectChanged(this, EventArgs.Empty);
 			}
 		}
 
@@ -103,7 +103,7 @@ namespace Dataweb.NShape.Controllers {
 			get { return tool; }
 			set {
 				tool = value;
-				if (ToolChanged != null) ToolChanged(this, new EventArgs());
+				if (ToolChanged != null) ToolChanged(this, EventArgs.Empty);
 			}
 		}
 
@@ -297,17 +297,21 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		public void Paste(Diagram destination, LayerIds activeLayers, Point p) {
+		public void Paste(Diagram destination, LayerIds activeLayers, Point position) {
 			if (!editBuffer.IsEmpty) {
-				int dx, dy;
-				if (!Geometry.IsValid(editBuffer.initialMousePos))
-					dx = dy = 20;
-				else {
-					dx = p.X - editBuffer.initialMousePos.X;
-					dy = p.Y - editBuffer.initialMousePos.Y;
+				int dx = 40, dy = 40;
+				if (Geometry.IsValid(position)) {
+					if (Geometry.IsValid(editBuffer.initialMousePos)) {
+						dx = position.X - editBuffer.initialMousePos.X;
+						dy = position.Y - editBuffer.initialMousePos.Y;
+					} else {
+						Rectangle rect = editBuffer.shapes.GetBoundingRectangle(true);
+						dx = position.X - rect.X - (rect.Width / 2);
+						dy = position.Y - rect.Y - (rect.Height / 2);
+					}
 				}
 				Paste(destination, activeLayers, dx, dy);
-				editBuffer.initialMousePos = p;
+				editBuffer.initialMousePos = position;
 			}
 		}
 
@@ -322,7 +326,7 @@ namespace Dataweb.NShape.Controllers {
 				ICommand cmd = new InsertShapeCommand(
 					destination,
 					activeLayers,
-					editBuffer.shapes.BottomUp,
+					editBuffer.shapes,
 					editBuffer.withModelObjects,
 					(editBuffer.action == EditAction.Cut),
 					offsetX,
@@ -483,11 +487,24 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		public bool CanInsertShapes(Diagram diagram, IEnumerable<Shape> shapes) {
+		public bool CanInsertShapes(Diagram diagram, IEnumerable<Shape> shapes, out string reason) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			return (Project.SecurityManager.IsGranted(Permission.Insert)
-				&& !diagram.Shapes.ContainsAny(shapes));
+			reason = null;
+			if (!Project.SecurityManager.IsGranted(Permission.Insert, shapes)) {
+				reason = string.Format("Permission {0} not granted.", Permission.Insert);
+				return false;
+			} else if (diagram.Shapes.ContainsAny(shapes)) {
+				reason = "Diagram already containsat least one sof the shapes to be inserted.";
+				return false;
+			} else return true;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public bool CanInsertShapes(Diagram diagram, IEnumerable<Shape> shapes) {
+			string reason;
+			return CanInsertShapes(diagram, shapes, out reason);
 		}
 
 
@@ -495,8 +512,7 @@ namespace Dataweb.NShape.Controllers {
 		public bool CanDeleteShapes(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			return Project.SecurityManager.IsGranted(Permission.Delete)
-				&& Project.SecurityManager.IsGranted(Permission.Delete, shapes)
+			return Project.SecurityManager.IsGranted(Permission.Delete, shapes)
 				&& diagram.Shapes.ContainsAll(shapes);
 		}
 
@@ -520,12 +536,26 @@ namespace Dataweb.NShape.Controllers {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public bool CanPaste(Diagram diagram) {
+			string reason;
+			return CanPaste(diagram, out reason);
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public bool CanPaste(Diagram diagram, out string reason) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
-			if (editBuffer.IsEmpty) return false;
-			else {
-				if (editBuffer.action == EditAction.Copy)
-					return Project.SecurityManager.IsGranted(Permission.Insert);
-				else return CanInsertShapes(diagram, editBuffer.shapes);
+			reason = null;
+			if (editBuffer.IsEmpty) {
+				reason = "No shapes cut/copied.";
+				return false;
+			} else {
+				if (editBuffer.action != EditAction.Copy)
+					if (!CanInsertShapes(diagram, editBuffer.shapes))
+						return false;
+				if (!Project.SecurityManager.IsGranted(Permission.Insert, editBuffer.shapes)) {
+					reason = string.Format("Permission '{0}' not granted.", Permission.Insert);
+					return false;
+				} else return true;
 			}
 		}
 
@@ -536,22 +566,33 @@ namespace Dataweb.NShape.Controllers {
 			int cnt= 0;
 			foreach (Shape shape in shapes) {
 				++cnt;
-				if (cnt >= 2) return Project.SecurityManager.IsGranted(Permission.Delete);
+				if (cnt >= 2) return Project.SecurityManager.IsGranted(Permission.Delete, shapes);
 			}
 			return false;
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		public bool CanUngroupShape(Diagram diagram, IEnumerable<Shape> shapes) {
+		public bool CanUngroupShape(Diagram diagram, IEnumerable<Shape> shapes, out string reason) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			foreach (Shape shape in shapes) {
 				if (shape is IShapeGroup && shape.Parent == null)
-					return CanInsertShapes(diagram, shape.Children);
-				else return false;
+					return CanInsertShapes(diagram, shape.Children, out reason);
+				else {
+					reason = "Shape is not a group shape.";
+					return false;
+				}
 			}
+			reason = "No shapes to ungroup";
 			return false;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public bool CanUngroupShape(Diagram diagram, IEnumerable<Shape> shapes) {
+			string reason;
+			return CanUngroupShape(diagram, shapes, out reason);
 		}
 
 
@@ -582,7 +623,7 @@ namespace Dataweb.NShape.Controllers {
 		public bool CanLiftShapes(Diagram diagram, IEnumerable<Shape> shapes) {
 			if (diagram == null) throw new ArgumentNullException("diagram");
 			if (shapes == null) throw new ArgumentNullException("shapes");
-			return Project.SecurityManager.IsGranted(Permission.Layout)
+			return Project.SecurityManager.IsGranted(Permission.Layout, shapes)
 				&& diagram.Shapes.ContainsAll(shapes);
 		}
 		
@@ -652,10 +693,10 @@ namespace Dataweb.NShape.Controllers {
 		public DiagramController OpenDiagram(string name) {
 			if (name == null) throw new ArgumentNullException("name");
 			AssertProjectIsOpen();
-			// Try to find diagram with given projectName
+			// Try to find diagram with given name
 			Diagram diagram = null;
 			foreach (Diagram d in project.Repository.GetDiagrams()) {
-				if (d.Name == name) {
+				if (string.Compare(d.Name, name, StringComparison.InvariantCultureIgnoreCase) == 0) {
 					diagram = d;
 					break;
 				}
@@ -787,7 +828,7 @@ namespace Dataweb.NShape.Controllers {
 
 		private int IndexOf(string name) {
 			for (int i = diagramControllers.Count - 1; i >= 0; --i) {
-				if (diagramControllers[i].Diagram.Name == name)
+				if (string.Compare(diagramControllers[i].Diagram.Name, name, StringComparison.InvariantCultureIgnoreCase) == 0)
 					return i;
 			}
 			return -1;
@@ -878,7 +919,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// This is the NShape representation of System.Windows.Forms.MouseButtons (Framework 2.0)
+	/// This is the NShape representation of <see cref="T:System.Windows.Forms.MouseButtons" /> (Framework 2.0)
 	/// </summary>
 	[Flags]
 	public enum MouseButtonsDg {
@@ -926,7 +967,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Specifies key codes and modifiers. This is the NShape representation of System.Windows.Forms.Keys (Framework 2.0)
+	/// Specifies key codes and modifiers. This is the NShape representation of <see cref="T:System.Windows.Forms.Keys" /> (Framework 2.0)
 	/// </summary>
 	[Flags]
 	public enum KeysDg {

@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -14,15 +14,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
+using System.Runtime.Serialization;
 using System.Text;
+
 using Dataweb.NShape.Advanced;
-using System.ComponentModel;
 
 
 namespace Dataweb.NShape {
@@ -83,29 +85,44 @@ namespace Dataweb.NShape {
 	/// <summary>
 	/// An exception that is thrown when an AdoNetStore encounters an error.
 	/// </summary>
+	[Serializable]
 	public class AdoNetStoreException : NShapeException {
 
 		/// <summary>
-		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException" />.
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException"/>.
 		/// </summary>
-		internal protected AdoNetStoreException(string message) : base(message) { }
+		internal protected AdoNetStoreException(string message)
+			: base(message) {
+		}
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException" />.
 		/// </summary>
-		internal protected AdoNetStoreException(string format, params object[] args) : base(format, args) { }
+		internal protected AdoNetStoreException(string format, params object[] args)
+			: base(format, args) {
+		}
 
 		/// <summary>
 		/// Initializes a new instance of <see cref="T:Dataweb.NShape.AdoNetStoreException" />.
 		/// </summary>
-		internal protected AdoNetStoreException(string format, Exception innerException, params object[] args) : base(format, innerException, args) { }
+		internal protected AdoNetStoreException(string format, Exception innerException, params object[] args)
+			: base(format, innerException, args) {
+		}
 
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected AdoNetStoreException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
+		}
 	}
 
 
 	/// <summary>
 	/// An exception that is thrown when a IDbCommand required for a AdoNetStore method was not set.
 	/// </summary>
+	[Serializable]
 	public class MissingCommandException : AdoNetStoreException {
 
 		/// <summary>
@@ -272,7 +289,7 @@ namespace Dataweb.NShape {
 					// Cast to int makes sure the command returns an id.
 					cache.SetProjectOwnerId((int)projectCommand.ExecuteScalar());
 				} else {
-					// We update the project projectName in case it has been modified.
+					// We update the project name in case it has been modified.
 					projectCommand = GetCommand(projectInfoEntityTypeName, RepositoryCommandType.Update);
 					((DbParameter)projectCommand.Parameters[0]).Value = cache.ProjectId;
 					((DbParameter)projectCommand.Parameters[1]).Value = cache.ProjectName;
@@ -813,16 +830,17 @@ namespace Dataweb.NShape {
 		/// Tests wether a inner object entity should be stored as serialized string.
 		/// </summary>
 		static protected bool IsComposition(EntityPropertyDefinition propertyInfo) {
-			return (propertyInfo.Name == "ConnectionPointMappings"
-				|| propertyInfo.Name == "ValueRanges"
-				|| propertyInfo.Name == "Vertices"
-				|| propertyInfo.Name == "ColumnNames");
+			return (string.Compare(propertyInfo.Name, "ConnectionPointMappings", StringComparison.InvariantCultureIgnoreCase) == 0
+				|| string.Compare(propertyInfo.Name, "ValueRanges", StringComparison.InvariantCultureIgnoreCase) == 0
+				|| string.Compare(propertyInfo.Name, "Vertices", StringComparison.InvariantCultureIgnoreCase) == 0
+				|| string.Compare(propertyInfo.Name, "ConnectionPoints", StringComparison.InvariantCultureIgnoreCase) == 0
+				|| string.Compare(propertyInfo.Name, "ColumnNames", StringComparison.InvariantCultureIgnoreCase) == 0);
 		}
 
 
 		#region [Protected] Methods: Creating Commands and Parameters
 
-		// Command setting functions must specify the entity by the entity projectName and 
+		// Command setting functions must specify the entity by the entity name and 
 		// not by the entity type, because it must be possible to set commands, before 
 		// libraries are loaded. Therefore the entities are usually registered later
 		// than the command.
@@ -869,8 +887,10 @@ namespace Dataweb.NShape {
 		protected override void Dispose(bool disposing) {
 			if (disposing) {
 				// Close and dispose connection
-				if (connection.State != ConnectionState.Closed) connection.Close();
-				if (connection != null) connection.Dispose();
+				if (connection != null) {
+					if (connection.State != ConnectionState.Closed) connection.Close();
+					connection.Dispose();
+				}
 				// Dispose and delete commands
 				if (commands != null) {
 					foreach (KeyValuePair<CommandKey, IDbCommand> item in commands)
@@ -1415,7 +1435,7 @@ namespace Dataweb.NShape {
 					case RepositoryCommandType.Insert:
 						InsertCommand = command; break;
 					default:
-						Debug.Fail("NotSupported command type");
+						Debug.Fail("Unsupported command type");
 						break;
 				}
 			}
@@ -1476,7 +1496,7 @@ namespace Dataweb.NShape {
 
 
 			/// <summary>
-			/// Finalizer of Dataweb.NShape.AdoNetStore.DBParameterReader.
+			/// Finalizer of <see cref="T:Dataweb.NShape.AdoNetStore.DBParameterReader" />.
 			/// </summary>
 			~DbParameterReader() {
 				Dispose();

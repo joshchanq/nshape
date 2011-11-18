@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -31,7 +31,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#region Convert EventArgs
 
 		/// <summary>
-		/// Extracts and returns NShapeMouseEventArgs from Windows.Forms.MouseEventArgs.
+		/// Extracts and returns NShapeMouseEventArgs from <see cref="T:Windows.Forms.MouseEventArgs" />.
 		/// </summary>
 		public static MouseEventArgsDg GetMouseEventArgs(MouseEventType eventType, MouseEventArgs e) {
 			return GetMouseEventArgs(eventType, e.Button, e.Clicks, e.X, e.Y, e.Delta);
@@ -39,11 +39,19 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Returns NShapeMouseEventArgs extracted from information provided by the Control class.
+		/// Extracts and returns NShapeMouseEventArgs from <see cref="T:Windows.Forms.MouseEventArgs" />.
+		/// </summary>
+		public static MouseEventArgsDg GetMouseEventArgs(MouseEventType eventType, MouseEventArgs e, Rectangle controlBounds) {
+			return GetMouseEventArgs(eventType, e.Button, e.Clicks, e.X, e.Y, e.Delta, controlBounds);
+		}
+
+
+		/// <summary>
+		/// Returns NShapeMouseEventArgs extracted from information provided by the <see cref="T:System.Windows.Forms.Control" /> class.
 		/// </summary>
 		public static MouseEventArgsDg GetMouseEventArgs(Control control, MouseEventType eventType, int clicks, int delta) {
 			Point mousePos = control.PointToClient(Control.MousePosition);
-			return GetMouseEventArgs(eventType, Control.MouseButtons, clicks, mousePos.X, mousePos.Y, delta);
+			return GetMouseEventArgs(eventType, Control.MouseButtons, clicks, mousePos.X, mousePos.Y, delta, control.RectangleToClient(control.Bounds));
 		}
 
 
@@ -51,10 +59,23 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// Returns NShapeMouseEventArgs buildt with the provided parameters
 		/// </summary>
 		public static MouseEventArgsDg GetMouseEventArgs(MouseEventType eventType, MouseButtons mouseButtons, int clicks, int x, int y, int delta) {
+			return GetMouseEventArgs(eventType, mouseButtons, clicks, x, y, delta, Geometry.InvalidRectangle);
+		}
+
+
+		/// <summary>
+		/// Returns NShapeMouseEventArgs buildt with the provided parameters
+		/// </summary>
+		public static MouseEventArgsDg GetMouseEventArgs(MouseEventType eventType, MouseButtons mouseButtons, int clicks, int x, int y, int delta, Rectangle controlBounds) {
 			mouseEventArgs.SetButtons(mouseButtons);
 			mouseEventArgs.SetClicks(clicks);
 			mouseEventArgs.SetEventType(eventType);
-			mouseEventArgs.SetPosition(x, y);
+			if (Geometry.IsValid(controlBounds))
+				mouseEventArgs.SetPosition(
+					Math.Min(Math.Max(controlBounds.Left, x), controlBounds.Right), 
+					Math.Min(Math.Max(controlBounds.Top, y), controlBounds.Bottom)
+				);
+			else mouseEventArgs.SetPosition(x, y);
 			mouseEventArgs.SetWheelDelta(delta);
 			mouseEventArgs.SetModifiers(GetModifiers());
 			return mouseEventArgs;

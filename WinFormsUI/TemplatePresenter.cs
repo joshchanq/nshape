@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -28,7 +28,7 @@ using Dataweb.NShape.Controllers;
 namespace Dataweb.NShape.WinFormsUI {
 
 	/// <summary>
-	/// Implementation of a TemplatePresenter used for editing templates.
+	/// Implementation of a <see cref="T:Dataweb.NShape.WinFormsUI.TemplatePresenter" /> used for editing templates.
 	/// </summary>
 	public partial class TemplatePresenter : UserControl, IDisplayService {
 
@@ -69,7 +69,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		/// <summary>
-		/// Finalizer of Dataweb.NShape.WinFormsUI.TemplatePresenter
+		/// Finalizer of <see cref="T:Dataweb.NShape.WinFormsUI.TemplatePresenter" />
 		/// </summary>
 		~TemplatePresenter() {
 			Dispose();

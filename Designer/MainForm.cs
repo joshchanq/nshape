@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -12,11 +12,11 @@
   NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
 
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Windows.Forms;
 using System.Xml;
@@ -24,8 +24,6 @@ using System.Xml;
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.Controllers;
 using Dataweb.NShape.WinFormsUI;
-using System.ComponentModel.Design;
-using System.ComponentModel;
 
 
 namespace Dataweb.NShape.Designer {
@@ -36,14 +34,15 @@ namespace Dataweb.NShape.Designer {
 			InitializeComponent();
 			Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
 			runtimeModeComboBox.SelectedIndex = 0;
-#if !DEBUG
+			Visible = false;
+#if !DEBUG_UI
 			historyTrackBar.Visible = false;
-			toolStripContainer1.TopToolStripPanel.Controls.Remove(debugToolStrip);
+			toolStripContainer.TopToolStripPanel.Controls.Remove(debugToolStrip);
 #endif
 		}
 
 
-		#region Properties
+		#region [Public] Properties
 
 		public bool ShowGrid {
 			get { return showGrid; }
@@ -205,7 +204,7 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
-#if DEBUG
+#if DEBUG_UI
 
 		public bool ShowCellOccupation {
 			get { return showCellOccupation; }
@@ -235,7 +234,7 @@ namespace Dataweb.NShape.Designer {
 		#endregion
 
 
-		#region ConfigFile, Project and Store
+		#region [Private] Implementation: ConfigFile, Project and Store
 
 		private XmlReader OpenCfgReader(string filePath) {
 			XmlReaderSettings settings = new XmlReaderSettings();
@@ -253,110 +252,140 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void CreateConfigFile(string filePath) {
-			cfgWriter = OpenCfgWriter(filePath);
+			// Create config file and basic nodes
+			XmlWriter cfgWriter = OpenCfgWriter(filePath);
 			cfgWriter.WriteStartDocument();
-			cfgWriter.WriteStartElement(projectDirectoryTag);
-			cfgWriter.WriteStartElement(projectsTag);
+			cfgWriter.WriteStartElement(NodeNameSettings);
+			// Setting "ProjectDirectory"
+			cfgWriter.WriteStartElement(NodeNameProjectDirectory);
+			cfgWriter.WriteEndElement();
+			// Setting "Recent Projects"
+			cfgWriter.WriteStartElement(NodeNameProjects);
+			cfgWriter.WriteEndElement();
+			// Setting ToolStrip Positions
+			cfgWriter.WriteStartElement(NodeNameWindowSettings);
 			cfgWriter.WriteEndElement();
 			cfgWriter.Close();
 		}
 
 
-		private void ReadRecentProjectsFromConfigFile() {
-			if (!File.Exists(configFolder + configFile))
-				CreateConfigFile(configFolder + configFile);
+		private XmlDocument ReadConfigFile() {
+			XmlDocument result = new XmlDocument();
+			string filePath = Path.Combine(configFolder, ConfigFileName);
+			if (File.Exists(filePath)) {
+				XmlReader cfgReader = OpenCfgReader(filePath);
+				
+				result.Load(cfgReader);
+				cfgReader.Close();
+			}			
+			return result;
+		}
 
-			cfgReader = OpenCfgReader(configFolder + configFile);
-			XmlDocument xmlDoc = new XmlDocument();
-			xmlDoc.Load(cfgReader);
-			cfgReader.Close();
 
-			foreach (XmlNode projectDirNode in xmlDoc.GetElementsByTagName(projectDirectoryTag)) {
-				XmlAttribute attr = projectDirNode.Attributes[pathTag];
-				if (attr != null) xmlStoreDirectory = attr.Value;
-				break;
-			}
+		private void ReadConfig(XmlDocument xmlDoc) {
+			// Read recently used directory for XML repositories
+			XmlNode projectDirNode = xmlDoc.SelectSingleNode(string.Format(QueryNodeAttr, NodeNameProjectDirectory, AttrNamePath));
+			if (projectDirNode != null) xmlStoreDirectory = projectDirNode.Attributes[AttrNamePath].Value;
 
-			foreach (XmlNode xmlNode in xmlDoc.GetElementsByTagName(projectsTag)) {
-				foreach (XmlNode childNode in xmlNode.ChildNodes) {
+			// Read recently opened projects
+			foreach (XmlNode xmlNode in xmlDoc.SelectNodes(string.Format(QueryNode, NodeNameProject))) {
+				try {
 					RepositoryInfo repositoryInfo = RepositoryInfo.Empty;
-					foreach (XmlAttribute attr in childNode.Attributes) {
-						if (attr.Name.Equals(projectNameTag, StringComparison.InvariantCultureIgnoreCase)) {
-							repositoryInfo.projectName = attr.Value;
-						} else if (attr.Name.Equals(typeNameTag, StringComparison.InvariantCultureIgnoreCase)) {
-							repositoryInfo.typeName = attr.Value;
-						} else if (attr.Name.Equals(serverNameTag, StringComparison.InvariantCultureIgnoreCase)) {
-							repositoryInfo.computerName = attr.Value;
-						} else if (attr.Name.Equals(dataSourceTag, StringComparison.InvariantCultureIgnoreCase)) {
-							repositoryInfo.location = attr.Value;
-						}
-					}
-					if (repositoryInfo != RepositoryInfo.Empty && !recentProjects.Contains(repositoryInfo)) 
+					repositoryInfo.projectName = xmlNode.Attributes[AttrNameName].Value;
+					repositoryInfo.typeName = xmlNode.Attributes[AttrNameRepositoryType].Value;
+					repositoryInfo.computerName = xmlNode.Attributes[AttrNameServerName].Value;
+					repositoryInfo.location = xmlNode.Attributes[AttrNameDataSource].Value;
+					if (repositoryInfo != RepositoryInfo.Empty && !recentProjects.Contains(repositoryInfo))
 						recentProjects.Add(repositoryInfo);
+				} catch (Exception exc) {
+					Debug.Fail(exc.Message);
 				}
 			}
 		}
 
 
-		// Appends the current project to the recent project XML file
-		private void SaveRecentProjectsToConfigFile() {
-			// delete existing config file
-			if (File.Exists(configFolder + configFile))
-				File.Delete(configFolder + configFile);
+		private void ReadWindowConfig(XmlDocument xmlDoc) {
+			// Load ToolStrip Positions only if a config was saved before
+			if (xmlDoc.ChildNodes.Count > 0)
+				ToolStripManager.LoadSettings(this);
 
-			// Create a new config file
-			CreateConfigFile(configFolder + configFile);
-			cfgReader = OpenCfgReader(configFolder + configFile);
+			// Read window settings
+			XmlNode wndSettingsNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameWindowSettings));
+			if (wndSettingsNode != null && wndSettingsNode.Attributes.Count > 0) {
+				try {
+					int val;
+					if (int.TryParse(wndSettingsNode.Attributes[AttrNamePositionX].Value, out val)) Left = val;
+					if (int.TryParse(wndSettingsNode.Attributes[AttrNamePositionY].Value, out val)) Top = val;
+					if (int.TryParse(wndSettingsNode.Attributes[AttrNameWidth].Value, out val)) Width = val;
+					if (int.TryParse(wndSettingsNode.Attributes[AttrNameHeight].Value, out val)) Height = val;
+					WindowState = (FormWindowState)int.Parse(wndSettingsNode.Attributes[AttrNameState].Value);
+				} catch (Exception exc) {
+					Debug.Fail(exc.Message);
+				}
+			}
+		}
+
+
+		private void SaveConfigFile() {
+			// Save ToolStrip Positions
+			ToolStripManager.SaveSettings(this);
+
+			// Create a new config file if it does not exist
+			string filePath = Path.Combine(configFolder, ConfigFileName);
+			if (!File.Exists(filePath)) CreateConfigFile(filePath);
+
+			XmlReader cfgReader = OpenCfgReader(filePath);
 			XmlDocument xmlDoc = new XmlDocument();
 			xmlDoc.Load(cfgReader);
 			cfgReader.Close();
 
 			// Find the "Project Directory" node
-			XmlNode projectDirectoryNode = null;
-			foreach (XmlNode xmlNode in xmlDoc.GetElementsByTagName(projectDirectoryTag)) {
-				projectDirectoryNode = xmlNode;
-				break;
-			}
+			XmlNode projectDirectoryNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameProjectDirectory));
 			Debug.Assert(projectDirectoryNode != null);
 			// Save last project directory
-			projectDirectoryNode.Attributes.Append(xmlDoc.CreateAttribute(pathTag)).Value = xmlStoreDirectory;
+			projectDirectoryNode.RemoveAll();
+			projectDirectoryNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePath)).Value = xmlStoreDirectory;
 			
 			// Find the "Projects" node
-			XmlNode repositoriesNode = null;
-			foreach (XmlNode xmlNode in xmlDoc.GetElementsByTagName(projectsTag)) {
-				repositoriesNode = xmlNode;
-				break;
-			}
+			XmlNode repositoriesNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameProjects));
 			Debug.Assert(repositoriesNode != null);
 			// Save all recent projects
+			repositoriesNode.RemoveAll();
 			foreach (RepositoryInfo projectInfo in recentProjects) {
-				XmlNode currentRepositoryNode = null;
-				foreach (XmlNode childNode in repositoriesNode.ChildNodes) {
-					foreach (XmlAttribute attribute in childNode.Attributes) {
-						if (attribute.Name.Equals(projectNameTag, StringComparison.InvariantCultureIgnoreCase)) {
-							if (attribute.Value.Equals(projectInfo.projectName, StringComparison.InvariantCultureIgnoreCase)) {
-								currentRepositoryNode = childNode;
-								break;
-							}
-						}
-					}
-					if (currentRepositoryNode != null) break;
-				}
-				if (currentRepositoryNode != null)
-					repositoriesNode.RemoveChild(currentRepositoryNode);
-
-				if (repositoriesNode.ChildNodes.Count >= RecentProjectsLimit)
-					repositoriesNode.RemoveChild(repositoriesNode.FirstChild);
-
-				XmlNode newNode = xmlDoc.CreateNode(XmlNodeType.Element, projectTag, xmlDoc.NamespaceURI);
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(projectNameTag)).Value = projectInfo.projectName;
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(typeNameTag)).Value = projectInfo.typeName;
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(serverNameTag)).Value = projectInfo.computerName;
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(dataSourceTag)).Value = projectInfo.location;
+				XmlNode newNode = xmlDoc.CreateNode(XmlNodeType.Element, NodeNameProject, xmlDoc.NamespaceURI);
+				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameName)).Value = projectInfo.projectName;
+				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameRepositoryType)).Value = projectInfo.typeName;
+				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameServerName)).Value = projectInfo.computerName;
+				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameDataSource)).Value = projectInfo.location;
 				repositoriesNode.AppendChild(newNode);
 			}
+
+			// Find "WindowSettings" node
+			XmlNode wndSettingsNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameWindowSettings));
+			Debug.Assert(wndSettingsNode != null);
+			if (wndSettingsNode.Attributes.Count == 0) {
+				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePositionX));
+				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePositionY));
+				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameWidth));
+				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameHeight));
+				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameState));
+			}
+			switch (WindowState) {
+				case FormWindowState.Maximized:
+				case FormWindowState.Minimized:
+					wndSettingsNode.Attributes[AttrNameState].Value = ((int)FormWindowState.Maximized).ToString();
+					break;
+				case FormWindowState.Normal:
+					wndSettingsNode.Attributes[AttrNamePositionX].Value = Left.ToString();
+					wndSettingsNode.Attributes[AttrNamePositionY].Value = Top.ToString();
+					wndSettingsNode.Attributes[AttrNameWidth].Value = Width.ToString();
+					wndSettingsNode.Attributes[AttrNameHeight].Value = Height.ToString();
+					wndSettingsNode.Attributes[AttrNameState].Value = ((int)FormWindowState.Normal).ToString();
+					break;
+			}
+
 			// Save to file
-			cfgWriter = OpenCfgWriter(configFolder + configFile);
+			XmlWriter cfgWriter = OpenCfgWriter(filePath);
 			xmlDoc.Save(cfgWriter);
 			cfgWriter.Close();
 		}
@@ -371,7 +400,7 @@ namespace Dataweb.NShape.Designer {
 				else if (recentProjects[i].typeName == RepositoryInfo.XmlStoreTypeName) {
 					if (!File.Exists(recentProjects[i].location)) {
 						string msgFormat = "The file or folder '{0}' cannot be opened. Do you want to remove it from the 'Recently opened projects' list?";
-						remove = (MessageBox.Show(this, string.Format(msgFormat, recentProjects[i].location), "File not found", MessageBoxButtons.YesNo) == DialogResult.Yes);
+						remove = (MessageBox.Show(this, string.Format(msgFormat, recentProjects[i].location), "File not found", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes);
 					}
 				}
 				if (remove) {
@@ -379,7 +408,7 @@ namespace Dataweb.NShape.Designer {
 					modified = true;
 				}
 			}
-			if (modified) SaveRecentProjectsToConfigFile();
+			if (modified) SaveConfigFile();
 		}
 
 
@@ -439,7 +468,7 @@ namespace Dataweb.NShape.Designer {
 			// If it does not, add it and create a new menu item
 			recentProjects.Add(projectInfo);
 			PrependRecentProjectsMenuItem(projectInfo);
-			SaveRecentProjectsToConfigFile();
+			SaveConfigFile();
 			return true;
 		}
 
@@ -514,6 +543,7 @@ namespace Dataweb.NShape.Designer {
 				UpdateRecentProjectsMenu();
 			} catch (Exception exc) {
 				MessageBox.Show(this, exc.Message, "Error while opening Repository.", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				project.Close();
 			} finally {
 				Cursor = Cursors.Default;
 			}
@@ -555,10 +585,11 @@ namespace Dataweb.NShape.Designer {
 
 				// Select a file name
 				saveFileDialog.CreatePrompt = false;		// Do not ask wether to create the file
-				saveFileDialog.CheckFileExists = false;	// Do not check wether the file does NOT exist
+				saveFileDialog.CheckFileExists = false;		// Do not check wether the file does NOT exist
 				saveFileDialog.CheckPathExists = true;		// Ask wether to overwrite existing file
-				saveFileDialog.AutoUpgradeEnabled = (Environment.OSVersion.Version.Major >= 6);
-				saveFileDialog.Filter = fileFilterXmlRepository;
+				if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
+					saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
+				saveFileDialog.Filter = FileFilterXmlRepository;
 				if (Directory.Exists(xmlStore.DirectoryName))
 					saveFileDialog.InitialDirectory = xmlStore.DirectoryName;
 				else
@@ -567,11 +598,13 @@ namespace Dataweb.NShape.Designer {
 
 				// Try to save repository to file...
 				if (saveFileDialog.ShowDialog() == DialogResult.OK) {
-					xmlStore.DirectoryName = Path.GetDirectoryName(saveFileDialog.FileName);
-					project.Name = Path.GetFileNameWithoutExtension(saveFileDialog.FileName);
-					Text = string.Format("{0} - {1}", appTitle, project.Name);
-					// Delete file if it exists, because the user was prompted wether to overwrite it before (SaveFileDialog.CheckPathExists).
-					if (project.Repository.Exists()) project.Repository.Erase();
+					if (xmlStore.ProjectFilePath != saveFileDialog.FileName) {
+						xmlStore.DirectoryName = Path.GetDirectoryName(saveFileDialog.FileName);
+						project.Name = Path.GetFileNameWithoutExtension(saveFileDialog.FileName);
+						Text = string.Format("{0} - {1}", AppTitle, project.Name);
+						// Delete file if it exists, because the user was prompted wether to overwrite it before (SaveFileDialog.CheckPathExists).
+						if (project.Repository.Exists()) project.Repository.Erase();
+					}
 					saveMenuItem.Enabled = true;
 					result = SaveProject();
 				}
@@ -595,20 +628,25 @@ namespace Dataweb.NShape.Designer {
 		private bool CloseProject() {
 			bool result = true;
 			if (project.Repository.IsModified) {
-				string msg = string.Format("Do you want to save the current project '{0}' before closing it?", project.Name);
-				DialogResult dlgResult = MessageBox.Show(this, msg, "Save changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-				switch (dlgResult) {
-					case DialogResult.Yes:
-						if (project.Repository.Exists())
-							SaveProject();
-						else SaveProjectAs();
-						break;
-					case DialogResult.No:
-						// do nothing
-						break;
-					case DialogResult.Cancel:
-						result = false;
-						break;
+				bool isEmptyProject = false;
+				// ToDo: Determine if the project was modified after startup (where a new project is created)
+
+				if (!isEmptyProject) {
+					string msg = string.Format("Do you want to save the current project '{0}' before closing it?", project.Name);
+					DialogResult dlgResult = MessageBox.Show(this, msg, "Save changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+					switch (dlgResult) {
+						case DialogResult.Yes:
+							if (project.Repository.Exists())
+								SaveProject();
+							else SaveProjectAs();
+							break;
+						case DialogResult.No:
+							// do nothing
+							break;
+						case DialogResult.Cancel:
+							result = false;
+							break;
+					}
 				}
 			}
 
@@ -684,69 +722,115 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void DisplayMouseCoordinates(int x, int y) {
-			statusLabelPosition.Text = "X: " + x.ToString() + ", Y: " + y.ToString();
+			statusLabelPosition.Text = string.Format(PointFormatStr, x, y);
 		}
 
 
-		private void UpdateToolBarAndMenuItems() {
+		private void UpdateStatusInfo() {
+			Point mousePos = Control.MousePosition;
+			Size diagramSize = Size.Empty;
+			Rectangle bounds = Rectangle.Empty;
+			int shapeCnt = 0;
+			if (CurrentDisplay != null && CurrentDisplay.Diagram != null) {
+				CurrentDisplay.ControlToDiagram(CurrentDisplay.DrawBounds, out bounds);
+				diagramSize = currentDisplay.Diagram.Size;
+				shapeCnt = currentDisplay.Diagram.Shapes.Count;
+			}
+			statusLabelTopLeft.Text =string.Format(PointFormatStr, bounds.Left, bounds.Top);
+			statusLabelBottomRight.Text =string.Format(PointFormatStr,  bounds.Right, bounds.Bottom);
+			statusLabelPosition.Text = string.Format(PointFormatStr, mousePos.X, mousePos.X);
+			statusLabelDiagramSize.Text = string.Format(SizeFormatStr, diagramSize.Width, diagramSize.Height);
+			statusLabelShapeCount.Text = string.Format(ShapeCntFormatStr, shapeCnt, shapeCnt > 1 ? "s" : "");
+		}
+
+
+		private void UpdateAllMenuItems() {
+			UpdateEditMenuItems();
+			UpdateUndoMenuItems();
+		}
+
+
+		private void UpdateUndoMenuItems() {
+			// Undo / Redo
+			undoToolStripSplitButton.Enabled =
+			undoMenuItem.Enabled = diagramSetController.Project.History.UndoCommandCount > 0;
+			redoToolStripSplitButton.Enabled =
+			redoMenuItem.Enabled = diagramSetController.Project.History.RedoCommandCount > 0;
+		}
+
+
+		private void UpdateEditMenuItems() {
 			bool shapesOnly, shapesAndModels;
 			if (CurrentDisplay != null && CurrentDisplay.Diagram != null) {
-				// cut
+				// Cut
 				shapesOnly = shapesAndModels = CurrentDisplay.DiagramSetController.CanCut(CurrentDisplay.Diagram, CurrentDisplay.SelectedShapes);
 				cutShapeButton.Enabled = shapesOnly;
 				cutShapeOnlyMenuItem.Enabled = shapesOnly;
 				cutShapeAndModelMenuItem.Enabled = shapesAndModels;
-
-				// copy
+				// Copy
 				shapesOnly =
 				shapesAndModels = CurrentDisplay.DiagramSetController.CanCopy(CurrentDisplay.SelectedShapes);
 				cutShapeButton.Enabled = shapesOnly;
+				copyAsImageToolStripMenuItem.Enabled = true;
 				copyShapeOnlyMenuItem.Enabled = shapesOnly;
 				copyShapeAndModelMenuItem.Enabled = shapesAndModels;
-
-				// paste
+				// Paste
 				pasteButton.Enabled =
 				pasteMenuItem.Enabled = CurrentDisplay.DiagramSetController.CanPaste(CurrentDisplay.Diagram);
-
-				// delete
+				// Delete
 				shapesOnly =
 				shapesAndModels = CurrentDisplay.DiagramSetController.CanDeleteShapes(CurrentDisplay.Diagram, CurrentDisplay.SelectedShapes);
 				deleteShapeButton.Enabled = shapesOnly;
 				deleteShapeOnlyMenuItem.Enabled = shapesOnly;
 				deleteShapeAndModelMenuItem.Enabled = shapesAndModels;
-
-				// toForeGround / toBackground
+				// ToForeGround / ToBackground
 				toForegroundMenuItem.Enabled =
 				toBackgroundMenuItem.Enabled = CurrentDisplay.DiagramSetController.CanLiftShapes(CurrentDisplay.Diagram, CurrentDisplay.SelectedShapes);
+				// Selection
+				selectAllToolStripMenuItem.Enabled = (CurrentDisplay.Diagram.Shapes.Count > 0 
+													&& CurrentDisplay.SelectedShapes.Count < CurrentDisplay.Diagram.Shapes.Count);
+				unselectAllToolStripMenuItem.Enabled = (CurrentDisplay.SelectedShapes.Count > 0);
+				selectAllOfTypeToolStripMenuItem.Enabled = (CurrentDisplay.SelectedShapes.Count == 1);
+				selectAllOfTemplateToolStripMenuItem.Enabled = (CurrentDisplay.SelectedShapes.Count == 1 && CurrentDisplay.SelectedShapes.TopMost.Template != null);
 			} else {
-				// cut
+				// Cut
 				cutShapeButton.Enabled =
 				cutShapeOnlyMenuItem.Enabled =
 				cutShapeAndModelMenuItem.Enabled = false;
-				// copy
+				// Copy
 				shapesOnly =
 				shapesAndModels =
 				cutShapeButton.Enabled =
+				copyAsImageToolStripMenuItem.Enabled =
 				copyShapeOnlyMenuItem.Enabled =
 				copyShapeAndModelMenuItem.Enabled = false;
-				// paste
+				// Paste
 				pasteButton.Enabled =
 				pasteMenuItem.Enabled = false;
-				// delete
+				// Delete
 				shapesOnly =
 				shapesAndModels =
 				deleteShapeButton.Enabled =
 				deleteShapeOnlyMenuItem.Enabled =
 				deleteShapeAndModelMenuItem.Enabled = false;
-				// toForeGround / toBackground
+				// ToForeGround / ToBackground
 				toForegroundMenuItem.Enabled =
 				toBackgroundMenuItem.Enabled = false;
+				// Selection
+				selectAllToolStripMenuItem.Enabled = 
+				unselectAllToolStripMenuItem.Enabled = 
+				selectAllOfTypeToolStripMenuItem.Enabled = 
+				selectAllOfTemplateToolStripMenuItem.Enabled = false;
 			}
-			// undo / redo
-			undoToolStripSplitButton.Enabled =
-			undoMenuItem.Enabled = diagramSetController.Project.History.UndoCommandCount > 0;
-			redoToolStripSplitButton.Enabled =
-			redoMenuItem.Enabled = diagramSetController.Project.History.RedoCommandCount > 0;
+		}
+
+
+		private void UpdateModelComponentsVisibility(bool visible) {
+			modelTreeView.Visible = visible;
+			if (visible)
+				propertyWindowTabControl.TabPages.Insert(1, propertyWindowModelTab);
+			else
+				propertyWindowTabControl.TabPages.Remove(propertyWindowModelTab);
 		}
 
 
@@ -766,7 +850,7 @@ namespace Dataweb.NShape.Designer {
 				display.ResizeGripShape = ResizePointShape;
 				display.ConnectionPointShape = ConnectionPointShape;
 				display.ZoomLevel = Zoom;
-#if DEBUG
+#if DEBUG_UI
 				display.ShowCellOccupation = ShowCellOccupation;
 				display.ShowInvalidatedAreas = ShowInvalidatedAreas;
 #endif
@@ -780,13 +864,13 @@ namespace Dataweb.NShape.Designer {
 				//display.UserMessage += display_UserMessage;
 				//
 				// Create and add a new tabPage for the display
-				TabPage tabPage = new TabPage(diagram.Name);
+				TabPage tabPage = new TabPage(diagram.Title);
 				tabPage.Controls.Add(display);
 				displayTabControl.TabPages.Add(tabPage);
 				displayTabControl.SelectedTab = tabPage;
-				displaysTabControl_SelectedIndexChanged(displayTabControl, new EventArgs());
+				displaysTabControl_SelectedIndexChanged(displayTabControl, EventArgs.Empty);
 			}
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
@@ -805,7 +889,7 @@ namespace Dataweb.NShape.Designer {
 					}
 				}
 			}
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
@@ -838,7 +922,7 @@ namespace Dataweb.NShape.Designer {
 				Diagram diagram = new Diagram(string.Format("Diagram {0}", displayTabControl.TabPages.Count + 1));
 				project.Repository.InsertDiagram(diagram);
 				CreateDisplayForDiagram(diagram);
-				showDiagramSettingsToolStripMenuItem_Click(this, new EventArgs());
+				showDiagramSettingsToolStripMenuItem_Click(this, EventArgs.Empty);
 			}
 		}
 
@@ -846,16 +930,11 @@ namespace Dataweb.NShape.Designer {
 		private Display CurrentDisplay {
 			get { return currentDisplay; }
 			set {
-				if (currentDisplay != null) {
-					currentDisplay.MouseMove -= display_MouseMove;
-					currentDisplay.ShapesSelected -= display_ShapesSelected;
-					currentDisplay.ZoomChanged -= display_ZoomChanged;
-				}
+				if (currentDisplay != null)
+					UnregisterDisplayEvents(currentDisplay);
 				currentDisplay = value;
 				if (currentDisplay != null) {
-					currentDisplay.MouseMove += display_MouseMove;
-					currentDisplay.ShapesSelected += display_ShapesSelected;
-					currentDisplay.ZoomChanged += display_ZoomChanged;
+					RegisterDisplayEvents(currentDisplay);
 
 					currentDisplay.HighQualityRendering = HighQuality;
 					currentDisplay.ShowGrid = ShowGrid;
@@ -863,10 +942,12 @@ namespace Dataweb.NShape.Designer {
 					currentDisplay.ZoomLevel = Zoom;
 					if (currentDisplay.Diagram != null) {
 						currentDisplay.CurrentTool = toolSetController.SelectedTool;
-						propertyController.SetObject(0, currentDisplay.Diagram);
+						if (currentDisplay.SelectedShapes.Count > 0)
+							propertyController.SetObjects(0, currentDisplay.SelectedShapes);
+						else propertyController.SetObject(0, currentDisplay.Diagram);
 					}
 
-					display_ShapesSelected(currentDisplay, null);
+					display_ShapesSelected(currentDisplay, EventArgs.Empty);
 				}
 			}
 		}
@@ -877,6 +958,7 @@ namespace Dataweb.NShape.Designer {
 		private void RegisterRepositoryEvents() {
 			if (project.Repository != null) {
 				project.Repository.DiagramInserted += repository_DiagramInserted;
+				project.Repository.DiagramUpdated += repository_DiagramUpdated;
 				project.Repository.DiagramDeleted += repository_DiagramDeleted;
 				project.Repository.ModelObjectsInserted += repository_ModelObjectsInsertedOrDeleted;
 				project.Repository.ModelObjectsDeleted += repository_ModelObjectsInsertedOrDeleted;
@@ -887,9 +969,36 @@ namespace Dataweb.NShape.Designer {
 		private void UnregisterRepositoryEvents() {
 			if (project.Repository != null) {
 				project.Repository.DiagramInserted -= repository_DiagramInserted;
+				project.Repository.DiagramUpdated -= repository_DiagramUpdated;
 				project.Repository.DiagramDeleted -= repository_DiagramDeleted;
 				project.Repository.ModelObjectsInserted -= repository_ModelObjectsInsertedOrDeleted;
 				project.Repository.ModelObjectsDeleted -= repository_ModelObjectsInsertedOrDeleted;
+			}
+		}
+
+
+		private void RegisterDisplayEvents(Display display) {
+			if (display != null) {
+				display.Scroll += display_Scroll;
+				display.Resize += display_Resize;				
+				display.MouseMove += display_MouseMove;
+				display.ShapesSelected += display_ShapesSelected;
+				display.ShapesInserted += display_ShapesInserted;
+				display.ShapesRemoved += display_ShapesRemoved;
+				display.ZoomChanged += display_ZoomChanged;
+			}
+		}
+
+
+		private void UnregisterDisplayEvents(Display display) {
+			if (display != null) {
+				display.Scroll -= display_Scroll;
+				display.Resize -= display_Resize;
+				display.MouseMove -= display_MouseMove;
+				display.ShapesSelected -= display_ShapesSelected;
+				display.ShapesInserted -= display_ShapesInserted;
+				display.ShapesRemoved -= display_ShapesRemoved;
+				display.ZoomChanged -= display_ZoomChanged;
 			}
 		}
 
@@ -906,30 +1015,30 @@ namespace Dataweb.NShape.Designer {
 		private void project_Opened(object sender, EventArgs e) {
 			RegisterRepositoryEvents();
 			// Set main form title
-			Text = string.Format("{0} - {1}", appTitle, project.Name);
+			Text = string.Format("{0} - {1}", AppTitle, project.Name);
 			// Hide/Show ModelTreeView
-			modelTreeView.SuspendLayout();
-			modelTreeView.Visible = false;
+			UpdateModelComponentsVisibility(false);
 			foreach (IModelObject m in project.Repository.GetModelObjects(null)) {
-				modelTreeView.Visible = true;
+				UpdateModelComponentsVisibility(true);
 				break;
 			}
-			modelTreeView.ResumeLayout();
 		}
 
 
 		private void project_Closed(object sender, EventArgs e) {
+			if (layoutControlForm != null) layoutControlForm.Close();
+
 			UnregisterRepositoryEvents();
 			
 			historyTrackBar.Maximum = project.History.UndoCommandCount + project.History.RedoCommandCount;
-			Text = appTitle;
+			Text = AppTitle;
 			statusLabelMessage.Text =
 			statusLabelPosition.Text = string.Empty;
 		}
 
 
 		private void history_CommandAdded(object sender, CommandEventArgs e) {
-			undoToolStripSplitButton.Enabled = true;
+			UpdateUndoMenuItems();
 			if (CurrentDisplay != null) {
 				if (project.History.UndoCommandCount + project.History.RedoCommandCount != historyTrackBar.Maximum)
 					historyTrackBar.Maximum = project.History.UndoCommandCount + project.History.RedoCommandCount;
@@ -940,8 +1049,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void history_CommandExecuted(object sender, CommandEventArgs e) {
-			undoToolStripSplitButton.Enabled = project.History.UndoCommandCount > 0;
-			redoToolStripSplitButton.Enabled = project.History.RedoCommandCount > 0;
+			UpdateUndoMenuItems();
 			try {
 				historyTrackBar.ValueChanged -= historyTrackBar_ValueChanged;
 				if (e.Reverted) {
@@ -958,8 +1066,7 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void history_CommandsExecuted(object sender, CommandsEventArgs e) {
-			undoToolStripSplitButton.Enabled = project.History.UndoCommandCount > 0;
-			redoToolStripSplitButton.Enabled = project.History.RedoCommandCount > 0;
+			UpdateUndoMenuItems();
 			try {
 				historyTrackBar.ValueChanged -= historyTrackBar_ValueChanged;
 				if (e.Reverted) {
@@ -982,9 +1089,16 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
+		private void repository_DiagramUpdated(object sender, RepositoryDiagramEventArgs e) {
+			TabPage tabPage = FindDisplayTabPage(e.Diagram);
+			if (tabPage != null) tabPage.Text = e.Diagram.Title;
+			UpdateStatusInfo();
+		}
+
+
 		private void repository_DiagramInserted(object sender, RepositoryDiagramEventArgs e) {
 			CreateDisplayForDiagram(e.Diagram);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
@@ -1001,7 +1115,27 @@ namespace Dataweb.NShape.Designer {
 		#endregion
 
 
-		#region [Private] Event Handler implementations - Display
+		#region [Private] Event Handler implementations - Display and Diagrams
+
+
+		private void diagramSetController_SelectModelObjectsRequested(object sender, ModelObjectsEventArgs e) {
+			// ToDo: Find the first display that contains the selected model object's shapes.
+			// Problem: 
+			// As there is only one propertyController for all displays and the displays unselect all selected
+			// shapes before selecting the shapes of the model objects, all selected objects of the property controller 
+			// are unselected when processing the next display. We have to find a solution for this issue.
+		}
+
+
+		private void display_Resize(object sender, EventArgs e) {
+			UpdateStatusInfo();
+		}
+
+
+		private void display_Scroll(object sender, ScrollEventArgs e) {
+			UpdateStatusInfo();
+		}
+
 
 		private void display_MouseMove(object sender, System.Windows.Forms.MouseEventArgs e) {
 			int x = e.X;
@@ -1015,7 +1149,7 @@ namespace Dataweb.NShape.Designer {
 		private void display_DragOver(object sender, System.Windows.Forms.DragEventArgs e) {
 			p.X = e.X; p.Y = e.Y;
 			if (CurrentDisplay != null)
-				p = CurrentDisplay.PointToClient(p);
+				CurrentDisplay.ScreenToDiagram(p, out p);
 			DisplayMouseCoordinates(p.X, p.Y);
 		}
 
@@ -1023,9 +1157,12 @@ namespace Dataweb.NShape.Designer {
 		private void display_ShapesSelected(object sender, EventArgs e) {
 			if (sender.Equals(CurrentDisplay)) {
 				int cnt = CurrentDisplay.SelectedShapes.Count;
-				if (cnt > 0) statusLabelMessage.Text = string.Format("{0} shape{1} selected.", cnt, cnt > 1 ? "s" : "");
-				else statusLabelMessage.Text = string.Empty;
-				UpdateToolBarAndMenuItems();
+				if (cnt > 0) {
+					statusLabelMessage.Text = string.Format("{0} shape{1} selected.", cnt, cnt > 1 ? "s" : "");
+					if (propertyController.GetSelectedObjects(0) != CurrentDisplay.SelectedShapes)
+						propertyController.SetObjects(0, CurrentDisplay.SelectedShapes);
+				} else statusLabelMessage.Text = string.Empty;
+				UpdateAllMenuItems();
 				//
 				if (layoutControlForm != null)
 					layoutControlForm.SelectedShapes = CurrentDisplay.SelectedShapes;
@@ -1033,10 +1170,29 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
+		private void display_ShapesRemoved(object sender, DiagramPresenterShapesEventArgs e) {
+			UpdateStatusInfo();
+		}
+
+
+		private void display_ShapesInserted(object sender, DiagramPresenterShapesEventArgs e) {
+			UpdateStatusInfo();
+		}
+
+
 		private void display_ZoomChanged(object sender, EventArgs e) {
-			string txt = string.Format("{0} %", currentDisplay.ZoomLevel);
+			int cursorPos = -1;
+			if (zoomToolStripComboBox.Focused)
+				cursorPos = zoomToolStripComboBox.SelectionStart;
+			
+			string txt = string.Format(PercentFormatStr, currentDisplay.ZoomLevel);
 			if (txt != zoomToolStripComboBox.Text)
-				zoomToolStripComboBox.Text = currentDisplay.ZoomLevel.ToString();
+				zoomToolStripComboBox.Text = txt;
+			
+			if (zoomToolStripComboBox.Focused)
+				zoomToolStripComboBox.SelectionStart = cursorPos;
+
+			UpdateStatusInfo();
 		}
 
 
@@ -1093,7 +1249,6 @@ namespace Dataweb.NShape.Designer {
 				// Read config file
 				configFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), nShapeConfigDirectory);
 				if (!Directory.Exists(configFolder)) Directory.CreateDirectory(configFolder);
-				configFile = "Config.cfg";
 
 				historyTrackBar.Minimum = 0;
 				historyTrackBar.Maximum = 0;
@@ -1105,8 +1260,11 @@ namespace Dataweb.NShape.Designer {
 				project.History.CommandExecuted += history_CommandExecuted;
 				project.History.CommandsExecuted += history_CommandsExecuted;
 				project.LibrarySearchPaths.Add(Application.StartupPath);
+				diagramSetController.SelectModelObjectsRequested += diagramSetController_SelectModelObjectsRequested;
 
-				ReadRecentProjectsFromConfigFile();
+				XmlDocument config = ReadConfigFile();
+				ReadConfig(config);
+
 				MaintainRecentProjects();
 				CreateRecentProjectsMenuItems();
 
@@ -1149,28 +1307,38 @@ namespace Dataweb.NShape.Designer {
 					store = new XmlStore(Path.GetDirectoryName(repositoryInfo.location), Path.GetExtension(repositoryInfo.location));
 					OpenProject(repositoryInfo.projectName, store);
 				} else {
-					//store = new XmlStore(xmlStoreDirectory, ".xml");
-					//CreateProject(newProjectName, store, false);
 					NewXmlRepositoryProject(false);
 					project.AddLibraryByName("Dataweb.NShape.GeneralShapes");
 #if DEBUG
 					// Shape libraries
-					project.AddLibraryByName("Dataweb.NShape.SoftwareArchitectureShapes");
-					//project.AddLibraryByName("Dataweb.NShape.FlowChartShapes");
+					//project.AddLibraryByName("Dataweb.NShape.SoftwareArchitectureShapes");
+					project.AddLibraryByName("Dataweb.NShape.FlowChartShapes");
 					//project.AddLibraryByName("Dataweb.NShape.ElectricalShapes");
 					// ModelObjectTypes libraries
 					//project.AddLibraryByFilePath("Dataweb.NShape.GeneralModelObjects.dll");
 #endif
+					// Mark project as "Not modified" in order to suppress the "Do you want to save changes" question
 				}
 
-				UpdateToolBarAndMenuItems();
+#if DEBUG
+				RoleBasedSecurityManager secMgr = project.SecurityManager as RoleBasedSecurityManager;
+				if (secMgr != null)
+					secMgr.SetPermissions('C', StandardRole.Administrator, Permission.Layout | Permission.ModifyData);
+#endif
+
+				UpdateAllMenuItems();
+				UpdateStatusInfo();
+
+				// Setting the form's WindowState will show the form immediately, so we have to perform this step
+				// after all initialization is done.
+				ReadWindowConfig(config);
 			} catch (Exception ex) {
 			   MessageBox.Show(this, ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
 
-		void DiagramDesignerMainForm_Shown(object sender, System.EventArgs e) {
+		private void DiagramDesignerMainForm_Shown(object sender, System.EventArgs e) {
 			CheckFrameworkVersion();
 			CheckLibrariesLoaded();
 		}
@@ -1178,7 +1346,7 @@ namespace Dataweb.NShape.Designer {
 
 		private void DiagramDesignerMainForm_FormClosing(object sender, FormClosingEventArgs e) {
 			if (!CloseProject()) e.Cancel = true;
-			else SaveRecentProjectsToConfigFile();
+			else SaveConfigFile();
 		}
 
 
@@ -1189,7 +1357,7 @@ namespace Dataweb.NShape.Designer {
 
 				layerPresenter.DiagramPresenter = CurrentDisplay;
 
-				UpdateToolBarAndMenuItems();
+				UpdateAllMenuItems();
 			}
 		}
 
@@ -1264,15 +1432,21 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void toolStripComboBox1_TextChanged(object sender, EventArgs e) {
+			int cursorPos = -1;
+			if (zoomToolStripComboBox.Focused)
+				cursorPos =  zoomToolStripComboBox.SelectionStart;
+
+			string txt = null;
+			if (zoomToolStripComboBox.Text.Contains("%")) 
+				txt = zoomToolStripComboBox.Text.Replace("%", "");
+			else txt = zoomToolStripComboBox.Text;
+			// Parse text and set zoom level
 			int zoom;
-			if (!zoomToolStripComboBox.Text.Contains("%")) {
-				int.TryParse(zoomToolStripComboBox.Text.Trim(), out zoom);
-				zoomToolStripComboBox.Text = string.Format("{0} %", zoom);
-			} else {
-				if (int.TryParse(zoomToolStripComboBox.Text.Replace('%', ' ').Trim(), out zoom)) {
-					if (zoom > 0 && Zoom != zoom) Zoom = zoom;
-				}
-			}
+			if (int.TryParse(txt.Trim(), out zoom))
+				if (zoom > 0 && Zoom != zoom) Zoom = zoom;
+
+			if (zoomToolStripComboBox.Focused)
+				zoomToolStripComboBox.SelectionStart = cursorPos;
 		}
 
 
@@ -1296,7 +1470,7 @@ namespace Dataweb.NShape.Designer {
 					xmlStoreDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
 
 				XmlStore store = new XmlStore(xmlStoreDirectory, ".xml");
-				CreateProject(newProjectName, store, askUserLoadLibraries);
+				CreateProject(NewProjectName, store, askUserLoadLibraries);
 			}
 		}
 
@@ -1320,9 +1494,9 @@ namespace Dataweb.NShape.Designer {
 			try {
 				Cursor = Cursors.WaitCursor;
 				Application.DoEvents();
-				using (OpenAdoNetRepositoryDialog dlg = new OpenAdoNetRepositoryDialog(this, defaultServerName, defaultDatabaseName, mode)) {
+				using (OpenAdoNetRepositoryDialog dlg = new OpenAdoNetRepositoryDialog(this, DefaultServerName, DefaultDatabaseName, mode)) {
 					if (dlg.ShowDialog() == DialogResult.OK && CloseProject()) {
-						if (dlg.ProviderName == sqlServerProviderName) {
+						if (dlg.ProviderName == SqlServerProviderName) {
 							result = new SqlStore(dlg.ServerName, dlg.DatabaseName);
 							projectName = dlg.ProjectName;
 						} else MessageBox.Show(this, "Unsupported database repository.", "Unsupported repository", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -1334,8 +1508,9 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void openXMLRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
-			openFileDialog.Filter = fileFilterXmlRepository;
-			openFileDialog.AutoUpgradeEnabled = (Environment.OSVersion.Version.Major >= 6);
+			openFileDialog.Filter = FileFilterXmlRepository;
+			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
+				saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			if (Directory.Exists(xmlStoreDirectory))
 				openFileDialog.InitialDirectory = xmlStoreDirectory;
 			if (openFileDialog.ShowDialog() == DialogResult.OK && CloseProject()) {
@@ -1436,7 +1611,8 @@ namespace Dataweb.NShape.Designer {
 
 		private void ExportMetaFile(ImageFileFormat imageFormat) {
 			saveFileDialog.Filter = "Enhanced Meta Files|*.emf|All Files|*.*";
-			saveFileDialog.AutoUpgradeEnabled = (Environment.OSVersion.Version.Major >= 6);
+			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
+				saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
 				using (Image image = GetImageFromDiagram(imageFormat)) {
 					if (image != null) GdiHelpers.SaveImageToFile(image, saveFileDialog.FileName, imageFormat);
@@ -1474,7 +1650,7 @@ namespace Dataweb.NShape.Designer {
 			ICommand cmd = new InsertDiagramCommand(diagram);
 			project.ExecuteCommand(cmd);
 			CreateDisplayForDiagram(diagram);
-			showDiagramSettingsToolStripMenuItem_Click(this, new EventArgs());
+			showDiagramSettingsToolStripMenuItem_Click(this, EventArgs.Empty);
 		}
 
 
@@ -1490,43 +1666,107 @@ namespace Dataweb.NShape.Designer {
 
 		private void copyShapeOnlyItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.Copy(false);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
 		private void copyShapeAndModelItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.Copy(true);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
+		}
+
+
+		private void copyAsImageToolStripMenuItem_Click(object sender, EventArgs e) {
+			if (CurrentDisplay != null && CurrentDisplay.Diagram != null) {
+				IEnumerable<Shape> shapes = (CurrentDisplay.SelectedShapes.Count > 0) ? CurrentDisplay.SelectedShapes : null;
+				int margin = (CurrentDisplay.SelectedShapes.Count > 0) ? 10 : 0;
+				// Clear clipboard
+				Clipboard.Clear();
+				// Copy diagram/selected shapes to clipboard as PNG bitmap image file
+				Bitmap pngImage = (Bitmap)CurrentDisplay.Diagram.CreateImage(ImageFileFormat.Png, shapes, margin, (shapes == null), System.Drawing.Color.Empty);
+				Clipboard.SetData(DataFormats.Bitmap, pngImage);
+				// Copy diagram/selected shapes to clipboard as EMF vector graphic file
+				Metafile emfImage = (Metafile)CurrentDisplay.Diagram.CreateImage(ImageFileFormat.EmfPlus, shapes, margin, (shapes == null), System.Drawing.Color.Empty);
+				EmfHelper.PutEnhMetafileOnClipboard(Handle, emfImage, false);
+			}
 		}
 
 
 		private void cutShapeOnlyItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.Cut(false);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
 		private void cutShapeAndModelItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.Cut(true);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
 		private void pasteMenuItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.Paste();
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
 		private void deleteShapeAndModelItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.DeleteShapes(true);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
 		private void deleteShapeOnlyItem_Click(object sender, EventArgs e) {
 			CurrentDisplay.DeleteShapes(false);
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
+		}
+
+
+		private void selectAllToolStripMenuItem_Click(object sender, EventArgs e) {
+			if (CurrentDisplay != null && CurrentDisplay.Diagram != null)
+				CurrentDisplay.SelectShapes(CurrentDisplay.Diagram.Shapes, false);
+		}
+
+
+		private void selectAllShapesOfTheSameTypeToolStripMenuItem_Click(object sender, EventArgs e) {
+			if (CurrentDisplay != null && CurrentDisplay.Diagram != null && CurrentDisplay.SelectedShapes.Count > 0) {
+				Shape refShape = CurrentDisplay.SelectedShapes.TopMost;
+				foreach (Shape s in CurrentDisplay.Diagram.Shapes) {
+					if (s == refShape) continue;
+					if (s.Type == refShape.Type)
+						CurrentDisplay.SelectShape(s, true);
+				}
+			}
+		}
+
+
+		private void selectAllShapesOfTheSameTemplateToolStripMenuItem_Click(object sender, EventArgs e) {
+			if (CurrentDisplay != null && CurrentDisplay.Diagram != null && CurrentDisplay.SelectedShapes.Count > 0) {
+				Shape refShape = CurrentDisplay.SelectedShapes.TopMost;
+				foreach (Shape s in CurrentDisplay.Diagram.Shapes) {
+					if (s == refShape) continue;
+					if (s.Template== refShape.Template)
+						CurrentDisplay.SelectShape(s, true);
+				}
+			}
+		}
+
+
+		private void unselectAllToolStripMenuItem_Click(object sender, EventArgs e) {
+			if (CurrentDisplay != null && CurrentDisplay.Diagram != null)
+				CurrentDisplay.UnselectAll();
+		}
+
+
+		private void toForegroundMenuItem_Click(object sender, System.EventArgs e) {
+			CurrentDisplay.DiagramSetController.LiftShapes(CurrentDisplay.Diagram, CurrentDisplay.SelectedShapes, ZOrderDestination.ToTop);
+			UpdateAllMenuItems();
+		}
+
+
+		private void toBackgroundMenuItem_Click(object sender, System.EventArgs e) {
+			CurrentDisplay.DiagramSetController.LiftShapes(CurrentDisplay.Diagram, CurrentDisplay.SelectedShapes, ZOrderDestination.ToBottom);
+			UpdateAllMenuItems();
 		}
 
 
@@ -1545,6 +1785,9 @@ namespace Dataweb.NShape.Designer {
 			} catch (NShapeSecurityException exc) {
 				MessageBox.Show(this, exc.Message, "Command execution failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				commandExecuted = false;
+			} catch (Exception exc) {
+				Debug.Fail(exc.Message);
+				throw;
 			} finally {
 				project.History.CommandExecuted += history_CommandExecuted;
 				project.History.CommandsExecuted += history_CommandsExecuted;
@@ -1554,7 +1797,7 @@ namespace Dataweb.NShape.Designer {
 				currHistoryPos = historyTrackBar.Value;
 			else if (historyTrackBar.Value != currHistoryPos)
 				historyTrackBar.Value = currHistoryPos;
-			UpdateToolBarAndMenuItems();
+			UpdateAllMenuItems();
 		}
 
 
@@ -1613,14 +1856,14 @@ namespace Dataweb.NShape.Designer {
 
 
 		private void debugDrawOccupationToolbarButton_Click(object sender, EventArgs e) {
-#if DEBUG
+#if DEBUG_UI
 			ShowCellOccupation = debugDrawOccupationToolbarButton.Checked;
 #endif
 		}
 
 
 		private void debugDrawInvalidatedAreaToolbarButton_Click(object sender, EventArgs e) {
-#if DEBUG
+#if DEBUG_UI
 			ShowInvalidatedAreas = debugDrawInvalidatedAreaToolbarButton.Checked;
 #endif
 		}
@@ -1676,7 +1919,7 @@ namespace Dataweb.NShape.Designer {
 				lcf.SelectedShapes = CurrentDisplay.SelectedShapes;
 				lcf.FormClosed += LayoutControlForm_FormClosed;
 				lcf.LayoutChanged += LayoutControlForm_LayoutChanged;
-				lcf.Show();
+				lcf.Show(this);
 				layoutControlForm = lcf;
 			} else {
 				layoutControlForm.Activate();
@@ -1866,7 +2109,7 @@ namespace Dataweb.NShape.Designer {
 
 
 			/// <summary>
-			/// Contains the server projectName (in case of an AdoRepository) or the computer projectName (in case of a XmlStore).
+			/// Contains the server name (in case of an AdoRepository) or the computer name (in case of a XmlStore).
 			/// </summary>
 			public string computerName;
 
@@ -1890,31 +2133,50 @@ namespace Dataweb.NShape.Designer {
 
 		#region [Private] Constants
 
-		private const string newProjectName = "New NShape Project";
-		private const string appTitle = "NShape Designer";
-		private const string sqlServerProviderName = "SQL Server";
-		private const string defaultDatabaseName = "NShape";
-		private const string defaultServerName = ".\\SQLEXPRESS";
-		private const string fileFilterXmlRepository = "XML Repository Files|*.xml|All Files|*.*";
+		private const string NewProjectName = "New NShape Project";
+		private const string AppTitle = "NShape Designer";
+		private const string SqlServerProviderName = "SQL Server";
+		private const string DefaultDatabaseName = "NShape";
+		private const string DefaultServerName = ".\\SQLEXPRESS";
+		private const string ConfigFileName = "Config.cfg";
+		private const string FileFilterXmlRepository = "XML Repository Files|*.xml|All Files|*.*";
 
-		private const string projectDirectoryTag = "ProjectDirectory";
-		private const string pathTag = "Path";
-		private const string projectsTag = "Projects";
-		private const string projectTag = "Project";
-		private const string projectNameTag = "Name";
-		private const string typeNameTag = "RepositoryType";
-		private const string serverNameTag = "ServerName";
-		private const string dataSourceTag = "DataSource";
+		private const string QueryNode = "//{0}";
+		private const string QueryNodeAttr = "//{0}[{1}]";
+
+		private const string NodeNameSettings = "Settings";
+		private const string NodeNameProjectDirectory = "ProjectDirectory";
+		private const string NodeNameProjects = "Projects";
+		private const string NodeNameProject = "Project";
+		private const string NodeNameWindowSettings = "WindowSettings";
+		
+		private const string AttrNamePath = "Path";
+		private const string AttrNameName = "Name";
+		private const string AttrNameRepositoryType = "RepositoryType";
+		private const string AttrNameServerName = "ServerName";
+		private const string AttrNameDataSource = "DataSource";
+		private const string AttrNameState = "State";
+		private const string AttrNamePositionX = "PositionX";
+		private const string AttrNamePositionY = "PositionY";
+		private const string AttrNameWidth = "Width";
+		private const string AttrNameHeight = "Height";
 		private const int RecentProjectsLimit = 15;
+
+		private const string ShapeCntFormatStr = "{0} Shape{1}";
+		private const string PercentFormatStr = "{0} %";
+		private const string PointFormatStr = "{0}, {1}";
+		private const string SizeFormatStr = "{0} x {1}";
 
 		#endregion
 
 
 		#region [Private] Fields
 
-		EventMonitorForm eventMoniorForm = null;
+		private EventMonitorForm eventMoniorForm;
+		private LayoutDialog layoutControlForm;
+		private TemplateEditorDialog templateEditorDialog;
 		
-		private string nShapeConfigDirectory = Path.Combine("dataweb", "NShape");
+		private string nShapeConfigDirectory = Path.Combine(Path.Combine("dataweb", "NShape"), Application.ProductName);
 		private string xmlStoreDirectory;
 		private bool projectSaved = false;
 
@@ -1936,24 +2198,23 @@ namespace Dataweb.NShape.Designer {
 		private bool showInvalidatedAreas = false;
 #endif
 
-		private string configFile;
 		private string configFolder;
 		private int zoom = 100;
 		private bool highQuality = true;
 		private int historyDropDownItemCount = 20;
 
-		private LayoutDialog layoutControlForm;
-		private TemplateEditorDialog templateEditorDialog;
-
-		private XmlWriter cfgWriter;
-		private XmlReader cfgReader;
 		private List<RepositoryInfo> recentProjects = new List<RepositoryInfo>();
+
+		private void settingsToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
+
+		}
 
 #if TdbRepository
 		private const string fileFilterAllRepositories = "NShape Repository Files|*.xml;*.tdbd|XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";
 		private const string fileFilterTurboDBRepository = "TurboDB Repository Databases|*.tdbd|All Files|*.*";
 #endif
 		#endregion
+
 	}
 
 }

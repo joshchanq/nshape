@@ -39,15 +39,15 @@
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dataweb.NShape, Version=1.0.4.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+    <Reference Include="Dataweb.NShape, Version=1.0.7.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.4.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+    <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.7.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Dataweb.NShape.WinFormsUI, Version=1.0.4.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+    <Reference Include="Dataweb.NShape.WinFormsUI, Version=1.0.7.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
     </Reference>

@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -1126,7 +1126,7 @@ namespace Dataweb.NShape.Advanced {
 					int firstPixelY = stroke[index - backLength].Y - stroke[index - backLength / 2].Y;
 					int currPixelX = stroke[index].X - stroke[index - backLength / 2].X;
 					int currPixelY = stroke[index].Y - stroke[index - backLength / 2].Y;
-					// shapeAngle ist der Winkel zwischen dem vordern Teil und der geraden Fortsetzung
+					// Angle ist der Winkel zwischen dem vordern Teil und der geraden Fortsetzung
 					// D.h. wenns gerade geht 0°, rechtwinklig nach links 90° und rechtwinklig nach rechts -90°
 					// Winkel in Laufrichtung, normalisiert
 					double firstAngle = Math.Atan2(firstPixelY, firstPixelX) - Math.PI;

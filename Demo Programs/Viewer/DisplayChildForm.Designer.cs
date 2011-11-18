@@ -29,7 +29,6 @@
 			this.shapeCntLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel7 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.sizeLabel = new System.Windows.Forms.ToolStripStatusLabel();
-			this.toolStripStatusLabel3 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel8 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -40,6 +39,7 @@
 			this.toolStripStatusLabel9 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.bottomRightLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
+			this.toolStripStatusLabel10 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.statusStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -52,7 +52,7 @@
             this.shapeCntLabel,
             this.toolStripStatusLabel7,
             this.sizeLabel,
-            this.toolStripStatusLabel3,
+            this.toolStripStatusLabel10,
             this.toolStripStatusLabel1,
             this.toolStripStatusLabel8,
             this.zoomLabel,
@@ -86,7 +86,7 @@
 			// 
 			this.shapeCntLabel.ImageTransparentColor = System.Drawing.Color.White;
 			this.shapeCntLabel.Name = "shapeCntLabel";
-			this.shapeCntLabel.Size = new System.Drawing.Size(51, 17);
+			this.shapeCntLabel.Size = new System.Drawing.Size(53, 17);
 			this.shapeCntLabel.Text = "0 Shapes";
 			this.shapeCntLabel.ToolTipText = "Number of shapes in the diagram";
 			// 
@@ -101,15 +101,9 @@
 			this.sizeLabel.Image = global::NShapeViewer.Properties.Resources.Size;
 			this.sizeLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.sizeLabel.Name = "sizeLabel";
-			this.sizeLabel.Size = new System.Drawing.Size(84, 17);
+			this.sizeLabel.Size = new System.Drawing.Size(91, 17);
 			this.sizeLabel.Text = "Diagram Size";
 			this.sizeLabel.ToolTipText = "Size of the diagram";
-			// 
-			// toolStripStatusLabel3
-			// 
-			this.toolStripStatusLabel3.Name = "toolStripStatusLabel3";
-			this.toolStripStatusLabel3.Size = new System.Drawing.Size(10, 17);
-			this.toolStripStatusLabel3.Text = " ";
 			// 
 			// toolStripStatusLabel1
 			// 
@@ -129,7 +123,7 @@
 			this.zoomLabel.Image = global::NShapeViewer.Properties.Resources.ZoomBtn;
 			this.zoomLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.zoomLabel.Name = "zoomLabel";
-			this.zoomLabel.Size = new System.Drawing.Size(88, 17);
+			this.zoomLabel.Size = new System.Drawing.Size(92, 17);
 			this.zoomLabel.Text = "Zoom: 100 %";
 			this.zoomLabel.ToolTipText = "Display zoom";
 			// 
@@ -144,7 +138,7 @@
 			this.mousePosLabel.Image = global::NShapeViewer.Properties.Resources.Position;
 			this.mousePosLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.mousePosLabel.Name = "mousePosLabel";
-			this.mousePosLabel.Size = new System.Drawing.Size(94, 17);
+			this.mousePosLabel.Size = new System.Drawing.Size(105, 17);
 			this.mousePosLabel.Text = "Mouse Position";
 			this.mousePosLabel.ToolTipText = "Position of the mouse cursor";
 			// 
@@ -159,7 +153,7 @@
 			this.topLeftLabel.Image = global::NShapeViewer.Properties.Resources.TopLeft;
 			this.topLeftLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.topLeftLabel.Name = "topLeftLabel";
-			this.topLeftLabel.Size = new System.Drawing.Size(63, 17);
+			this.topLeftLabel.Size = new System.Drawing.Size(67, 17);
 			this.topLeftLabel.Text = "Top Left";
 			this.topLeftLabel.ToolTipText = "Top left corner of the displayed area";
 			// 
@@ -174,14 +168,13 @@
 			this.bottomRightLabel.Image = global::NShapeViewer.Properties.Resources.BottomRight;
 			this.bottomRightLabel.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.bottomRightLabel.Name = "bottomRightLabel";
-			this.bottomRightLabel.Size = new System.Drawing.Size(85, 17);
+			this.bottomRightLabel.Size = new System.Drawing.Size(94, 17);
 			this.bottomRightLabel.Text = "Bottom Right";
 			this.bottomRightLabel.ToolTipText = "Bottom right corner of the displayed area";
 			// 
 			// display
 			// 
 			this.display.AllowDrop = true;
-			this.display.AutoScroll = true;
 			this.display.BackColor = System.Drawing.Color.WhiteSmoke;
 			this.display.BackColorGradient = System.Drawing.Color.LightGray;
 			this.display.BackgroundGradientAngle = 0;
@@ -228,6 +221,12 @@
 			this.display.MouseMove += new System.Windows.Forms.MouseEventHandler(this.display_MouseMove);
 			this.display.ShapeDoubleClick += new System.EventHandler<Dataweb.NShape.Controllers.DiagramPresenterShapeClickEventArgs>(this.display_ShapeDoubleClick);
 			// 
+			// toolStripStatusLabel10
+			// 
+			this.toolStripStatusLabel10.Name = "toolStripStatusLabel10";
+			this.toolStripStatusLabel10.Size = new System.Drawing.Size(145, 17);
+			this.toolStripStatusLabel10.Spring = true;
+			// 
 			// DisplayChildForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -259,10 +258,10 @@
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel2;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel6;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel7;
-		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel3;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel4;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel5;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel8;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel9;
+		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel10;
 	}
 }

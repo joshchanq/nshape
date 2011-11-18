@@ -18,7 +18,9 @@ using Dataweb.NShape.WinFormsUI;
 
 
 namespace NShapeViewer {
+
 	public partial class DisplayChildForm : Form {
+		
 		public DisplayChildForm() {
 			InitializeComponent();
 		}

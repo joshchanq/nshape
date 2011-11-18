@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -103,7 +103,7 @@ namespace Dataweb.NShape.Advanced {
 				case ContentAlignment.TopRight:
 					textBounds.X = captionBounds.Right - textBounds.Width;
 					break;
-				default: Debug.Assert(false); break;
+				default: Debug.Assert(false, "Unhandled switch case"); break;
 			}
 			// set vertical alignment
 			switch (paragraphStyle.Alignment) {
@@ -122,7 +122,7 @@ namespace Dataweb.NShape.Advanced {
 				case ContentAlignment.TopRight:
 					textBounds.Y = captionBounds.Top;
 					break;
-				default: Debug.Assert(false); break;
+				default: Debug.Assert(false, "Unhandled switch case"); break;
 			}
 			return textBounds;
 		}
@@ -152,7 +152,7 @@ namespace Dataweb.NShape.Advanced {
 			if (string.IsNullOrEmpty(captionText))
 				return true;
 			else if (textPath != null /*&& layoutW > 0 && layoutH > 0*/) {
-				// Collect bjects for calculating text layout
+				// Collect objects for calculating text layout
 				Font font = ToolCache.GetFont(characterStyle);
 				StringFormat formatter = ToolCache.GetStringFormat(paragraphStyle);
 				Rectangle textBounds = Rectangle.Empty;
@@ -165,7 +165,7 @@ namespace Dataweb.NShape.Advanced {
 				textPath.StartFigure();
 				textPath.AddString(PathText, font.FontFamily, (int)font.Style, characterStyle.Size, textBounds, formatter);
 				textPath.CloseFigure();
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 				if (textPath.PointCount == 0 && PathText.Trim() != string.Empty) {
 					Size textSize = TextMeasurer.MeasureText(PathText, font, textBounds.Size, paragraphStyle);
 					Debug.Print("Failed to create TextPath - please check if the caption bounds are too small for the text.");
@@ -291,6 +291,10 @@ namespace Dataweb.NShape.Advanced {
 		/// defining the bounds of the caption</param>
 		/// <param name="bottomLeft">The top bottom left of the transformed rectangle 
 		/// defining the bounds of the caption</param>
+		/// <returns>
+		/// True if a non-empty text exists for the specified caption, otherwise false. 
+		/// If the caption's text is empty, placeholder bounds are calculated.
+		/// </returns>
 		bool GetCaptionBounds(int index, out Point topLeft, out Point topRight, out Point bottomRight, 
 			out Point bottomLeft);
 
@@ -332,7 +336,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// The text of the <see cref="T:Dataweb.NShape.Advanced.Shape" />.
 		/// </summary>
-		[Category("Text")]
+		[Category("Data")]
 		[Description("Text displayed inside the shape")]
 		[PropertyMappingId(PropertyIdText)]
 		[RequiredPermission(Permission.ModifyData)]
@@ -354,7 +358,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		[Category("Text")]
+		[Category("Appearance")]
 		[Description("Determines the style of the shape's text.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdCharacterStyle)]
 		[RequiredPermission(Permission.Present)]
@@ -370,7 +374,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		[Category("Text")]
+		[Category("Appearance")]
 		[Description("Determines the layout of the shape's text.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[RequiredPermission(Permission.Present)]
 		[PropertyMappingId(PropertyIdParagraphStyle)]
@@ -444,6 +448,7 @@ namespace Dataweb.NShape.Advanced {
 		#region ICaptionedShape Members
 
 		/// <ToBeCompleted></ToBeCompleted>
+		[Browsable(false)]
 		public virtual int CaptionCount {
 			get { return 1; }
 		}
@@ -468,16 +473,22 @@ namespace Dataweb.NShape.Advanced {
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual bool GetCaptionTextBounds(int index, out Point topLeft, out Point topRight, out Point bottomRight, out Point bottomLeft) {
 			if (index != 0) throw new IndexOutOfRangeException("index");
-			if (caption == null) {
-				topLeft = topRight = bottomLeft = bottomRight = Center;
-				return false;
+			bool result;
+			Rectangle captionBounds = Rectangle.Empty;
+			CalcCaptionBounds(index, out captionBounds);
+			Rectangle textBounds = Rectangle.Empty;
+			if (caption != null) {
+				textBounds = caption.CalculateTextBounds(captionBounds, CharacterStyle, ParagraphStyle, DisplayService);
+				result = true;
 			} else {
-				Rectangle captionBounds = Rectangle.Empty;
-				CalcCaptionBounds(index, out captionBounds);
-				Rectangle textBounds = caption.CalculateTextBounds(captionBounds, CharacterStyle, ParagraphStyle, DisplayService);
-				Geometry.TransformRectangle(Center, Angle, textBounds, out topLeft, out topRight, out bottomRight, out bottomLeft);
-				return true;
+				// Calculate placeholder bounds
+				textBounds.Size= TextMeasurer.MeasureText("Iq", CharacterStyle, captionBounds.Size, ParagraphStyle);
+				textBounds.X = (int)Math.Round(captionBounds.X + (captionBounds.Width / 2f) - textBounds.Width / 2f);
+				textBounds.Y = (int)Math.Round(captionBounds.Y + (captionBounds.Height / 2f) - textBounds.Height / 2f);
+				result = false;
 			}
+			Geometry.TransformRectangle(Center, Angle, textBounds, out topLeft, out topRight, out bottomRight, out bottomLeft);
+			return result;
 		}
 
 
@@ -527,10 +538,9 @@ namespace Dataweb.NShape.Advanced {
 		public virtual int FindCaptionFromPoint(int x, int y) {
 			for (int i = 0; i < CaptionCount; ++i) {
 				Point tl = Point.Empty, tr = Point.Empty, br = Point.Empty, bl = Point.Empty;
-				if (GetCaptionTextBounds(i, out tl, out tr, out br, out bl)) {
-					if (Geometry.QuadrangleContainsPoint(tl, tr, br, bl, x, y))
-						return i;
-				}
+				GetCaptionTextBounds(i, out tl, out tr, out br, out bl);
+				if (Geometry.QuadrangleContainsPoint(tl, tr, br, bl, x, y))
+					return i;
 			}
 			return -1;
 		}
@@ -631,7 +641,7 @@ namespace Dataweb.NShape.Advanced {
 			Rectangle layoutRectangle = Rectangle.Empty;
 			CalcCaptionBounds(0, out layoutRectangle);
 			result = caption.CalculatePath(layoutRectangle.X, layoutRectangle.Y, layoutRectangle.Width, layoutRectangle.Height, CharacterStyle, ParagraphStyle);
-			if (maintainTextAngle && Angle > 900 && Angle <= 2700) {
+			if (maintainTextAngle && Angle > 900 && Angle < 2700) {
 				// Flip text in order to maintain its orientation
 				Matrix.Reset();
 				PointF rotationCenter = PointF.Empty;

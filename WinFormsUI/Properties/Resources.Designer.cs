@@ -88,9 +88,30 @@ namespace Dataweb.NShape.WinFormsUI.Properties {
             }
         }
         
+        internal static System.Drawing.Bitmap Checked {
+            get {
+                object obj = ResourceManager.GetObject("Checked", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap CopyAsImage {
+            get {
+                object obj = ResourceManager.GetObject("CopyAsImage", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
         internal static System.Drawing.Bitmap CopyBtn {
             get {
                 object obj = ResourceManager.GetObject("CopyBtn", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap CopyDiagram {
+            get {
+                object obj = ResourceManager.GetObject("CopyDiagram", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -133,6 +154,13 @@ namespace Dataweb.NShape.WinFormsUI.Properties {
         internal static System.Drawing.Bitmap GroupBtn {
             get {
                 object obj = ResourceManager.GetObject("GroupBtn", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Information {
+            get {
+                object obj = ResourceManager.GetObject("Information", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -231,6 +259,13 @@ namespace Dataweb.NShape.WinFormsUI.Properties {
         internal static System.Drawing.Bitmap ToForeground {
             get {
                 object obj = ResourceManager.GetObject("ToForeground", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap Unchecked {
+            get {
+                object obj = ResourceManager.GetObject("Unchecked", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

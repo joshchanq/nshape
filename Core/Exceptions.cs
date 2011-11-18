@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -15,6 +15,7 @@
 using System;
 
 using Dataweb.NShape.Advanced;
+using System.Runtime.Serialization;
 
 
 namespace Dataweb.NShape {
@@ -27,8 +28,20 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeException" />.
 		/// </summary>
-		public NShapeException(string message)
-			: base(message) {
+		public NShapeException() : base() { }
+
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeException" />.
+		/// </summary>
+		public NShapeException(string message) : base(message) { }
+
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeException" />.
+		/// </summary>
+		public NShapeException(string message, Exception innerException)
+			: base(message, innerException) { 
 		}
 
 
@@ -45,6 +58,14 @@ namespace Dataweb.NShape {
 		/// </summary>
 		public NShapeException(string format, Exception innerException, params object[] args)
 			: base(string.Format(format, args), innerException) {
+		}
+
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapeException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
 		}
 
 	}
@@ -70,6 +91,14 @@ namespace Dataweb.NShape {
 			: string.Format("'{0}' denied: Required permission is not granted.", (command != null) ? command.Description : string.Empty)) {
 		}
 
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapeSecurityException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
+		}
+
 	}
 
 
@@ -88,6 +117,14 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInternalException" />.
 		/// </summary>
+		public NShapeInternalException(string message, Exception innerException)
+			: base(message, innerException) {
+		}
+
+
+		/// <summary>
+		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.NShapeInternalException" />.
+		/// </summary>
 		public NShapeInternalException(string format, params object[] args)
 			: base(string.Format(format, args), null) {
 		}
@@ -98,6 +135,14 @@ namespace Dataweb.NShape {
 		/// </summary>
 		public NShapeInternalException(string format, Exception innerException, params object[] args)
 			: base(string.Format(format, args), innerException) {
+		}
+
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapeInternalException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
 		}
 
 	}
@@ -120,6 +165,14 @@ namespace Dataweb.NShape {
 		/// </summary>
 		public NShapeUnsupportedValueException(object value)
 			: base((value != null) ? string.Format("Unsupported {0} value '{1}'.", value.GetType().Name, value) : "Unsupported value.") {
+		}
+
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapeUnsupportedValueException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
 		}
 
 	}
@@ -156,7 +209,16 @@ namespace Dataweb.NShape {
 		public NShapeInterfaceNotSupportedException(ModelObjectType instanceType, Type neededInterface)
 			: base("Type '{0}' does not implement interface '{1}'.", instanceType.FullName, neededInterface.FullName) {
 		}
-	}
+	
+	
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapeInterfaceNotSupportedException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
+		}
+
+}
 
 
 	/// <ToBeCompleted></ToBeCompleted>
@@ -168,6 +230,14 @@ namespace Dataweb.NShape {
 		/// </summary>
 		public NShapeMappingNotSupportedException(Type shapeType, Type modelType)
 			: base("Mapping between proeprty types '{0}' and '{1}' are not supported.", modelType.Name, shapeType.Name) {
+		}
+
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapeMappingNotSupportedException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
 		}
 
 	}
@@ -191,5 +261,14 @@ namespace Dataweb.NShape {
 			: base("Property '{0}' of {1} is not set.", propertyName, propertyOwner.GetType().Name) {
 		}
 
+
+		/// <summary>
+		/// A constructor is needed for serialization when an exception propagates from a remoting server to the client. 
+		/// </summary>
+		protected NShapePropertyNotSetException(SerializationInfo info, StreamingContext context)
+			: base(info, context) {
+		}
+
 	}
+
 }

@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -14,13 +14,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Windows.Forms;
+
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.Controllers;
-using System.IO;
 
 namespace Dataweb.NShape.WinFormsUI {
 
@@ -211,8 +212,9 @@ namespace Dataweb.NShape.WinFormsUI {
 				case ImageFileFormat.Jpeg:
 				case ImageFileFormat.Png:
 				case ImageFileFormat.Tiff:
-					enable = !exportToClipboard; break;
-				default: enable = false; break;
+					enable = true; break;
+				default: 
+					enable = false; break;
 			}
 			dpiLabel.Enabled =
 			dpiComboBox.Enabled =
@@ -315,7 +317,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			string fileName = string.Empty;
 			saveFileDialog.Filter = fileFilter;
-			saveFileDialog.AutoUpgradeEnabled = (Environment.OSVersion.Version.Major >= 6);
+			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
+				saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			saveFileDialog.AddExtension = true;
 			saveFileDialog.SupportMultiDottedExtensions = true;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK)
@@ -338,7 +341,35 @@ namespace Dataweb.NShape.WinFormsUI {
 				if (!string.IsNullOrEmpty(dpiComboBox.Text))
 					dpiComboBox.Text = string.Empty;
 				value = -1;
+			} else {
+				if (previewCheckBox.Checked) {
+					// Deaactivate preview if image would be very large
+					// ToDo: Create image with a worker thread
+					Graphics infoGfx = diagramPresenter.Diagram.DisplayService.InfoGraphics;
+					int imgWidth = (int)Math.Round((value / infoGfx.DpiX) * diagramPresenter.Diagram.Width);
+					int imgHeight = (int)Math.Round((value / infoGfx.DpiY) * diagramPresenter.Diagram.Height);
+					if (Math.Max(imgWidth, imgHeight) > deactivatePreviewDimension) {
+						string msg = string.Format("The resulting image will have {0}x{1} pixels and drawing a preview of this image might be slow.\nDo you wand to deactivate the preview option?", 
+															imgWidth, imgHeight);
+						DialogResult result = MessageBox.Show(this, msg, "Deactivate preview?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question, MessageBoxDefaultButton.Button1);
+						switch (result) {
+							case DialogResult.Cancel:
+								dpiComboBox.Text = dpi.ToString();
+								value = dpi;
+								break;
+							case DialogResult.Yes:
+								previewCheckBox.Checked = false;
+								break;
+							case DialogResult.No:
+								// Update dimensions that are ok for the user
+								deactivatePreviewDimension = Math.Max(imgWidth, imgHeight);
+								break;
+							default: Debug.Fail("Unhandled switch case!"); break;
+						}
+					}
+				}
 			}
+			// Set value and refresh preview image
 			if (value > 0 && value != dpi) {
 				dpi = value;
 				RefreshPreview();
@@ -381,6 +412,11 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void marginUpDown_ValueChanged(object sender, EventArgs e) {
 			margin = (int)marginUpDown.Value;
 			RefreshPreview();
+		}
+
+
+		private void marginUpDown_KeyUp(object sender, KeyEventArgs e) {
+			marginUpDown_ValueChanged(sender, EventArgs.Empty);
 		}
 
 
@@ -500,6 +536,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private int dpi;
 		private Color backgroundColor = Color.Transparent;
 		private IEnumerable<Shape> shapes;
+		private int deactivatePreviewDimension = 3000;
 
 		// Export stuff
 		private ImageFileFormat imageFormat;

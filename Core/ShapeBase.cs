@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -24,7 +24,7 @@ using System.Drawing.Drawing2D;
 namespace Dataweb.NShape.Advanced {
 
 	/// <summary>
-	/// Base class for all graphical objects
+	/// Base class for all shape implementations
 	/// </summary>
 	/// <remarks>RequiredPermissions set</remarks>
 	public abstract class ShapeBase : Shape, IShapeCollection, IReadOnlyShapeCollection {
@@ -53,7 +53,8 @@ namespace Dataweb.NShape.Advanced {
 
 			// Original
 			// Copy template only if the shape has no template yet.
-			if (template == null) template = source.Template;
+			//if (template == null) template = source.Template;
+
 			// Copy base properties
 			if (this.modelObject != null) this.modelObject.DetachShape(this);
 			this.modelObject = source.ModelObject;
@@ -74,7 +75,9 @@ namespace Dataweb.NShape.Advanced {
 			MoveTo(source.X, source.Y);
 			// Clone children if there are any
 			if (source.Children != null && source.Children.Count > 0) {
-				this.children = new CompositeShapeAggregation(this);
+				// Create children collection if it does not exist
+				if (this.children == null)
+					this.children = new CompositeShapeAggregation(this);
 				if (source is ShapeBase)
 					this.children.CopyFrom(((ShapeBase)source).children);
 				else this.children.CopyFrom(source.Children);
@@ -97,6 +100,12 @@ namespace Dataweb.NShape.Advanced {
 			bool result = false;
 			if (style == null || IsStyleAffected(LineStyle, style)) {
 				boundingRectangleLoose = boundingRectangleTight = Geometry.InvalidRectangle;
+				// Line style's line width affects the cells (of the shape map) occupied by 
+				// the shape, so we have to notify the owner
+				if (Owner != null) {
+					Owner.NotifyChildResizing(this);
+					Owner.NotifyChildResized(this);
+				}
 				Invalidate();
 				result = true;
 			}
@@ -113,7 +122,9 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
-		public override Template Template { get { return template; } }
+		public override Template Template {
+			get { return template; }
+		}
 
 
 		/// <override></override>
@@ -198,6 +209,8 @@ namespace Dataweb.NShape.Advanced {
 				else return securityDomainName;
 			}
 			set {
+				if (value < 'A' || value > 'Z') 
+					throw new ArgumentOutOfRangeException("SecurityDomainName", "The domain qualifier has to be an upper case  ANSI letter (A-Z).");
 				if (Template != null && Template.Shape.SecurityDomainName == value)
 					securityDomainName = '\0';
 				else securityDomainName = value;
@@ -327,33 +340,36 @@ namespace Dataweb.NShape.Advanced {
 		
 		/// <summary>
 		/// Returns all connections between this shape and the other shape. 
-		/// If otherShape is null, the connections to all other selectedShapes are returned.
+		/// If otherShape is null, the connections to all other shapes are returned.
 		/// </summary>
 		public override IEnumerable<ShapeConnectionInfo> GetConnectionInfos(ControlPointId ownPointId, Shape otherShape) {
 			if (ownPointId == ControlPointId.None) throw new ArgumentException("ownPointId");
 			if (connectionInfos == null) yield break;
 			for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-				if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-					&& (ownPointId == ControlPointId.Any
-						|| GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId))) {
-					yield return connectionInfos[i];
+				if (otherShape != null && connectionInfos[i].OtherShape != otherShape)
+					continue;
+				if (ownPointId != ControlPointId.Any) {
+					switch (ownPointId) {
+						case ControlPointId.FirstVertex:
+						case ControlPointId.LastVertex:
+						case ControlPointId.Reference:
+							if (GetControlPointIndex(ownPointId) != GetControlPointIndex(connectionInfos[i].OwnPointId))
+								continue;
+							break;
+						default:
+							if (ownPointId != connectionInfos[i].OwnPointId)
+								continue;
+							break;
+					}
 				}
+				yield return connectionInfos[i];
 			}
-			// This version throw an exception if the collection is changed while enumerating...
-			// ToDo: Clarify if this is a desired behavior
-			//foreach (ShapeConnectionInfo ci in connectionInfos) {
-			//   if ((otherShape == null || ci.OtherShape == otherShape)
-			//      && (ownPointId == ControlPointId.Any
-			//         || GetControlPointIndex(ownPointId) == GetControlPointIndex(ci.OwnPointId))) {
-			//      yield return ci;
-			//   }
-			//}
 		}
 
 
 		/// <summary>
 		/// Returns all connections between this shape and the other shape. 
-		/// If otherShape is null, the connections to all other selectedShapes are returned.
+		/// If otherShape is null, the connections to all other shapes are returned.
 		/// </summary>
 		public override ShapeConnectionInfo GetConnectionInfo(ControlPointId gluePointId, Shape otherShape) {
 			if (!HasControlPointCapability(gluePointId, ControlPointCapabilities.Glue))
@@ -361,9 +377,26 @@ namespace Dataweb.NShape.Advanced {
 			if (gluePointId == ControlPointId.None) throw new ArgumentException("gluePointId");
 			if (connectionInfos != null) {
 				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-					if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-						&& GetControlPointIndex(gluePointId) == GetControlPointIndex(connectionInfos[i].OwnPointId))
-						return connectionInfos[i];
+					if (otherShape != null && connectionInfos[i].OtherShape != otherShape)
+						continue;
+					if (gluePointId != ControlPointId.Any) {
+						switch (gluePointId) {
+							case ControlPointId.FirstVertex:
+							case ControlPointId.LastVertex:
+							case ControlPointId.Reference:
+								if (GetControlPointIndex(gluePointId) != GetControlPointIndex(connectionInfos[i].OwnPointId))
+									continue;
+								break;
+							default:
+								if (gluePointId != connectionInfos[i].OwnPointId)
+									continue;
+								break;
+						}
+					}
+					return connectionInfos[i];
+					//if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
+					//    && GetControlPointIndex(gluePointId) == GetControlPointIndex(connectionInfos[i].OwnPointId))
+					//    return connectionInfos[i];
 				}
 			}
 			return ShapeConnectionInfo.Empty;
@@ -375,22 +408,26 @@ namespace Dataweb.NShape.Advanced {
 			if (ownPointId == ControlPointId.None) throw new ArgumentException("ownPointId");
 			if (connectionInfos != null) {
 				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-					if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-							&& (ownPointId == ControlPointId.Any 
-								|| GetControlPointIndex(ownPointId) == GetControlPointIndex(connectionInfos[i].OwnPointId)))
-						return connectionInfos[i].OtherPointId;
+					if (otherShape != null && connectionInfos[i].OtherShape != otherShape)
+						continue;
+					if (ownPointId != ControlPointId.Any) {
+						switch (ownPointId) {
+							case ControlPointId.FirstVertex:
+							case ControlPointId.LastVertex:
+							case ControlPointId.Reference:
+								if (GetControlPointIndex(ownPointId) != GetControlPointIndex(connectionInfos[i].OwnPointId))
+									continue;
+								break;
+							default:
+								if (ownPointId != connectionInfos[i].OwnPointId)
+									continue;
+								break;
+						}
+					}
+					return connectionInfos[i].OtherPointId;
 				}
 			}
 			return ControlPointId.None;
-
-			//if (connectionInfos != null) {
-			//   for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-			//      if ((otherShape == null || connectionInfos[i].OtherShape == otherShape)
-			//         && (ownPointId == ControlPointId.None || ownPointId == connectionInfos[i].OwnPointId))
-			//         return connectionInfos[i].OtherPointId;
-			//   }
-			//}
-			//return ControlPointId.None;
 		}
 
 
@@ -398,8 +435,8 @@ namespace Dataweb.NShape.Advanced {
 		/// Informs the shape that posesses the GluePoint that the connection point of an active connection has been moved. 
 		/// If the connection is a point-to-point connection, the shape moves the glue point to the given position. 
 		/// If the connection is a point-to-shape connection, the shape calculates the new endpoint (i.e. position of the sticky point) with the help of the connected shape. 
-		/// If this shape is a ILineShape, it calls CalcGluePoint to determine the new sticky point position.
-		/// In all cases, if the sticky point cannot be moved to the new required position because of constraints, the connection is dissolved.
+		/// If this <see cref="T:Dataweb.NShape.Advanced.Shape" /> is a <see cref="T:Dataweb.NShape.Advanced.ILinearShape" />, it calls CalcGluePoint to determine the new sticky point position.
+		/// In all cases, if the glue point cannot be moved to the new required position because of constraints, the connection is dissolved.
 		/// </summary>
 		public override void FollowConnectionPointWithGluePoint(ControlPointId gluePointId, Shape connectedShape, ControlPointId movedPointId) {
 			Debug.Assert(connectionInfos != null);
@@ -474,14 +511,16 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Determines whether the shape intersects with the given rectangle.
+		/// Determines whether the shape intersects with the given rectangle area.
 		/// </summary>
 		public override sealed bool IntersectsWith(int x, int y, int width, int height) {
 			return IntersectsWithCore(x, y, width, height) || IntersectsWithChildren(x, y, width, height);
 		}
 
 
-		/// <ToBeCompleted></ToBeCompleted>
+		/// <summary>
+		/// Determines whether the shape intersects with the given rectangle area.
+		/// </summary>
 		protected abstract bool IntersectsWithCore(int x, int y, int width, int height);
 
 
@@ -496,17 +535,21 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override sealed Rectangle GetBoundingRectangle(bool tight) {
 			if (children == null) {
-				if (tight) {
-					if (!Geometry.IsValid(boundingRectangleTight))
-						boundingRectangleTight = CalculateBoundingRectangle(tight);
-					Debug.Assert(Geometry.IsValid(boundingRectangleTight));
-					return boundingRectangleTight;
-				} else {
-					if (!Geometry.IsValid(boundingRectangleLoose))
-						boundingRectangleLoose = CalculateBoundingRectangle(tight);
-					Debug.Assert(Geometry.IsValid(boundingRectangleLoose));
-					return boundingRectangleLoose;
+				if (!Geometry.IsValid(tight ? boundingRectangleTight : boundingRectangleLoose)) {
+					// Re-calculate bounding rectagle 
+					Rectangle boundingRect = CalculateBoundingRectangle(tight);
+					Debug.Assert(Geometry.IsValid(boundingRect));
+
+					if (LineStyle.LineWidth > 1) {
+						int lineRadius = (int)Math.Ceiling(LineStyle.LineWidth / 2f);
+						boundingRect.Inflate(lineRadius, lineRadius); ;
+					}
+
+					// Store calculated rectangle until shape size or outline changes
+					if (tight) boundingRectangleTight = boundingRect;
+					else boundingRectangleLoose = boundingRect;
 				}
+				return tight ? boundingRectangleTight : boundingRectangleLoose;
 			} else {
 				Rectangle result = CalculateBoundingRectangle(tight);
 				if (Geometry.IsValid(result)) 
@@ -577,6 +620,7 @@ namespace Dataweb.NShape.Advanced {
 					BeginResize();
 
 					result = MovePointByCore(pointId, deltaX, deltaY, modifiers);
+					boundingRectangleTight = boundingRectangleLoose = Geometry.InvalidRectangle;
 					
 					Rectangle boundsAfter = GetBoundingRectangle(true);
 					if (!EndResize(boundsAfter.Width - boundsBefore.Width, boundsAfter.Height - boundsBefore.Height))
@@ -667,11 +711,10 @@ namespace Dataweb.NShape.Advanced {
 		public override ILineStyle LineStyle {
 			get { return privateLineStyle ?? Template.Shape.LineStyle; }
 			set {
-				Invalidate();
+				BeginResize();
 				// Set private LineStyle only if it differs from the template's line style (if a template exists)
 				privateLineStyle = (Template != null && value == Template.Shape.LineStyle) ? null : value;
-				InvalidateDrawCache();
-				Invalidate();
+				EndResize(0, 0);
 			}
 		}
 
@@ -711,8 +754,8 @@ namespace Dataweb.NShape.Advanced {
 				Rectangle srcRectangle = GetBoundingRectangle(true);
 				Rectangle destRectangle = Rectangle.Empty;
 				destRectangle.X = destRectangle.Y = margin;
-				destRectangle.Width = image.Width - margin - margin;
-				destRectangle.Height = image.Height - margin - margin;
+				destRectangle.Width = image.Width - (2 * margin);
+				destRectangle.Height = image.Height - (2 * margin);
 
 				float scale = Geometry.CalcScaleFactor(srcRectangle.Width, srcRectangle.Height, destRectangle.Width, destRectangle.Height);
 				g.ScaleTransform(scale, scale, MatrixOrder.Append);
@@ -883,6 +926,13 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
+		protected internal override object InternalTag {
+			get { return internalTag; }
+			set { internalTag = value; }
+		}
+
+
+		/// <override></override>
 		protected ShapeBase(ShapeType shapeType, Template template) {
 			if (shapeType == null) throw new ArgumentNullException("shapeType");
 			InvalidateDrawCache();
@@ -912,7 +962,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Transformes the desired movement according to the shape's shapeAngle and then performs the movement by calling MoveControlPointBy()
+		/// Transformes the desired movement according to the shape's angle and then performs the movement by calling MoveControlPointBy()
 		/// </summary>
 		protected abstract bool MovePointByCore(ControlPointId pointId, int deltaX, int deltaY, ResizeModifiers modifiers);
 
@@ -1038,8 +1088,19 @@ namespace Dataweb.NShape.Advanced {
 		protected void ControlPointsHaveMoved() {
 			if (connectionInfos != null) {
 				for (int i = connectionInfos.Count - 1; i >= 0; --i) {
-					if (connectionInfos[i].OtherShape.HasControlPointCapability(connectionInfos[i].OtherPointId, ControlPointCapabilities.Glue))
-						connectionInfos[i].OtherShape.FollowConnectionPointWithGluePoint(connectionInfos[i].OtherPointId, this, connectionInfos[i].OwnPointId);
+					if (connectionInfos[i].OtherShape.HasControlPointCapability(connectionInfos[i].OtherPointId, ControlPointCapabilities.Glue)) {
+						// Check if the positions of the points are equal. Recalculate gluepoint position only if the 
+						// partner point has really moved (for performance reasons and in order to prevent endless recursive 
+						// calls when two lines are connected to each other).
+						// Exception from this rule: 
+						// If the the own connection point is the a roation- or the reference point, we always call 
+						// FollowConnectionPointWithGluePoint. Otherwise, Labels connected to the center point of a 
+						// shape will not rotate with their partner shape) as this point will not move when rotating
+						if (HasControlPointCapability(connectionInfos[i].OwnPointId, ControlPointCapabilities.Rotate)
+							|| connectionInfos[i].OtherShape.GetControlPointPosition(connectionInfos[i].OtherPointId)
+							!= GetControlPointPosition(connectionInfos[i].OwnPointId))
+							connectionInfos[i].OtherShape.FollowConnectionPointWithGluePoint(connectionInfos[i].OtherPointId, this, connectionInfos[i].OwnPointId);
+					}
 				}
 			}
 		}
@@ -1088,7 +1149,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="deltaX">Translation on X axis</param>
 		/// <param name="deltaY">Translation on Y axis</param>
-		/// <param name="deltaAngle">Rotation shapeAngle in tenths of degrees</param>
+		/// <param name="deltaAngle">Rotation angle in tenths of degrees</param>
 		/// <param name="rotationCenterX">X coordinate of the rotation center</param>
 		/// <param name="rotationCenterY">Y coordinate of the rotation center</param>
 		protected abstract void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY);
@@ -1112,7 +1173,6 @@ namespace Dataweb.NShape.Advanced {
 					return true;
 				if (!MovePointByCore(gluePointId, deltaX, deltaY, ResizeModifiers.MaintainAspect))
 					return false;
-				InvalidateDrawCache();
 				return true;
 			} else return false;
 		}
@@ -1203,7 +1263,7 @@ namespace Dataweb.NShape.Advanced {
 
 		private Shape CreateInstanceForTemplate() {
 			Shape shape = this.Type.CreateInstance();
-			shape.CopyFrom(this);
+			shape.CopyFrom(this);	// Template will be copied
 			return shape;
 		}
 
@@ -1620,7 +1680,6 @@ namespace Dataweb.NShape.Advanced {
 		// The model object this shape displays
 		private IModelObject modelObject;
 
-
 		// Tight fitting Bounding rectangle of the rotated shape
 		private Rectangle boundingRectangleTight = Geometry.InvalidRectangle;
 		// Loose bounding rectangle of the rotated shape and its control points
@@ -1631,6 +1690,7 @@ namespace Dataweb.NShape.Advanced {
 		
 		private object id = null;
 		private object tag = null;
+		private object internalTag = null;
 		private char securityDomainName;
 		private ILineStyle privateLineStyle = null;
 		private Matrix matrix = null;

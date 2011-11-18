@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -48,22 +48,39 @@ namespace Dataweb.NShape.Advanced {
 		/// The given <see cref="T:System.Drawing.Imaging.MetaFile" /> is set to an invalid state inside this function.
 		/// </summary>
 		static public bool PutEnhMetafileOnClipboard(IntPtr hWnd, Metafile metafile) {
+			return PutEnhMetafileOnClipboard(hWnd, metafile, true);
+		}
+
+
+		/// <summary>
+		/// Copies the given <see cref="T:System.Drawing.Imaging.MetaFile" /> to the clipboard.
+		/// The given <see cref="T:System.Drawing.Imaging.MetaFile" /> is set to an invalid state inside this function.
+		/// </summary>
+		static public bool PutEnhMetafileOnClipboard(IntPtr hWnd, Metafile metafile, bool clearClipboard) {
 			if (metafile == null) throw new ArgumentNullException("metafile");
 			bool bResult = false;
 			IntPtr hEMF, hEMF2;
 			hEMF = metafile.GetHenhmetafile(); // invalidates mf
 			if (!hEMF.Equals(IntPtr.Zero)) {
-				hEMF2 = CopyEnhMetaFile(hEMF, null);
-				if (!hEMF2.Equals(IntPtr.Zero)) {
-					if (OpenClipboard(hWnd)) {
-						if (EmptyClipboard()) {
-							IntPtr hRes = SetClipboardData(14 /*CF_ENHMETAFILE*/, hEMF2);
-							bResult = hRes.Equals(hEMF2);
-							CloseClipboard();
+				try {
+					hEMF2 = CopyEnhMetaFile(hEMF, null);
+					if (!hEMF2.Equals(IntPtr.Zero)) {
+						if (OpenClipboard(hWnd)) {
+							try {
+								if (clearClipboard) {
+									if (!EmptyClipboard())
+										return false;
+								}
+								IntPtr hRes = SetClipboardData(14 /*CF_ENHMETAFILE*/, hEMF2);
+								bResult = hRes.Equals(hEMF2);
+							} finally {
+								CloseClipboard();
+							}
 						}
 					}
+				} finally {
+					DeleteEnhMetaFile(hEMF);
 				}
-				DeleteEnhMetaFile(hEMF);
 			}
 			return bResult;
 		}

@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -38,7 +38,9 @@ namespace Dataweb.NShape.Advanced {
 	}
 
 
-	/// <ToBeCompleted></ToBeCompleted>
+	/// <summary>
+	/// A helper class providing methods mainly for setting drawing quality of graphics context and drawing images.
+	/// </summary>
 	public static class GdiHelpers {
 
 		/// <summary>
@@ -52,9 +54,8 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		#region Methods for drawing geometric primitives (debug mode obly)
+		#region Methods for drawing geometric primitives
 
-#if DEBUG
 		/// <summary>
 		/// Visualizing points - used for debugging purposes
 		/// </summary>
@@ -180,7 +181,6 @@ namespace Dataweb.NShape.Advanced {
 				gfx.DrawPath(pen, path);
 			}
 		}
-#endif
 
 		#endregion
 
@@ -272,7 +272,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Get a suitable GDI+ WrapMode out of the given NShapeImageLayout.
+		/// Get a suitable GDI+ <see cref="T:System.Drawing.Drawing2D.WrapMode" /> out of the given NShapeImageLayout.
 		/// </summary>
 		public static WrapMode GetWrapMode(ImageLayoutMode imageLayout) {
 			switch (imageLayout) {
@@ -816,11 +816,16 @@ namespace Dataweb.NShape.Advanced {
 				#endregion
 
 			} else if (image is Bitmap) {
-				ImageCodecInfo encoder = GetEncoderInfo(imageFormat);
-				EncoderParameters encoderParams = new EncoderParameters(2);
-				encoderParams.Param[0] = new EncoderParameter(Encoder.Quality, compressionQuality);
-				encoderParams.Param[1] = new EncoderParameter(Encoder.Compression, 100);	// seems to have no effect
-				image.Save(filePath, encoder, encoderParams);
+				ImageCodecInfo codecInfo = GetEncoderInfo(imageFormat);
+
+				EncoderParameters encoderParams = new EncoderParameters(3);
+				encoderParams.Param[0] = new EncoderParameter(Encoder.RenderMethod, (long)EncoderValue.RenderProgressive);
+				// JPG specific encoder parameter
+				encoderParams.Param[1] = new EncoderParameter(Encoder.Quality, (long)compressionQuality);
+				// TIFF specific encoder parameter
+				encoderParams.Param[2] = new EncoderParameter(Encoder.Compression, (long)EncoderValue.CompressionLZW);
+
+				image.Save(filePath, codecInfo, encoderParams);
 			} else image.Save(filePath, GetGdiImageFormat(imageFormat));
 		}
 
@@ -898,7 +903,7 @@ namespace Dataweb.NShape.Advanced {
 		#region [Private] Methods
 
 		private static void ResetColorMatrix(ColorMatrix colorMatrix) {
-			// Reset color shear matrix to these values:
+			// Reset color matrix to these values:
 			//		1	0	0	0	0
 			//		0	1	0	0	0
 			//		0	0	1	0	0
@@ -1033,7 +1038,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 	/// <summary>
-	/// This structure combines GDI+ images (bitmaps or metafiles) with a projectName (typically the filename withoout path and extension).
+	/// This structure combines GDI+ images (bitmaps or metafiles) with a name (typically the filename without path and extension).
 	/// </summary>
 	[TypeConverter("Dataweb.NShape.WinFormsUI.NamedImageTypeConverter, Dataweb.NShape.WinFormsUI")]
 	public class NamedImage : IDisposable {
@@ -1270,18 +1275,16 @@ namespace Dataweb.NShape.Advanced {
 			// image data later on demand. 
 			// So we have to read the entire image to a buffer and create the image from a MemoryStream
 			//
-			// open the image file via FileStream
-			FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
-			// Copy image data to memory buffer
-			byte[] buffer = new byte[fs.Length];
-			fs.Read(buffer, 0, buffer.Length);
-			// Close and dispose the FileStream
-			fs.Close();
-			fs.Dispose();
-			//
-			// Create the image from a MemoryStream
-			MemoryStream memStream = new MemoryStream(buffer);
-			image = Image.FromStream(memStream, true, true);
+			// Read the image data into a byte array
+            byte[] buffer = null;
+            using (FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read)) {
+                // Copy image data to memory buffer
+                buffer = new byte[fs.Length];
+                fs.Read(buffer, 0, buffer.Length);
+                fs.Close();
+            }
+			// Create the image from the read byte buffer (does not copy the buffer)
+			image = Image.FromStream(new MemoryStream(buffer), true, true);
 			imageSize = image.Size;
 			imageType = image.GetType();
 			if (!canLoadFromFile) canLoadFromFile = true;

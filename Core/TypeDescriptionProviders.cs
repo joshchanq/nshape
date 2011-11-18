@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -139,7 +139,6 @@ namespace Dataweb.NShape.Advanced {
 	/// <ToBeCompleted></ToBeCompleted>
 	public class TypeDescriptorDg : CustomTypeDescriptor {
 
-		
 		/// <summary>
 		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.TypeDescriptorDg" />
 		/// </summary>
@@ -184,7 +183,7 @@ namespace Dataweb.NShape.Advanced {
 		public override PropertyDescriptor GetDefaultProperty() {
 			PropertyDescriptor propertyDescriptor = base.GetDefaultProperty();
 			if (propertyDescriptor != null && propertyController != null)
-				return new PropertyDescriptorDg(propertyDescriptor, propertyController);
+				return new PropertyDescriptorDg(propertyDescriptor, propertyController, GetPropertyOwner(propertyDescriptor));
 			else return propertyDescriptor;
 		}
 
@@ -232,8 +231,10 @@ namespace Dataweb.NShape.Advanced {
 		private PropertyDescriptorCollection DoGetProperties(PropertyDescriptorCollection baseProperties) {
 			PropertyDescriptor[] resultProperties = new PropertyDescriptor[baseProperties.Count];
 			int baseCnt = baseProperties.Count;
-			for (int i = 0; i < baseCnt; ++i)
-				resultProperties[i] = new PropertyDescriptorDg(baseProperties[i], propertyController);
+			for (int i = 0; i < baseCnt; ++i) {
+				PropertyDescriptorDg propDesc = new PropertyDescriptorDg(baseProperties[i], propertyController, GetPropertyOwner(baseProperties[i]));
+				resultProperties[i] = propDesc;
+			}
 			return new PropertyDescriptorCollection(resultProperties);
 		}
 
@@ -248,9 +249,14 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Initializes a new instance of <see cref="T:Dataweb.NShape.Advanced.PropertyDescriptorDg" />
 		/// </summary>
-		public PropertyDescriptorDg(PropertyDescriptor descriptor, IPropertyController controller)
-			: base(descriptor) {
-			Construct(controller, descriptor);
+		public PropertyDescriptorDg(PropertyDescriptor descriptor, IPropertyController controller, object propertyOwner)
+			: base(descriptor.Name, GetAttributes(controller, descriptor, propertyOwner)) {
+			this.controller = controller;
+			this.descriptor = descriptor;
+
+			browsableAttr = Attributes[typeof(BrowsableAttribute)] as BrowsableAttribute;
+			readOnlyAttr = Attributes[typeof(ReadOnlyAttribute)] as ReadOnlyAttribute;
+			descriptionAttr = Attributes[typeof(DescriptionAttribute)] as DescriptionAttribute;
 		}
 
 
@@ -277,7 +283,13 @@ namespace Dataweb.NShape.Advanced {
 			if (permissionAttr != null) {
 				if (controller.Project == null) throw new InvalidOperationException("PropertyController.Project is not set.");
 				if (controller.Project.SecurityManager == null) throw new InvalidOperationException("PropertyController.Project.SecurityManager is not set.");
-				if (!controller.Project.SecurityManager.IsGranted(permissionAttr.Permission)) {
+				bool isGranted;
+				if (component is Shape) {
+					Shape s = component as Shape;
+					if (s != null) isGranted = controller.Project.SecurityManager.IsGranted(permissionAttr.Permission, s);
+					else isGranted = controller.Project.SecurityManager.IsGranted(permissionAttr.Permission);
+				} else isGranted = controller.Project.SecurityManager.IsGranted(permissionAttr.Permission);
+				if (!isGranted) {
 					controller.CancelSetProperty();
 					throw new NShapeSecurityException(permissionAttr.Permission);
 				}
@@ -287,9 +299,36 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <override></override>
-		public override bool IsReadOnly {
-			get { return descriptor.IsReadOnly; }
+		public override string Description {
+			get { return (descriptionAttr != null) ? descriptionAttr.Description : base.Description; }
 		}
+
+		
+		/// <override></override>
+		public override bool IsReadOnly {
+			get { return (readOnlyAttr != null) ? readOnlyAttr.IsReadOnly : false; }
+		}
+
+
+		/// <override></override>
+		public override bool IsBrowsable {
+			get { return (browsableAttr != null) ? browsableAttr.Browsable : base.IsBrowsable; }
+		}
+
+
+		/// <override></override>
+		public override bool IsLocalizable {
+			get {
+				//return base.IsLocalizable; 
+				return false;
+			}
+		}
+
+
+		///// <override></override>
+		//public override object GetEditor(Type editorBaseType) {
+		//    return IsReadOnly ? null : base.GetEditor(editorBaseType);
+		//}
 
 
 		/// <override></override>
@@ -310,23 +349,80 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private void Construct(IPropertyController controller, PropertyDescriptor descriptor) {
+		private static Attribute[] GetAttributes(IPropertyController controller, PropertyDescriptor descriptor, object propertyOwner) {
 			if (controller == null) throw new ArgumentNullException("controller");
 			if (descriptor == null) throw new ArgumentNullException("descriptor");
-			this.controller = controller;
-			this.descriptor = descriptor;
-			foreach (Attribute attr in descriptor.Attributes) {
-				if (attr is RequiredPermissionAttribute) {
-					permissionAttr = (RequiredPermissionAttribute)attr;
-					break;
+			if (propertyOwner == null) throw new ArgumentNullException("propertyOwner");
+			try {
+				int attrCount = descriptor.Attributes.Count;
+				BrowsableAttribute browsableAttr = descriptor.Attributes[typeof(BrowsableAttribute)] as BrowsableAttribute;
+				ReadOnlyAttribute readOnlyAttr = descriptor.Attributes[typeof(ReadOnlyAttribute)] as ReadOnlyAttribute;
+				DescriptionAttribute descriptionAttr = descriptor.Attributes[typeof(DescriptionAttribute)] as DescriptionAttribute;
+				RequiredPermissionAttribute requiredPermissionAttr = descriptor.Attributes[typeof(RequiredPermissionAttribute)] as RequiredPermissionAttribute;
+
+				if (requiredPermissionAttr != null) {
+					Permission permission = requiredPermissionAttr.Permission;
+					// Check if property is viewable
+					if (!IsGranted(controller, permission, propertyOwner)) {
+						// Hide if PropertyDisplayMode is 'Hidden' and 'View' access is not granted,
+						// otherwise set peroperty to readonly 
+						if (controller.PropertyDisplayMode == NonEditableDisplayMode.Hidden
+							&& !IsGranted(controller, permission, propertyOwner)) {
+							browsableAttr = BrowsableAttribute.No;
+						} else {
+							readOnlyAttr = ReadOnlyAttribute.Yes;
+							descriptionAttr = GetNotGrantedDescription(permission);
+						}
+					}
 				}
+
+				// Now copy all attributes
+				int cnt = descriptor.Attributes.Count;
+				List<Attribute> result = new List<Attribute>(attrCount);
+				// Add stored/modified attributes first
+				if (browsableAttr != null) result.Add(browsableAttr);
+				if (readOnlyAttr != null) result.Add(readOnlyAttr);
+				if (descriptionAttr != null) result.Add(descriptionAttr);
+				if (requiredPermissionAttr != null) result.Add(requiredPermissionAttr);
+				// Copy all other attributes
+				for (int i = 0; i < cnt; ++i) {
+					// Skip stored/modified attributes
+					if (descriptor.Attributes[i] is BrowsableAttribute) continue;
+					else if (descriptor.Attributes[i] is ReadOnlyAttribute) continue;
+					else if (descriptor.Attributes[i] is DescriptionAttribute) continue;
+					else if (descriptor.Attributes[i] is EditorAttribute) {
+						if (readOnlyAttr != null && readOnlyAttr.IsReadOnly)
+							continue;
+					}
+					result.Add(descriptor.Attributes[i]);
+				}
+				return result.ToArray();
+			} catch (Exception) {
+				throw;
 			}
 		}
 
 
-		IPropertyController controller = null;
-		PropertyDescriptor descriptor = null;
-		RequiredPermissionAttribute permissionAttr = null;
+		private static bool IsGranted(IPropertyController controller, Permission permissions, object propertyOwner) {
+			if (propertyOwner is Shape) {
+				Shape s = propertyOwner as Shape;
+				if (s != null) return controller.Project.SecurityManager.IsGranted(permissions, s);
+			}
+			return controller.Project.SecurityManager.IsGranted(permissions);
+		}
+
+
+		private static DescriptionAttribute GetNotGrantedDescription(Permission permission) {
+			return new DescriptionAttribute(string.Format("Required permission '{0}' is not granted.", permission));
+		}
+
+
+		private IPropertyController controller = null;
+		private PropertyDescriptor descriptor = null;
+		private RequiredPermissionAttribute permissionAttr = null;
+		private ReadOnlyAttribute readOnlyAttr = null;
+		private BrowsableAttribute browsableAttr = null;
+		private DescriptionAttribute descriptionAttr = null;
 	}
 
 }

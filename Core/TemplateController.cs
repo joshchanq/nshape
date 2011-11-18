@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,13 +13,11 @@
 ******************************************************************************/
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Reflection;
-using Dataweb.NShape.Advanced;
 using System.Diagnostics;
+using System.Drawing;
+
+using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.Controllers {
@@ -32,7 +30,7 @@ namespace Dataweb.NShape.Controllers {
 	public class TemplateController : Component, IDisplayService {
 
 		/// <summary>
-		/// Creates a new TemplateController instance
+		/// Creates a new <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> instance
 		/// </summary>
 		public TemplateController() {
 			infoGraphics = Graphics.FromHwnd(IntPtr.Zero);
@@ -40,7 +38,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Creates and initializes a new TemplateController instance
+		/// Creates and initializes a new <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> instance
 		/// </summary>
 		public TemplateController(Project project, Template template)
 			: this() {
@@ -105,7 +103,7 @@ namespace Dataweb.NShape.Controllers {
 		#region [Public] Events
 
 		/// <summary>
-		/// Raised when TemplateController Initializes
+		/// Raised when the <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> initializes.
 		/// </summary>
 		public event EventHandler<TemplateControllerInitializingEventArgs> Initializing;
 
@@ -192,7 +190,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Specified wether the TemplateController edits an existing or creates a new template.
+		/// Specified wether the <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> edits an existing or creates a new template.
 		/// </summary>
 		[Browsable(false)]
 		public TemplateControllerEditMode EditMode {
@@ -238,7 +236,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Specifies wether the TemplateController was initialized completly.
+		/// Specifies wether the <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> was initialized completly.
 		/// </summary>
 		[Browsable(false)]
 		public bool IsInitialized {
@@ -251,7 +249,7 @@ namespace Dataweb.NShape.Controllers {
 		#region [Public] Methods
 
 		/// <summary>
-		/// Calling this method initializes the TemplateController.
+		/// Calling this method initializes the <see cref="T:Dataweb.NShape.Controllers.TemplateController" />.
 		/// </summary>
 		public void Initialize(Template template) {
 			if (project == null) throw new ArgumentNullException("Property 'Project' is not set.");
@@ -260,7 +258,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		/// <summary>
-		/// Calling this method initializes the TemplateController.
+		/// Calling this method initializes the <see cref="T:Dataweb.NShape.Controllers.TemplateController" />.
 		/// </summary>
 		public void Initialize(Project project, Template template) {
 			if (isInitializing) {
@@ -272,11 +270,12 @@ namespace Dataweb.NShape.Controllers {
 				if (project == null) throw new ArgumentNullException("project");
 				if (this.project != project) Project = project;
 
-#if DEBUG
-				template.Tag = template.Name;
+#if DEBUG_DIAGNOSTICS
+				if (template != null)
+					template.Tag = template.Name;
 #endif
 
-				// Check if there are ShapeTypes supporting templating
+				// Check if there are shape types supporting templating
 				bool templateSupportingShapeTypeFound = false;
 				foreach (ShapeType shapeType in project.ShapeTypes) {
 					if (shapeType.SupportsAutoTemplates) {
@@ -336,7 +335,7 @@ namespace Dataweb.NShape.Controllers {
 				workTemplate.Name = name;
 				TemplateWasChanged = true;
 
-				if (TemplateModified != null) TemplateModified(this, new EventArgs());
+				if (TemplateModified != null) TemplateModified(this, EventArgs.Empty);
 			}
 		}
 
@@ -350,7 +349,7 @@ namespace Dataweb.NShape.Controllers {
 				workTemplate.Title = title;
 				TemplateWasChanged = true;
 
-				if (TemplateModified != null) TemplateModified(this, new EventArgs());
+				if (TemplateModified != null) TemplateModified(this, EventArgs.Empty);
 			}
 		}
 
@@ -364,7 +363,7 @@ namespace Dataweb.NShape.Controllers {
 				workTemplate.Description = description;
 				TemplateWasChanged = true;
 
-				if (TemplateModified != null) TemplateModified(this, new EventArgs());
+				if (TemplateModified != null) TemplateModified(this, EventArgs.Empty);
 			}
 		}
 		
@@ -506,7 +505,7 @@ namespace Dataweb.NShape.Controllers {
 					default: throw new NShapeUnsupportedValueException(typeof(TemplateControllerEditMode), editMode);
 				}
 				TemplateWasChanged = false;
-				if (ApplyingChanges != null) ApplyingChanges(this, eventArgs);
+				if (ApplyingChanges != null) ApplyingChanges(this, EventArgs.Empty);
 			}
 		}
 
@@ -519,12 +518,12 @@ namespace Dataweb.NShape.Controllers {
 				Initialize(project, null);
 			else
 				Initialize(project, originalTemplate);
-			if (DiscardingChanges != null) DiscardingChanges(this, eventArgs);
+			if (DiscardingChanges != null) DiscardingChanges(this, EventArgs.Empty);
 		}
 
 
 		/// <summary>
-		/// Clears all buffers and objects used by the TemplateController
+		/// Clears all buffers and objects used by the <see cref="T:Dataweb.NShape.Controllers.TemplateController" />
 		/// </summary>
 		public void Clear() {
 			ClearShapeList();
@@ -538,14 +537,14 @@ namespace Dataweb.NShape.Controllers {
 		/// <ToBeCompleted></ToBeCompleted>
 		public void NotifyTemplateShapeChanged() {
 			templateWasChanged = true;
-			if (TemplateShapeModified != null) TemplateShapeModified(this, new EventArgs());
+			if (TemplateShapeModified != null) TemplateShapeModified(this, EventArgs.Empty);
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public void NotifyTemplateModelObjectChanged() {
 			templateWasChanged = true;
-			if (TemplateModelObjectModified != null) TemplateModelObjectModified(this, new EventArgs());
+			if (TemplateModelObjectModified != null) TemplateModelObjectModified(this, EventArgs.Empty);
 		}
 
 		#endregion
@@ -569,7 +568,7 @@ namespace Dataweb.NShape.Controllers {
 			set {
 				if (project.SecurityManager.IsGranted(Permission.Templates)) {
 					templateWasChanged = value;
-					if (TemplateModified != null) TemplateModified(this, eventArgs);
+					if (TemplateModified != null) TemplateModified(this, EventArgs.Empty);
 				}
 			}
 		}
@@ -674,7 +673,6 @@ namespace Dataweb.NShape.Controllers {
 		private bool isInitializing = false;
 		private bool isInitialized = false;
 		// EventArgs buffers
-		private EventArgs eventArgs = new EventArgs();
 		private TemplateControllerStringChangedEventArgs stringChangedEventArgs 
 			= new TemplateControllerStringChangedEventArgs(string.Empty, string.Empty);
 		private TemplateControllerTemplateShapeReplacedEventArgs shapeReplacedEventArgs 
@@ -704,7 +702,7 @@ namespace Dataweb.NShape.Controllers {
 	#region EventArgs
 
 	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the TemplateController is initializing itself.
+	/// Encapsulates parameters for an event raised when the <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> is initialized.
 	/// </summary>
 	public class TemplateControllerInitializingEventArgs : EventArgs {
 
@@ -733,7 +731,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the template's projectName is modified.
+	/// Encapsulates parameters for an event raised when the name of the <see cref="T:Dataweb.NShape.Controllers.TemplateController" />'s template is modified.
 	/// </summary>
 	public class TemplateControllerStringChangedEventArgs : EventArgs {
 
@@ -764,7 +762,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a template-related TemplateController event.
+	/// Encapsulates parameters for a template-related <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> event.
 	/// </summary>
 	public class TemplateControllerTemplateEventArgs : EventArgs {
 
@@ -786,7 +784,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when template's shape is replaced ba a shape of another Type.
+	/// Encapsulates parameters for an event raised when the <see cref="T:Dataweb.NShape.Controllers.TemplateController" />'s template shape is replaced ba a shape of another Type.
 	/// </summary>
 	public class TemplateControllerTemplateShapeReplacedEventArgs : TemplateControllerTemplateEventArgs {
 
@@ -818,7 +816,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when template's model object is replaced by a model object of another ModelObejctType.
+	/// Encapsulates parameters for an event raised when the <see cref="T:Dataweb.NShape.Controllers.TemplateController" />'s template model object is replaced by a model object of another model object type.
 	/// </summary>
 	public class TemplateControllerModelObjectReplacedEventArgs : TemplateControllerTemplateEventArgs {
 
@@ -850,7 +848,8 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the mapping of ControlPointId to TerminalId is modified.
+	/// Encapsulates parameters for a <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> event raised when 
+	/// the mapping of a <see cref="T:Dataweb.NShape.Advanced.ControlPointId" /> to a <see cref="T:Dataweb.NShape.Advanced.TerminalId" /> is modified.
 	/// </summary>
 	public class TemplateControllerPropertyMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
 
@@ -871,7 +870,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 	/// <summary>
-	/// Encapsulates parameters for a TemplateController event raised when the mapping of shape's properties to modeloject's properties is modified.
+	/// Encapsulates parameters for a <see cref="T:Dataweb.NShape.Controllers.TemplateController" /> event raised when the mapping of shape's properties to modeloject's properties is modified.
 	/// </summary>
 	public class TemplateControllerPointMappingChangedEventArgs : TemplateControllerTemplateEventArgs {
 

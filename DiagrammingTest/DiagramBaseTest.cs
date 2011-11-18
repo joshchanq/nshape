@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -17,10 +17,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Dataweb.NShape;
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.GeneralShapes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 
 namespace NShapeTest {
@@ -165,8 +167,7 @@ namespace NShapeTest {
 
 
 		/// <summary>
-		/// Calls all Shape methods and properties for each available shape type and does 
-		/// some plausibility checks.
+		/// Calls all methods and properties of a shape for each available shape type and does some plausibility checks.
 		/// </summary>
 		[TestMethod]
 		public void ShapeTest() {
@@ -600,6 +601,63 @@ namespace NShapeTest {
 			BoundingRectangleTestCore(diagram.Shapes, 0, 100, 0);
 			BoundingRectangleTestCore(diagram.Shapes, 200, 100, 300);
 			BoundingRectangleTestCore(diagram.Shapes, 100, 2, 600);
+
+			project.Close();
+		}
+
+
+		[TestMethod]
+		public void ExportToImageTest() {
+			// -- Create a project --
+			Project project = new Project();
+			project.Name = "ExportToImageTest";
+			project.Repository = new CachedRepository();
+			((CachedRepository)project.Repository).Store = new XmlStore(@"C:\Temp", ".xml");
+			project.Repository.Erase();
+			project.Create();
+
+			// Add Libraries:
+			// GeneralShapes
+			project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
+			// ElectricalShapes
+			project.AddLibrary(typeof(Dataweb.NShape.ElectricalShapes.AutoDisconnectorSymbol).Assembly);
+			// FlowChartShapes
+			project.AddLibrary(typeof(Dataweb.NShape.FlowChartShapes.ProcessSymbol).Assembly);
+			// SoftwareArchitectureShapes
+			project.AddLibrary(typeof(Dataweb.NShape.SoftwareArchitectureShapes.CloudSymbol).Assembly);
+
+			//
+			DiagramHelper.CreateDiagram(project, "Export Test Diagram", 10, 10, true, false, false, false);
+			string filePathFmt = System.IO.Path.Combine(Environment.GetEnvironmentVariable("Temp"), "ExportTest {0}.{1}");
+			const int dpi = 150;
+			foreach (Diagram diagram in project.Repository.GetDiagrams()) {
+				IEnumerable<Shape> shapes = diagram.Shapes.FindShapes(diagram.Width / 4, diagram.Height / 4, diagram.Width / 2, diagram.Height / 2, false);
+				foreach (ImageFileFormat fileFormat in Enum.GetValues(typeof(ImageFileFormat))) {
+					try {
+						string fileExt = (fileFormat == ImageFileFormat.EmfPlus) ? "Plus.emf" : fileFormat.ToString();
+
+						using (Image img = diagram.CreateImage(fileFormat))
+							GdiHelpers.SaveImageToFile(img, string.Format(filePathFmt, "Whole Diagram", fileExt), fileFormat);
+
+						using (Image img = diagram.CreateImage(fileFormat, shapes))
+							GdiHelpers.SaveImageToFile(img, string.Format(filePathFmt, "Shapes", fileExt), fileFormat);
+
+						using (Image img = diagram.CreateImage(fileFormat, shapes, true))
+							GdiHelpers.SaveImageToFile(img, string.Format(filePathFmt, "Shapes with Background", fileExt), fileFormat);
+						
+						using (Image img = diagram.CreateImage(fileFormat, shapes, 5))
+							GdiHelpers.SaveImageToFile(img, string.Format(filePathFmt, "Shapes with Margin", fileExt), fileFormat);
+						
+						using (Image img = diagram.CreateImage(fileFormat, shapes, 5, false, Color.AliceBlue))
+							GdiHelpers.SaveImageToFile(img, string.Format(filePathFmt, "Shapes with Background Color", fileExt), fileFormat);
+						
+						using (Image img = diagram.CreateImage(fileFormat, shapes, 5, false, Color.AliceBlue, dpi))
+							GdiHelpers.SaveImageToFile(img, string.Format(filePathFmt, string.Format("Shapes with Background Color {0} Dpi", dpi), fileExt), fileFormat);
+					} catch (NotImplementedException) {
+						// Do nothing
+					}
+				}
+			}
 
 			project.Close();
 		}

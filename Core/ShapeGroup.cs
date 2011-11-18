@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -154,7 +154,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override char SecurityDomainName {
 			get { return permissionSetName; }
-			set { permissionSetName = value; }
+			set {
+				if (value < 'A' || value > 'Z') 
+					throw new ArgumentOutOfRangeException("The domain qualifier has to be an upper case  ANSI letter (A-Z).");
+				permissionSetName = value;
+			}
 		}
 
 
@@ -217,6 +221,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
+			if (!Geometry.IsValid(x, y)) throw new ArgumentOutOfRangeException("x, y");
 			RelativePosition result = RelativePosition.Empty;
 			result.A = x - X;
 			result.B = y - Y;
@@ -226,6 +231,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
+			if (relativePosition == RelativePosition.Empty) throw new ArgumentOutOfRangeException("relativePosition");
 			Point result = Point.Empty;
 			result.X = relativePosition.A + X;
 			result.Y = relativePosition.A + Y;
@@ -575,7 +581,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Layout")]
-		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
+		[Description("Rotation angle of the Shape in tenths of degree.")]
 		[PropertyMappingId(PropertyIdAngle)]
 		[RequiredPermission(Permission.Layout)]
 		public int Angle {
@@ -743,6 +749,13 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
+		protected internal override object InternalTag {
+			get { return internalTag; }
+			set { internalTag = value; }
+		}
+
+
 		/// <ToBeCompleted></ToBeCompleted>
 		protected ShapeCollection Owner {
 			get { return owner; }
@@ -775,6 +788,7 @@ namespace Dataweb.NShape.Advanced {
 		private GroupShapeAggregation children;
 		private object id = null;
 		private object tag = null;
+		private object internalTag;
 		//private Point location;
 		
 		// ShapeGroup fields

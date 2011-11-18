@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -23,8 +23,7 @@ using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.Controllers {
-
-
+	
 	/// <ToBeCompleted></ToBeCompleted>
 	[ToolboxItem(true)]
 	[ToolboxBitmap(typeof(PropertyController), "PropertyController.bmp")]
@@ -81,6 +80,7 @@ namespace Dataweb.NShape.Controllers {
 			get { return project; }
 			set {
 				if (project != null) {
+					CancelSetProperty();
 					if (project.Repository != null) UnregisterRepositoryEvents();
 					UnregisterProjectEvents();
 				}
@@ -101,6 +101,16 @@ namespace Dataweb.NShape.Controllers {
 			get { return this.GetType().Assembly.GetName().Version.ToString(); }
 		}
 
+
+		/// <summary>
+		/// Specifies the display mode for properties that are not editable, in most cases due to insufficient permissions.
+		/// </summary>
+		[Category("Behavior")]
+		public NonEditableDisplayMode PropertyDisplayMode {
+			get { return propertyDisplayMode; }
+			set { propertyDisplayMode = value; }
+		}
+
 		#endregion
 
 
@@ -111,6 +121,9 @@ namespace Dataweb.NShape.Controllers {
 			try {
 				try {
 					AssertProjectExists();
+					// ToDo: 
+					// If the objects are not of the same type but of the same base type (or interface), this method will fail.
+					// So we have to get the common base type/interface in this case.
 					if (propertySetBuffer != null
 						&& propertySetBuffer.Objects.Count > 0
 						&& !IsOfType(obj.GetType(), propertySetBuffer.ObjectType))
@@ -420,7 +433,7 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private void project_ProjectClosing(object sender, EventArgs e) {
-			if (ProjectClosing != null) ProjectClosing(this, new EventArgs());
+			if (ProjectClosing != null) ProjectClosing(this, EventArgs.Empty);
 		}
 
 
@@ -653,16 +666,31 @@ namespace Dataweb.NShape.Controllers {
 
 
 		#region Fields
-		// property fields
+		
 		private Project project;
 		private bool updateRepository;
-
 		private Hashtable selectedPrimaryObjects = new Hashtable();
 		private Hashtable selectedSecondaryObjects = new Hashtable();
 		private PropertyControllerEventArgs propertyControllerEventArgs = new PropertyControllerEventArgs();
 		private PropertySetInfo propertySetBuffer;
+		private NonEditableDisplayMode propertyDisplayMode = NonEditableDisplayMode.ReadOnly;
+		
 		#endregion
 	}
+
+
+	/// <summary>
+	/// Specifies the display mode for properties that are not editable, in most cases due to insufficient permissions.
+	/// </summary>
+	public enum NonEditableDisplayMode {
+		/// <summary>Equals 'ReadOnly'.</summary>
+		Default,
+		/// <summary>Non-editable properties will be shown as readonly properties. A reason is added to he property description.</summary>
+		ReadOnly,
+		/// <summary>Non-editable properties will be hidden.</summary>
+		Hidden
+	}
+
 
 
 	/// <ToBeCompleted></ToBeCompleted>
@@ -687,8 +715,15 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Properties
 
-		/// <ToBeCompleted></ToBeCompleted>
+		/// <summary>
+		/// Provides access to a <see cref="T:Dataweb.NShape.Project" />.
+		/// </summary>
 		Project Project { get; }
+
+		/// <summary>
+		/// Specifies the display mode for properties that are not editable, in most cases due to insufficient permissions.
+		/// </summary>
+		NonEditableDisplayMode PropertyDisplayMode { get; }
 
 		#endregion
 

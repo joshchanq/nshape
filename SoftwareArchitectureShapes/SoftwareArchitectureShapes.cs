@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -19,6 +19,7 @@ using System.Drawing;
 using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 using System.Reflection;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -28,17 +29,34 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 	public abstract class EntityShapeColumnCommand : Command {
 
-		protected EntityShapeColumnCommand()
+		protected EntityShapeColumnCommand(EntitySymbol shape, string columnText)
 			: base() {
+			this.shape = shape;
+			this.columnText = columnText;
+		}
+
+
+		protected EntitySymbol Shape {
+			get { return shape; }
 		}
 		
-		
-		internal string ColumnText {
+		protected string ColumnText {
 			get { return columnText; }
-			set { columnText = value; }
 		}
 
 
+		public override Permission RequiredPermission {
+			get { return Permission.ModifyData; }
+		}
+
+
+		public override bool IsAllowed(ISecurityManager securityManager) {
+			if (securityManager == null) throw new ArgumentNullException("securityManager");
+			return securityManager.IsGranted(RequiredPermission, shape.SecurityDomainName);
+		}
+
+
+		private EntitySymbol shape;
 		private string columnText;
 	}
 
@@ -46,10 +64,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 	public class AddColumnCommand : EntityShapeColumnCommand {
 
 		public AddColumnCommand(EntitySymbol shape, string columnText)
-			: base() {
+			: base(shape, columnText) {
 			base.description = string.Format("Add column to {0}", shape.Type.Name);
-			ColumnText = columnText;
-			this.shape = shape;
 		}
 		
 		
@@ -57,41 +73,28 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		/// <override></override>
 		public override void Execute() {
-			shape.AddColumn(ColumnText);
-			shape.Invalidate();
-			if (Repository != null) Repository.UpdateShape(shape);
+			Shape.AddColumn(ColumnText);
+			Shape.Invalidate();
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 
 		/// <override></override>
 		public override void Revert() {
-			shape.RemoveColumn(ColumnText);
-			if (Repository != null) Repository.UpdateShape(shape);
+			Shape.RemoveColumn(ColumnText);
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
-
-
-		/// <override></override>
-		public override Permission RequiredPermission {
-			get { return Permission.ModifyData; }
-		}
-
 
 		#endregion
 
-
-		#region Fields
-		private EntitySymbol shape;
-		#endregion
 	}
 
 
 	public class InsertColumnCommand : EntityShapeColumnCommand {
 		
 		public InsertColumnCommand(EntitySymbol shape, int beforeColumnIndex, string columnText)
-			: base() {
+			: base(shape, columnText) {
 			base.description = string.Format("Insert new column in {0}", shape.Type.Name);
-			this.shape = shape;
-			ColumnText = columnText;
 			this.beforeIndex = beforeColumnIndex;
 		}
 
@@ -100,47 +103,37 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		/// <override></override>
 		public override void Execute() {
-			shape.AddColumn(shape.GetCaptionText(shape.CaptionCount - 1));
-			for (int i = shape.CaptionCount - 2; i > beforeIndex; --i)
-				shape.SetCaptionText(i, shape.GetCaptionText(i-1));
-			shape.SetCaptionText(beforeIndex, ColumnText);
-			if (Repository != null) Repository.UpdateShape(shape);
+			Shape.AddColumn(Shape.GetCaptionText(Shape.CaptionCount - 1));
+			for (int i = Shape.CaptionCount - 2; i > beforeIndex; --i)
+				Shape.SetCaptionText(i, Shape.GetCaptionText(i-1));
+			Shape.SetCaptionText(beforeIndex, ColumnText);
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 
 		/// <override></override>
 		public override void Revert() {
-			for (int i = shape.CaptionCount - 1; i > beforeIndex; --i)
-				shape.SetCaptionText(i - 1, shape.GetCaptionText(i));
+			for (int i = Shape.CaptionCount - 1; i > beforeIndex; --i)
+				Shape.SetCaptionText(i - 1, Shape.GetCaptionText(i));
 			// The shape's Text does count as caption but not as column, that's why CaptionCount-2.
-			shape.RemoveColumnAt(shape.CaptionCount - 2);
-			if (Repository != null) Repository.UpdateShape(shape);
-		}
-
-
-		/// <override></override>
-		public override Permission RequiredPermission {
-			get { return Permission.ModifyData; }
+			Shape.RemoveColumnAt(Shape.CaptionCount - 2);
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 		#endregion
 
 
-		#region Fields
 		private int beforeIndex;
-		private EntitySymbol shape;
-		#endregion
 	}
 
 
 	public class EditColumnCommand : EntityShapeColumnCommand {
+
 		public EditColumnCommand(EntitySymbol shape, int columnIndex, string columnText)
-			: base() {
+			: base(shape, columnText) {
 			base.description = string.Format("Add edit column in {0}", shape.Type.Name);
-			this.ColumnText = columnText;
 			this.oldColumnText = shape.ColumnNames[columnIndex];
 			this.columnIndex = columnIndex;
-			this.shape = shape;
 		}
 
 
@@ -148,52 +141,40 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		/// <override></override>
 		public override void Execute() {
-			string[] columns = new string[shape.ColumnNames.Length];
-			Array.Copy(shape.ColumnNames, columns, shape.ColumnNames.Length);
+			string[] columns = new string[Shape.ColumnNames.Length];
+			Array.Copy(Shape.ColumnNames, columns, Shape.ColumnNames.Length);
 			columns[columnIndex] = ColumnText;
 
-			shape.ColumnNames = columns;
-			if (Repository != null)
-				Repository.UpdateShape(shape);
+			Shape.ColumnNames = columns;
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 
 		/// <override></override>
 		public override void Revert() {
-			string[] columns = new string[shape.ColumnNames.Length];
-			Array.Copy(shape.ColumnNames, columns, shape.ColumnNames.Length);
+			string[] columns = new string[Shape.ColumnNames.Length];
+			Array.Copy(Shape.ColumnNames, columns, Shape.ColumnNames.Length);
 			columns[columnIndex] = oldColumnText;
 
-			shape.ColumnNames = columns;
-			shape.Invalidate();
+			Shape.ColumnNames = columns;
+			Shape.Invalidate();
 
-			if (Repository != null)
-				Repository.UpdateShape(shape);
-		}
-
-
-		/// <override></override>
-		public override Permission RequiredPermission {
-			get { return Permission.ModifyData; }
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 		#endregion
 
 
-		#region Fields
 		private string oldColumnText;
 		private int columnIndex;
-		private EntitySymbol shape;
-		#endregion
 	}
 
 
 	public class RemoveColumnCommand : EntityShapeColumnCommand {
+
 		public RemoveColumnCommand(EntitySymbol shape, int removeColumnIndex, string columnText)
-			: base() {
+			: base(shape, columnText) {
 			base.description = string.Format("RemoveRange column from {0}", shape.Type.Name);
-			this.shape = shape;
-			this.ColumnText = columnText;
 			this.removeIndex = removeColumnIndex;
 		}
 
@@ -202,38 +183,29 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		/// <override></override>
 		public override void Execute() {
-			for (int i = shape.CaptionCount - 1; i > removeIndex; --i)
-				shape.SetCaptionText(i - 1, shape.GetCaptionText(i));
+			for (int i = Shape.CaptionCount - 1; i > removeIndex; --i)
+				Shape.SetCaptionText(i - 1, Shape.GetCaptionText(i));
 			// The shape's Text does count as caption but not as column, that's why CaptionCount-2.
-			shape.RemoveColumnAt(shape.CaptionCount - 2);
+			Shape.RemoveColumnAt(Shape.CaptionCount - 2);
 
-			shape.Invalidate();
-			if (Repository != null) Repository.UpdateShape(shape);
+			Shape.Invalidate();
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 
 		/// <override></override>
 		public override void Revert() {
-			shape.AddColumn(shape.GetCaptionText(shape.CaptionCount - 1));
-			for (int i = shape.CaptionCount - 2; i > removeIndex; --i)
-				shape.SetCaptionText(i, shape.GetCaptionText(i - 1));
-			shape.SetCaptionText(removeIndex, ColumnText);
-			if (Repository != null) Repository.UpdateShape(shape);
-		}
-
-
-		/// <override></override>
-		public override Permission RequiredPermission {
-			get { return Permission.ModifyData; }
+			Shape.AddColumn(Shape.GetCaptionText(Shape.CaptionCount - 1));
+			for (int i = Shape.CaptionCount - 2; i > removeIndex; --i)
+				Shape.SetCaptionText(i, Shape.GetCaptionText(i - 1));
+			Shape.SetCaptionText(removeIndex, ColumnText);
+			if (Repository != null) Repository.UpdateShape(Shape);
 		}
 
 		#endregion
 
 
-		#region Fields
 		private int removeIndex;
-		private EntitySymbol shape;
-		#endregion
 	}
 
 	#endregion
@@ -386,7 +358,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				Rectangle captionBounds;
 				CalcCaptionBounds(index, out captionBounds);
 				Geometry.TransformRectangle(Center, Angle, captionBounds, out topLeft, out topRight, out bottomRight, out bottomLeft);
-				return (Geometry.ConvexPolygonContainsPoint(columnFrame, bottomLeft.X, bottomLeft.Y) && Geometry.ConvexPolygonContainsPoint(columnFrame, bottomRight.X, bottomRight.Y));
+				return (Geometry.ConvexPolygonContainsPoint(columnFrame, bottomLeft.X, bottomLeft.Y)
+					&& Geometry.ConvexPolygonContainsPoint(columnFrame, bottomRight.X, bottomRight.Y));
 			}
 		}
 
@@ -514,7 +487,15 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		[TypeConverter("Dataweb.NShape.WinFormsUI.TextTypeConverter")]
 		[Editor("Dataweb.NShape.WinFormsUI.TextUITypeEditor", typeof(UITypeEditor))]
 		public string[] ColumnNames {
-			get { return columnNames; }
+			get {
+				if (columnNames == null || columnNames.Length != columnCaptions.Count)
+					columnNames = new string[columnCaptions.Count];
+				for (int i = columnCaptions.Count - 1; i >= 0; --i) {
+					if (columnNames[i] != columnCaptions[i].Text)
+						columnNames[i] = columnCaptions[i].Text;
+				}
+				return columnNames; 
+			}
 			set {
 				if (value == null) throw new ArgumentNullException();
 				Invalidate();
@@ -663,20 +644,44 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		/// <override></override>
 		public override Point CalculateConnectionFoot(int startX, int startY) {
-			Point result = Point.Empty;
-			result.X = X; result.Y = Y;
-			UpdateDrawCache();
-			if (Path.PointCount > 0) {
-				float currDist, dist = float.MaxValue;
-				foreach (Point p in Geometry.IntersectPolygonLine(Path.PathPoints, startX, startY, X, Y, true)) {
-					currDist = Geometry.DistancePointPoint(p.X, p.Y, startX, startY);
-					if (currDist < dist) {
-						dist = currDist;
-						result = p;
+			// First, calculate intersection point with rectangle
+			Point result = base.CalculateConnectionFoot(startX, startY);
+			// Then, check result for intersection with one of the rounded corners
+			if (Geometry.IsValid(result)) {
+				// Check the top and bottom side (between the rounded corners:
+				// If the line intersects with any of these sides, we need not calculate the rounded corner intersection
+				int cornerRadius = CalcCornerRadius();
+				float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
+				
+				// If there is no intersection with any of the straight sides, check the rounded corners:
+				if (!Geometry.RectangleIntersectsWithLine(X, Y, Width - (2 * cornerRadius), Height, angleDeg, startX, startY, result.X, result.Y, true)
+					&& !Geometry.RectangleIntersectsWithLine(X, Y, Width, Height - (2 * cornerRadius), angleDeg, startX, startY, result.X, result.Y, true)) {
+					// Calculate all center points of all corner roundings
+					PointF topLeft = PointF.Empty, topRight = PointF.Empty, bottomRight = PointF.Empty, bottomLeft = PointF.Empty;
+					RectangleF rect = RectangleF.Empty;
+					rect.X = X - (Width / 2f);
+					rect.Y = Y - (Height / 2f);
+					rect.Width = Width;
+					rect.Height = Height;
+					rect.Inflate(-cornerRadius, -cornerRadius);
+					Geometry.RotateRectangle(rect, X, Y, angleDeg, out topLeft, out topRight, out bottomRight, out bottomLeft);
+					// Check corner roundings for intersection with the calculated line
+					PointF p = Geometry.InvalidPointF;
+					if (Geometry.CircleIntersectsWithLine(topLeft.X, topLeft.Y, cornerRadius, startX, startY, X, Y, false)) {
+						p = Geometry.IntersectCircleWithLine(topLeft.X, topLeft.Y, cornerRadius, startX, startY, X, Y, false);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
+					} else if (Geometry.CircleIntersectsWithLine(topRight.X, topRight.Y, cornerRadius, startX, startY, X, Y, false)) {
+						p = Geometry.IntersectCircleWithLine(topRight.X, topRight.Y, cornerRadius, startX, startY, X, Y, false);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
+					} else if (Geometry.CircleIntersectsWithLine(bottomRight.X, bottomRight.Y, cornerRadius, startX, startY, X, Y, false)) {
+						p = Geometry.IntersectCircleWithLine(bottomRight.X, bottomRight.Y, cornerRadius, startX, startY, X, Y, false);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
+					} else if (Geometry.CircleIntersectsWithLine(bottomLeft.X, bottomLeft.Y, cornerRadius, startX, startY, X, Y, false)) {
+						p = Geometry.IntersectCircleWithLine(bottomLeft.X, bottomLeft.Y, cornerRadius, startX, startY, X, Y, false);
+						if (Geometry.IsValid(p)) result = Point.Round(p);
 					}
 				}
-			}
-			else result = base.CalculateConnectionFoot(startX, startY);
+			} else result = Center;
 			return result;
 		}
 
@@ -1046,6 +1051,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		private IParagraphStyle privateColumnParagraphStyle = null;
 
 		private Rectangle rectBuffer = Rectangle.Empty;
+		//private Point[] pointBuffer = new Point[4];
 		private Point[] columnFrame = new Point[4];
 		private Point[] upperScrollArrow = new Point[3];
 		private Point[] lowerScrollArrow = new Point[3];

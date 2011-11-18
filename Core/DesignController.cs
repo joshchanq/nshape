@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -240,7 +240,7 @@ namespace Dataweb.NShape.Controllers {
 			if (propertyInfo == null) throw new NShapeException("Property {0} not found in Type {1}.", propertyName, style.GetType().Name);
 
 			bool performPropertyChange = true;
-			if (string.Compare(propertyName, "Name", true) == 0)
+			if (string.Compare(propertyName, "Name", StringComparison.InvariantCultureIgnoreCase) == 0)
 				performPropertyChange = StyleNameExists(design, style, (string)newValue);
 			
 			if (performPropertyChange) {
@@ -274,13 +274,13 @@ namespace Dataweb.NShape.Controllers {
 
 		private void Initialize() {
 			RegisterRepositoryEventHandlers();
-			if (Initialized != null) Initialized(this, new EventArgs());
+			if (Initialized != null) Initialized(this, EventArgs.Empty);
 		}
 
 
 		private void Uninitialize() {
 			UnregisterRepositoryEventHandlers();
-			if (Uninitialized != null) Uninitialized(this, new EventArgs());
+			if (Uninitialized != null) Uninitialized(this, EventArgs.Empty);
 		}
 
 

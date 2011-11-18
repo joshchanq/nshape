@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -303,6 +303,7 @@ namespace Dataweb.NShape.Controllers {
 			layerController.LayersAdded += layerController_LayerAdded;
 			layerController.LayersRemoved += layerController_LayerRemoved;
 			layerController.LayerModified += layerController_LayerModified;
+			RegisterProjectEvents(layerController.Project);
 		}
 
 
@@ -312,6 +313,23 @@ namespace Dataweb.NShape.Controllers {
 			layerController.LayersAdded -= layerController_LayerAdded;
 			layerController.LayersRemoved -= layerController_LayerRemoved;
 			layerController.LayerModified -= layerController_LayerModified;
+			UnregisterProjectEvents(layerController.Project);
+		}
+
+
+		private void RegisterProjectEvents(Project project) {
+			if (project != null) {
+				project.Closing += project_Closing;
+				project.Closed += project_Closed;
+			}
+		}
+
+
+		private void UnregisterProjectEvents(Project project) {
+			if (project != null) {
+				project.Closing -= project_Closing;
+				project.Closed -= project_Closed;
+			}
 		}
 
 
@@ -409,6 +427,20 @@ namespace Dataweb.NShape.Controllers {
 		private void layerController_LayerRemoved(object sender, LayersEventArgs e) {
 			foreach (Layer layer in e.Layers)
 				layerView.RemoveLayer(layer);
+		}
+
+		#endregion
+
+
+		#region Project  EventHandler Implementations
+
+		private void project_Closing(object sender, EventArgs e) {
+			// Nothing to do
+		}
+
+
+		private void project_Closed(object sender, EventArgs e) {
+			if (LayerView != null) LayerView.Clear();
 		}
 
 		#endregion

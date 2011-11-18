@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -360,8 +360,8 @@ namespace Dataweb.NShape.Controllers {
 			// This is only a simple workaround.
 			// ToDo: Create a new event for this purpose!
 			if (DiagramChanging != null && DiagramChanged != null) {
-				DiagramChanging(this, eventArgs);
-				DiagramChanged(this, eventArgs);
+				DiagramChanging(this, EventArgs.Empty);
+				DiagramChanged(this, EventArgs.Empty);
 			}
 		}
 
@@ -389,6 +389,7 @@ namespace Dataweb.NShape.Controllers {
 	
 
 		#region Fields
+		
 		/// <ToBeCompleted></ToBeCompleted>
 		public const int MaxLayerCount = 31;
 
@@ -398,7 +399,7 @@ namespace Dataweb.NShape.Controllers {
 		private LayersEventArgs layersEventArgs = new LayersEventArgs();
 		private LayerEventArgs layerEventArgs = new LayerEventArgs();
 		private LayerRenamedEventArgs layerRenamedEventArgs = new LayerRenamedEventArgs();
-		private EventArgs eventArgs = new EventArgs();
+
 		#endregion
 	}
 

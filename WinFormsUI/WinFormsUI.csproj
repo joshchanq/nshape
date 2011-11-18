@@ -25,7 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\Demo Programs\bin\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <DocumentationFile>..\Demo Programs\bin\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
@@ -43,16 +43,32 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\Demo Programs\bin\x86\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
+    <DocumentationFile>..\Demo Programs\bin\x86\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\bin\Release\x86\</OutputPath>
+    <DocumentationFile>..\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Design, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\WINDOWS\Microsoft.NET\Framework\v2.0.50727\System.Design.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\CommonAssemblyInfo.cs">
@@ -88,6 +104,12 @@
     </Compile>
     <Compile Include="LayoutDialog.designer.cs">
       <DependentUpon>LayoutDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ShapeInfoDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ShapeInfoDialog.Designer.cs">
+      <DependentUpon>ShapeInfoDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="TemplatePresenter.cs">
       <SubType>UserControl</SubType>
@@ -228,6 +250,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+    <EmbeddedResource Include="ShapeInfoDialog.resx">
+      <DependentUpon>ShapeInfoDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="StyleListBox.resx">
       <SubType>Designer</SubType>
       <DependentUpon>StyleListBox.cs</DependentUpon>
@@ -309,10 +334,19 @@
     <EmbeddedResource Include="Resources\RemoveFromAllLayers.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape.csproj">
+    <ProjectReference Include="..\Core\n_Shape.csproj">
       <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>NShape</Name>
+      <Name>n_Shape</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Checked.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Unchecked.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\CopyAsImage.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

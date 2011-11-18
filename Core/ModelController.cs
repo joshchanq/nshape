@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -338,13 +338,13 @@ namespace Dataweb.NShape.Controllers {
 
 		private void project_ProjectOpen(object sender, EventArgs e) {
 			RegisterRepositoryEvents();
-			if (Initialized != null) Initialized(this, new EventArgs());
+			if (Initialized != null) Initialized(this, EventArgs.Empty);
 		}
 
 
 		private void project_ProjectClosing(object sender, EventArgs e) {
 			UnregisterRepositoryEvents();
-			if (Uninitialized != null) Uninitialized(this, new EventArgs());
+			if (Uninitialized != null) Uninitialized(this, EventArgs.Empty);
 		}
 
 
@@ -374,25 +374,25 @@ namespace Dataweb.NShape.Controllers {
 
 		private void repository_TemplateShapeReplaced(object sender, RepositoryTemplateShapeReplacedEventArgs e) {
 			if (e.OldTemplateShape.ModelObject != null || e.NewTemplateShape.ModelObject != null)
-				if (Changed != null) Changed(this, new EventArgs());
+				if (Changed != null) Changed(this, EventArgs.Empty);
 		}
 
 
 		private void repository_TemplateInserted(object sender, RepositoryTemplateEventArgs e) {
 			if (e.Template.Shape.ModelObject != null)
-				if (Changed != null) Changed(this, new EventArgs());
+				if (Changed != null) Changed(this, EventArgs.Empty);
 		}
 
 
 		private void repository_TemplateUpdated(object sender, RepositoryTemplateEventArgs e) {
 			if (e.Template.Shape.ModelObject != null)
-				if (Changed != null) Changed(this, new EventArgs());
+				if (Changed != null) Changed(this, EventArgs.Empty);
 		}
 
 
 		private void repository_TemplateDeleted(object sender, RepositoryTemplateEventArgs e) {
 			if (e.Template.Shape.ModelObject != null)
-				if (Changed != null) Changed(this, new EventArgs());
+				if (Changed != null) Changed(this, EventArgs.Empty);
 		}
 
 		#endregion

@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -15,6 +15,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 
@@ -118,7 +119,8 @@ namespace Dataweb.NShape.Advanced {
 				return center;
 			} else if (controlPointId == ControlPointId.None)
 				throw new NShapeException("NotSupported PointId.");
-			UpdateDrawCache();
+			if (drawCacheIsInvalid) UpdateDrawCache(); 
+
 			int index = GetControlPointIndex(controlPointId);
 			return controlPoints[index];
 		}
@@ -176,7 +178,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Layout")]
-		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
+		[Description("Rotation angle of the Shape in tenths of degree.")]
 		[PropertyMappingId(PropertyIdAngle)]
 		[RequiredPermission(Permission.Layout)]
 		public virtual int Angle {
@@ -395,8 +397,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		protected override void UpdateDrawCache() {
 			if (drawCacheIsInvalid) {
-				System.Diagnostics.Debug.Assert(path != null);
-				System.Diagnostics.Debug.Assert(controlPoints != null);
+				Debug.Assert(path != null);
+				Debug.Assert(controlPoints != null);
 				RecalcDrawCache();
 				TransformDrawCache(X, Y, Angle, X, Y);
 			}
@@ -425,7 +427,7 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		/// <param name="deltaX">Translation on X axis</param>
 		/// <param name="deltaY">Translation on Y axis</param>
-		/// <param name="deltaAngle">Rotation shapeAngle in tenths of degrees</param>
+		/// <param name="deltaAngle">Rotation angle in tenths of degrees</param>
 		/// <param name="rotationCenterX">X coordinate of the rotation center</param>
 		/// <param name="rotationCenterY">Y coordinate of the rotation center</param>
 		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {

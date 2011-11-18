@@ -135,14 +135,16 @@ namespace WebVisists {
 				// Layout the shapes
 				if (layouter == null)
 					layouter = new RepulsionLayouter(project);
-				layouter.SpringRate = 8;
-				layouter.Repulsion = 3;
-				layouter.RepulsionRange = 500;
+				layouter.SpringRate = 14;
+				layouter.Repulsion = 7;
+				layouter.RepulsionRange = 400;
 				layouter.Friction = 0;
 				layouter.Mass = 50;
 				//
 				layouter.AllShapes = diagram.Shapes;
 				layouter.Shapes = diagram.Shapes;
+
+				layouter.Prepare();
 				layouter.Execute(10);
 				layouter.Fit(50, 50, diagram.Width- 100, diagram.Height-100);
 				//

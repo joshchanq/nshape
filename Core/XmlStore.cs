@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -20,6 +20,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Xml;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -93,7 +94,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Defines the file projectName without extension, where the NShape designs are stored.
+		/// Defines the file name without extension, where the NShape designs are stored.
 		/// </summary>
 		[Category("NShape")]
 		public string DesignFileName {
@@ -911,11 +912,7 @@ namespace Dataweb.NShape {
 			repositoryReader.DoBeginObject();
 			object id = repositoryReader.ReadId();
 			if (id == null) {
-#if DEBUG
-				((IEntity)project).AssignId(Guid.NewGuid());
-#else
 				((IEntity)project).AssignId(Guid.Empty);
-#endif
 			} else ((IEntity)project).AssignId(id);
 
 			((IEntity)project).LoadFields(repositoryReader, cache.RepositoryBaseVersion);
@@ -981,7 +978,7 @@ namespace Dataweb.NShape {
 			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(FillStyle.EntityTypeName));
 			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(LineStyle.EntityTypeName));
 			ReadStyles(cache, xmlReader, design, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName));
-			if (xmlReader.Name == shapeStyleTag) {
+			if (string.Compare(xmlReader.Name, shapeStyleTag, StringComparison.InvariantCultureIgnoreCase) == 0) {
 				xmlReader.Read();
 				XmlReadEndElement(shapeStyleTag);
 			}
@@ -993,7 +990,7 @@ namespace Dataweb.NShape {
 				throw new NShapeException("Element '{0}' expected but not found.", GetElementCollectionTag(styleEntityType));
 			xmlReader.Read(); // Read over the collection tag
 			repositoryReader.ResetFieldReading(styleEntityType.PropertyDefinitions);
-			while (xmlReader.Name == GetElementTag(styleEntityType)) {
+			while (string.Compare(xmlReader.Name, GetElementTag(styleEntityType), StringComparison.InvariantCultureIgnoreCase) == 0) {
 				Style style = (Style)styleEntityType.CreateInstanceForLoading();
 				repositoryReader.DoBeginObject();
 				style.AssignId(repositoryReader.ReadId());
@@ -1195,7 +1192,7 @@ namespace Dataweb.NShape {
 
 		private void ReadDiagramShapeConnections(IStoreCache cache, XmlStoreReader reader) {
 			if (XmlSkipStartElement(connectionsTag)) {
-				while (xmlReader.Name == connectionTag) {
+				while (string.Compare(xmlReader.Name, connectionTag, StringComparison.InvariantCultureIgnoreCase) == 0) {
 					xmlReader.MoveToFirstAttribute();
 					object connectorId = new Guid(xmlReader.GetAttribute(0));
 					xmlReader.MoveToNextAttribute();
@@ -1695,13 +1692,14 @@ namespace Dataweb.NShape {
 
 		// The current element is either <x a1="1"... /x> or </x>
 		private void XmlReadEndElement(string name) {
-			if (xmlReader.Name == name && xmlReader.NodeType == XmlNodeType.EndElement)
+			if (string.Compare(xmlReader.Name, name, StringComparison.InvariantCultureIgnoreCase) == 0
+				&& xmlReader.NodeType == XmlNodeType.EndElement)
 				xmlReader.ReadEndElement();
 		}
 
 
 		private bool XmlSkipToElement(string nodeName) {
-			if (xmlReader.Name == nodeName)
+			if (string.Compare(xmlReader.Name, nodeName, StringComparison.InvariantCultureIgnoreCase) == 0)
 				return true;
 			else
 				return xmlReader.ReadToFollowing(nodeName);
@@ -1709,7 +1707,7 @@ namespace Dataweb.NShape {
 
 
 		// Tests whether we are currently at the beginning of an element with the
-		// given projectName. If so, read into it and return true. Otherwise false.
+		// given name. If so, read into it and return true. Otherwise false.
 		private bool XmlSkipStartElement(string nodeName) {
 			// In case we are at an attribute
 			if (xmlReader.NodeType != XmlNodeType.Element && xmlReader.NodeType != XmlNodeType.EndElement) {
@@ -1730,7 +1728,7 @@ namespace Dataweb.NShape {
 
 		private void XmlSkipEndElement(string nodeName) {
 			XmlSkipAttributes();
-			if (xmlReader.Name == nodeName) {
+			if (string.Compare(xmlReader.Name, nodeName, StringComparison.InvariantCultureIgnoreCase) == 0) {
 				// skip end element
 				if (xmlReader.NodeType == XmlNodeType.EndElement)
 					xmlReader.ReadEndElement();
@@ -1778,7 +1776,7 @@ namespace Dataweb.NShape {
 		// Indicates the highest supported cache version of the built-in entities.
 		private const int currentVersion = 100;
 
-		// Directory projectName of project file. Always != null
+		// Directory name of project file. Always != null
 		private string directory = string.Empty;
 		// Name of the project. Always != null
 		private string projectName = string.Empty;
@@ -1790,7 +1788,7 @@ namespace Dataweb.NShape {
 		// Repository version of the built-in entities.
 		private int version;
 
-		// File projectName of design cache file. Always != null
+		// File name of design cache file. Always != null
 		private string designFileName = string.Empty;
 
 		/// <summary>Indicates that the whole file is in memory.</summary>

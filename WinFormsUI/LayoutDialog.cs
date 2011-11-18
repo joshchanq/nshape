@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -11,7 +11,6 @@
   You should have received a copy of the GNU General Public License along with 
   NShape. If not, see <http://www.gnu.org/licenses/>.
 ******************************************************************************/
-
 
 using System;
 using System.Collections.Generic;
@@ -125,8 +124,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					GridLayouter gl = (GridLayouter)layouter;
 					gl.CoarsenessX = columnDistanceTrackBar.Value;
 					gl.CoarsenessY = rowDistanceTrackBar.Value;
-					/*
-					 * gl.ColumnDistance = columnDistanceTrackBar.Value;
+					/* gl.ColumnDistance = columnDistanceTrackBar.Value;
 					gl.RowDistance = rowDistanceTrackBar.Value; */
 					break;
 				case "Clusters":
@@ -176,13 +174,17 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void PreviewFast() {
-			SetShapes();
-			layouter.SaveState();
-			layouter.Prepare();
-			layouter.Execute(10);
-			layouter.Fit(0, 0, diagram.Size.Width, diagram.Size.Height);
-			OnLayoutChanged();
-			SwitchToPreview();
+			try {
+				SetShapes();
+				layouter.SaveState();
+				layouter.Prepare();
+				layouter.Execute(10);
+				layouter.Fit(0, 0, diagram.Size.Width, diagram.Size.Height);
+				OnLayoutChanged();
+				SwitchToPreview();
+			} catch (NShapeException exc) {
+				MessageBox.Show(exc.Message, "Cannot Layout");
+			}
 		}
 
 
@@ -215,7 +217,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void OnLayoutChanged() {
-			if (LayoutChanged != null) LayoutChanged(this, eventArgs);
+			if (LayoutChanged != null) LayoutChanged(this, EventArgs.Empty);
 		}
 
 
@@ -244,6 +246,15 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void LayoutControlForm_Load(object sender, EventArgs e) {
 			if (algorithmListBox.SelectedIndex < 0) 
 				algorithmListBox.SelectedIndex = 0;
+
+			// Update labels
+			columnDistanceLabel.Text = columnDistanceTrackBar.Value.ToString();
+			rowDistanceLabel.Text = rowDistanceTrackBar.Value.ToString();
+			attractionStrengthLabel.Text = attractionStrengthTrackBar.Value.ToString();
+			repulsionStrengthLabel.Text = repulsionStrengthTrackBar.Value.ToString();
+			repulsionRangeLabel.Text = repulsionRangeTrackBar.Value.ToString();
+			horizontalCompressionLabel.Text = horizontalCompressionTrackBar.Value.ToString();
+			verticalCompressionLabel.Text = verticalCompressionTrackBar.Value.ToString();
 		}
 
 
@@ -368,8 +379,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private Diagram diagram;
 		private List<Shape> selectedShapes = new List<Shape>(100);
 		private ILayouter layouter;
-
-		private EventArgs eventArgs = new EventArgs();
 
 		#endregion
 	}

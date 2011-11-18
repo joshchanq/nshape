@@ -31,6 +31,8 @@
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
 			this.diagramSetController = new Dataweb.NShape.Controllers.DiagramSetController();
 			this.project = new Dataweb.NShape.Project(this.components);
+			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
+			this.xmlStore = new Dataweb.NShape.XmlStore();
 			this.propertyController = new Dataweb.NShape.Controllers.PropertyController();
 			this.toolStrip = new System.Windows.Forms.ToolStrip();
 			this.clearButton = new System.Windows.Forms.ToolStripButton();
@@ -58,8 +60,6 @@
 			this.toolSetPresenter = new Dataweb.NShape.WinFormsUI.ToolSetListViewPresenter(this.components);
 			this.toolSetController = new Dataweb.NShape.Controllers.ToolSetController();
 			this.propertyPresenter = new Dataweb.NShape.WinFormsUI.PropertyPresenter();
-			this.xmlStore = new Dataweb.NShape.XmlStore();
-			this.cachedRepository = new Dataweb.NShape.Advanced.CachedRepository();
 			this.toolStripContainer.BottomToolStripPanel.SuspendLayout();
 			this.toolStripContainer.ContentPanel.SuspendLayout();
 			this.toolStripContainer.TopToolStripPanel.SuspendLayout();
@@ -133,13 +133,14 @@
 			this.display.ShowScrollBars = true;
 			this.display.Size = new System.Drawing.Size(850, 550);
 			this.display.SnapDistance = 5;
-			this.display.SnapToGrid = true;
+			this.display.SnapToGrid = false;
 			this.display.TabIndex = 4;
 			this.display.ToolPreviewBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(119)))), ((int)(((byte)(136)))), ((int)(((byte)(153)))));
 			this.display.ToolPreviewColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(70)))), ((int)(((byte)(130)))), ((int)(((byte)(180)))));
 			this.display.ZoomLevel = 100;
 			this.display.ZoomWithMouseWheel = true;
 			this.display.ZoomChanged += new System.EventHandler(this.display_ZoomChanged);
+			this.display.ShapesSelected += new System.EventHandler(this.display_ShapesSelected);
 			// 
 			// diagramSetController
 			// 
@@ -149,12 +150,25 @@
 			// project
 			// 
 			this.project.AutoGenerateTemplates = false;
-			this.project.LibrarySearchPaths = ((System.Collections.Generic.List<string>)(resources.GetObject("project.LibrarySearchPaths")));
+			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = null;
 			this.project.Repository = this.cachedRepository;
 			roleBasedSecurityManager1.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
 			roleBasedSecurityManager1.CurrentRoleName = "Administrator";
 			this.project.SecurityManager = roleBasedSecurityManager1;
+			// 
+			// cachedRepository
+			// 
+			this.cachedRepository.ProjectName = null;
+			this.cachedRepository.Store = this.xmlStore;
+			this.cachedRepository.Version = 0;
+			// 
+			// xmlStore
+			// 
+			this.xmlStore.DesignFileName = "";
+			this.xmlStore.DirectoryName = "";
+			this.xmlStore.FileExtension = ".xml";
+			this.xmlStore.ProjectName = "";
 			// 
 			// propertyController
 			// 
@@ -188,7 +202,7 @@
             this.zoomLabel});
 			this.toolStrip.Location = new System.Drawing.Point(3, 0);
 			this.toolStrip.Name = "toolStrip";
-			this.toolStrip.Size = new System.Drawing.Size(716, 25);
+			this.toolStrip.Size = new System.Drawing.Size(745, 25);
 			this.toolStrip.TabIndex = 0;
 			// 
 			// clearButton
@@ -241,7 +255,7 @@
 			this.diagramsDropDownButton.Image = ((System.Drawing.Image)(resources.GetObject("diagramsDropDownButton.Image")));
 			this.diagramsDropDownButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.diagramsDropDownButton.Name = "diagramsDropDownButton";
-			this.diagramsDropDownButton.Size = new System.Drawing.Size(102, 22);
+			this.diagramsDropDownButton.Size = new System.Drawing.Size(113, 22);
 			this.diagramsDropDownButton.Text = "DiagramName";
 			// 
 			// deleteDiagramButton
@@ -311,7 +325,7 @@
 			this.toolBoxButton.Image = ((System.Drawing.Image)(resources.GetObject("toolBoxButton.Image")));
 			this.toolBoxButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.toolBoxButton.Name = "toolBoxButton";
-			this.toolBoxButton.Size = new System.Drawing.Size(65, 22);
+			this.toolBoxButton.Size = new System.Drawing.Size(70, 22);
 			this.toolBoxButton.Text = "Toolbox";
 			this.toolBoxButton.Click += new System.EventHandler(this.toolBoxButton_Click);
 			// 
@@ -320,7 +334,7 @@
 			this.propertyWindowButton.Image = ((System.Drawing.Image)(resources.GetObject("propertyWindowButton.Image")));
 			this.propertyWindowButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.propertyWindowButton.Name = "propertyWindowButton";
-			this.propertyWindowButton.Size = new System.Drawing.Size(76, 22);
+			this.propertyWindowButton.Size = new System.Drawing.Size(80, 22);
 			this.propertyWindowButton.Text = "Properties";
 			this.propertyWindowButton.Click += new System.EventHandler(this.propertyWindowButton_Click);
 			// 
@@ -329,7 +343,7 @@
 			this.diagramButton.Image = ((System.Drawing.Image)(resources.GetObject("diagramButton.Image")));
 			this.diagramButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.diagramButton.Name = "diagramButton";
-			this.diagramButton.Size = new System.Drawing.Size(66, 22);
+			this.diagramButton.Size = new System.Drawing.Size(72, 22);
 			this.diagramButton.Text = "Diagram";
 			this.diagramButton.Click += new System.EventHandler(this.diagramButton_Click);
 			// 
@@ -338,7 +352,7 @@
 			this.designButton.Image = ((System.Drawing.Image)(resources.GetObject("designButton.Image")));
 			this.designButton.ImageTransparentColor = System.Drawing.Color.Fuchsia;
 			this.designButton.Name = "designButton";
-			this.designButton.Size = new System.Drawing.Size(59, 22);
+			this.designButton.Size = new System.Drawing.Size(63, 22);
 			this.designButton.Text = "Design";
 			this.designButton.Click += new System.EventHandler(this.designButton_Click);
 			// 
@@ -381,18 +395,20 @@
 			// zoomLabel
 			// 
 			this.zoomLabel.Name = "zoomLabel";
-			this.zoomLabel.Size = new System.Drawing.Size(36, 22);
+			this.zoomLabel.Size = new System.Drawing.Size(35, 22);
 			this.zoomLabel.Text = "100%";
 			// 
 			// toolSetPresenter
 			// 
+			this.toolSetPresenter.HideDeniedMenuItems = false;
 			this.toolSetPresenter.ListView = null;
+			this.toolSetPresenter.ShowDefaultContextMenu = true;
 			this.toolSetPresenter.ToolSetController = this.toolSetController;
 			// 
 			// toolSetController
 			// 
 			this.toolSetController.DiagramSetController = this.diagramSetController;
-			this.toolSetController.TemplateEditorSelected += new System.EventHandler<Dataweb.NShape.Controllers.TemplateEditorEventArgs>(toolSetController_TemplateEditorSelected);
+			this.toolSetController.TemplateEditorSelected += new System.EventHandler<Dataweb.NShape.Controllers.TemplateEditorEventArgs>(this.toolSetController_TemplateEditorSelected);
 			this.toolSetController.DesignEditorSelected += new System.EventHandler(this.toolSetController_DesignEditorSelected);
 			// 
 			// propertyPresenter
@@ -400,19 +416,6 @@
 			this.propertyPresenter.PrimaryPropertyGrid = null;
 			this.propertyPresenter.PropertyController = this.propertyController;
 			this.propertyPresenter.SecondaryPropertyGrid = null;
-			// 
-			// xmlStore
-			// 
-			this.xmlStore.DesignFileName = "";
-			this.xmlStore.DirectoryName = "";
-			this.xmlStore.FileExtension = ".xml";
-			this.xmlStore.ProjectName = "";
-			// 
-			// cachedRepository
-			// 
-			this.cachedRepository.ProjectName = null;
-			this.cachedRepository.Store = this.xmlStore;
-			this.cachedRepository.Version = 0;
 			// 
 			// DatabaseDesignerForm
 			// 

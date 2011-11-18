@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Dataweb.NShape;
-using System.IO;
-using Dataweb.NShape.Advanced;
-using Dataweb.NShape.GeneralShapes;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Data.SqlClient;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Dataweb.NShape;
+using Dataweb.NShape.Advanced;
+using Dataweb.NShape.GeneralModelObjects;
+using Dataweb.NShape.GeneralShapes;
 
 namespace NShapeTest {
 
-	public static class RepositoryHelper {
+	public static class DiagramHelper {
 
 		public static void CreateLargeDiagram(Project project, string diagramName) {
 			const int shapesPerSide = 100;
@@ -199,6 +199,10 @@ namespace NShapeTest {
 			project.Repository.InsertDiagram(diagram);
 		}
 
+	}
+	
+	
+	public static class RepositoryHelper {
 
 		public static SqlStore CreateSqlStore() {
 			string server = Environment.MachineName + SqlServerName;
@@ -238,7 +242,7 @@ namespace NShapeTest {
 
 				// Add and register libraries
 				project.RemoveAllLibraries();
-				project.AddLibraryByName("Dataweb.NShape.GeneralModelObjects");
+				project.AddLibrary(typeof(ValueDevice).Assembly);
 				project.AddLibrary(typeof(Circle).Assembly);
 				project.RegisterEntityTypes();
 

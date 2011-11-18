@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -66,9 +66,9 @@ namespace Dataweb.NShape.Controllers {
 		public Diagram Diagram { 
 			get { return diagram; }
 			set {
-				if (DiagramChanging != null) DiagramChanging(this, eventArgs);
+				if (DiagramChanging != null) DiagramChanging(this, EventArgs.Empty);
 				diagram = value;
-				if (DiagramChanged != null) DiagramChanged(this, eventArgs);
+				if (DiagramChanged != null) DiagramChanged(this, EventArgs.Empty);
 			}
 		}
 
@@ -113,9 +113,6 @@ namespace Dataweb.NShape.Controllers {
 
 		private Diagram diagram = null;
 		private DiagramSetController owner = null;
-
-		// Buffers
-		private EventArgs eventArgs = new EventArgs();
 
 		#endregion
 	}

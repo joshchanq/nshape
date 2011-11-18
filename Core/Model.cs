@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -464,17 +464,17 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Retrieves the model object type with the given projectName.
+		/// Retrieves the model object type with the given name.
 		/// </summary>
-		/// <param name="typeName">Either a full (i.e. including the namespace) or partial model object type projectName</param>
-		/// <returns>ModelObjectTypes object type with given projectName.</returns>
+		/// <param name="typeName">Either a full (i.e. including the namespace) or partial model object type name</param>
+		/// <returns>ModelObjectTypes object type with given name.</returns>
 		public ModelObjectType GetModelObjectType(string typeName) {
 			if (typeName == null) throw new ArgumentNullException("typeName");
 			ModelObjectType result = null;
 			if (!modelObjectTypes.TryGetValue(typeName, out result)) {
 				foreach (KeyValuePair<string, ModelObjectType> item in modelObjectTypes) {
-					// if no matching type projectName was found, check if the given type projectName was a type projectName without namespace
-					if (item.Value.Name == typeName) {
+					// If no matching type name was found, check if the given type projectName was a type projectName without namespace
+					if (string.Compare(item.Value.Name, typeName, StringComparison.InvariantCultureIgnoreCase) == 0) {
 						if (result == null) result = item.Value;
 						else throw new ArgumentException("The model object type '{0}' is ambiguous. Please specify the library name.", typeName);
 					}

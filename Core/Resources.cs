@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -20,9 +20,9 @@ using System.Resources;
 namespace Dataweb.Utilities {
 
 	/* The following naming scheme should be applied to resource string names:
-	 * <Entity projectName>_<string projectName>
-	 * Entity projectName is a projectName that describes the entity which defines the string.
-	 * String projectName is a unique projectName within this class. */
+	 * <Entity name>_<string name>
+	 * Entity name is a name that describes the entity which defines the string.
+	 * String name is a unique name within this class. */
 
 	/// <summary>
 	/// Loads strings from the resource of the library.

@@ -1,12 +1,23 @@
-﻿
+﻿/******************************************************************************
+  Copyright 2009-2011 dataweb GmbH
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  NShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Reflection;
 using System.Windows.Forms;
-using System.Collections;
+
 using Dataweb.NShape.Controllers;
-using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.Designer {
@@ -250,12 +261,12 @@ namespace Dataweb.NShape.Designer {
 		#endregion
 
 
-		internal void LogRaisedEvent<TEventArgs>(object sender, TEventArgs e, string eventName) {
+		internal void LogRaisedEvent<TEventArgs>(object sender, TEventArgs e, string eventName) where TEventArgs : EventArgs {
 			string senderName;
-			if (sender is Control) {
+			if (sender is Control)
 				senderName = ((Control)sender).Name;
-			} else senderName = sender.GetType().Name;
-			eventListBox.Items.Add(string.Format("{4} {0}.{1}({2}, {3})", sender, eventName, senderName, e, DateTime.Now));
+			else senderName = sender.GetType().Name;
+			eventListBox.Items.Add(string.Format("{4} {0}.{1}({2}, {3})", sender, eventName, senderName, e, DateTime.Now.ToString("HH:mm:ss.ffff  ")));
 			eventListBox.SelectedIndex = eventListBox.Items.Count - 1;
 		}
 
@@ -264,8 +275,10 @@ namespace Dataweb.NShape.Designer {
 
 		private void CheckAllItems(bool check) {
 			int cnt = eventSourcesListBox.Items.Count;
-			for (int i = 0; i < cnt; ++i)
-				eventSourcesListBox.SetItemChecked(i, check);
+			for (int i = 0; i < cnt; ++i) {
+				if (eventSourcesListBox.GetItemChecked(i) != check)
+					eventSourcesListBox.SetItemChecked(i, check);
+			}
 		}
 		
 		

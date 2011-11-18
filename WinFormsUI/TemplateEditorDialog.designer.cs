@@ -33,6 +33,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// cancelButton
 			// 
 			this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.cancelButton.Location = new System.Drawing.Point(470, 6);
 			this.cancelButton.Name = "cancelButton";
 			this.cancelButton.Size = new System.Drawing.Size(75, 23);
@@ -68,14 +69,14 @@ namespace Dataweb.NShape.WinFormsUI {
 			// templateController
 			// 
 			this.templateController.Project = null;
-			this.templateController.TemplateShapeControlPointMappingChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPointMappingChangedEventArgs>(this.templateController_TemplateShapeControlPointMappingModified);
-			this.templateController.TemplateModelObjectChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerModelObjectReplacedEventArgs>(this.templateController_TemplateModelObjectChanged);
-			this.templateController.TemplateShapePropertyMappingDeleted += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingDeleted);
-			this.templateController.TemplateShapeChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerTemplateShapeReplacedEventArgs>(this.templateController_TemplateShapeChanged);
 			this.templateController.TemplateModified += new System.EventHandler(this.templateController_TemplateModified);
 			this.templateController.TemplateShapeModified += new System.EventHandler(this.templateController_TemplateModified);
-			this.templateController.TemplateShapePropertyMappingSet += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingSet);
 			this.templateController.TemplateModelObjectModified += new System.EventHandler(this.templateController_TemplateModified);
+			this.templateController.TemplateShapeChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerTemplateShapeReplacedEventArgs>(this.templateController_TemplateShapeChanged);
+			this.templateController.TemplateModelObjectChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerModelObjectReplacedEventArgs>(this.templateController_TemplateModelObjectChanged);
+			this.templateController.TemplateShapePropertyMappingSet += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingSet);
+			this.templateController.TemplateShapePropertyMappingDeleted += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPropertyMappingChangedEventArgs>(this.templateController_TemplateShapePropertyMappingDeleted);
+			this.templateController.TemplateShapeControlPointMappingChanged += new System.EventHandler<Dataweb.NShape.Controllers.TemplateControllerPointMappingChangedEventArgs>(this.templateController_TemplateShapeControlPointMappingModified);
 			// 
 			// templatePresenter
 			// 
@@ -88,6 +89,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// TemplateEditorDialog
 			// 
+			this.AcceptButton = this.okButton;
+			this.CancelButton = this.cancelButton;
 			this.ClientSize = new System.Drawing.Size(638, 459);
 			this.Controls.Add(this.templatePresenter);
 			this.Controls.Add(this.buttonPanel);
@@ -97,8 +100,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "NShape Template Editor";
-			this.Shown += new System.EventHandler(this.TemplateEditorDialog_Shown);
 			this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.TemplateEditorDialog_FormClosed);
+			this.Shown += new System.EventHandler(this.TemplateEditorDialog_Shown);
 			this.buttonPanel.ResumeLayout(false);
 			this.ResumeLayout(false);
 

@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -176,7 +176,7 @@ namespace Dataweb.NShape.Controllers {
 				tools[i].Dispose();
 			tools.Clear();
 			toolBoxInitialized = false;
-			if (Cleared != null) Cleared(this, eventArgs);
+			if (Cleared != null) Cleared(this, EventArgs.Empty);
 		}
 
 
@@ -329,7 +329,7 @@ namespace Dataweb.NShape.Controllers {
 		public void ShowDesignEditor() {
 			// Select Default CurrentTool before calling the Editor
 			DoSelectTool(defaultTool, false, true);
-			OnDesignEditorSelected(eventArgs);
+			OnDesignEditorSelected(EventArgs.Empty);
 		}
 
 
@@ -340,7 +340,7 @@ namespace Dataweb.NShape.Controllers {
 		public void ShowLibraryManager() {
 			// Select Default CurrentTool before calling the Editor
 			DoSelectTool(defaultTool, false, true);
-			OnLibraryManagerSelected(eventArgs);
+			OnLibraryManagerSelected(EventArgs.Empty);
 		}
 
 
@@ -419,14 +419,14 @@ namespace Dataweb.NShape.Controllers {
 			isFeasible = true;
 			description = "Edit the current design or create new designs";
 			yield return new DelegateMenuItemDef("Show Design Editor...", Properties.Resources.DesignEditorBtn,
-				description, isFeasible, Permission.Present,
-				(action, project) => OnDesignEditorSelected(new EventArgs()));
+				description, isFeasible, Permission.Designs,
+				(action, project) => OnDesignEditorSelected(EventArgs.Empty));
 
 			isFeasible = true;
 			description = "Load and unload shape and/or model libraries";
 			yield return new DelegateMenuItemDef("Show Library Manager...", Properties.Resources.LibrariesBtn,
 				description, isFeasible, Permission.Templates,
-				(action, project) => OnLibraryManagerSelected(new EventArgs()));
+				(action, project) => OnLibraryManagerSelected(EventArgs.Empty));
 		}
 
 		#endregion
@@ -563,7 +563,7 @@ namespace Dataweb.NShape.Controllers {
 			if (diagramSetController == null) throw new ArgumentNullException("Property 'DiagramSetController' is not set.");
 			if (Project.Repository != null && !repositoryInitialized)
 				RegisterRepositoryEvents();
-			if (!toolBoxInitialized) {
+			if (!toolBoxInitialized && Project.AutoGenerateTemplates) {
 				CreateStandardTools();
 				CreateTools();
 				toolBoxInitialized = true;
@@ -581,7 +581,8 @@ namespace Dataweb.NShape.Controllers {
 
 
 		private void SelectDefaultTool(bool ensureVisibility) {
-			DoSelectTool(defaultTool, false, ensureVisibility);
+			if (selectedTool != defaultTool)
+				DoSelectTool(defaultTool, false, ensureVisibility);
 		}
 
 
@@ -776,7 +777,6 @@ namespace Dataweb.NShape.Controllers {
 		// Indicates that we are currently selecting another tool
 		private bool selecting;
 
-		private EventArgs eventArgs = new EventArgs();
 		private ToolEventArgs toolEventArgs = new ToolEventArgs();
 
 		#endregion

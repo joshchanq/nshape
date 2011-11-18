@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -44,12 +44,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			// Fill image lists
 			if (visibilityImageList.Images.Count == 0) {
-				visibilityImageList.Images.Add(Properties.Resources.Invisible);
-				visibilityImageList.Images.Add(Properties.Resources.Visible);
+				visibilityImageList.Images.Add(Properties.Resources.Unchecked);
+				visibilityImageList.Images.Add(Properties.Resources.Checked);
 			}
 			if (stateImageList.Images.Count == 0) {
-				stateImageList.Images.Add(Properties.Resources.Disabled);
-				stateImageList.Images.Add(Properties.Resources.Enabled);
+				stateImageList.Images.Add(Properties.Resources.Unchecked);
+				stateImageList.Images.Add(Properties.Resources.Checked);
 			}
 
 			CreateColumns();

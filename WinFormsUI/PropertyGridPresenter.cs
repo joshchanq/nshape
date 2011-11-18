@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,10 +13,7 @@
 ******************************************************************************/
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;
 
@@ -180,11 +177,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
-
 		private void UnregisterPropertyGridEvents(PropertyGrid propertyGrid) {
 			if (propertyGrid != null) {
-				propertyGrid.Enter -= propertyGrid_Enter;
-				propertyGrid.Leave -= propertyGrid_Leave;
+				//propertyGrid.Enter -= propertyGrid_Enter;
+				//propertyGrid.Leave -= propertyGrid_Leave;
 				propertyGrid.PropertyValueChanged -= propertyGrid_PropertyValueChanged;
 				propertyGrid.SelectedGridItemChanged -= propertyGrid_SelectedGridItemChanged;
 				propertyGrid.KeyDown -= propertyGrid_KeyDown;
@@ -217,7 +213,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			GetPropertyGrid(e.PageIndex, out grid);
 			if (grid != null) {
 				TypeDescriptionProviderDg.PropertyController = propertyController;
-				grid.SelectedObjects = e.GetObjectArray();
+				if (e.Objects.Count > 0)
+				    grid.SelectedObjects = e.GetObjectArray();
+				else if (grid.SelectedObject != null)
+					grid.SelectedObject = null;
 				grid.Visible = true;
 			}
 		}
@@ -238,10 +237,11 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void propertyController_ProjectClosing(object sender, EventArgs e) {
 			AssertControllerExists();
-			
 			propertyController.CancelSetProperty();
-			if (primaryPropertyGrid != null) primaryPropertyGrid.SelectedObject = null;
-			if (secondaryPropertyGrid != null) secondaryPropertyGrid.SelectedObject = null;
+			if (primaryPropertyGrid != null && primaryPropertyGrid.SelectedObject != null) 
+				primaryPropertyGrid.SelectedObject = null;
+			if (secondaryPropertyGrid != null && secondaryPropertyGrid.SelectedObject != null) 
+				secondaryPropertyGrid.SelectedObject = null;
 		}
 
 
@@ -254,6 +254,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void propertyGrid_PropertyValueChanged(object sender, PropertyValueChangedEventArgs e) {
 			AssertControllerExists();
 			propertyController.CommitSetProperty();
+			if (sender is PropertyGrid) ((PropertyGrid)sender).Refresh();
 		}
 
 

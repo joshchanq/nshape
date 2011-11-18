@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -66,12 +66,20 @@ namespace Dataweb.NShape.Advanced {
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void CopyFrom(IShapeCollection source) {
 			if (source == null) throw new ArgumentNullException("source");
+			Clear();
 			foreach (Shape shape in source.BottomUp) {
-				Shape shapeClone = shape.Clone();
+				Shape shapeClone = null;
+				// If the parent shape has no template, we assume that this is 
+				// the shape of the template itself, so it's children should be
+				// template-free, too
+				if (Owner.Template == null) {
+					shapeClone = shape.Type.CreateInstance();
+					shapeClone.CopyFrom(shape);
+				} else shapeClone = shape.Clone();
 				shapeClone.ZOrder = shape.ZOrder;
 				shapeClone.Parent = this.Owner;
 				shapeClone.DisplayService = this.Owner.DisplayService;
-				
+
 				this.shapes.Add(shapeClone);
 				this.AddShapeToIndex(shapeClone);
 			}
@@ -141,14 +149,14 @@ namespace Dataweb.NShape.Advanced {
 			foreach (Shape shape in BottomUp)
 				shape.Draw(graphics);
 
-//#if DEBUG
-//         foreach (KeyValuePair<Shape, Point> item in shapePositions) {
-//            GdiHelpers.DrawPoint(graphics, Pens.Lime, item.Key.X, item.Key.Y, 3);
-//            GdiHelpers.DrawPoint(graphics, Pens.Red, item.Value.X, item.Value.Y, 3);
-//         }
-//         GdiHelpers.DrawAngle(graphics, new SolidBrush(Color.FromArgb(96, Color.Yellow)), rotationCenter, Geometry.TenthsOfDegreeToDegrees(aggregationAngle), 20);
-//         GdiHelpers.DrawPoint(graphics, Pens.Blue, rotationCenter.X, rotationCenter.Y, 3);
-//#endif
+#if DEBUG_DIAGNOSTICS
+			//foreach (KeyValuePair<Shape, Point> item in shapePositions) {
+			//    GdiHelpers.DrawPoint(graphics, Pens.Lime, item.Key.X, item.Key.Y, 3);
+			//    GdiHelpers.DrawPoint(graphics, Pens.Red, item.Value.X, item.Value.Y, 3);
+			//}
+			//GdiHelpers.DrawAngle(graphics, new SolidBrush(Color.FromArgb(96, Color.Yellow)), rotationCenter, Geometry.TenthsOfDegreeToDegrees(aggregationAngle), 20);
+			//GdiHelpers.DrawPoint(graphics, Pens.Blue, rotationCenter.X, rotationCenter.Y, 3);
+#endif
 		}
 
 
@@ -198,7 +206,7 @@ namespace Dataweb.NShape.Advanced {
 					SuspendUpdate();
 					RevertRotation();
 
-					// set new rotation center and shapeAngle
+					// set new rotation center and angle
 					aggregationAngle = (aggregationAngle + angle) % 3600;
 					rotationCenter.X = rotationCenterX;
 					rotationCenter.Y = rotationCenterY;

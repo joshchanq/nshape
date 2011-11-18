@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -132,7 +132,7 @@ namespace Dataweb.NShape.Layouters {
 		public void SaveState() {
 			selectedPositions.Clear();
 			foreach (Shape s in selectedShapes)
-				if (HasConnectedGluePoints(s)) selectedPositions.Add(Point.Empty);
+				if (ExcludeFromFitting(s)) selectedPositions.Add(Point.Empty);
 				else selectedPositions.Add(new Point(s.X, s.Y));
 		}
 
@@ -141,13 +141,14 @@ namespace Dataweb.NShape.Layouters {
 		public void RestoreState() {
 			Debug.Assert(selectedShapes.Count == selectedPositions.Count);
 			for (int i = 0; i < selectedShapes.Count; ++i)
-				if (!HasConnectedGluePoints(selectedShapes[i]))
+				if (!ExcludeFromFitting(selectedShapes[i]))
 					selectedShapes[i].MoveControlPointTo(ControlPointId.Reference, selectedPositions[i].X, selectedPositions[i].Y, ResizeModifiers.None);
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void Prepare() {
+			SaveState();
 			layoutArea = CalcLayoutArea();
 		}
 
@@ -158,9 +159,15 @@ namespace Dataweb.NShape.Layouters {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public void Execute(int maxSeconds) {
+			if (selectedPositions.Count != selectedShapes.Count)
+				throw new InvalidOperationException("You must call Prepare() before calling Execute().");
+
 			if (maxSeconds <= 0) maxSeconds = int.MaxValue;
 			DateTime start = DateTime.Now;
 			while (ExecuteStep() && start.AddSeconds(maxSeconds) > DateTime.Now);
+			ICommand cmd = CreateLayoutCommand();
+			RestoreState();
+			project.ExecuteCommand(cmd);
 		}
 
 
@@ -173,27 +180,26 @@ namespace Dataweb.NShape.Layouters {
 		/// </summary>
 		public void Fit(int x, int y, int w, int h) {
 			// Aktuelles umgebendes Rechteck der Shapes berechnen
-			// TODO 3: Wie geht das? Nehme mal 100 für Breite und Höhe an
 			int x1 = int.MaxValue;
 			int y1 = int.MaxValue;
 			int x2 = int.MinValue;
 			int y2 = int.MinValue;
+			Rectangle bounds = Rectangle.Empty;
 			foreach (Shape s in Shapes) {
-				// @@Kurt
-				//if (s is ILinearShape) continue;
-				if (HasConnectedGluePoints(s)) continue;
-
-				if (s.X - 50 < x1) x1 = s.X - 50;
-				if (s.Y - 50 < y1) y1 = s.Y - 50;
-				if (s.X + 50 > x2) x2 = s.X + 50;
-				if (s.Y + 50 > y2) y2 = s.Y + 50;
+				if (ExcludeFromFitting(s)) continue;
+				bounds = s.GetBoundingRectangle(true);
+				if (bounds.Left < x1) x1 = bounds.Left;
+				if (bounds.Top < y1) y1 = bounds.Top;
+				if (bounds.Right > x2) x2 = bounds.Right;
+				if (bounds.Bottom > y2) y2 = bounds.Bottom;
 			}
+
 			// Wenn das umgebende Rechteck größer als der Rahmen ist,
 			// verkleinern
 			if (x2 - x1 > w) {
 				foreach (Shape s in Shapes) {
 					//if (s is ILinearShape) continue;
-					if (HasConnectedGluePoints(s)) continue; 
+					if (ExcludeFromFitting(s)) continue; 
 					int sx = x1 + (s.X - x1) * w / (x2 - x1);
 					int sy = s.Y;
 					s.MoveControlPointTo(ControlPointId.Reference, sx, sy, ResizeModifiers.None);
@@ -202,7 +208,7 @@ namespace Dataweb.NShape.Layouters {
 			}
 			if (y2 - y1 > h) {
 				foreach (Shape s in Shapes) {
-					if (HasConnectedGluePoints(s)) continue;
+					if (ExcludeFromFitting(s)) continue;
 
 					int sx = s.X;
 					int sy = y1 + (s.Y - y1) * h / (y2 - y1);
@@ -216,11 +222,23 @@ namespace Dataweb.NShape.Layouters {
 			int dy = (y1 < y || y2 > y + h) ? (h - y2 - y1 + 2 * y) / 2 : 0;
 			foreach (Shape s in Shapes) {
 				//if (s is ILinearShape) continue;
-				if (HasConnectedGluePoints(s)) continue;
+				if (ExcludeFromFitting(s)) continue;
 				int sx = s.X + dx;
 				int sy = s.Y + dy;
 				s.MoveControlPointTo(ControlPointId.Reference, sx, sy, ResizeModifiers.None);
 			}
+		}
+
+
+		/// <summary>
+		/// Creates a multi-move command from the original to the final arrangement and executes it.
+		/// </summary>
+		/// <returns></returns>
+		protected ICommand CreateLayoutCommand() {
+			MoveShapesToCommand cmd = new MoveShapesToCommand();
+			for (int i = 0; i < selectedShapes.Count; ++i)
+				cmd.AddMoveTo(selectedShapes[i], selectedPositions[i].X, selectedPositions[i].Y, selectedShapes[i].X, selectedShapes[i].Y);
+			return cmd;
 		}
 
 
@@ -245,13 +263,12 @@ namespace Dataweb.NShape.Layouters {
 			result.Width = right - left;
 			return result;
 		}
-
-
+		
 
 		// There are lines without glue points (SwitchBar) and planar shapes with glue points (Label)
 		// so we better check on glue points here...
 		/// <ToBeCompleted></ToBeCompleted>
-		protected bool HasConnectedGluePoints(Shape shape) {
+		protected bool ExcludeFromFitting(Shape shape) {
 			foreach (ControlPointId pointId in shape.GetControlPointIds(ControlPointCapabilities.Glue)) {
 				if (shape.IsConnected(pointId, null) != ControlPointId.None) return true;
 			}
@@ -369,10 +386,7 @@ namespace Dataweb.NShape.Layouters {
 			Size z = Size.Empty;
 			displacements.Clear();
 			foreach (Shape s in Shapes) {
-				// @@Kurt
-				//if (s is ILinearShape) continue;
-				if (HasConnectedGluePoints(s)) continue;
-
+				if (ExcludeFromFitting(s)) continue;
 				CalcDisplacement(s, ref z);
 				displacements.Add(z);
 			}
@@ -380,9 +394,7 @@ namespace Dataweb.NShape.Layouters {
 			int maxDisplacement = 0;
 			int i = 0;
 			foreach (Shape s in Shapes) {
-				// @@Kurt
-				//if (s is ILinearShape) continue;
-				if (HasConnectedGluePoints(s)) continue;
+				if (ExcludeFromFitting(s)) continue;
 
 				int nx = s.X + displacements[i].Width;
 				int ny = s.Y + displacements[i].Height;
@@ -398,11 +410,16 @@ namespace Dataweb.NShape.Layouters {
 		private void CalcDisplacement(Shape shape, ref Size displacement) {
 			int totalForceX = 0;
 			int totalForceY = 0;
-			//
-			// Alle anziehenden Kräft aufsummieren
-			foreach (ShapeConnectionInfo sci1 in shape.GetConnectionInfos(ControlPointId.Any, null))
+
+			// Alle anziehenden Kräfte aufsummieren
+			foreach (ShapeConnectionInfo sci1 in shape.GetConnectionInfos(ControlPointId.Any, null)) {
 				foreach (ShapeConnectionInfo sci2 in sci1.OtherShape.GetConnectionInfos(ControlPointId.Any, null)) {
 					if (sci2.OtherShape == shape) continue;
+					// Wenn man hier nicht prüft ob das OtherShape ebenfalls verknüpft ist, dann zieht bspw. ein 
+					// mit einer verknüpften Linie verknüpftes Shape unendlich lang einseitig an der Linie und 
+					// es kommt letztendlich zu einem "Integer Overflow".
+					if (ExcludeFromFitting(sci2.OtherShape)) continue;
+
 					// Shape shape ist über s mit sci2.Shape verknüpft
 					int distance = (int)Geometry.DistancePointPoint(sci2.OtherShape.X, sci2.OtherShape.Y, shape.X, shape.Y);
 					int force = distance * springRate - friction;
@@ -411,12 +428,10 @@ namespace Dataweb.NShape.Layouters {
 						totalForceY += (sci2.OtherShape.Y - shape.Y) * force / distance;
 					}
 				}
+			}
 			// Alle abstoßenden Kräfte aufsummieren
 			foreach (Shape s in AllShapes) {
-				// @@Kurt
-				//if (s is ILinearShape) continue;
-				if (HasConnectedGluePoints(s)) continue;
-
+				if (ExcludeFromFitting(s)) continue;
 				if (s != shape) {
 					int distance = (int)Geometry.DistancePointPoint(s.X, s.Y, shape.X, shape.Y);
 					if (distance <= repulsionRange) {
@@ -440,8 +455,8 @@ namespace Dataweb.NShape.Layouters {
 				}
 			}
 			// Bewegung berechnen
-			displacement.Width = totalForceX * TimeInterval * TimeInterval / (2 * Mass);
-			displacement.Height = totalForceY * TimeInterval * TimeInterval / (2 * Mass);
+			displacement.Width = (totalForceX * TimeInterval * TimeInterval / (2 * Mass));
+			displacement.Height = (totalForceY * TimeInterval * TimeInterval / (2 * Mass));
 		}
 
 
@@ -592,7 +607,7 @@ namespace Dataweb.NShape.Layouters {
 		/// <override></override>
 		public override void Unprepare() {
 			foreach (Shape s in selectedShapes)
-				s.Tag = null;
+				s.InternalTag = null;
 		}
 
 
@@ -616,7 +631,7 @@ namespace Dataweb.NShape.Layouters {
 					result = PositionShapes();
 					break;
 				default: 
-					Debug.Fail("NotSupported phase in FlowLayouter.ExecuteStep");
+					Debug.Fail("Unsupported phase in FlowLayouter.ExecuteStep");
 					break;
 			}
 			return result;
@@ -655,14 +670,13 @@ namespace Dataweb.NShape.Layouters {
 			}
 			// Jetzt die initialen Schichten zuweisen
 			foreach (Shape s in selectedShapes) {
-				// @@Kurt
-				s.Tag = new LayerInfo();
+				s.InternalTag = new LayerInfo();
 				int fy = GetFlowY(s);
 				int layerIndex = (fy - firstLayerPos + layerDistance / 2) / layerDistance;
 				Debug.Assert(layerIndex >= 0);
-				((LayerInfo)s.Tag).layer = layerIndex;
+				((LayerInfo)s.InternalTag).layer = layerIndex;
 				if (layerIndex >= layerCount) layerCount = layerIndex + 1;
-				MoveShapeFlowY(s, firstLayerPos + ((LayerInfo)s.Tag).layer * layerDistance);
+				MoveShapeFlowY(s, firstLayerPos + ((LayerInfo)s.InternalTag).layer * layerDistance);
 			}
 		}
 
@@ -671,7 +685,7 @@ namespace Dataweb.NShape.Layouters {
 		private bool LayerShapes() {
 			bool result = false;
 			foreach (Shape s in selectedShapes) {
-				if (HasConnectedGluePoints(s)) continue;
+				if (ExcludeFromFitting(s)) continue;
 
 				int downInCount, downOutCount;
 				int sameInCount, sameOutCount;
@@ -713,9 +727,9 @@ namespace Dataweb.NShape.Layouters {
 		private void PrepareOrdering() {
 			layerList.Clear();
 			foreach (Shape s in selectedShapes) {
-				if (HasConnectedGluePoints(s)) continue;
+				if (ExcludeFromFitting(s)) continue;
 
-				int li = ((LayerInfo)s.Tag).layer;
+				int li = ((LayerInfo)s.InternalTag).layer;
 				while (layerList.Count <= li)
 					layerList.Add(new List<Shape>());
 				int i = layerList[li].BinarySearch(s, shapeByXComparer);
@@ -725,9 +739,6 @@ namespace Dataweb.NShape.Layouters {
 			//
 			firstRowPos = 100;
 			rowDistance = 60;
-			// @@Kurt: Auskommentiert wegen Warnung
-			//rowCount = 100;
-			//
 			phase = Phase.Ordering;
 			run = 0;
 			currentLayer = 1;
@@ -750,8 +761,8 @@ namespace Dataweb.NShape.Layouters {
 					++n;
 					bc += layerList[currentLayer + layerDelta].IndexOf(s) + 1;
 				}
-				if (n == 0) ((LayerInfo)shape.Tag).value = -1;
-				else ((LayerInfo)shape.Tag).value = (float)bc / n;
+				if (n == 0) ((LayerInfo)shape.InternalTag).value = -1;
+				else ((LayerInfo)shape.InternalTag).value = (float)bc / n;
 			}
 			// Sortiere die Shapes nach aufsteigenden Baryzentrums-Werten
 			// Damit vorhandene gut positionierte Shapes nicht unnötig verschoben werden
@@ -759,10 +770,10 @@ namespace Dataweb.NShape.Layouters {
 			float mbc = 0; // Maximum barycenter
 			for (int i = 0; i < layerList[currentLayer].Count; ++i) {
 				Shape shape = layerList[currentLayer][i];
-				if (((LayerInfo)shape.Tag).value < 0) {
+				if (((LayerInfo)shape.InternalTag).value < 0) {
 					// Ein Joker wird auf den passenden Wert gesetzt
-					((LayerInfo)shape.Tag).value = mbc;
-				} else if (((LayerInfo)shape.Tag).value < mbc) {
+					((LayerInfo)shape.InternalTag).value = mbc;
+				} else if (((LayerInfo)shape.InternalTag).value < mbc) {
 					// Falsch einsortiert
 					int index = layerList[currentLayer].BinarySearch(0, i, shape, shapeByValueComparer);
 					if (index < 0) index = ~index;
@@ -771,7 +782,7 @@ namespace Dataweb.NShape.Layouters {
 					if (index == 0) MoveShapeFlowX(shape, GetFlowX(layerList[currentLayer][0]) - 10);
 					else MoveShapeFlowX(shape, (GetFlowX(layerList[currentLayer][index - 1]) + GetFlowX(layerList[currentLayer][index])) / 2);
 				} else {
-					mbc = ((LayerInfo)shape.Tag).value;
+					mbc = ((LayerInfo)shape.InternalTag).value;
 				}
 			}
 			// Nächsten Durchlauf bestimmen
@@ -905,13 +916,13 @@ namespace Dataweb.NShape.Layouters {
 
 		private void MoveShapeLayerFlow(Shape shape, int layerDelta) {
 			// Brauchen wir einen neuen Layer?
-			if (((LayerInfo)shape.Tag).layer + layerDelta < 0)
+			if (((LayerInfo)shape.InternalTag).layer + layerDelta < 0)
 				InsertLayer(0);
-			else if (((LayerInfo)shape.Tag).layer + layerDelta >= layerCount)
+			else if (((LayerInfo)shape.InternalTag).layer + layerDelta >= layerCount)
 				InsertLayer(layerCount);
 			// Shape verschieben
-			((LayerInfo)shape.Tag).layer += layerDelta;
-			MoveShapeFlowY(shape, firstLayerPos + ((LayerInfo)shape.Tag).layer * layerDistance);
+			((LayerInfo)shape.InternalTag).layer += layerDelta;
+			MoveShapeFlowY(shape, firstLayerPos + ((LayerInfo)shape.InternalTag).layer * layerDistance);
 		}
 
 
@@ -927,13 +938,8 @@ namespace Dataweb.NShape.Layouters {
 		private IEnumerable<Shape> GetConnectedShapesInLayer(Shape shape, int layerIndex) {
 			foreach (ShapeConnectionInfo sci in shape.GetConnectionInfos(ControlPointId.Reference, null))
 				if (sci.OtherShape is LineShapeBase) {
-					// Original by pepo:
-					//Shape result = sci.PassiveShape.GetConnectionInfo(null, 3 - sci.ConnectionPointId).PassiveShape;
-					//if (result != null && ((LayerInfo)result.Tag).layer == layerIndex) yield return result;
-					
-					// @@Kurt: Method GetConnectionInfo was removed
 					foreach (ShapeConnectionInfo psci in sci.OtherShape.GetConnectionInfos(3 - sci.OtherPointId, null)) {
-						if (psci.OtherShape != null && ((LayerInfo)psci.OtherShape.Tag).layer == layerIndex) 
+						if (psci.OtherShape != null && ((LayerInfo)psci.OtherShape.InternalTag).layer == layerIndex) 
 							yield return psci.OtherShape;
 					}
 				}
@@ -967,12 +973,9 @@ namespace Dataweb.NShape.Layouters {
 
 		private void InsertLayer(int layerIndex) {
 			foreach (Shape s in selectedShapes) {
-				// @@Kurt
-				//if (s is IPlanarShape) {
-				if (HasConnectedGluePoints(s)) continue;
-
-				if (((LayerInfo)s.Tag).layer >= layerIndex) {
-					++((LayerInfo)s.Tag).layer;
+				if (ExcludeFromFitting(s)) continue;
+				if (((LayerInfo)s.InternalTag).layer >= layerIndex) {
+					++((LayerInfo)s.InternalTag).layer;
 				}
 			}
 			// Wir nehmen erst einmal an, dass nur oben und unten layer eingefügt werden
@@ -1002,8 +1005,8 @@ namespace Dataweb.NShape.Layouters {
 		private class ShapeByValueComparer : IComparer<Shape> {
 
 			public int Compare(Shape s1, Shape s2) {
-				float v1 = ((LayerInfo)s1.Tag).value;
-				float v2 = ((LayerInfo)s2.Tag).value;
+				float v1 = ((LayerInfo)s1.InternalTag).value;
+				float v2 = ((LayerInfo)s2.InternalTag).value;
 				return v1 > v2 ? +1 : v2 > v1 ? -1 : 0;
 			}
 
@@ -1020,7 +1023,7 @@ namespace Dataweb.NShape.Layouters {
 			downInCount = downOutCount = sameInCount = sameOutCount = upInCount = upOutCount = 0;
 			nextDown = int.MaxValue;
 			nextUp = int.MinValue;
-			int thisLayerIndex = ((LayerInfo)shape.Tag).layer + d;
+			int thisLayerIndex = ((LayerInfo)shape.InternalTag).layer + d;
 			foreach (ShapeConnectionInfo sci in shape.GetConnectionInfos(ControlPointId.Reference, null))
 				if (sci.OtherShape is ILinearShape) {
 					Orientation o = Orientation.Both;
@@ -1036,7 +1039,7 @@ namespace Dataweb.NShape.Layouters {
 						Shape otherShape = psci.OtherShape;
 
 						if (otherShape == null) continue;
-						int otherLayer = ((LayerInfo)otherShape.Tag).layer;
+						int otherLayer = ((LayerInfo)otherShape.InternalTag).layer;
 						if (otherLayer < thisLayerIndex) {
 							switch (o) {
 								case Orientation.Incoming: ++downInCount; break;
@@ -1100,8 +1103,6 @@ namespace Dataweb.NShape.Layouters {
 		private int layerCount = 10;
 		private int firstRowPos = 100;
 		private int rowDistance = 30;
-		// @@Kurt: Auskommentiert wegen Warnung
-		//private int rowCount = 100;	
 		private int currentLayer = 0; // Der gerade bearbeitete Layer
 		//
 		List<List<Shape>> layerList = new List<List<Shape>>();

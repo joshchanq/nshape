@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -14,14 +14,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using Dataweb.NShape.Advanced;
-using System.Data.SqlClient;
 using System.Data.Common;
+using System.Data.SqlClient;
+using System.Windows.Forms;
 
 
 namespace Dataweb.NShape.Designer {
@@ -60,7 +56,7 @@ namespace Dataweb.NShape.Designer {
 				case Mode.CreateProject:
 				case Mode.OpenProject:
 					projectNameComboBox.Visible =
-						projectNameLabel.Visible = true; ;
+						projectNameLabel.Visible = true; 
 					Text = "Select Project";
 					break;
 			}

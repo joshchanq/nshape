@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,6 +13,7 @@
 ******************************************************************************/
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
 
 
@@ -440,6 +441,20 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
+		public DelegateMenuItemDef(string title, Bitmap image, string description, bool isFeasible, Permission requiredPermission, IEnumerable<Shape> shapes, ActionExecuteDelegate executeDelegate)
+			: this(title, image, Color.Empty, string.Format("{0} Action", title), description, false, isFeasible, requiredPermission, executeDelegate) {
+			this.securityDomainObjects = shapes;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public DelegateMenuItemDef(string title, Bitmap image, string description, bool isFeasible, Permission requiredPermission, char securityDomainName,  ActionExecuteDelegate executeDelegate)
+			: this(title, image, Color.Empty, string.Format("{0} Action", title), description, false, isFeasible, requiredPermission, executeDelegate) {
+				this.securityDomainName = securityDomainName;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
 		public DelegateMenuItemDef(string title, Bitmap image, string name, string description, bool isChecked, bool isFeasible, Permission requiredPermission, ActionExecuteDelegate executeDelegate)
 			: this(title, image, Color.Empty, name, description, isChecked, isFeasible, requiredPermission, executeDelegate) {
 		}
@@ -450,6 +465,20 @@ namespace Dataweb.NShape.Advanced {
 			: base(title, image, transparentColor, name, description, isChecked, isFeasible) {
 			this.requiredPermission = requiredPermission;
 			this.executeDelegate = executeDelegate;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public DelegateMenuItemDef(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible, Permission requiredPermission, IEnumerable<Shape> shapes, ActionExecuteDelegate executeDelegate)
+			: this(title, image, transparentColor, name, description, isChecked, isFeasible, requiredPermission, executeDelegate) {
+			this.securityDomainObjects = shapes;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public DelegateMenuItemDef(string title, Bitmap image, Color transparentColor, string name, string description, bool isChecked, bool isFeasible, Permission requiredPermission, char securityDomainName, ActionExecuteDelegate executeDelegate)
+			: this(title, image, transparentColor, name, description, isChecked, isFeasible, requiredPermission, executeDelegate) {
+			this.securityDomainName = securityDomainName;
 		}
 
 
@@ -464,7 +493,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override bool IsGranted(ISecurityManager securityManager) {
 			if (securityManager == null) throw new ArgumentNullException("securityManager");
-			return securityManager.IsGranted(requiredPermission);
+			if (securityDomainObjects != null)
+				return securityManager.IsGranted(requiredPermission, securityDomainObjects);
+			else if (securityDomainName != '\0')
+				return securityManager.IsGranted(requiredPermission, securityDomainName);
+			else return securityManager.IsGranted(requiredPermission);
 		}
 
 
@@ -484,6 +517,8 @@ namespace Dataweb.NShape.Advanced {
 
 		// Fields
 		private Permission requiredPermission = Permission.None;
+		private char securityDomainName = '\0';
+		private IEnumerable<Shape> securityDomainObjects = null;
 		private ActionExecuteDelegate executeDelegate;
 	}
 

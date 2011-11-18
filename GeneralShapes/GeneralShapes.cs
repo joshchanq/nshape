@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -17,11 +17,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Design;
 using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
+
 using Dataweb.NShape.Advanced;
-using Dataweb.Utilities;
 
 
 namespace Dataweb.NShape.GeneralShapes {
@@ -1135,11 +1133,11 @@ namespace Dataweb.NShape.GeneralShapes {
 			// Linear GeneralShapes
 			registrar.RegisterShapeType(new ShapeType("Polyline", namespaceName, namespaceName,
 				Polyline.CreateInstance, Polyline.GetPropertyDefinitions));
+			//registrar.RegisterShapeType(new ShapeType("RectangularLine", namespaceName, namespaceName,
+			//    RectangularLine.CreateInstance, RectangularLine.GetPropertyDefinitions));
 			registrar.RegisterShapeType(new ShapeType("CircularArc", namespaceName, namespaceName,
 				"With only two points, it behaves like a straight line, with all three points, it behaves like a circular arc.",
 				CircularArc.CreateInstance, CircularArc.GetPropertyDefinitions));
-			// new Type(typeof(RectangularLine).Name, RectangularLine.CreateInstance, 
-			// RectangularLine.GetPropertyDefinitions(null)).Register(registrar);
 			// new Type(typeof(BezierLine).Name, BezierLine.CreateInstance, 
 			// BezierLine.GetPropertyDefinitions(null)).Register(registrar);
 			// Planar GeneralShapes

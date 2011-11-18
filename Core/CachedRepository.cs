@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -84,7 +84,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 		/// <summary>
 		/// Finds the owner of the given shape. For debugging purposes only!
 		/// </summary>
@@ -244,6 +244,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public void SaveChanges() {
+			if (store == null) throw new Exception("Repository has no store attached.");
 			store.SaveChanges(this);
 			AcceptAll();
 		}
@@ -426,27 +427,8 @@ namespace Dataweb.NShape.Advanced {
 			
 			// Insert / undelete / update shape
 			DoUpdateTemplateShape(template);
-			//IEntity shapeEntity = template.Shape;
-			//if (shapeEntity.Id == null && !newShapes.ContainsKey(template.Shape))
-			//   DoInsertShape((Shape)shapeEntity, template);
-			//else {
-			//   if (CanUndelete<Shape>(template.Shape, shapes))
-			//      DoUndeleteShape(template.Shape, template);
-			//   DoUpdateShape(template.Shape);
-			//}
-			
 			// Insert / undelete / update model object
 			DoUpdateTemplateModelObject(template);
-			//if (template.Shape.ModelObject != null) {
-			//   IModelObject modelObject = template.Shape.ModelObject;
-			//   if (modelObject.Id == null && !newModelObjects.ContainsKey(modelObject))
-			//      DoInsertModelObject(template.Shape.ModelObject, template);
-			//   else {
-			//      if (CanUndelete<IModelObject>(modelObject, modelObjects))
-			//         DoUndeleteModelObject(modelObject);
-			//      DoUpdateModelObject(template.Shape.ModelObject);
-			//   }
-			//}
 			
 			if (TemplateUpdated != null) TemplateUpdated(this, GetTemplateEventArgs(template));
 		}
@@ -1544,18 +1526,15 @@ namespace Dataweb.NShape.Advanced {
 				} else stringBuilder.Append(result[i]);
 			}
 			// We use namespace prefixes for the library names
-			// Not yet, must use prefix plus projectName in order to do that
+			// Not yet, must use prefix plus name in order to do that
 			// result = result.ReplaceRange('.', ':');
 			return stringBuilder.ToString();
 		}
 
 
 		/// <summary>
-		/// Retrieves the indicated project style, which is always loaded when the project 
-		/// is open.
+		/// Retrieves the indicated project style, which is always loaded when the project is open.
 		/// </summary>
-		/// <param name="id"></param>
-		/// <returns></returns>
 		private IStyle GetProjectStyle(object id) {
 			EntityBucket<IStyle> styleItem;
 			if (!styles.TryGetValue(id, out styleItem))
@@ -1567,11 +1546,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Inserts an entity into the internal cache and marks it as new.
 		/// </summary>
-		/// <typeparam projectName="TEntity"></typeparam>
-		/// 
-		/// <param name="newEntities"></param>
-		/// <param name="entity"></param>
-		/// <param name="owner"></param>
 		private void InsertEntity<TEntity>(Dictionary<TEntity, IEntity> newEntities,
 			TEntity entity, IEntity owner) where TEntity : IEntity {
 			if (entity.Id != null)
@@ -1584,10 +1558,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Updates an entity in the internal cache and marks it as modified.
 		/// </summary>
-		/// <typeparam projectName="TEntity"></typeparam>
-		/// <param name="loadedEntities"></param>
-		/// <param name="newEntities"></param>
-		/// <param name="entity"></param>
 		private void UpdateEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
@@ -1608,10 +1578,6 @@ namespace Dataweb.NShape.Advanced {
 		/// Marks the entity for deletion from the data store. 
 		/// Must be called after all children have been removed.
 		/// </summary>
-		/// <typeparam projectName="TEntity"></typeparam>
-		/// <param name="loadedEntities"></param>
-		/// <param name="newEntities"></param>
-		/// <param name="entity"></param>
 		private void DeleteEntity<TEntity>(Dictionary<object, EntityBucket<TEntity>> loadedEntities,
 			Dictionary<TEntity, IEntity> newEntities, TEntity entity) where TEntity : IEntity {
 			if (entity.Id == null) {
@@ -1708,7 +1674,6 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Defines a dictionary for loaded entity types.
 		/// </summary>
-		/// <typeparam projectName="TEntity"></typeparam>
 		private class LoadedEntities<TEntity> : Dictionary<object, EntityBucket<TEntity>>,
 			ICacheCollection<TEntity> where TEntity : IEntity {
 
@@ -1966,6 +1931,10 @@ namespace Dataweb.NShape.Advanced {
 				if (shape.HasControlPointCapability(sci.OwnPointId, ControlPointCapabilities.Glue))
 					DeleteShapeConnection(shape, sci.OwnPointId, sci.OtherShape, sci.OtherPointId);
 				else DeleteShapeConnection(sci.OtherShape, sci.OtherPointId, shape, sci.OwnPointId);
+			}
+			// Detach if a model object is assigned
+			if (shape.ModelObject != null) {
+				shape.ModelObject = null;
 			}
 			// Delete the shape itself
 			DeleteEntity<Shape>(shapes, newShapes, shape);
@@ -2260,7 +2229,6 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Stores a reference to a loaded object together with its state.
 	/// </summary>
-	/// <typeparam projectName="Type">Type of the object to store</typeparam>
 	public class EntityBucket<TObject> {
 
 		/// <summary>
@@ -2363,10 +2331,6 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Defines a filter function for the loading methods.
 	/// </summary>
-	/// <typeparam projectName="TEntity"></typeparam>
-	/// <param name="entity"></param>
-	/// <param name="owner"></param>
-	/// <returns></returns>
 	public delegate bool FilterDelegate<TEntity>(TEntity entity, IEntity owner);
 
 

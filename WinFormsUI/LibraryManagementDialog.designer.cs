@@ -27,9 +27,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
 			this.closeButton = new System.Windows.Forms.Button();
 			this.libraryListView = new System.Windows.Forms.ListView();
-			this.columnHeaderName = new System.Windows.Forms.ColumnHeader();
-			this.columnHeaderVersion = new System.Windows.Forms.ColumnHeader();
-			this.columnHeaderPath = new System.Windows.Forms.ColumnHeader();
+			this.columnHeaderName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.columnHeaderVersion = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+			this.columnHeaderPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
 			this.SuspendLayout();
 			// 
 			// addLibraryButton
@@ -51,6 +51,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// closeButton
 			// 
 			this.closeButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.closeButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.closeButton.Location = new System.Drawing.Point(477, 216);
 			this.closeButton.Name = "closeButton";
 			this.closeButton.Size = new System.Drawing.Size(75, 23);
@@ -61,9 +62,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// libraryListView
 			// 
-			this.libraryListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-							| System.Windows.Forms.AnchorStyles.Left)
-							| System.Windows.Forms.AnchorStyles.Right)));
+			this.libraryListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.libraryListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.columnHeaderName,
             this.columnHeaderVersion,
@@ -94,6 +95,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.CancelButton = this.closeButton;
 			this.ClientSize = new System.Drawing.Size(564, 249);
 			this.Controls.Add(this.libraryListView);
 			this.Controls.Add(this.closeButton);

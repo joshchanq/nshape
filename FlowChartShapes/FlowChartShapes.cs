@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -14,9 +14,9 @@
 
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 
 using Dataweb.NShape.Advanced;
-using System.Drawing.Drawing2D;
 
 
 namespace Dataweb.NShape.FlowChartShapes {
@@ -282,11 +282,48 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				Rectangle result = Rectangle.Empty; ;
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+				if (angle == 0 || angle == 180) {
+					result.X = X - Width / 2;
+					result.Y = Y - Height / 2;
+					result.Width = Width;
+					result.Height = Height;
+				} else if (angle == 90 || angle == 270) {
+					result.X = X - Height / 2;
+					result.Y = Y - Width / 2;
+					result.Width = Height;
+					result.Height = Width;
+				} else {
+					float arcRadius = ArcDiameter / 2f;
+					PointF topLeftCenter, bottomRightCenter;
+					if (ArcDiameter == Width) {
+						topLeftCenter = Geometry.RotatePoint(X, Y, angle, X, Y - (Height / 2f) + arcRadius);
+						bottomRightCenter = Geometry.RotatePoint(X, Y, angle, X, Y + (Height / 2f) - arcRadius);
+					} else {
+						topLeftCenter = Geometry.RotatePoint(X, Y, angle, X - (Width / 2f) + arcRadius, Y);
+						bottomRightCenter = Geometry.RotatePoint(X, Y, angle, X + (Width / 2f) - arcRadius, Y);
+					}
+					result.X = (int)Math.Round(Math.Min(topLeftCenter.X - arcRadius, bottomRightCenter.X - arcRadius));
+					result.Y = (int)Math.Round(Math.Min(topLeftCenter.Y - arcRadius, bottomRightCenter.Y - arcRadius));
+					result.Width = (int)Math.Round(Math.Max(topLeftCenter.X + arcRadius, bottomRightCenter.X + arcRadius)) - result.X;
+					result.Height = (int)Math.Round(Math.Max(topLeftCenter.Y + arcRadius, bottomRightCenter.Y + arcRadius)) - result.Y;
+				}
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
+		/// <override></override>
 		protected internal TerminatorSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal TerminatorSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -298,9 +335,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
 			captionBounds = Rectangle.Empty;
-			captionBounds.X = left + (ArcRadius / 4);
+			captionBounds.X = left + (ArcDiameter / 4);
 			captionBounds.Y = top;
-			captionBounds.Width = Width - (ArcRadius / 2);
+			captionBounds.Width = Width - (ArcDiameter / 2);
 			captionBounds.Height = Height;
 		}
 
@@ -313,27 +350,35 @@ namespace Dataweb.NShape.FlowChartShapes {
 				int right = left + Width;
 				int bottom = top + Height;
 
+				int startAngle = (ArcDiameter == Width) ? 180 : 90;
+				const int sweepAngle = 180;
+
 				Path.Reset();
 				Path.StartFigure();
-				Path.AddArc(left, top, ArcRadius, Height, 90, 180);
-				if (ArcRadius < Width / 2)
-					Path.AddLine(left + ArcRadius, top, right - ArcRadius, top);
-				Path.AddArc(right - ArcRadius, top, ArcRadius, Height, -90, 180);
-				if (ArcRadius < Width / 2)
-					Path.AddLine(right - ArcRadius, bottom, left + ArcRadius, bottom);
+				float arcRadius = ArcDiameter / 2f;
+				if (ArcDiameter == Height) {
+					Path.AddArc(left, top, ArcDiameter, ArcDiameter, startAngle, sweepAngle);
+					if (Width > ArcDiameter)
+						Path.AddLine(left + arcRadius, top, right - arcRadius, top);
+					Path.AddArc(right - ArcDiameter, top, ArcDiameter, ArcDiameter, 180 + startAngle, sweepAngle);
+					if (Width > ArcDiameter)
+						Path.AddLine(right - arcRadius, bottom, left + arcRadius, bottom);
+				} else {
+					Path.AddArc(left, top, ArcDiameter, ArcDiameter, startAngle, sweepAngle);
+					if (Height > ArcDiameter) 
+						Path.AddLine(right, top + arcRadius, right, bottom - arcRadius);
+					Path.AddArc(left, bottom - ArcDiameter, ArcDiameter, ArcDiameter, 180 + startAngle, sweepAngle);
+					if (Height > ArcDiameter) 
+						Path.AddLine(left, bottom - arcRadius, left, top + arcRadius);
+				}
 				Path.CloseFigure();
 				return true;
 			} else return false;
 		}
 
 
-		private int ArcRadius {
-			get {
-				if (Width < Height)
-					return Width;
-				else
-					return Height;
-			}
+		private int ArcDiameter {
+			get { return (Width < Height) ? Width : Height; }
 		}
 
 	}
@@ -407,11 +452,13 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected internal ProcessSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal ProcessSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -437,11 +484,13 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected internal PredefinedProcessSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal PredefinedProcessSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -497,16 +546,12 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 		/// <override></override>
-		public override void Draw(Graphics graphics) {
-			base.Draw(graphics);
-		}
-
-
 		protected internal DecisionSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal DecisionSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -528,11 +573,35 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int left = X + (int)Math.Round(-Width / 2f);
+				int top = Y + (int)Math.Round(-Height / 2f);
+				int right = left + Width;
+				int bottom = top + Height;
+				int offset = GetParallelOffset();
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+
+				Point tl = Geometry.RotatePoint(X, Y, angle, left + offset, top);
+				Point tr = Geometry.RotatePoint(X, Y, angle, right, top);
+				Point bl = Geometry.RotatePoint(X, Y, angle, left, bottom);
+				Point br = Geometry.RotatePoint(X, Y, angle, right - offset, bottom);
+
+				Rectangle result;
+				Geometry.CalcBoundingRectangle(tl, tr, bl, br, out result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
+		/// <override></override>
 		protected internal InputOutputSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal InputOutputSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -540,9 +609,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 		/// <override></override>
 		protected override void CalcControlPoints() {
-			int offset = Height / 4;
-			if (offset > Width)
-				offset = Width / 4;
+			int offset = GetParallelOffset();
 
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
@@ -616,6 +683,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		private int GetParallelOffset() {
+			return Math.Min(Height / 4, Width / 4);
+		}
+
+
 		#region Fields
 		Point[] shapePoints = new Point[4];
 		#endregion
@@ -634,17 +706,19 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			if (controlPointId == BottomCenterControlPoint && (controlPointCapability & ControlPointCapabilities.Connect) != 0)
+			if (controlPointId == BottomCenterControlPoint && (controlPointCapability == ControlPointCapabilities.Connect))
 				return false;
 			else return base.HasControlPointCapability(controlPointId, controlPointCapability);
 		}
 
 
+		/// <override></override>
 		protected internal DocumentSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal DocumentSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -654,7 +728,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
-			captionBounds.Height -= CalcTearOffHeight();
+			captionBounds.Height -= (2 * CalcTearOffHeight());
 		}
 
 
@@ -670,7 +744,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 				Path.Reset();
 				Path.StartFigure();
 				Path.AddLine(left, top, left, bottom - tearOffHeight);
-				Path.AddBezier(left, bottom - tearOffHeight, 0, bottom + tearOffHeight, 0, bottom - (tearOffHeight + tearOffHeight), right, bottom - tearOffHeight);
+				Path.AddBezier(left, bottom - tearOffHeight, 0, bottom + (2 * tearOffHeight), 0, bottom - (4 * tearOffHeight), right, bottom - tearOffHeight);
 				Path.AddLine(right, bottom - tearOffHeight, right, top);
 				Path.AddLine(right, top, left, top);
 				Path.CloseFigure();
@@ -679,7 +753,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		private int CalcTearOffHeight() { return (int)Math.Round(Height / 8f); }
+		private int CalcTearOffHeight() { return (int)Math.Round(Math.Min(20, Height / 8f)); }
 
 
 		// ControlPoint Id Constants
@@ -697,11 +771,13 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
 		protected internal ConnectorSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal ConnectorSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -732,14 +808,32 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				CalcShapePoints(ref shapePoints);
+
+				Matrix.Reset();
+				Matrix.Translate(X, Y);
+				Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, MatrixOrder.Append);
+				Matrix.TransformPoints(shapePoints);
+
+				Rectangle result;
+				Geometry.CalcBoundingRectangle(shapePoints, out result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
 		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapability) {
-			if ((controlPointCapability & ControlPointCapabilities.Connect) != 0
-				|| (controlPointCapability & ControlPointCapabilities.Resize) != 0)
-				return (controlPointId != ControlPointCount);
-			if ((controlPointCapability & ControlPointCapabilities.Reference) != 0
-				|| (controlPointCapability & ControlPointCapabilities.Rotate) != 0)
-				return (controlPointId == ControlPointCount);
+			if (controlPointId == MiddleCenterControlPoint) {
+				if ((controlPointCapability & ControlPointCapabilities.Connect) != 0
+					|| (controlPointCapability & ControlPointCapabilities.Reference) != 0
+					|| (controlPointCapability & ControlPointCapabilities.Rotate) != 0)
+					return true;
+			} else if ((controlPointCapability & ControlPointCapabilities.Connect) != 0
+				 || (controlPointCapability & ControlPointCapabilities.Resize) != 0)
+				return IsConnectionPointEnabled(controlPointId);
 			if ((controlPointCapability & ControlPointCapabilities.Glue) != 0)
 				return false;
 			return false;
@@ -787,8 +881,37 @@ namespace Dataweb.NShape.FlowChartShapes {
 			ControlPoints[5].X = 0;
 			ControlPoints[5].Y = bottom;
 
+			// Rotate point
 			ControlPoints[6].X = 0;
 			ControlPoints[6].Y = 0;
+		}
+
+
+		protected override ControlPointId GetControlPointId(int index) {
+			switch (index) {
+				case 0: return TopLeftControlPoint;
+				case 1: return TopCenterControlPoint;
+				case 2: return MiddleLeftControlPoint;
+				case 3: return MiddleRightControlPoint;
+				case 4: return BottomLeftControlPoint;
+				case 5: return BottomCenterControlPoint;
+				case 6: return MiddleCenterControlPoint;
+				default: return ControlPointId.None;
+			}
+		}
+
+
+		protected override int GetControlPointIndex(ControlPointId id) {
+			switch (id) {
+				case TopLeftControlPoint: return 0;
+				case TopCenterControlPoint: return 1;
+				case MiddleLeftControlPoint: return 2;
+				case MiddleRightControlPoint: return 3;
+				case BottomLeftControlPoint: return 4;
+				case BottomCenterControlPoint: return 5;
+				case MiddleCenterControlPoint: return 6;
+				default: return -1;
+			}
 		}
 
 
@@ -806,21 +929,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-
-				shapePoints[0].X = left;
-				shapePoints[0].Y = top;
-				shapePoints[1].X = 0;
-				shapePoints[1].Y = top;
-				shapePoints[2].X = right;
-				shapePoints[2].Y = 0;
-				shapePoints[3].X = 0;
-				shapePoints[3].Y = bottom;
-				shapePoints[4].X = left;
-				shapePoints[4].Y = bottom;
+				CalcShapePoints(ref shapePoints);
 
 				Path.Reset();
 				Path.StartFigure();
@@ -831,14 +940,33 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		private void CalcShapePoints(ref Point[] points) {
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+
+			shapePoints[0].X = left;
+			shapePoints[0].Y = top;
+			shapePoints[1].X = 0;
+			shapePoints[1].Y = top;
+			shapePoints[2].X = right;
+			shapePoints[2].Y = 0;
+			shapePoints[3].X = 0;
+			shapePoints[3].Y = bottom;
+			shapePoints[4].X = left;
+			shapePoints[4].Y = bottom;
+		}
+
+
 		#region Fields
 		private const int TopLeftControlPoint = 1;
 		private const int TopCenterControlPoint = 2;
-		private const int MiddleLeftControlPoint = 3;
-		private const int MiddleRightControlPoint = 4;
-		private const int BottomLeftControlPoint = 5;
-		private const int BottomCenterControlPoint = 6;
-		private const int MiddleCenterControlPoint = 7;
+		private const int MiddleLeftControlPoint = 4;
+		private const int MiddleRightControlPoint = 5;
+		private const int BottomLeftControlPoint = 6;
+		private const int BottomCenterControlPoint = 7;
+		private const int MiddleCenterControlPoint = 9;
 
 		Point[] shapePoints = new Point[5];
 		#endregion
@@ -1096,11 +1224,42 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int arcRadius = GetArcRadius();
+				if (arcRadius > 0) {
+					int left = X + (int)Math.Round(-Width / 2f);
+					int top = Y + (int)Math.Round(-Height / 2f);
+					int right = left + Width;
+					int bottom = top + Height;
+
+					float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+					Point tl = Geometry.RotatePoint(X, Y, angle, left + arcRadius, top);
+					Point tr = Geometry.RotatePoint(X, Y, angle, right, top);
+					Point bl = Geometry.RotatePoint(X, Y, angle, left + arcRadius, bottom);
+					Point br = Geometry.RotatePoint(X, Y, angle, right, bottom);
+					Point arcCenter = Geometry.RotatePoint(X, Y, angle, left + arcRadius, Y);
+
+					// Calculate intersection with ellipse
+					Rectangle arcBounds;
+					Geometry.CalcBoundingRectangleEllipse(arcCenter.X, arcCenter.Y, arcRadius + arcRadius, Height, angle, out arcBounds);
+
+					Rectangle result = Rectangle.Empty;
+					Geometry.CalcBoundingRectangle(tl, tr, bl, br, out result);
+					return Geometry.UniteRectangles(arcBounds, result);
+				} else return base.CalculateBoundingRectangle(tight);
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
+		/// <override></override>
 		protected internal OnlineStorageSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal OnlineStorageSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -1112,9 +1271,10 @@ namespace Dataweb.NShape.FlowChartShapes {
 			base.CalcCaptionBounds(index, out captionBounds);
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
-			captionBounds.X = left + ArcRadius;
+			int arcRadius = GetArcRadius();
+			captionBounds.X = left + arcRadius;
 			captionBounds.Y = top;
-			captionBounds.Width = Width - ArcRadius - ArcRadius;
+			captionBounds.Width = Width - arcRadius - arcRadius;
 			captionBounds.Height = Height;
 		}
 
@@ -1126,12 +1286,13 @@ namespace Dataweb.NShape.FlowChartShapes {
 				int top = (int)Math.Round(-Height / 2f);
 				int right = left + Width;
 				int bottom = top + Height;
+				int arcRadius = GetArcRadius();
 
 				Path.StartFigure();
-				Path.AddArc(left, top, ArcRadius + ArcRadius, Height, 90, 180);
-				Path.AddLine(left + ArcRadius, top, right, top);
-				Path.AddArc(right - ArcRadius, top, ArcRadius + ArcRadius, Height, -90, -180);
-				Path.AddLine(right, bottom, left + ArcRadius, bottom);
+				Path.AddArc(left, top, arcRadius + arcRadius, Height, 90, 180);
+				Path.AddLine(left + arcRadius, top, right, top);
+				Path.AddArc(right - arcRadius, top, arcRadius + arcRadius, Height, -90, -180);
+				Path.AddLine(right, bottom, left + arcRadius, bottom);
 				Path.CloseFigure();
 				return true;
 			}
@@ -1139,14 +1300,10 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		private int ArcRadius {
-			get {
-				if (Width < Height)
-					return Width / 4;
-				else
-					return Height / 4;
-			}
+		private int GetArcRadius() {
+			return (Width < Height) ? Width / 4 : Height / 4;
 		}
+
 	}
 
 
@@ -1218,6 +1375,30 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int arcRadius = GetArcRadius();
+				if (arcRadius > 0) {
+					int left = X + (int)Math.Round(-Width / 2f);
+					int top = Y + (int)Math.Round(-Height / 2f);
+					int right = left + Width;
+					int bottom = top + Height;
+					float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+
+					Point leftCenter = Geometry.RotatePoint(X, Y, angle, left + arcRadius, Y);
+					Point rightCenter = Geometry.RotatePoint(X, Y, angle, right - arcRadius, Y);
+
+					Rectangle leftSideBounds;
+					Geometry.CalcBoundingRectangleEllipse(leftCenter.X, leftCenter.Y, 2 * arcRadius, Height, angle, out leftSideBounds);
+					Rectangle rightSideBounds;
+					Geometry.CalcBoundingRectangleEllipse(rightCenter.X, rightCenter.Y, 2 * arcRadius, Height, angle, out rightSideBounds);
+					return Geometry.UniteRectangles(leftSideBounds, rightSideBounds);
+				} else return base.CalculateBoundingRectangle(tight);
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
 		protected internal DrumStorageSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -1233,10 +1414,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 			if (index != 0) throw new IndexOutOfRangeException();
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
+			int arcRadius = GetArcRadius();
 			captionBounds = Rectangle.Empty;
-			captionBounds.X = left + ArcRadius;
+			captionBounds.X = left + arcRadius;
 			captionBounds.Y = top;
-			captionBounds.Width = Width - ArcRadius - ArcRadius;
+			captionBounds.Width = Width - (2 * arcRadius);
 			captionBounds.Height = Height;
 		}
 
@@ -1249,14 +1431,15 @@ namespace Dataweb.NShape.FlowChartShapes {
 				int top = (int)Math.Round(-Height / 2f);
 				int right = left + Width;
 				int bottom = top + Height;
+				int arcRadius = GetArcRadius();
 
 				Path.StartFigure();
-				Path.AddArc(right - ArcRadius - ArcRadius, top, ArcRadius + ArcRadius, Height, -90, -180);
-				Path.AddLine(right - (ArcRadius + ArcRadius), bottom, left + ArcRadius, bottom);
-				Path.AddArc(left, top, ArcRadius + ArcRadius, Height, 90, 180);
-				Path.AddLine(left + ArcRadius, top, right - ArcRadius - ArcRadius, top);
-				Path.AddArc(right - ArcRadius - ArcRadius, top, ArcRadius + ArcRadius, Height, -90, 180);
-				Path.AddArc(right - ArcRadius - ArcRadius, top, ArcRadius + ArcRadius, Height, 90, 180);
+				Path.AddArc(right - (2 * arcRadius), top, arcRadius + arcRadius, Height, -90, -180);
+				Path.AddLine(right - (2 * arcRadius), bottom, left + arcRadius, bottom);
+				Path.AddArc(left, top, arcRadius + arcRadius, Height, 90, 180);
+				Path.AddLine(left + arcRadius, top, right - arcRadius - arcRadius, top);
+				Path.AddArc(right - (2 * arcRadius), top, arcRadius + arcRadius, Height, -90, 180);
+				Path.AddArc(right - (2 * arcRadius), top, arcRadius + arcRadius, Height, 90, 180);
 				Path.CloseFigure();
 				Path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
 				return true;
@@ -1264,13 +1447,8 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		private int ArcRadius {
-			get {
-				if (Width < Height)
-					return Width / 4;
-				else
-					return Height / 4;
-			}
+		private int GetArcRadius() {
+			return (Width < Height) ? Width / 4 : Height / 4;
 		}
 	}
 
@@ -1282,6 +1460,29 @@ namespace Dataweb.NShape.FlowChartShapes {
 			Shape result = new DiskStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
+		}
+
+
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int arcRadius = GetArcRadius();
+				if (arcRadius > 0) {
+					int left = X + (int)Math.Round(-Width / 2f);
+					int top = Y + (int)Math.Round(-Height / 2f);
+					int right = left + Width;
+					int bottom = top + Height;
+					float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+
+					Point topCenter = Geometry.RotatePoint(X, Y, angle, X, top + arcRadius);
+					Point bottomCenter = Geometry.RotatePoint(X, Y, angle, X, bottom - arcRadius);
+					Rectangle topBounds;
+					Geometry.CalcBoundingRectangleEllipse(topCenter.X, topCenter.Y, Width, 2 * arcRadius, angle, out topBounds);
+					Rectangle bottomBounds;
+					Geometry.CalcBoundingRectangleEllipse(bottomCenter.X, bottomCenter.Y, Width, 2 * arcRadius, angle, out bottomBounds);
+					return Geometry.UniteRectangles(topBounds, bottomBounds);
+				} else return base.CalculateBoundingRectangle(tight);
+			} else return base.CalculateBoundingRectangle(tight);
 		}
 
 
@@ -1309,7 +1510,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 			base.CalcCaptionBounds(index, out captionBounds);
 			int left = (int)Math.Round(-Width / 2f);
 			int top = (int)Math.Round(-Height / 2f);
-			int arcRadius = CalcArcRadius();
+			int arcRadius = GetArcRadius();
 			captionBounds.X = left + arcRadius;
 			captionBounds.Y = top;
 			captionBounds.Width = Width - arcRadius - arcRadius;
@@ -1325,7 +1526,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 				int top = (int)Math.Round(-Height / 2f);
 				int right = left + Width;
 				int bottom = top + Height;
-				int arcRadius = CalcArcRadius();
+				int arcRadius = GetArcRadius();
 				int arcSpacing = arcRadius;
 				if (Height / arcRadius < 6)
 					arcSpacing = Height / 6;
@@ -1352,7 +1553,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
-		private int CalcArcRadius() {
+		private int GetArcRadius() {
 			return (int)Math.Round(Math.Min(Height / 4f, Width / 4f));
 		}
 	}
@@ -1365,6 +1566,16 @@ namespace Dataweb.NShape.FlowChartShapes {
 			Shape result = new TapeStorageSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
+		}
+
+
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				Rectangle result = base.CalculateBoundingRectangle(tight);
+				PointF p = Geometry.RotatePoint(X, Y, Geometry.TenthsOfDegreeToDegrees(Angle), X + (DiameterInternal / 2f), Y + (DiameterInternal / 2f));
+				return Geometry.UniteWithRectangle(Point.Round(p), result);
+			} else return base.CalculateBoundingRectangle(tight);
 		}
 
 
@@ -1418,6 +1629,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 			}
 			return false;
 		}
+
 	}
 
 
@@ -1428,6 +1640,22 @@ namespace Dataweb.NShape.FlowChartShapes {
 			Shape result = new PreparationSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
+		}
+
+
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				CalcShapePoints(ref shapePoints);
+
+				Matrix.Reset();
+				Matrix.Translate(X, Y);
+				Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, MatrixOrder.Append);
+				Matrix.TransformPoints(shapePoints);
+
+				Rectangle result;
+				Geometry.CalcBoundingRectangle(shapePoints, out result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
 		}
 
 
@@ -1482,30 +1710,35 @@ namespace Dataweb.NShape.FlowChartShapes {
 		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-				int edgeInset = CalcEdgeInset();
-
-				shapePoints[0].X = left + edgeInset;
-				shapePoints[0].Y = top;
-				shapePoints[1].X = right - edgeInset;
-				shapePoints[1].Y = top;
-				shapePoints[2].X = right;
-				shapePoints[2].Y = 0;
-				shapePoints[3].X = right - edgeInset;
-				shapePoints[3].Y = bottom;
-				shapePoints[4].X = left + edgeInset;
-				shapePoints[4].Y = bottom;
-				shapePoints[5].X = left;
-				shapePoints[5].Y = 0;
+				CalcShapePoints(ref shapePoints);
 
 				Path.Reset();
 				Path.StartFigure();
 				Path.AddPolygon(shapePoints);
 				return true;
 			} else return false;
+		}
+
+
+		private void CalcShapePoints(ref Point[] points) {
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+			int edgeInset = CalcEdgeInset();
+
+			points[0].X = left + edgeInset;
+			points[0].Y = top;
+			points[1].X = right - edgeInset;
+			points[1].Y = top;
+			points[2].X = right;
+			points[2].Y = 0;
+			points[3].X = right - edgeInset;
+			points[3].Y = bottom;
+			points[4].X = left + edgeInset;
+			points[4].Y = bottom;
+			points[5].X = left;
+			points[5].Y = 0;
 		}
 
 
@@ -1522,6 +1755,27 @@ namespace Dataweb.NShape.FlowChartShapes {
 			Shape result = new ManualInputSymbol(Type, (Template)null);
 			result.CopyFrom(this);
 			return result;
+		}
+
+
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int left = X+(int)Math.Round(-Width / 2f);
+				int top = Y + (int)Math.Round(-Height / 2f);
+				int right = left + Width;
+				int bottom = top + Height;
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+
+				Point tl = Geometry.RotatePoint(X, Y, angle, left, top + (Height / 4));
+				Point tr = Geometry.RotatePoint(X, Y, angle, right, top);
+				Point bl = Geometry.RotatePoint(X, Y, angle, left, bottom);
+				Point br = Geometry.RotatePoint(X, Y, angle, right, bottom);
+
+				Rectangle result;
+				Geometry.CalcBoundingRectangle(tl, tr, bl, br, out result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
 		}
 
 
@@ -1632,6 +1886,36 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int left = X + (int)Math.Round(-Width / 2f);
+				int top = Y + (int)Math.Round(-Height / 2f);
+				int right = left + Width;
+				int bottom = top + Height;
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+				int arcRadius = CalcArcRadius();
+
+				Point tl = Geometry.RotatePoint(X, Y, angle, left + arcRadius, top);
+				Point ml = Geometry.RotatePoint(X, Y, angle, left, Y);
+				Point bl = Geometry.RotatePoint(X, Y, angle, left + arcRadius, bottom);
+				Point arcCenter = Geometry.RotatePoint(X, Y, angle, right - arcRadius, Y);
+
+				Rectangle leftBounds;
+				Geometry.CalcBoundingRectangle(tl, ml, bl, arcCenter, out leftBounds);
+				if (arcRadius > 0) {
+					Rectangle rightBounds;
+					Geometry.CalcBoundingRectangleEllipse(arcCenter.X, arcCenter.Y, arcRadius + arcRadius, Height, angle, out rightBounds);
+					return Geometry.UniteRectangles(leftBounds, rightBounds);
+				} else {
+					Point tr = Geometry.RotatePoint(X, Y, angle, right, top);
+					Point br = Geometry.RotatePoint(X, Y, angle, right, bottom);
+					return Geometry.UniteRectangles(tr.X, tr.Y, br.X, br.Y, leftBounds);
+				}
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
 		protected internal DisplaySymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -1645,7 +1929,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				Path.Reset();
 				int left = (int)Math.Round(-Width / 2f);
 				int top = (int)Math.Round(-Height / 2f);
 				int right = left + Width;
@@ -1663,10 +1946,13 @@ namespace Dataweb.NShape.FlowChartShapes {
 				shapePoints[4].X = left + arcRadius;
 				shapePoints[4].Y = bottom;
 
+				Path.Reset();
 				Path.StartFigure();
 				Path.AddLine(shapePoints[0], shapePoints[1]);
 				Path.AddLine(shapePoints[1].X, shapePoints[1].Y, shapePoints[2].X - arcRadius, shapePoints[2].Y);
-				Path.AddArc(shapePoints[2].X - arcRadius - arcRadius, shapePoints[2].Y, arcRadius + arcRadius, Height, -90, 180);
+				if (arcRadius > 0)
+					Path.AddArc(shapePoints[2].X - arcRadius - arcRadius, shapePoints[2].Y, arcRadius + arcRadius, Height, -90, 180);
+				else Path.AddLine(shapePoints[2], shapePoints[3]);
 				Path.AddLine(shapePoints[3].X - arcRadius, shapePoints[3].Y, shapePoints[4].X, shapePoints[4].Y);
 				Path.AddLine(shapePoints[4].X, shapePoints[4].Y, shapePoints[0].X, shapePoints[0].Y);
 				Path.CloseFigure();
@@ -1719,7 +2005,9 @@ namespace Dataweb.NShape.FlowChartShapes {
 		protected override void CalcCaptionBounds(int index, out Rectangle captionBounds) {
 			if (index != 0) throw new IndexOutOfRangeException();
 			base.CalcCaptionBounds(index, out captionBounds);
-			captionBounds.Height -= CalcTearOffSize();
+			int tearOffSize = CalcTearOffSize();
+			captionBounds.Y += tearOffSize;
+			captionBounds.Height -= (2 * tearOffSize);
 		}
 
 
@@ -1729,20 +2017,19 @@ namespace Dataweb.NShape.FlowChartShapes {
 				Path.Reset();
 				int tearOffSize = CalcTearOffSize();
 				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round((-Height / 2f) + (tearOffSize / 2f));
+				int top = (int)Math.Round((-Height / 2f) + tearOffSize);
 				int right = left + Width;
-				int bottom = (int)Math.Round((-Height / 2f) + Height - (tearOffSize / 2f));
-
+				int bottom = (int)Math.Round((-Height / 2f) + Height - tearOffSize);
 
 				Path.StartFigure();
 				Path.AddBezier(left, top,
-					0, top + tearOffSize,
-					0, top - tearOffSize,
+					0, top + (3 * tearOffSize),
+					0, top - (3 * tearOffSize),
 					right, top);
 				Path.AddLine(right, top, right, bottom);
 				Path.AddBezier(right, bottom,
-					0, bottom - tearOffSize,
-					0, bottom + tearOffSize,
+					0, bottom - (3 * tearOffSize),
+					0, bottom + (3 * tearOffSize),
 					left, bottom);
 				Path.AddLine(left, bottom, left, top);
 				Path.CloseFigure();
@@ -1753,7 +2040,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 
 
 		private int CalcTearOffSize() {
-			return (int)Math.Round(Height / 4f);
+			return (int)Math.Round(Math.Min(10, Height / 8f));
 		}
 	}
 
@@ -1768,11 +2055,35 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		/// <override></override>
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int left = X + (int)Math.Round(-Width / 2f);
+				int top = Y + (int)Math.Round(-Height / 2f);
+				int right = left + Width;
+				int bottom = top + Height;
+				int edgeInset = CalcEdgeInset();
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+
+				Point tl = Geometry.RotatePoint(X, Y, angle, left, top);
+				Point tr = Geometry.RotatePoint(X, Y, angle, right, top);
+				Point bl = Geometry.RotatePoint(X, Y, angle, left + edgeInset, bottom);
+				Point br = Geometry.RotatePoint(X, Y, angle, right - edgeInset, bottom);
+
+				Rectangle result;
+				Geometry.CalcBoundingRectangle(tl, tr, bl, br, out result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
+		/// <override></override>
 		protected internal ManualOperationSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
 
 
+		/// <override></override>
 		protected internal ManualOperationSymbol(ShapeType shapeType, IStyleSet styleSet)
 			: base(shapeType, styleSet) {
 		}
@@ -1781,7 +2092,6 @@ namespace Dataweb.NShape.FlowChartShapes {
 		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
-				Path.Reset();
 				int left = (int)Math.Round(-Width / 2f);
 				int top = (int)Math.Round(-Height / 2f);
 				int right = left + Width;
@@ -1797,6 +2107,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 				shapePoints[3].X = left + edgeInset;
 				shapePoints[3].Y = bottom;
 
+				Path.Reset();
 				Path.StartFigure();
 				Path.AddPolygon(shapePoints);
 				Path.CloseFigure();
@@ -1967,6 +2278,31 @@ namespace Dataweb.NShape.FlowChartShapes {
 		}
 
 
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				int left = X + (int)Math.Round(-Width / 2f);
+				int top = Y + (int)Math.Round(-Height / 2f);
+				int right = left + Width;
+				int bottom = top + Height;
+				int edgeSize = CalcEdgeSize();
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+
+				Point itl = Geometry.RotatePoint(X, Y, angle, left + edgeSize, top);
+				Point tr = Geometry.RotatePoint(X, Y, angle, right, top);
+				Point ibl = Geometry.RotatePoint(X, Y, angle, left + edgeSize, bottom);
+				Point br = Geometry.RotatePoint(X, Y, angle, right, bottom);
+
+				Point otl = Geometry.RotatePoint(X, Y, angle, left, top + edgeSize);
+				Point obl = Geometry.RotatePoint(X, Y, angle, left, bottom);
+
+				Rectangle result;
+				Geometry.CalcBoundingRectangle(itl, tr, ibl, br, out result); 
+				result = Geometry.UniteWithRectangle(otl, result);
+				return Geometry.UniteWithRectangle(obl, result);
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
 		protected internal CardSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -1985,11 +2321,11 @@ namespace Dataweb.NShape.FlowChartShapes {
 			if (base.CalculatePath()) {
 				Path.Reset();
 				if (Width > 0 && Height > 0) {
-					int edgeSize = CalcEdgeSize();
 					int left = (int)Math.Round(-Width / 2f);
 					int top = (int)Math.Round(-Height / 2f);
 					int right = left + Width;
 					int bottom = top + Height;
+					int edgeSize = CalcEdgeSize();
 
 					Path.AddLine(left + edgeSize, top, right, top);
 					Path.AddLine(right, top, right, bottom);

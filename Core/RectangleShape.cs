@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -37,15 +37,16 @@ namespace Dataweb.NShape.Advanced {
 				if (value < 0) throw new ArgumentOutOfRangeException("Width");
 				if (value != size.Width) {
 					Invalidate();
+					//
 					if (Owner != null) Owner.NotifyChildResizing(this);
 					int delta = value - size.Width;
-					
+					//
 					size.Width = value;
-					ControlPointsHaveMoved();
 					InvalidateDrawCache();
-
+					//
 					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, 0);
 					if (Owner != null) Owner.NotifyChildResized(this);
+					ControlPointsHaveMoved();
 					Invalidate();
 				}
 			}
@@ -63,15 +64,16 @@ namespace Dataweb.NShape.Advanced {
 				if (value < 0) throw new ArgumentOutOfRangeException("Height");
 				if (value != size.Height) {
 					Invalidate();
+					//
 					if (Owner != null) Owner.NotifyChildResizing(this);
 					int delta = value - size.Height;
-
+					//
 					size.Height = value;
-					ControlPointsHaveMoved();
 					InvalidateDrawCache();
-
+					//
 					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(0, delta);
 					if (Owner != null) Owner.NotifyChildResized(this);
+					ControlPointsHaveMoved();
 					Invalidate();
 				}
 			}
@@ -99,6 +101,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
+			if (relativePosition == RelativePosition.Empty) throw new ArgumentOutOfRangeException("relativePosition");
 			// The RelativePosition of a RectangleBased shape is:
 			// A = Tenths of percent of Width
 			// B = Tenths of percent of Height
@@ -112,6 +115,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
+			if (!Geometry.IsValid(x, y)) throw new ArgumentOutOfRangeException("x / y");
 			// The RelativePosition of a RectangleBased shape is:
 			// A = Tenths of percent of Width
 			// B = Tenths of percent of Height
@@ -607,50 +611,18 @@ namespace Dataweb.NShape.Advanced {
 			if (tight) {
 				Rectangle result = Rectangle.Empty;
 				if (Width >= 0 && Height >= 0) {
-					if (Angle % 1800 == 0) {
+					if (Angle == 0 || Angle == 1800) {
 						result.X = X - (Width / 2);
 						result.Y = Y - (Height / 2);
 						result.Width = Width;
 						result.Height = Height;
-					} else if (Angle % 900 == 0) {
+					} else if (Angle == 900 || Angle == 2700) {
 						result.X = X - (Height / 2);
 						result.Y = Y - (Width / 2);
 						result.Width = Height;
 						result.Height = Width;
-					} else {
-						// a is the major half axis
-						// b is the minor half axis
-						// phi is the ratation angle of the ellipse
-						// t1/t2 are the angles where to find the maxima:
-						// The formulas how to calculate the maxima:
-						//	   x = centerX + a * cos(t) * cos(phi) - b * sin(t) * sin(phi)  [1]
-						//	   y = centerY + b * sin(t) * cos(phi) + a * cos(t) * sin(phi)  [2]
-						// The formula how to calculate the angle t:
-						//    tan(t) = -b * tan(phi) / a   [3]
-						//    tan(t) = b * cot(phi) / a  [4]
-						float a = Width / 2f;
-						float b = Height / 2f;
-						float phi = Geometry.TenthsOfDegreeToRadians(Angle);
-						double tanPhi = Math.Tan(phi);
-						double sinPhi = Math.Sin(phi);
-						double cosPhi = Math.Cos(phi);
-						float t1 = (float)Math.Round(Math.Atan(-b * tanPhi / a), 7, MidpointRounding.ToEven);
-						float t2 = (float)Math.Round(Math.Atan(b * (1 / tanPhi) / a), 7, MidpointRounding.ToEven);
-						double sinT1 = Math.Sin(t1);
-						double cosT1 = Math.Cos(t1);
-						double sinT2 = Math.Sin(t2);
-						double cosT2 = Math.Cos(t2);
-
-						float x1 = (float)Math.Abs(a * cosT1 * cosPhi - b * sinT1 * sinPhi);
-						float x2 = (float)Math.Abs(a * cosT2 * cosPhi - b * sinT2 * sinPhi);
-						float y1 = (float)Math.Abs(b * sinT1 * cosPhi + a * cosT1 * sinPhi);
-						float y2 = (float)Math.Abs(b * sinT2 * cosPhi + a * cosT2 * sinPhi);
-
-						result.X = (int)Math.Floor(X - Math.Max(x1, x2));
-						result.Y = (int)Math.Floor(Y - Math.Max(y1, y2));
-						result.Width = (int)Math.Ceiling(X + Math.Max(x1, x2)) - result.X;
-						result.Height = (int)Math.Ceiling(Y + Math.Max(y1, y2)) - result.Y;
-					}
+					} else
+						Geometry.CalcBoundingRectangleEllipse(X, Y, Width, Height, Geometry.TenthsOfDegreeToDegrees(Angle), out result);
 				}
 				return result;
 			} else return base.CalculateBoundingRectangle(tight);

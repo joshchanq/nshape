@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,14 +13,8 @@
 ******************************************************************************/
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -1153,7 +1147,7 @@ namespace Dataweb.Utilities
 			if (this == LogicalValue.False) return "LogicalValue.False";
 			else if (this == LogicalValue.True) return "LogicalValue.True";
 			else if (this == LogicalValue.Unknown) return "LogicalValue.NotSupported";
-			else { Debug.Fail("Unexpected logical value"); return "NotSupported logical value"; }
+			else { Debug.Fail("Unexpected logical value"); return "Unsupported logical value"; }
 		}
 
 	}

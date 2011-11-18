@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -15,7 +15,6 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Collections;
 
 
 namespace Dataweb.NShape.Advanced {
@@ -200,23 +199,23 @@ namespace Dataweb.NShape.Advanced {
 	/// </summary>
 	/// <status>reviewed</status>
 	public enum EntityCategory { 
-		/// <summary>Project settings</summary>
+		/// <summary>Project settings entity</summary>
 		ProjectSettings, 
-		/// <summary>Diagram</summary>
+		/// <summary>Diagram entity</summary>
 		Diagram, 
-		/// <summary>Shape</summary>
+		/// <summary>Shape entity</summary>
 		Shape, 
-		/// <summary>Template</summary>
+		/// <summary>Template entity</summary>
 		Template,
-		/// <summary>Model</summary>
+		/// <summary>Model entity</summary>
 		Model,
-		/// <summary>Model object</summary>
+		/// <summary>Model object entity</summary>
 		ModelObject,
-		/// <summary>Model object</summary>
+		/// <summary>Model mapping entity</summary>
 		ModelMapping,
-		/// <summary>Design</summary>
+		/// <summary>Design entity</summary>
 		Design, 
-		/// <summary>Style</summary>
+		/// <summary>Style entity</summary>
 		Style 
 	}
 
@@ -301,7 +300,13 @@ namespace Dataweb.NShape.Advanced {
 			this.category = category;
 			this.repositoryVersion = version;
 			this.createInstanceDelegate = createInstanceDelegate;
-			this.propertyDefinitions = new List<EntityPropertyDefinition>(propertyDefinitions);
+			this.propertyDefinitions = new List<EntityPropertyDefinition>();
+			// Sort property definitions: 
+			// EntityFieldDefinitions first, EntityInnerObjectsDefinition afterwards
+			foreach (EntityPropertyDefinition propertyDef in propertyDefinitions)
+				if (propertyDef is EntityFieldDefinition) this.propertyDefinitions.Add(propertyDef);
+			foreach (EntityPropertyDefinition propertyDef in propertyDefinitions)
+				if (propertyDef is EntityInnerObjectsDefinition) this.propertyDefinitions.Add(propertyDef);
 		}
 
 		#region IEntityType Members

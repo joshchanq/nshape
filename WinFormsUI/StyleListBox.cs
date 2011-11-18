@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,7 +13,6 @@
 ******************************************************************************/
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -22,7 +21,6 @@ using System.Windows.Forms;
 using System.Windows.Forms.Design;
 
 using Dataweb.NShape.Advanced;
-using System.Diagnostics;
 
 
 namespace Dataweb.NShape.WinFormsUI {
@@ -35,7 +33,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			InitializeComponent();
 			DoubleBuffered = true;
 			Sorted = true;
+			SetStyle(ControlStyles.ResizeRedraw, true);
+			UpdateStyles();
 
+			this.HorizontalScrollbar = true;
+			this.maxWidthFieldInfo = typeof(ListBox).GetField("maxWidth", System.Reflection.BindingFlags.GetField 
+																	| System.Reflection.BindingFlags.NonPublic 
+																	| System.Reflection.BindingFlags.Instance); 
 			this.matrix = new Matrix();
 			
 			this.styleItemFormatter = new StringFormat(StringFormatFlags.NoWrap);
@@ -326,20 +330,21 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		/// <override></override>
 		protected override void OnResize(EventArgs e) {
+			UpdateMaxItemWidth(null);
 			base.OnResize(e);
 		}
 
 
 		/// <override></override>
 		protected override void OnPaintBackground(PaintEventArgs e) {
-		    //base.OnPaintBackground(e);
-		    // do nothing because of DoubleBuffering
+			// do nothing because of DoubleBuffering
+			base.OnPaintBackground(e);
 		}
 
 
 		/// <override></override>
 		protected override void OnPaint(PaintEventArgs e) {
-			base.OnPaintBackground(e);
+			//base.OnPaintBackground(e);
 			base.OnPaint(e);
 		}
 
@@ -347,6 +352,8 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <override></override>
 		protected override void OnMeasureItem(MeasureItemEventArgs e) {
 			if (Items.Count > 0) {
+				UpdateMaxItemWidth(e.Graphics, e.Index);
+
 				e.ItemWidth = Width;
 				if (Items[e.Index] is IStyle) {
 					switch (styleCategory) {
@@ -384,6 +391,9 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		/// <override></override>
 		protected override void OnDrawItem(DrawItemEventArgs e) {
+			if (maxItemTextWidth < 0) UpdateMaxItemWidth(e.Graphics);
+			const int txtMargin = 4;
+
 			itemBounds.X = e.Bounds.X + 3;
 			itemBounds.Y = e.Bounds.Y + 1;
 			itemBounds.Width = (e.Bounds.Right - 3) - (e.Bounds.X + 3);
@@ -391,13 +401,13 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			previewRect.X = itemBounds.X + margin;
 			previewRect.Y = itemBounds.Y + margin;
-			previewRect.Width = (itemBounds.Width / 2) - (2 * margin);
+			previewRect.Width = itemBounds.Width - Math.Max(maxItemTextWidth, itemBounds.Width / 4) - (2 * margin) - (2 * txtMargin);
 			previewRect.Height = (itemBounds.Bottom - margin) - (itemBounds.Y + margin);
 
-			lableLayoutRect.X = previewRect.Right + 4;
-			lableLayoutRect.Y = previewRect.Y;
-			lableLayoutRect.Width = (itemBounds.Width - 4) - (previewRect.Right + 4);
-			lableLayoutRect.Height = previewRect.Height;
+			labelLayoutRect.X = previewRect.Right + txtMargin;
+			labelLayoutRect.Y = previewRect.Y;
+			labelLayoutRect.Width = maxItemTextWidth;
+			labelLayoutRect.Height = previewRect.Height;
 
 			// Draw Item Background and Border
 			e.Graphics.FillRectangle(ItemBackgroundBrush, itemBounds);
@@ -432,7 +442,7 @@ namespace Dataweb.NShape.WinFormsUI {
 							e.Graphics.FillRectangle(colorBrush, previewRect);
 							e.Graphics.DrawRectangle(ItemBorderPen, previewRect);
 							e.Graphics.DrawRectangle(Pens.Black, previewRect);
-							e.Graphics.DrawString(colorStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
+							e.Graphics.DrawString(colorStyle.Title, e.Font, TextBrush, labelLayoutRect, styleItemFormatter);
 							break;
 						case StyleCategory.FillStyle:
 							DrawFillStyleItem((FillStyle)Items[e.Index], e);
@@ -442,13 +452,13 @@ namespace Dataweb.NShape.WinFormsUI {
 							Font font = ToolCache.GetFont(charStyle);
 							Brush fontBrush = ToolCache.GetBrush(charStyle.ColorStyle);
 							e.Graphics.DrawString(string.Format("{0} {1} pt", font.FontFamily.Name, font.SizeInPoints), font, fontBrush, previewRect, styleItemFormatter);
-							e.Graphics.DrawString(charStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
+							e.Graphics.DrawString(charStyle.Title, e.Font, TextBrush, labelLayoutRect, styleItemFormatter);
 							break;
 						case StyleCategory.LineStyle:
 							LineStyle lineStyle = (LineStyle)Items[e.Index];
 							Pen linePen = ToolCache.GetPen(lineStyle, null, null);
 							e.Graphics.DrawLine(linePen, previewRect.X, previewRect.Y + (previewRect.Height / 2), previewRect.Right, previewRect.Y + (previewRect.Height / 2));
-							e.Graphics.DrawString(lineStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
+							e.Graphics.DrawString(lineStyle.Title, e.Font, TextBrush, labelLayoutRect, styleItemFormatter);
 							break;
 						case StyleCategory.ParagraphStyle:
 							ParagraphStyle paragraphStyle = (ParagraphStyle)Items[e.Index];
@@ -460,7 +470,7 @@ namespace Dataweb.NShape.WinFormsUI {
 							r.Height = previewRect.Height - (paragraphStyle.Padding.Top + paragraphStyle.Padding.Bottom);
 							e.Graphics.DrawString(previewText, e.Font, TextBrush, r, stringFormat);
 							e.Graphics.DrawRectangle(Pens.Black, previewRect);
-							e.Graphics.DrawString(paragraphStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
+							e.Graphics.DrawString(paragraphStyle.Title, e.Font, TextBrush, labelLayoutRect, styleItemFormatter);
 							break;
 						default:
 							throw new NShapeException(string.Format("Unexpected enum value '{0}'.", styleCategory));
@@ -534,6 +544,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				}
 				while (styleEnumerator.MoveNext())
 					Items.Add(styleEnumerator.Current);
+				maxItemTextWidth = -1;
 
 				// Add special item "More..."
 				if (openDesignerItem != null) Items.Add(openDesignerItem);
@@ -547,15 +558,25 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void ExecuteSelection() {
 			if (SelectedItem is OpenDesignerItem) {
 				if (styleSetProvider is Project) {
+					// Try to find the main window (the application's first opened window)
+					Form parentForm = (Application.OpenForms.Count > 0) ? Application.OpenForms[0] : null;
+					// Show dialog with parent form or otherwise it will show in background
 					DesignEditorDialog dlg = new DesignEditorDialog((Project)styleSetProvider, styleCategory);
-					dlg.Show();
+					if (parentForm == null) dlg.Show();
+					else dlg.Show(parentForm);
 				}
 				SelectedItem = preselectedStyle;
 			}
-			if (editorService != null) 
+			if (editorService != null)
 				editorService.CloseDropDown();
-			if (SelectedStyle is CapStyle || SelectedStyle is LineStyle)
-				ToolCache.NotifyStyleChanged(SelectedStyle);
+			else {
+				// Notify ToolCache about changed styles only if no
+				// EditorService is set: Otherwise the ToolCache re-creates the 
+				// associated brush, pen, etc each time the user selects a style 
+				// for a shape in the property grid.
+				if (SelectedStyle is CapStyle || SelectedStyle is LineStyle)
+					ToolCache.NotifyStyleChanged(SelectedStyle);
+			}
 		}
 
 		#endregion
@@ -632,7 +653,24 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region [Private] Methods: Draw FillStyle and CapStyle items
+		#region [Private] Methods: Measure Text, Draw FillStyle and CapStyle items
+
+		private void UpdateMaxItemWidth(Graphics gfx, int index) {
+			Size txtSize = Size.Empty;
+			if (gfx == null) txtSize = TextMeasurer.MeasureText(Items[index].ToString(), Font, Size.Empty, StringFormat.GenericDefault);
+			else txtSize = TextMeasurer.MeasureText(gfx, Items[index].ToString(), Font, Size.Empty, StringFormat.GenericDefault);
+			//Size txtSize = TextRenderer.MeasureText(Items[index].ToString(), Font);
+			if (txtSize.Width > maxItemTextWidth) maxItemTextWidth = txtSize.Width;
+		}
+
+
+		private void UpdateMaxItemWidth(Graphics gfx) {
+			Size txtSize = Size.Empty;
+			maxItemTextWidth = -1;
+			for (int i = Items.Count - 1; i >= 0; --i)
+				UpdateMaxItemWidth(gfx, i);
+		}
+
 
 		private void DrawFillStyleItem(IFillStyle fillStyle, DrawItemEventArgs e) {
 			Brush fillBrush = ToolCache.GetBrush(fillStyle);
@@ -658,12 +696,13 @@ namespace Dataweb.NShape.WinFormsUI {
 				e.Graphics.FillRectangle(fillBrush, previewRect);
 			e.Graphics.DrawRectangle(ItemBorderPen, previewRect);
 			e.Graphics.DrawRectangle(Pens.Black, previewRect);
-			e.Graphics.DrawString(fillStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
+			e.Graphics.DrawString(fillStyle.Title, e.Font, TextBrush, labelLayoutRect, styleItemFormatter);
 		}
 
 
 		private void DrawCapStyleItem(ICapStyle capStyle, DrawItemEventArgs e) {
-			Pen capPen = ToolCache.GetPen(styleSet.LineStyles.Normal, capStyle, capStyle);
+			ILineStyle lineStyle = styleSet.LineStyles.Normal;
+			Pen capPen = ToolCache.GetPen(lineStyle, capStyle, capStyle);
 			Brush capBrush = null;
 			PointF[] capPoints = null;
 
@@ -677,8 +716,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			int y = previewRect.Y + (previewRect.Height / 2);
 			// Start Cap
-			if (capStyle.CapShape != CapShape.None) {
-				capBrush = ToolCache.GetBrush(capStyle.ColorStyle);
+			if (HasCustomLineCap(capStyle)) {
+				capBrush = ToolCache.GetBrush(capStyle.ColorStyle, lineStyle);
 				ToolCache.GetCapPoints(capStyle, styleSet.LineStyles.Normal, ref capPoints);
 				float angle = Geometry.RadiansToDegrees(Geometry.Angle(left, y, right, y));
 				matrix.Reset();
@@ -688,8 +727,8 @@ namespace Dataweb.NShape.WinFormsUI {
 				e.Graphics.FillPolygon(capBrush, capPoints, System.Drawing.Drawing2D.FillMode.Alternate);
 			}
 			// End Cap
-			if (capStyle.CapShape != CapShape.None) {
-				capBrush = ToolCache.GetBrush(capStyle.ColorStyle);
+			if (HasCustomLineCap(capStyle)) {
+				capBrush = ToolCache.GetBrush(capStyle.ColorStyle, lineStyle);
 				ToolCache.GetCapPoints(capStyle, styleSet.LineStyles.Normal, ref capPoints);
 				float angle = Geometry.RadiansToDegrees(Geometry.Angle(right, y, left, y));
 				matrix.Reset();
@@ -700,7 +739,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			// Draw
 			e.Graphics.DrawLine(capPen, left, y, right, y);
-			e.Graphics.DrawString(capStyle.Title, e.Font, TextBrush, lableLayoutRect, styleItemFormatter);
+			e.Graphics.DrawString(capStyle.Title, e.Font, TextBrush, labelLayoutRect, styleItemFormatter);
+		}
+
+
+		public bool HasCustomLineCap(ICapStyle capStyle) {
+			if (capStyle == null) return false;
+			return (capStyle.CapShape != CapShape.None);
 		}
 
 		#endregion
@@ -718,7 +763,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			} else {
 				if (b is DefaultStyleItem) return 1;
 				else if (b is OpenDesignerItem) return -1;
-				else return string.Compare(a.ToString(), b.ToString());
+				else return string.Compare(a.ToString(), b.ToString(), StringComparison.InvariantCultureIgnoreCase);
 			}
 		}
 
@@ -773,6 +818,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		// Graphical stuff
 		private bool highlightItems = false;
+		private int maxItemTextWidth = -1;
 		// Colors
 		private Color itemBackgroundColor = Color.FromKnownColor(KnownColor.Window);
 		private Color itemHighlightedColor = Color.FromKnownColor(KnownColor.HighlightText);
@@ -796,8 +842,12 @@ namespace Dataweb.NShape.WinFormsUI {
 		private StringFormat styleItemFormatter;
 		private Rectangle itemBounds = Rectangle.Empty;
 		private Rectangle previewRect = Rectangle.Empty;
-		private Rectangle lableLayoutRect = Rectangle.Empty;
+		private Rectangle labelLayoutRect = Rectangle.Empty;
+
+		//private NotifyObjectCollection itemsCollection;
+		private System.Reflection.FieldInfo maxWidthFieldInfo;
 
 		#endregion
 	}
+
 }

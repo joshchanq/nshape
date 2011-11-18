@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -283,7 +283,7 @@ namespace Dataweb.NShape {
 			repository.UpdateDesign(design);
 			repository.UpdateProject();
 
-			if (StylesChanged != null) StylesChanged(this, eventArgs);
+			if (StylesChanged != null) StylesChanged(this, EventArgs.Empty);
 		}
 
 
@@ -344,7 +344,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Adds the library assembly with the given assembly name to the project.
 		/// </summary>
-		/// <param name="assemblyName">Full assembly projectName of library.</param>
+		/// <param name="assemblyName">Full assembly name of library.</param>
 		public void AddLibraryByName(string assemblyName) {
 			if (string.IsNullOrEmpty(assemblyName)) throw new ArgumentNullException("assemblyName");
 			Assembly a = Assembly.Load(assemblyName);
@@ -382,8 +382,7 @@ namespace Dataweb.NShape {
 		/// <param name="command"></param>
 		public void ExecuteCommand(ICommand command) {
 			if (command == null) throw new ArgumentNullException("command");
-			if (!command.IsAllowed(security))
-				throw new InvalidOperationException("Executing the command is not allowed.");
+			if (!command.IsAllowed(security)) throw new NShapeSecurityException(command);
 			command.Repository = repository;
 			history.ExecuteAndAddCommand(command);
 		}
@@ -409,7 +408,7 @@ namespace Dataweb.NShape {
 		/// Closes the project.
 		/// </summary>
 		public void Close() {
-			if (Closing != null) Closing(this, eventArgs);
+			if (Closing != null) Closing(this, EventArgs.Empty);
 			if (IsOpen) {
 				if (repository.IsOpen) {
 					// Get styleSet before closing the repository
@@ -430,7 +429,7 @@ namespace Dataweb.NShape {
 				// TODO 2: Unload dynamic libraries and remove the corresponding shape and model types.
 				//RemoveAllLibraries();
 			}
-			if (Closed != null) Closed(this, eventArgs);
+			if (Closed != null) Closed(this, EventArgs.Empty);
 		}
 
 
@@ -704,7 +703,7 @@ namespace Dataweb.NShape {
 				repository.Close();
 				throw ex;
 			}
-			if (Opened != null) Opened(this, eventArgs);
+			if (Opened != null) Opened(this, EventArgs.Empty);
 		}
 
 
@@ -891,7 +890,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// For each loaded Type, a new Template is created.
+		/// For each loaded Type, a new <see cref="T:Dataweb.NShape.Advanced.Template" /> is created.
 		/// These automatically created templates are not stored by the cache.
 		/// </summary>
 		/// <param name="shapeType"></param>
@@ -1024,8 +1023,6 @@ namespace Dataweb.NShape {
 
 		// -- Helpers --
 		private object[] registerArgs;
-		// Reused event args
-		private EventArgs eventArgs = new EventArgs();
 
 		#endregion
 	}

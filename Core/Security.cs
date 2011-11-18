@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -27,7 +27,7 @@ namespace Dataweb.NShape {
 	public enum Permission {
 		/// <summary>No permissions are granted.</summary>
 		None = 0x0000,
-		/// <summary>Copy another permission set.</summary>
+		/// <summary>Assign a security domain to any shape. This permission is security domain independent.</summary>
 		ModifyPermissionSet = 0x0001,
 		/// <summary>Modify position, size, rotation or z-order of shapes.</summary>
 		Layout = 0x0002,
@@ -53,6 +53,7 @@ namespace Dataweb.NShape {
 	/// <summary>
 	/// Specifies the set of <see cref="T:Dataweb.NShape.Permission" /> required for changing a property.
 	/// </summary>
+	[AttributeUsage((AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Field), AllowMultiple = true, Inherited = true)]
 	public class RequiredPermissionAttribute : Attribute {
 		
 		/// <summary>

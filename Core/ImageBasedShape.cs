@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -17,13 +17,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
 using Dataweb.Utilities;
-using System.Drawing.Design;
 
 
 namespace Dataweb.NShape.Advanced {
@@ -47,7 +47,7 @@ namespace Dataweb.NShape.Advanced {
 				if (NamedImage.IsNullOrEmpty(value))
 					image = null;
 				else image = value;
-				InvalidateImageBrush();
+				InvalidateDrawCache();
 				Invalidate();
 			}
 		}
@@ -62,8 +62,7 @@ namespace Dataweb.NShape.Advanced {
 			get { return imageLayout; }
 			set {
 				imageLayout = value;
-				GdiHelpers.DisposeObject(ref imageAttribs);
-				InvalidateImageAttribs();
+				InvalidateDrawCache();
 				Invalidate();
 			}
 		}
@@ -78,8 +77,7 @@ namespace Dataweb.NShape.Advanced {
 			get { return imageGrayScale; }
 			set {
 				imageGrayScale = value;
-				GdiHelpers.DisposeObject(ref imageAttribs);
-				InvalidateImageAttribs();
+				InvalidateDrawCache();
 				Invalidate();
 			}
 		}
@@ -93,10 +91,9 @@ namespace Dataweb.NShape.Advanced {
 		public float GammaCorrection {
 			get { return imageGamma; }
 			set {
-				if (imageGamma <= 0) throw new ArgumentOutOfRangeException("Value has to be greater 0.");
+				if (value <= 0) throw new ArgumentOutOfRangeException("Value has to be greater 0.");
 				imageGamma = value;
-				GdiHelpers.DisposeObject(ref imageAttribs);
-				InvalidateImageAttribs();
+				InvalidateDrawCache();
 				Invalidate();
 			}
 		}
@@ -112,8 +109,7 @@ namespace Dataweb.NShape.Advanced {
 			set {
 				if (value < 0 || value > 100) throw new ArgumentOutOfRangeException("Value has to be between 0 and 100.");
 				imageTransparency = value;
-				GdiHelpers.DisposeObject(ref imageAttribs);
-				InvalidateImageAttribs();
+				InvalidateDrawCache();
 				Invalidate();
 			}
 		}
@@ -128,8 +124,7 @@ namespace Dataweb.NShape.Advanced {
 			get { return transparentColor; }
 			set {
 				transparentColor = value;
-				GdiHelpers.DisposeObject(ref imageAttribs);
-				InvalidateImageAttribs();
+				InvalidateDrawCache();
 				Invalidate();
 			}
 		}
@@ -336,6 +331,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		protected override void InvalidateDrawCache() {
 			base.InvalidateDrawCache();
+			GdiHelpers.DisposeObject(ref imageAttribs);
+			GdiHelpers.DisposeObject(ref imageBrush);
 			imageBounds = Geometry.InvalidRectangle;
 		}
 
@@ -417,6 +414,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
+		[Obsolete("Use InvalidateDrawCache instead.")]
 		protected void InvalidateImageAttribs() {
 			GdiHelpers.DisposeObject(ref imageAttribs);
 			InvalidateDrawCache();
@@ -424,6 +422,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
+		[Obsolete("Use InvalidateDrawCache instead.")]
 		protected void InvalidateImageBrush() {
 			GdiHelpers.DisposeObject(ref imageBrush);
 			InvalidateDrawCache();
@@ -594,7 +593,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		[Category("Text")]
+		[Category("Data")]
 		[Description("Text displayed inside the shape")]
 		[PropertyMappingId(PropertyIdText)]
 		[RequiredPermission(Permission.ModifyData)]
@@ -606,7 +605,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		[Category("Text")]
+		[Category("Appearance")]
 		[Description("Determines the style of the shape's text.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[PropertyMappingId(PropertyIdCharacterStyle)]
 		[RequiredPermission(Permission.Present)]
@@ -621,7 +620,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		[Category("Text")]
+		[Category("Appearance")]
 		[Description("Determines the layout of the shape's text.\nUse the template editor to modify all shapes of a template.\nUse the design editor to modify and create styles.")]
 		[RequiredPermission(Permission.Present)]
 		[PropertyMappingId(PropertyIdParagraphStyle)]
@@ -659,6 +658,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
+			if (!Geometry.IsValid(x, y)) throw new ArgumentOutOfRangeException("x / y");
 			RelativePosition result = RelativePosition.Empty;
 			result.A = 0;
 			result.B = 0;
@@ -668,6 +668,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
+			if (relativePosition == RelativePosition.Empty) throw new ArgumentOutOfRangeException("relativePosition");
 			Point result = Point.Empty;
 			result.X = x;
 			result.Y = y;
@@ -684,7 +685,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
-			// All controlPoints of the imagebased shape are inside the shpe's bounds
+			// All controlPoints of the imagebased shape are inside the shape's bounds
 			// so the tight fitting bounding rectangle equals the loose bounding rectangle
 			Rectangle result = Rectangle.Empty;
 			result.X = x - w / 2;
@@ -773,15 +774,15 @@ namespace Dataweb.NShape.Advanced {
 					result.Y = y;
 					break;
 				case 3:
+				    result.X = x;
+				    result.Y = y - h / 2 + h - ch;
+				    break;
+				case 8:
 					result.X = x;
 					result.Y = y - h / 2 + h;
 					break;
-				case 8:
-					result.X = x;
-					result.Y = y - h / 2 + h - ch;
-					break;
 				default:
-					Debug.Fail("NotSupported control point id");
+					Debug.Fail("Unsupported control point id");
 					break;
 			}
 			return result;
@@ -800,7 +801,7 @@ namespace Dataweb.NShape.Advanced {
 					result = (controlPointCapability & (ControlPointCapabilities.Reference | ControlPointCapabilities.Connect)) != 0;
 					break;
 				case 3:
-					result = (controlPointCapability & ControlPointCapabilities.Connect) != 0;
+					result = (controlPointCapability & ControlPointCapabilities.Connect) != 0 && IsConnectionPointEnabled(controlPointId);
 					break;
 				case 8:
 					result = (controlPointCapability & ControlPointCapabilities.Resize) != 0;
@@ -848,7 +849,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		[Category("Layout")]
-		[Description("Rotation shapeAngle of the Shape in tenths of degree.")]
+		[Description("Rotation angle of the Shape in tenths of degree.")]
 		[PropertyMappingId(PropertyIdAngle)]
 		[RequiredPermission(Permission.Layout)]
 		public int Angle {

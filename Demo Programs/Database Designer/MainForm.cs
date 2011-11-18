@@ -37,21 +37,10 @@ namespace Database_Designer {
 
 
 	public partial class DatabaseDesignerForm : Form {
-		ToolBoxWindow toolBoxWindow;
-		PropertyWindow propertyWindow;
-		Rectangle contentBounds = Rectangle.Empty;
-		const int margin = 10;
-		const int zoomStep = 25;
-		const string fileFilter = "NShape XML Repository Files|*.xml|All Files|*.*";
-		const string defaultProjectName = "Project 1";
-
-
-		private DockType toolBoxWindowDockType = 0;
-		private DockType propertyWindowDockType = 0;
-
 
 		public DatabaseDesignerForm() {
 			InitializeComponent();
+
 			toolBoxWindow = new ToolBoxWindow();
 			toolBoxWindow.Owner = this;
 			toolBoxWindowDockType = DockType.Top ^ DockType.Right ^ DockType.Bottom;
@@ -558,5 +547,18 @@ namespace Database_Designer {
 		}
 
 		#endregion
+
+
+		private ToolBoxWindow toolBoxWindow;
+		private PropertyWindow propertyWindow;
+		private Rectangle contentBounds = Rectangle.Empty;
+		private const int margin = 10;
+		private const int zoomStep = 5;
+		private const string fileFilter = "NShape XML Repository Files|*.xml|All Files|*.*";
+		private const string defaultProjectName = "Project 1";
+
+		private DockType toolBoxWindowDockType = 0;
+		private DockType propertyWindowDockType = 0;
 	}
+
 }

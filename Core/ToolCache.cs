@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -153,7 +153,7 @@ namespace Dataweb.NShape.Advanced {
 			capCache.TryGetValue(capKey, out customCap);
 			if (customCap == null) {
 				customCap = new CustomLineCap(null, capPath);
-				customCap.StrokeJoin = LineJoin.Round;
+				customCap.StrokeJoin = lineStyle.LineJoin;
 				customCap.WidthScale = 1;
 				rectFBuffer = capPath.GetBounds();
 				if (capStyle.CapShape == CapShape.ArrowOpen)
@@ -212,10 +212,11 @@ namespace Dataweb.NShape.Advanced {
 			penKey.EndCapStyle = endCapStyle;
 
 			Pen pen = null;
-			if (!penCache.TryGetValue(penKey, out pen)) {
+			penCache.TryGetValue(penKey, out pen);
+			if (pen == null) {
 				// If the corresponding pen was not found, create a new pen based on the given LineStyle
 				pen = new Pen(GetColor(lineStyle.ColorStyle, lineStyle.ColorStyle.ConvertToGray), lineStyle.LineWidth);
-				// does not draw exactly along the outline of the shape and
+				// "PenAlignment.Inset" does not draw exactly along the outline of the shape and
 				// causes GraphicsPath.Widen(Pen pen) to produce strance results
 				//pen.Alignment = PenAlignment.Inset;
 				pen.LineJoin = lineStyle.LineJoin;
@@ -227,20 +228,8 @@ namespace Dataweb.NShape.Advanced {
 					pen.DashPattern = lineStyle.DashPattern;
 				}
 				// create LineCaps
-				if (startCapStyle != null) {
-					if (startCapStyle.CapShape == CapShape.None) pen.StartCap = LineCap.Round;
-					else {
-						pen.StartCap = LineCap.Custom;
-						pen.CustomStartCap = GetCustomLineCap(startCapStyle, lineStyle);
-					}
-				}
-				if (endCapStyle != null) {
-					if (endCapStyle.CapShape == CapShape.None) pen.EndCap = LineCap.Round;
-					else {
-						pen.EndCap = LineCap.Custom;
-						pen.CustomEndCap = GetCustomLineCap(endCapStyle, lineStyle);
-					}
-				}
+				SetLineCap(pen, lineStyle, startCapStyle, true);
+				SetLineCap(pen, lineStyle, endCapStyle, false);
 
 				// add created pen to the PenCache
 				penCache.Add(penKey, pen);
@@ -261,6 +250,16 @@ namespace Dataweb.NShape.Advanced {
 				solidBrushCache.Add(colorStyle, brush);
 			}
 			return brush;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public static Brush GetBrush(IColorStyle colorStyle, ILineStyle lineStyle) {
+			if (colorStyle == null) throw new ArgumentNullException("colorStyle");
+			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
+			if (colorStyle == ColorStyle.Empty)
+				return GetBrush(lineStyle.ColorStyle);
+			else return GetBrush(colorStyle);
 		}
 
 
@@ -681,7 +680,6 @@ namespace Dataweb.NShape.Advanced {
 			GraphicsPath capPath;
 			capPathCache.TryGetValue(capKey, out capPath);
 			if (capPath == null) {
-				capPath = new GraphicsPath();
 				CalcCapShape(ref capPath, capStyle.CapShape, capStyle.CapSize);
 				// Scale GraphicsPath down for correcting the automatic scaling that is applied to
 				// LineCaps by GDI+ when altering the LineWidth of the pen
@@ -692,6 +690,32 @@ namespace Dataweb.NShape.Advanced {
 			}
 			return capPath;
 		}
+
+
+		private static void SetLineCap(Pen pen, ILineStyle lineStyle, ICapStyle capStyle, bool isStartCap) {
+			if (pen == null) throw new ArgumentNullException("pen");
+			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
+			LineCap cap = LineCap.Round;
+			if (capStyle != null) {
+				switch (capStyle.CapShape) {
+					case CapShape.None:
+						cap = LineCap.Round;
+						break;
+					default:
+						cap = LineCap.Custom;
+						break;
+				}
+			}
+			if (isStartCap) {
+				pen.StartCap = cap;
+				if (cap == LineCap.Custom)
+					pen.CustomStartCap = GetCustomLineCap(capStyle, lineStyle);
+			} else {
+				pen.EndCap = cap;
+				if (cap == LineCap.Custom)
+					pen.CustomEndCap = GetCustomLineCap(capStyle, lineStyle);
+			}
+		}
 		
 
 		/// <summary>
@@ -701,10 +725,10 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="capShape">Desired shape of the LineCap</param>
 		/// <param name="capSize">Desired Size of the LineCap</param>
 		private static void CalcCapShape(ref GraphicsPath capPath, CapShape capShape, int capSize) {
-			Debug.Assert(capPath != null);
 			Debug.Assert(capSize >= 0);
+			if (capPath == null) capPath = new GraphicsPath();
 			
-			float halfSize = (float)capSize / 2;
+			float halfSize = capSize / 2f;
 			capPath.Reset();		
 			switch (capShape) {
 				case CapShape.ArrowClosed:
@@ -715,11 +739,12 @@ namespace Dataweb.NShape.Advanced {
 					capPath.CloseFigure();
 					break;
 				case CapShape.ArrowOpen:
+					float quaterSize = capSize / 4f;
 					capPath.StartFigure();
-					capPath.AddLine(0, 0 , -halfSize, -capSize);
-					capPath.AddLine(-halfSize + 1, -capSize, 0, 1);
-					capPath.AddLine(0, 1, halfSize + 1, -capSize);
-					capPath.AddLine(halfSize, -capSize, 0, 0);
+					capPath.AddLine(-halfSize, -capSize, 0, 0);
+					capPath.AddLine(0, 0, halfSize, -capSize);
+					capPath.AddLine(halfSize, -capSize, 0, -quaterSize);
+					capPath.AddLine(0, -quaterSize, -halfSize, -capSize);
 					capPath.CloseFigure();
 					break;
 				case CapShape.Triangle:
@@ -853,8 +878,25 @@ namespace Dataweb.NShape.Advanced {
 			/// <override></override>
 			public override int GetHashCode() {
 				int hashCode = 0;
-				if (FillStyle != null) hashCode ^= FillStyle.GetHashCode();
-				if (Image != null) hashCode ^= Image.GetHashCode();
+				if (FillStyle != null) {
+					hashCode ^= FillStyle.GetHashCode();
+					//if (FillStyle.AdditionalColorStyle!= null)
+					//   hashCode ^= FillStyle.AdditionalColorStyle.GetHashCode();
+					//if (FillStyle.BaseColorStyle != null)
+					//   hashCode ^= FillStyle.BaseColorStyle.GetHashCode();
+					//if (FillStyle.Image != null)
+					//   hashCode ^= FillStyle.Image.GetHashCode();
+					//hashCode ^= FillStyle.ConvertToGrayScale.GetHashCode();
+					//hashCode ^= FillStyle.FillMode.GetHashCode();
+					//hashCode ^= FillStyle.FillPattern.GetHashCode();
+					//hashCode ^= FillStyle.GradientAngle.GetHashCode();
+					//hashCode ^= FillStyle.ImageGammaCorrection.GetHashCode();
+					//hashCode ^= FillStyle.ImageLayout.GetHashCode();
+					//hashCode ^= FillStyle.ImageTransparency.GetHashCode();
+					//hashCode ^= FillStyle.Name.GetHashCode();
+				}
+				if (Image != null) 
+					hashCode ^= Image.GetHashCode();
 				return hashCode;
 			}
 		

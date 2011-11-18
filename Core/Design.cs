@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,15 +13,12 @@
 ******************************************************************************/
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Design;
 using System.Drawing.Drawing2D;
-using System.Reflection;
-using System.Runtime.InteropServices;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -596,7 +593,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Returns the style of the same type with the same projectName if there is one in the design's style collection.
+		/// Returns the style of the same type with the same name if there is one in the design's style collection.
 		/// </summary>
 		public IStyle FindMatchingStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
@@ -639,6 +636,7 @@ namespace Dataweb.NShape {
 		/// <ToBeCompleted></ToBeCompleted>
 		public void AddStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
+			AssertValidStyle(style);
 			if (style is CapStyle) {
 				capStyles.Add((CapStyle)style, CreatePreviewStyle((ICapStyle)style));
 			} else if (style is CharacterStyle) {
@@ -695,7 +693,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Assigns the given style to the existing style with the same projectName. 
+		/// Assigns the given style to the existing style with the same name. 
 		/// If there is not style with such a projectName, a new style is created.
 		/// This method also takes care about preview styles.
 		/// </summary>
@@ -703,6 +701,7 @@ namespace Dataweb.NShape {
 		/// <returns>Returns true if an existring style was assigned and false if there was no matching style.</returns>
 		public bool AssignStyle(IStyle style) {
 			if (style == null) throw new ArgumentNullException("style");
+			AssertValidStyle(style);
 			bool styleFound = ContainsStyle(style);
 			if (styleFound) {
 				Type styleType = style.GetType();
@@ -879,6 +878,92 @@ namespace Dataweb.NShape {
 				paragraphStyles.SetPreviewStyle(style, previewStyle);
 			} else throw new NShapeUnsupportedValueException(baseStyle);
 		}
+
+
+		#region Assert style validity
+
+		private void AssertValidStyle(IStyle style) {
+			if (style is ICapStyle) AssertValidStyle((ICapStyle)style);
+			else if (style is ICharacterStyle) AssertValidStyle((ICharacterStyle)style);
+			else if (style is IColorStyle) AssertValidStyle((IColorStyle)style);
+			else if (style is IFillStyle) AssertValidStyle((IFillStyle)style);
+			else if (style is ILineStyle) AssertValidStyle((ILineStyle)style);
+			else if (style is IParagraphStyle) AssertValidStyle((IParagraphStyle)style);
+			else Debug.Fail("Unhandled style class!");
+		}
+
+
+		private void AssertValidStyle(ICapStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+			AssertStyleExists(style, style.ColorStyle);
+		}
+
+
+		private void AssertValidStyle(ICharacterStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+			AssertStyleExists(style, style.ColorStyle);
+		}
+
+
+		private void AssertValidStyle(IColorStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+		}
+
+
+		private void AssertValidStyle(IFillStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+			if (style.FillMode == FillMode.Gradient || style.FillMode == FillMode.Pattern) {
+				AssertStyleNotEmpty(style, style.AdditionalColorStyle);
+				AssertStyleExists(style, style.AdditionalColorStyle);
+			}
+			if (style.FillMode != FillMode.Image) {
+				AssertStyleNotEmpty(style, style.BaseColorStyle);
+				AssertStyleExists(style, style.BaseColorStyle);
+			}
+		}
+
+
+		private void AssertValidStyle(ILineStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+			AssertStyleExists(style, style.ColorStyle);
+		}
+
+
+		private void AssertValidStyle(IParagraphStyle style) {
+			if (style == null) throw new ArgumentNullException("style");
+		}
+
+
+		private void AssertStyleNotEmpty(IStyle styleToAdd, IStyle requiredStyle) {
+			if (requiredStyle.Name == Style.EmptyStyleName)
+				throw new NShapeException(GetErrorMessageStyleIsEmpty(styleToAdd, requiredStyle));
+		}
+
+
+		private void AssertStyleExists(IStyle styleToAdd, IStyle requiredStyle) {
+			if (requiredStyle.Name != Style.EmptyStyleName && !ContainsStyle(requiredStyle))
+				throw new NShapeException(GetErrorMessageStyleDoesNotExist(styleToAdd, requiredStyle));
+		}
+
+
+		private string GetErrorMessageCannotAddStyle(IStyle styleToAdd) {
+			const string msgFormatStr = "Cannot add {0} '{1}' to design '{2}'";
+			return string.Format(msgFormatStr, styleToAdd.GetType().Name, styleToAdd.Title, this.Name);
+		}
+
+
+		private string GetErrorMessageStyleIsEmpty(IStyle styleToAdd, IStyle requiredStyle) {
+			const string msgFormatStr = "{0}: Used {1} is empty (not defined).";
+			return string.Format(msgFormatStr, GetErrorMessageCannotAddStyle(styleToAdd), requiredStyle.GetType().Name, requiredStyle.Title);
+		}
+
+
+		private string GetErrorMessageStyleDoesNotExist(IStyle styleToAdd, IStyle requiredStyle) {
+			const string msgFormatStr = "{0}: Used {1} '{2}' does not exist in design '{3}'.";
+			return string.Format(msgFormatStr, GetErrorMessageCannotAddStyle(styleToAdd), requiredStyle.GetType().Name, requiredStyle.Title, this.Name);
+		}
+
+		#endregion
 
 
 		#region Creating Standard Styles

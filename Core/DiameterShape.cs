@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -105,6 +105,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override Point CalculateAbsolutePosition(RelativePosition relativePosition) {
+			if (relativePosition == RelativePosition.Empty) throw new ArgumentOutOfRangeException("relativePosition");
 			// The RelativePosition of a RectangleBased shape is:
 			// A = Tenths of percent of Width
 			// B = Tenths of percent of Height
@@ -118,6 +119,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override RelativePosition CalculateRelativePosition(int x, int y) {
+			if (!Geometry.IsValid(x, y)) throw new ArgumentOutOfRangeException("x / y");
 			// The RelativePosition of a RectangleBased shape is:
 			// A = Tenths of percent of Width
 			// B = Tenths of percent of Height
@@ -181,7 +183,9 @@ namespace Dataweb.NShape.Advanced {
 			switch (pointId) {
 				#region TopLeft
 				case TopLeftControlPoint:
-					transformedDeltaX = transformedDeltaY = Math.Min(transformedDeltaX, transformedDeltaY);
+					if (Math.Abs(transformedDeltaX) > Math.Abs(transformedDeltaY))
+						transformedDeltaY = transformedDeltaX;
+					else transformedDeltaX = transformedDeltaY;
 					if (!Geometry.MoveRectangleTopLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = Math.Min(hSize, vSize);
@@ -198,7 +202,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region TopRight
 				case TopRightControlPoint:
-					if (transformedDeltaX > Math.Abs(transformedDeltaY))
+					if (Math.Abs(transformedDeltaX) > Math.Abs(transformedDeltaY))
 						transformedDeltaY = -transformedDeltaX;
 					else transformedDeltaX = -transformedDeltaY;
 					if (!Geometry.MoveRectangleTopRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
@@ -225,7 +229,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Bottom left
 				case BottomLeftControlPoint:
-					if (Math.Abs(transformedDeltaX) > transformedDeltaY)
+					if (Math.Abs(transformedDeltaX) > Math.Abs(transformedDeltaY))
 						transformedDeltaY = -transformedDeltaX;
 					else transformedDeltaX = -transformedDeltaY;
 					if (!Geometry.MoveRectangleBottomLeft(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
@@ -244,7 +248,9 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Bottom right
 				case BottomRightControlPoint:
-					transformedDeltaX = transformedDeltaY = Math.Max(transformedDeltaX, transformedDeltaY);
+					if (Math.Abs(transformedDeltaX) > Math.Abs(transformedDeltaY))
+						transformedDeltaY = transformedDeltaX;
+					else transformedDeltaX = transformedDeltaY;
 					if (!Geometry.MoveRectangleBottomRight(size, size, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = Math.Min(hSize, vSize);
@@ -279,11 +285,11 @@ namespace Dataweb.NShape.Advanced {
 				int delta = value - internalDiameter;
 
 				internalDiameter = value;
-				ControlPointsHaveMoved();
 				InvalidateDrawCache();
 
 				if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, delta);
 				if (Owner != null) Owner.NotifyChildResized(this);
+				ControlPointsHaveMoved();
 				Invalidate();
 			}
 		}

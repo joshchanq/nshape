@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -25,17 +25,17 @@ namespace Dataweb.NShape.Controllers {
 	/// <summary>
 	/// Defines the visual appearance of control point grips.
 	/// </summary>
-	public enum ControlPointShape { 
-		/// <summary>A circular grip.</summary>
-		Circle, 
-		/// <summary>A quadratic grip.</summary>
-		Square, 
+	public enum ControlPointShape {
 		/// <summary>A rhombical grip.</summary>
-		Diamond, 
+		Diamond = 1,
 		/// <summary>A hexangular grip.</summary>
-		Hexagon, 
+		Hexagon = 2, 
+		/// <summary>A circular grip.</summary>
+		Circle = 3, 
 		/// <summary>A circular arrow grip.</summary>
-		RotateArrow 
+		RotateArrow = 4,
+		/// <summary>A quadratic grip.</summary>
+		Square = 5
 	}
 
 
@@ -149,54 +149,34 @@ namespace Dataweb.NShape.Controllers {
 
 		#region Events
 
-		/// <summary>
-		/// Raised when the selected shapes changed.
-		/// </summary>
+		/// <summary>Raised when the selected shapes changed.</summary>
 		event EventHandler ShapesSelected;
 
-		/// <summary>
-		/// Raised when a shape was clicked.
-		/// </summary>
+		/// <summary>Raised when a shape was clicked.</summary>
 		event EventHandler<DiagramPresenterShapeClickEventArgs> ShapeClick;
 
-		/// <summary>
-		/// Raised when a shape was double clicked.
-		/// </summary>
+		/// <summary>Raised when a shape was double clicked.</summary>
 		event EventHandler<DiagramPresenterShapeClickEventArgs> ShapeDoubleClick;
 
-		/// <summary>
-		/// Raised when a shape was inserted into the diagram of this diagram presenter.
-		/// </summary>
+		/// <summary>Raised when a shape was inserted into the diagram of this diagram presenter.</summary>
 		event EventHandler<DiagramPresenterShapesEventArgs> ShapesInserted;
 
-		/// <summary>
-		/// Raised when a shape was removed from the diagram of this diagram presenter.
-		/// </summary>
+		/// <summary>Raised when a shape was removed from the diagram of this diagram presenter.</summary>
 		event EventHandler<DiagramPresenterShapesEventArgs> ShapesRemoved;
 
-		/// <summary>
-		/// Raised when the diagram is going to be changed.
-		/// </summary>
+		/// <summary>Raised when the diagram is going to be changed.</summary>
 		event EventHandler DiagramChanging;
 
-		/// <summary>
-		/// Raised when the diagram was changed.
-		/// </summary>
+		/// <summary>Raised when the diagram was changed.</summary>
 		event EventHandler DiagramChanged;
 
-		/// <summary>
-		/// Raised when the visibility of layers changed.
-		/// </summary>
+		/// <summary>Raised when the visibility of layers changed.</summary>
 		event EventHandler<LayersEventArgs> LayerVisibilityChanged;
 
-		/// <summary>
-		/// Raised when the active layers changed.
-		/// </summary>
+		/// <summary>Raised when the active layers changed.</summary>
 		event EventHandler<LayersEventArgs> ActiveLayersChanged;
 
-		/// <summary>
-		/// Raised when the zoom level changed.
-		/// </summary>
+		/// <summary>Raised when the zoom level changed.</summary>
 		event EventHandler ZoomChanged;
 
 		/// <summary>
@@ -342,38 +322,38 @@ namespace Dataweb.NShape.Controllers {
 		void UnselectAll();
 
 		/// <summary>
-		/// Removes the given Shape from the current selection.
+		/// Removes the given <see cref="T:Dataweb.NShape.Advanced.Shape" /> from the current selection.
 		/// </summary>
 		void UnselectShape(Shape shape);
 
 		/// <summary>
-		/// Selects the given shape. Current selection will be cleared.
+		/// Selects the given <see cref="T:Dataweb.NShape.Advanced.Shape" />. Current selection will be cleared.
 		/// </summary>
 		void SelectShape(Shape shape);
 
 		/// <summary>
-		/// Selects the given shape.
+		/// Selects the given <see cref="T:Dataweb.NShape.Advanced.Shape" />.
 		/// </summary>
-		/// <param name="shape">Shape to be selected.</param>
+		/// <param name="shape"><see cref="T:Dataweb.NShape.Advanced.Shape" /> to be selected.</param>
 		/// <param name="addToSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
 		void SelectShape(Shape shape, bool addToSelection);
 
 		/// <summary>
-		/// Selects the given shape.
+		/// Selects the given <see cref="T:Dataweb.NShape.Advanced.Shape" />.
 		/// </summary>
-		/// <param name="shapes">Shape to be selected.</param>
+		/// <param name="shapes"><see cref="T:Dataweb.NShape.Advanced.Shape" /> to be selected.</param>
 		/// <param name="addToSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
 		void SelectShapes(IEnumerable<Shape> shapes, bool addToSelection);
 
 		/// <summary>
-		/// Selects all shapes within the given area.
+		/// Selects all <see cref="T:Dataweb.NShape.Advanced.Shape" /> within the given area.
 		/// </summary>
 		/// <param name="area">All shapes in the given rectangle will be selected.</param>
 		/// <param name="addToSelection">If true, the given shape will be added to the current selection, otherwise the current selection will be cleared before selecting this shape.</param>
 		void SelectShapes(Rectangle area, bool addToSelection);
 
 		/// <summary>
-		/// Selectes all shapes of the diagram
+		/// Selectes all <see cref="T:Dataweb.NShape.Advanced.Shape" /> of the <see cref="T:Dataweb.NShape.Diagram" />
 		/// </summary>
 		void SelectAll();
 
@@ -572,14 +552,19 @@ namespace Dataweb.NShape.Controllers {
 		void InvalidateSnapIndicators(Shape preview);
 
 		/// <summary>
-		/// Ignores (and collects) calls of "InvalidateDiagram" until ResumeUpdate is called.
+		/// Collects areas of all calls of "InvalidateDiagram" until ResumeUpdate is called.
 		/// </summary>
 		void SuspendUpdate();
 
 		/// <summary>
-		/// Stops ignoring/collecting calls of "InvalidateDiagram" and executes the collected calls at once.
+		/// Ends collecting calls of "InvalidateDiagram" and executes the collected calls at once.
 		/// </summary>
 		void ResumeUpdate();
+
+		/// <summary>
+		/// Updates (redraws) the invalidated areas immediately.
+		/// </summary>
+		void Update();
 
 		#endregion
 

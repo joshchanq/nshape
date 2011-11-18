@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -104,6 +104,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void RegisterToolStripEvents() {
 			this.ItemClicked += new ToolStripItemClickedEventHandler(ToolSetToolStripPresenter_ItemClicked);
 		}
+
 
 		private void RegisterToolBoxEventHandlers() {
 			toolSetController.Cleared += toolSetController_Cleared;

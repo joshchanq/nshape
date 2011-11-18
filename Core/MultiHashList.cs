@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -14,6 +14,7 @@
 
 using System.Collections.Generic;
 
+
 namespace Dataweb.Utilities {
 
 	/// <summary>
@@ -27,7 +28,7 @@ namespace Dataweb.Utilities {
 		/// </summary>
 		/// <param name="capacity"></param>
 		public MultiHashList(int capacity) {
-			int listCapacity = capacity / order;
+			listCapacity = capacity / order;
 			list = new List<Element>(listCapacity);
 			for (int i = 0; i < listCapacity; ++i) list.Add(null);
 		}
@@ -36,31 +37,32 @@ namespace Dataweb.Utilities {
 		/// <ToBeCompleted></ToBeCompleted>
 		public void Add(uint key, T value) {
 			Element newElement = new Element(key, value);
-			if (list[(int)(key % list.Capacity)] == null)
-				list[(int)(key % list.Capacity)] = newElement;
+			if (list[(int)(key % listCapacity)] == null)
+				list[(int)(key % listCapacity)] = newElement;
 			else {
 				Element e;
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 				int cnt = 0;
 				for (e = list[(int)(key % list.Capacity)]; !e.item.Equals(value) && e.next != null; e = e.next) 
 					++cnt;
 				if (cnt > maxListLen) maxListLen = cnt;
 				else if (cnt > 0 && cnt < minListLen) minListLen = cnt;
 #else
-				for (e = list[(int)(key % list.Capacity)]; !e.item.Equals(value) && e.next != null; e = e.next) ;
+				for (e = list[(int)(key % listCapacity)]; !(e.item.Equals(value) && e.key == key) && e.next != null; e = e.next) ;
 #endif
+				// Do not insert the same shape with the same key a second time.
 				// TODO 2: Optimize the second comparison.
-				if (!e.item.Equals(value)) e.next = newElement;
+				if (!(e.item.Equals(value) && e.key == key)) e.next = newElement;
 			}
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public bool Remove(uint key, T value) {
-			if (list[(int)(key % list.Capacity)] == null) return false;
+			if (list[(int)(key % listCapacity)] == null) return false;
 			Element e;
-			if (list[(int)(key % list.Capacity)].item.Equals(value)) {
-				list[(int)(key % list.Capacity)] = list[(int)(key % list.Capacity)].next;
+			if (list[(int)(key % listCapacity)].item.Equals(value)) {
+				list[(int)(key % listCapacity)] = list[(int)(key % list.Capacity)].next;
 				return true;
 			} else {
 				for (e = list[(int)(key % list.Capacity)]; 
@@ -84,14 +86,14 @@ namespace Dataweb.Utilities {
 		/// <ToBeCompleted></ToBeCompleted>
 		public IEnumerable<T> this[uint key] {
 			get {
-				if (list[(int)(key % list.Capacity)] == null) yield break;
-				for (Element e = list[(int)(key % list.Capacity)]; e != null; e = e.next)
+				if (list[(int)(key % listCapacity)] == null) yield break;
+				for (Element e = list[(int)(key % listCapacity)]; e != null; e = e.next)
 					if (e.key == key) yield return e.item;
 			}
 		}
 
 
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 		
 		/// <summary>
 		/// Returns the number of entries in the longest list.
@@ -129,8 +131,9 @@ namespace Dataweb.Utilities {
 
 
 		private const int order = 3;
+		private int listCapacity;
 		private List<Element> list;
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 		private int maxListLen = 0;
 		private int minListLen = 0;
 #endif

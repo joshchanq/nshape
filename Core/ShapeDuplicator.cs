@@ -1,8 +1,22 @@
-﻿using System;
+﻿/******************************************************************************
+  Copyright 2009-2011 dataweb GmbH
+  This file is part of the NShape framework.
+  NShape is free software: you can redistribute it and/or modify it under the 
+  terms of the GNU General Public License as published by the Free Software 
+  Foundation, either version 3 of the License, or (at your option) any later 
+  version.
+  NShape is distributed in the hope that it will be useful, but WITHOUT ANY
+  WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR 
+  A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License along with 
+  NShape. If not, see <http://www.gnu.org/licenses/>.
+******************************************************************************/
+
+using System;
 using System.Collections.Generic;
-using System.Text;
-using Dataweb.NShape.Advanced;
 using System.Diagnostics;
+
+using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape {
@@ -93,7 +107,7 @@ namespace Dataweb.NShape {
 		
 		private static void DoCloneShapeModelObject(Shape shape) {
 			if (shape.Children.Count == 0 && shape.ModelObject != null) {
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 				IModelObject clone = shape.ModelObject.Clone(); 
 				Debug.Assert(clone.Parent == shape.ModelObject.Parent);
 				shape.ModelObject = clone;
@@ -115,7 +129,7 @@ namespace Dataweb.NShape {
 				Debug.Assert(modelObjectClones[shape.ModelObject].Parent == shape.ModelObject.Parent);
 				Debug.Assert(modelObjectClones[shape.ModelObject].Id == null);
 			}
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 			foreach (Shape childShape in shape.Children) {
 				if (shape is IShapeGroup) {
 					if (childShape.ModelObject != null && !modelObjectClones.ContainsKey(childShape.ModelObject))

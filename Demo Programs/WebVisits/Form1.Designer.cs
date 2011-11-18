@@ -25,7 +25,7 @@ namespace WebVisists {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager2 = new Dataweb.NShape.RoleBasedSecurityManager();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager3 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadWebStatisticsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.loadDiagramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,27 +53,27 @@ namespace WebVisists {
             this.loadDiagramToolStripMenuItem,
             this.saveDiagramToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "File";
 			// 
 			// loadWebStatisticsToolStripMenuItem
 			// 
 			this.loadWebStatisticsToolStripMenuItem.Name = "loadWebStatisticsToolStripMenuItem";
-			this.loadWebStatisticsToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.loadWebStatisticsToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
 			this.loadWebStatisticsToolStripMenuItem.Text = "Load Web statistics...";
 			this.loadWebStatisticsToolStripMenuItem.Click += new System.EventHandler(this.loadWebStatisticsToolStripMenuItem_Click);
 			// 
 			// loadDiagramToolStripMenuItem
 			// 
 			this.loadDiagramToolStripMenuItem.Name = "loadDiagramToolStripMenuItem";
-			this.loadDiagramToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.loadDiagramToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
 			this.loadDiagramToolStripMenuItem.Text = "Load Diagram";
 			this.loadDiagramToolStripMenuItem.Click += new System.EventHandler(this.loadDiagramToolStripMenuItem_Click);
 			// 
 			// saveDiagramToolStripMenuItem
 			// 
 			this.saveDiagramToolStripMenuItem.Name = "saveDiagramToolStripMenuItem";
-			this.saveDiagramToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+			this.saveDiagramToolStripMenuItem.Size = new System.Drawing.Size(184, 22);
 			this.saveDiagramToolStripMenuItem.Text = "Save Diagram";
 			this.saveDiagramToolStripMenuItem.Click += new System.EventHandler(this.saveDiagramToolStripMenuItem_Click);
 			// 
@@ -93,20 +93,20 @@ namespace WebVisists {
             this.selectAllToolStripMenuItem,
             this.showLayoutWindowToolStripMenuItem});
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-			this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+			this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
 			this.editToolStripMenuItem.Text = "Edit";
 			// 
 			// selectAllToolStripMenuItem
 			// 
 			this.selectAllToolStripMenuItem.Name = "selectAllToolStripMenuItem";
-			this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+			this.selectAllToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
 			this.selectAllToolStripMenuItem.Text = "Select All";
 			this.selectAllToolStripMenuItem.Click += new System.EventHandler(this.selectAllToolStripMenuItem_Click);
 			// 
 			// showLayoutWindowToolStripMenuItem
 			// 
 			this.showLayoutWindowToolStripMenuItem.Name = "showLayoutWindowToolStripMenuItem";
-			this.showLayoutWindowToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+			this.showLayoutWindowToolStripMenuItem.Size = new System.Drawing.Size(189, 22);
 			this.showLayoutWindowToolStripMenuItem.Text = "Show Layout Window";
 			this.showLayoutWindowToolStripMenuItem.Click += new System.EventHandler(this.showLayoutWindowToolStripMenuItem_Click);
 			// 
@@ -118,14 +118,15 @@ namespace WebVisists {
 			// 
 			this.display.AllowDrop = true;
 			this.display.AutoScroll = true;
-			this.display.BackColorGradient = System.Drawing.SystemColors.Control;
+			this.display.BackColor = System.Drawing.SystemColors.Control;
+			this.display.BackColorGradient = System.Drawing.SystemColors.ControlLightLight;
 			this.display.BackgroundGradientAngle = 45;
 			this.display.ConnectionPointShape = Dataweb.NShape.Controllers.ControlPointShape.Circle;
 			this.display.ControlPointAlpha = ((byte)(255));
 			this.display.DiagramSetController = this.diagramSetController;
 			this.display.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.display.GridAlpha = ((byte)(255));
-			this.display.GridColor = System.Drawing.Color.White;
+			this.display.GridColor = System.Drawing.Color.Gainsboro;
 			this.display.GridSize = 20;
 			this.display.GripSize = 3;
 			this.display.HideDeniedMenuItems = false;
@@ -152,7 +153,7 @@ namespace WebVisists {
 			this.display.ToolPreviewBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(119)))), ((int)(((byte)(136)))), ((int)(((byte)(153)))));
 			this.display.ToolPreviewColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(70)))), ((int)(((byte)(130)))), ((int)(((byte)(180)))));
 			this.display.ZoomLevel = 100;
-			this.display.ZoomWithMouseWheel = true;
+			this.display.ZoomWithMouseWheel = false;
 			// 
 			// diagramSetController
 			// 
@@ -165,9 +166,9 @@ namespace WebVisists {
 			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = null;
 			this.project.Repository = this.cachedRepository;
-			roleBasedSecurityManager2.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			roleBasedSecurityManager2.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = roleBasedSecurityManager2;
+			roleBasedSecurityManager3.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager3.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager3;
 			// 
 			// cachedRepository
 			// 

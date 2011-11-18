@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -15,6 +15,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -22,7 +23,6 @@ using System.Windows.Forms;
 
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.Controllers;
-using System.Collections.Specialized;
 
 
 namespace Dataweb.NShape.WinFormsUI {
@@ -165,7 +165,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			// Notify propertyPresenter (if attached) that a modelOject was selected
 			if (propertyController != null) propertyController.SetObjects(1, selectedModelObjects);
-			if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+			if (SelectionChanged != null) SelectionChanged(this, EventArgs.Empty);
 		}
 
 
@@ -179,7 +179,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			// Notify propertyPresenter (if attached) that a modelOject was selected
 			if (propertyController != null)propertyController.SetObjects(1, selectedModelObjects);
-			if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+			if (SelectionChanged != null) SelectionChanged(this, EventArgs.Empty);
 		}
 
 
@@ -190,7 +190,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			selectedModelObjects.Clear();
 			// Notify propertyPresenter (if attached) that all modelOjects were unselected
 			if (propertyController != null) propertyController.SetObjects(1, selectedModelObjects);
-			if (SelectionChanged != null) SelectionChanged(this, new EventArgs());
+			if (SelectionChanged != null) SelectionChanged(this, EventArgs.Empty);
 		}
 
 

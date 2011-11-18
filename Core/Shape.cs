@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -21,7 +21,6 @@ using System.Drawing;
 using System.Threading;
 
 using Dataweb.Utilities;
-using System.Runtime.Serialization;
 
 
 namespace Dataweb.NShape.Advanced {
@@ -58,7 +57,6 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <summary>
 		/// Creates a clone, which owns clones of all composite objects in the shape.
-		/// This method creates a copy of the shape without Template!
 		/// </summary>
 		public abstract Shape Clone();
 
@@ -70,7 +68,9 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Indicates the type of the shape. Is always defined.
 		/// </summary>
-		[Description("The type of the shape.")]
+		[Category("General")]
+		[Description("The .NET data type of the shape.")]
+		[RequiredPermission(Permission.ModifyData)]
 		public abstract ShapeType Type { get; }
 
 		/// <summary>
@@ -83,15 +83,14 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Indicates the template for this shape. Is null, if the shape has no template.
 		/// </summary>
-		[Browsable(false)]
+		[Category("General")]
+		[RequiredPermission(Permission.ModifyData)]
 		public abstract Template Template { get; }
 
 		/// <summary>
 		/// Specifies a user-defined transient general purpose property.
 		/// </summary>
-		[Category("Data")]
-		[Description("User-defined data associated with the shape.")]
-		[RequiredPermission(Permission.ModifyData)]
+		[Browsable(false)]
 		public abstract object Tag { get; set; }
 
 		/// <summary>
@@ -140,10 +139,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Tests, whether the shape is connected to a given other shape.
 		/// </summary>
-		/// <param name="ownPointId">Id of shape's own connection point, which is to be tested. 
-		/// ControlPointId.All, if any connection point is taken into account.</param>
+		/// <param name="ownPointId">
+		/// Id of shape's own connection point, which is to be tested. 
+		/// ControlPointId.All, if any connection point is taken into account.
+		/// </param>
 		/// <param name="otherShape">Other shape. Null if any other shape is taken into account.</param>
-		/// <returns></returns>
 		public abstract ControlPointId IsConnected(ControlPointId ownPointId, Shape otherShape);
 
 		/// <summary>
@@ -166,9 +166,11 @@ namespace Dataweb.NShape.Advanced {
 		public abstract bool ContainsPoint(int x, int y);
 
 		/// <summary>
-		/// Determines if the given point is inside the shape or near a control point 
-		/// having one of the given control point capabilities.
+		/// Determines if the given point is inside the shape or near a control point having one of the 
+		/// given control point capabilities.
 		/// </summary>
+		/// <returns>Control point id of hit control point, ControlPointId.Reference if shape is hit, 
+		/// ControlPointId.None if nothing is hit.</returns>
 		public abstract ControlPointId HitTest(int x, int y, ControlPointCapabilities controlPointCapability, int range);
 
 		/// <summary>
@@ -182,10 +184,13 @@ namespace Dataweb.NShape.Advanced {
 		public abstract Rectangle GetBoundingRectangle(bool tight);
 
 		/// <summary>
-		/// Calculate the diagram cells occupied by this shape.
+		/// Calculates the diagram cells occupied by this shape.
 		/// </summary>
 		/// <param name="cellSize">Size of cell in vertical and horizontal direction.</param>
-		/// <returns>Cell indices starting with (0, 0) for the upper left cell.</returns>
+		/// <returns>Cell indices starting with (0, 0) from the upper left corner.</returns>
+		/// <remarks>Method is called by large shape collections to create a kind of spatial index for the 
+		/// shapes for faster searching. Implementation must not rely on display service. Duplicate cells
+		/// are allowed but should be minimized for performance reasons.</remarks>
 		protected internal abstract IEnumerable<Point> CalculateCells(int cellSize);
 
 		/// <summary>
@@ -215,7 +220,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="toX"></param>
 		/// <param name="toY"></param>
 		/// <returns>True, if move was possible, else false.</returns>
-		public bool MoveTo(int toX, int toY) {
+		public virtual bool MoveTo(int toX, int toY) {
 			return MoveBy(toX - X, toY - Y);
 		}
 
@@ -233,7 +238,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="toY"></param>
 		/// <param name="modifiers"></param>
 		/// <returns>True, if the control point could be moved, else false.</returns>
-		public bool MoveControlPointTo(ControlPointId pointId, int toX, int toY, ResizeModifiers modifiers) {
+		public virtual bool MoveControlPointTo(ControlPointId pointId, int toX, int toY, ResizeModifiers modifiers) {
 			Point ptPos = GetControlPointPosition(pointId);
 			return MoveControlPointBy(pointId, toX - ptPos.X, toY - ptPos.Y, modifiers);
 		}
@@ -304,7 +309,8 @@ namespace Dataweb.NShape.Advanced {
 		public abstract Point CalculateAbsolutePosition(RelativePosition relativePosition);
 
 		/// <summary>
-		/// Calculates the normal vector for the given coordinates. The coordinates have to be on the outline of the shape, otherwise the returned vector is not defined.
+		/// Calculates the normal vector for the given coordinates. The coordinates have to be on the outline 
+		/// of the shape, otherwise the returned vector is not defined.
 		/// </summary>
 		public abstract Point CalculateNormalVector(int x, int y);
 
@@ -327,8 +333,9 @@ namespace Dataweb.NShape.Advanced {
 		public abstract bool NotifyStyleChanged(IStyle style);
 
 		/// <summary>
-		/// Indicates the projectName of the security domain this shape belongs to.
+		/// Indicates the name of the security domain this shape belongs to.
 		/// </summary>
+		[Category("General")]
 		[Description("Modify the security domain of the shape.")]
 		[RequiredPermission(Permission.ModifyPermissionSet)]
 		public abstract char SecurityDomainName { get; set; }
@@ -458,7 +465,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Sets the state of a freshly created shape to the default values.
 		/// </summary>
 		/// <param name="styleSet"></param>
-		/// <remarks>Only used by the Type class.</remarks>
+		/// <remarks>Only used by the ShapeType class.</remarks>
 		protected internal abstract void InitializeToDefault(IStyleSet styleSet);
 
 
@@ -513,6 +520,13 @@ namespace Dataweb.NShape.Advanced {
 		/// If ownPointId is equal to ControlPointId.Reference, the global connection is meant.
 		/// </summary>
 		protected internal abstract void DetachGluePointFromConnectionPoint(ControlPointId ownPointId, Shape otherShape, ControlPointId gluePointId);
+
+
+		/// <summary>
+		/// Specifies a general purpose property for internal use.
+		/// </summary>
+		[Browsable(false)]
+		protected internal abstract object InternalTag { get; set; }
 
 
 		/// <ToBeCompleted></ToBeCompleted>
@@ -652,26 +666,28 @@ namespace Dataweb.NShape.Advanced {
 	[Flags]
 	public enum ControlPointCapabilities {
 		/// <summary>Nothing</summary>
-		None = 0,
+		None = 0x0,
 		/// <summary>Reference point</summary>
-		Reference = 1,
+		Reference = 0x01,
 		/// <summary>Can be used to resize the shape.</summary>
-		Resize = 2,
+		Resize = 0x02,
 		/// <summary>Center for rotations.</summary>
-		Rotate = 4,
+		Rotate = 0x04,
 		/// <summary>Glue points can connect to this point.</summary>
-		Connect = 8,
-		/// <summary>Can connect to connection points.</summary>
-		Glue = 16,
+		Connect = 0x08,
+		/// <summary>A control point that can connect to connection points.</summary>
+		Glue = 0x10,
 		/// <summary>All capabilities</summary>
-		All = 255
+		All = 0xFF
 	}
 
 
 	/// <summary>
 	/// Identifies a control point within a shape.
 	/// </summary>
-	/// <remarks>Regular control points have integer ids greater than 0.</remarks>
+	/// <remarks>Regular control points have integer ids greater than 0. Special control point ids are
+	/// -1: First vertex of a linear shape; -2: Last vertex of a linear shape.
+	/// </remarks>
 	public struct ControlPointId : IConvertible, IComparable, IComparable<int>, IComparable<ControlPointId> {
 
 		/// <ToBeCompleted></ToBeCompleted>
@@ -1140,7 +1156,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-#if DEBUG
+#if DEBUG_UI
 		/// <ToBeCompleted></ToBeCompleted>
 		~ShapeCollection() {
 			if (occupiedBrush != null) occupiedBrush.Dispose();
@@ -1518,7 +1534,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public ShapeCollection Clone(bool withModelObjects) {
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 			Stopwatch w = new Stopwatch();
 			w.Start();
 #endif
@@ -1564,7 +1580,7 @@ namespace Dataweb.NShape.Advanced {
 			}
 			shapeDict.Clear();
 			connections.Clear();
-#if DEBUG
+#if DEBUG_DIAGNOSTICS
 			w.Stop();
 			Console.WriteLine("Cloning ShapeCollection with {0} elements: {1}", result.Count, w.Elapsed);
 #endif
@@ -1801,14 +1817,18 @@ namespace Dataweb.NShape.Advanced {
 		}
 	
 
-#if DEBUG
+#if DEBUG_UI
 		/// <ToBeCompleted></ToBeCompleted>
-		public void DrawOccupiedCells(Graphics graphics, int width, int height) {
+		public void DrawOccupiedCells(Graphics graphics, int x, int y, int width, int height) {
 			Point p = Point.Empty;
+			int minCellX = x / Diagram.CellSize;
+			if (x < 0) --minCellX;
+			int minCellY = y / Diagram.CellSize;
+			if (y < 0) --minCellY;
 			int maxCellX = width / Diagram.CellSize;
 			int maxCellY = height / Diagram.CellSize;
-			for (p.X = 0; p.X <= maxCellX; ++p.X) {
-				for (p.Y = 0; p.Y <= maxCellY; ++p.Y) {
+			for (p.X = minCellX; p.X <= maxCellX; ++p.X) {
+				for (p.Y = minCellY; p.Y <= maxCellY; ++p.Y) {
 					foreach (Shape s in shapeMap[CalcMapHashCode(p)]) {
 						int left = p.X * Diagram.CellSize;
 						int top = p.Y * Diagram.CellSize;
@@ -1895,9 +1915,10 @@ namespace Dataweb.NShape.Advanced {
 			bool tightBounds = (capabilities == ControlPointCapabilities.None);
 			int range = w / 2;
 			if (shapeMap != null) {
+				int fromX, fromY, toX, toY;
+				Geometry.CalcCell(x, y, Diagram.CellSize, out fromX, out fromY);
+				Geometry.CalcCell(x + w, y + h, Diagram.CellSize, out toX, out toY);
 				Point p = Point.Empty;
-				int fromX = x / Diagram.CellSize, toX = (x + w) / Diagram.CellSize;
-				int fromY = y / Diagram.CellSize, toY = (y + h) / Diagram.CellSize;
 				for (p.X = fromX; p.X <= toX; p.X += 1)
 					for (p.Y = fromY; p.Y <= toY; p.Y += 1)
 						foreach (Shape s in shapeMap[CalcMapHashCode(p)])
@@ -2200,7 +2221,7 @@ namespace Dataweb.NShape.Advanced {
 
 		#endregion
 
-#if DEBUG
+#if DEBUG_UI
 		private SolidBrush occupiedBrush = new SolidBrush(Color.FromArgb(32, Color.Green));
 		private SolidBrush emptyBrush = new SolidBrush(Color.FromArgb(32, Color.Red));
 #endif

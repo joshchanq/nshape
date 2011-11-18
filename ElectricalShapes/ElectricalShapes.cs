@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -13,10 +13,10 @@
 ******************************************************************************/
 
 using System;
+using System.ComponentModel;
 using System.Drawing;
 
 using Dataweb.NShape.Advanced;
-using Dataweb.NShape.GeneralShapes;
 
 
 namespace Dataweb.NShape.ElectricalShapes {
@@ -337,28 +337,39 @@ namespace Dataweb.NShape.ElectricalShapes {
 		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
+				CalcShapeRectangles(out smallRectBuffer, out largeRectBuffer);
+
 				Path.Reset();
-				int left = (int)Math.Round(-Size / 2f);
-				int top = (int)Math.Round(-Size / 2f);
-				int bottom = top + Size;
-
-				shapeSmallRect.Width = (Size / 6) * 3;
-				shapeSmallRect.Height = Size / 6;
-				shapeSmallRect.X = left + ((Size - shapeSmallRect.Width) / 2);
-				shapeSmallRect.Y = bottom - shapeSmallRect.Height;
-
-				shapeBigRect.Width = Size - (shapeSmallRect.Width / 4);
-				shapeBigRect.Height = Size - shapeSmallRect.Height;
-				shapeBigRect.X = left + ((Size - shapeBigRect.Width) / 2);
-				shapeBigRect.Y = top;
-
 				Path.StartFigure();
-				Path.AddRectangle(shapeSmallRect);
-				Path.AddRectangle(shapeBigRect);
+				Path.AddRectangle(smallRectBuffer);
+				Path.AddRectangle(largeRectBuffer);
 				Path.CloseFigure();
 				return true;
 			}
 			return false;
+		}
+
+
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				CalcShapeRectangles(out smallRectBuffer, out largeRectBuffer);
+				largeRectBuffer.Offset(X, Y);
+				smallRectBuffer.Offset(X, Y);
+
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+				Point tl = Geometry.RotatePoint(X, Y, angle, largeRectBuffer.Left, largeRectBuffer.Top);
+				Point tr = Geometry.RotatePoint(X, Y, angle, largeRectBuffer.Right, largeRectBuffer.Top);
+				Point bl1 = Geometry.RotatePoint(X, Y, angle, largeRectBuffer.Left, largeRectBuffer.Bottom);
+				Point br1 = Geometry.RotatePoint(X, Y, angle, largeRectBuffer.Right, largeRectBuffer.Bottom);
+				Point bl2 = Geometry.RotatePoint(X, Y, angle, smallRectBuffer.Left, smallRectBuffer.Bottom);
+				Point br2 = Geometry.RotatePoint(X, Y, angle, smallRectBuffer.Right, smallRectBuffer.Bottom);
+
+				Rectangle result = Rectangle.Empty;
+				Geometry.CalcBoundingRectangle(tl, tr, bl1, br1, out result);
+				result = Geometry.UniteWithRectangle(bl2, result);
+				result = Geometry.UniteWithRectangle(br2, result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
 		}
 
 
@@ -372,8 +383,27 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
-		private Rectangle shapeSmallRect;
-		private Rectangle shapeBigRect;
+		private void CalcShapeRectangles(out Rectangle smallRectangle, out Rectangle largeRectangle) {
+			smallRectangle = largeRectangle = Rectangle.Empty;
+
+			int left = (int)Math.Round(-Size / 2f);
+			int top = (int)Math.Round(-Size / 2f);
+			int bottom = top + Size;
+
+			smallRectangle.Width = (Size / 6) * 3;
+			smallRectangle.Height = Size / 6;
+			smallRectangle.X = left + ((Size - smallRectangle.Width) / 2);
+			smallRectangle.Y = bottom - smallRectangle.Height;
+
+			largeRectangle.Width = Size - (smallRectangle.Width / 4);
+			largeRectangle.Height = Size - smallRectangle.Height;
+			largeRectangle.X = left + ((Size - largeRectangle.Width) / 2);
+			largeRectangle.Y = top;
+		}
+
+
+		private Rectangle smallRectBuffer;
+		private Rectangle largeRectBuffer;
 	}
 
 
@@ -424,7 +454,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 	}
 
 
-	public class BusBarSymbol : Polyline {
+	public class BusBarSymbol : PolylineBase {
 
 		/// <override></override>
 		public override Shape Clone() {
@@ -472,12 +502,10 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 	public class TransformerSymbol : ElectricalRectangleBase {
 
-		/// <override></override>
-		protected override void InitializeToDefault(IStyleSet styleSet) {
-			base.InitializeToDefault(styleSet);
-			FillStyle = styleSet.FillStyles.Transparent;
-			Width = 40;
-			Height = 70;
+		[Browsable(false)]
+		public override IFillStyle FillStyle {
+			get { return base.FillStyle; }
+			set { base.FillStyle = value; }
 		}
 
 
@@ -513,6 +541,42 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		public override void Draw(Graphics graphics) {
+			Pen pen = ToolCache.GetPen(LineStyle, null, null);
+			DrawOutline(graphics, pen);
+		}
+
+
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				CalcRingBounds(out upperRingBounds, out lowerRingBounds);
+				float angle = Geometry.TenthsOfDegreeToDegrees(Angle);
+				float ringRadius = upperRingBounds.Width / 2f;
+
+				PointF upperCenter = PointF.Empty;
+				upperCenter.X = X + (upperRingBounds.Left + upperRingBounds.Width / 2f);
+				upperCenter.Y = Y + (upperRingBounds.Top + upperRingBounds.Height / 2f);
+				PointF lowerCenter = PointF.Empty;
+				lowerCenter.X = X + (lowerRingBounds.Left + lowerRingBounds.Width / 2f);
+				lowerCenter.Y = Y + (lowerRingBounds.Top + lowerRingBounds.Height / 2f);
+
+				upperCenter = Geometry.RotatePoint(X, Y, angle, upperCenter);
+				lowerCenter = Geometry.RotatePoint(X, Y, angle, lowerCenter);
+
+				Rectangle result = Rectangle.Empty;
+				result.X = (int)Math.Round(Math.Min(upperCenter.X - ringRadius, lowerCenter.X - ringRadius));
+				result.Y = (int)Math.Round(Math.Min(upperCenter.Y - ringRadius, lowerCenter.Y - ringRadius));
+				result.Width = (int)Math.Round(Math.Max(upperCenter.X + ringRadius, lowerCenter.X + ringRadius)) - result.X;
+				result.Height = (int)Math.Round(Math.Max(upperCenter.Y + ringRadius, lowerCenter.Y + ringRadius)) - result.Y;
+
+				result = Geometry.UniteWithRectangle(Geometry.RotatePoint(X, Y, angle, X, Y - (Height / 2)), result);
+				result = Geometry.UniteWithRectangle(Geometry.RotatePoint(X, Y, angle, X, Y - (Height / 2) + Height), result);
+
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
 		protected internal TransformerSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -524,44 +588,47 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 
 		/// <override></override>
+		protected override void InitializeToDefault(IStyleSet styleSet) {
+			base.InitializeToDefault(styleSet);
+			FillStyle = styleSet.FillStyles.Transparent;
+			Width = 40;
+			Height = 70;
+		}
+
+
+		/// <override></override>
 		protected override bool CalculatePath() {
 			Path.Reset();
 
-			int left = (int)Math.Round(-Width / 2f);
-			int top = (int)Math.Round(-Height / 2f);
-			int bottom = top + Height;
-
-			d = (Width / 8);
-			ringWidth = Width - LineStyle.LineWidth - LineStyle.LineWidth;
-			ringHeight = (int)Math.Round(Height / 2f) + d;
+			CalcRingBounds(out upperRingBounds, out lowerRingBounds);
 
 			Path.StartFigure();
-			circleShape.X = left + LineStyle.LineWidth;
-			circleShape.Y = top + LineStyle.LineWidth;
-			circleShape.Width = ringWidth;
-			circleShape.Height = ringHeight;
-			Path.AddEllipse(circleShape);
+			Path.AddLine(0, -Height / 2, 0, upperRingBounds.Top);
+			Path.AddEllipse(upperRingBounds);
+			Path.AddEllipse(lowerRingBounds);
+			Path.AddLine(0, lowerRingBounds.Bottom, 0, -(Height / 2) + Height);
 			Path.CloseFigure();
 
-			Path.StartFigure();
-			circleShape.Inflate(-d, -d);
-			Path.AddEllipse(circleShape);
-			Path.CloseFigure();
-
-			Path.StartFigure();
-			circleShape.X = left + LineStyle.LineWidth;
-			circleShape.Y = bottom - ringHeight;
-			circleShape.Width = ringWidth;
-			circleShape.Height = ringHeight;
-			Path.AddEllipse(circleShape);
-			Path.CloseFigure();
-
-			Path.StartFigure();
-			circleShape.Inflate(-d, -d);
-			Path.AddEllipse(circleShape);
-			Path.CloseFigure();
-			Path.FillMode = System.Drawing.Drawing2D.FillMode.Winding;
 			return true;
+		}
+
+
+		private void CalcRingBounds(out Rectangle upperRingBounds, out Rectangle lowerRingBounds) {
+			upperRingBounds = lowerRingBounds = Rectangle.Empty;
+
+			float ringDiameter = Math.Min(5 * (Height / 8f), Width);
+			float d = Math.Min(Height / 8f, Width / 4f);
+			int left = (int)Math.Round(-ringDiameter / 2f);
+
+			upperRingBounds.X = left;
+			upperRingBounds.Y = (int)Math.Round(-ringDiameter + d);
+			upperRingBounds.Width = (int)Math.Round(ringDiameter);
+			upperRingBounds.Height = (int)Math.Round(ringDiameter);
+
+			lowerRingBounds.X = left;
+			lowerRingBounds.Y = (int)Math.Round(- d);
+			lowerRingBounds.Width = (int)Math.Round(ringDiameter);
+			lowerRingBounds.Height = (int)Math.Round(ringDiameter);
 		}
 
 
@@ -578,10 +645,8 @@ namespace Dataweb.NShape.ElectricalShapes {
 		private const int BottomRightControlPoint = 8;
 		private const int MiddleCenterControlPoint = 9;
 
-		int d;
-		int ringWidth;
-		int ringHeight;
-		Rectangle circleShape;
+		Rectangle upperRingBounds;
+		Rectangle lowerRingBounds;
 
 		#endregion
 	}
@@ -630,6 +695,22 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			if (tight) {
+				CalcShapePoints(ref shapeBuffer);
+				
+				Matrix.Reset();
+				Matrix.Translate(X, Y);
+				Matrix.RotateAt(Geometry.TenthsOfDegreeToDegrees(Angle), Center, System.Drawing.Drawing2D.MatrixOrder.Append);
+				Matrix.TransformPoints(shapeBuffer);
+
+				Rectangle result ;
+				Geometry.CalcBoundingRectangle(shapeBuffer, out result);
+				return result;
+			} else return base.CalculateBoundingRectangle(tight);
+		}
+
+
 		protected internal EarthSymbol(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
 		}
@@ -643,68 +724,111 @@ namespace Dataweb.NShape.ElectricalShapes {
 		/// <override></override>
 		protected override bool CalculatePath() {
 			if (base.CalculatePath()) {
+				CalcShapePoints(ref shapeBuffer);
+
 				Path.Reset();
-				int left = (int)Math.Round(-Width / 2f);
-				int top = (int)Math.Round(-Height / 2f);
-				int right = left + Width;
-				int bottom = top + Height;
-
-
-				int lineWidth = LineStyle.LineWidth;
-				int lineX = -lineWidth;
-				int largeAntennaTop = -lineWidth;
-				int largeAntennaBottom = lineWidth;
-				int mediumAntennaTop = bottom - (int)Math.Round(Height / 4f) - lineWidth;
-				int mediumAntennaBottom = bottom - (int)Math.Round(Height / 4f) + lineWidth;
-				int smallAntennaTop = bottom - lineWidth - lineWidth;
-
 				Path.StartFigure();
-
-				// downward line from top to large 'antenna', left side
-				Path.AddLine(lineX, top, lineX, largeAntennaTop);
-				// large 'antenna', left side
-				Path.AddLine(lineX, largeAntennaTop, left, largeAntennaTop);
-				Path.AddLine(left, largeAntennaTop, left, largeAntennaBottom);
-				Path.AddLine(left, largeAntennaBottom, lineX, largeAntennaBottom);
-				// downward line from large 'antenna' to medium 'antenna', left side
-				Path.AddLine(lineX, largeAntennaBottom, lineX, mediumAntennaTop);
-				// medium 'antenna', left side
-				int antennaLeft = left + (int)Math.Round(Width / 6f);
-				Path.AddLine(lineX, mediumAntennaTop, antennaLeft, mediumAntennaTop);
-				Path.AddLine(antennaLeft, mediumAntennaTop, antennaLeft, mediumAntennaBottom);
-				Path.AddLine(antennaLeft, mediumAntennaBottom, lineX, mediumAntennaBottom);
-				// downward line from medium 'antenna' to small 'antenna', left side				
-				Path.AddLine(lineX, mediumAntennaBottom, lineX, smallAntennaTop);
-				// small 'antenna', complete
-				antennaLeft = left + (int)Math.Round(Width / 3f);
-				int antennaRight = right - (int)Math.Round(Width / 3f);
-				Path.AddLine(lineX, smallAntennaTop, antennaLeft, smallAntennaTop);
-				Path.AddLine(antennaLeft, smallAntennaTop, antennaLeft, bottom);
-				Path.AddLine(antennaLeft, bottom, antennaRight, bottom);
-				lineX = lineWidth;
-				Path.AddLine(antennaRight, bottom, antennaRight, smallAntennaTop);
-				Path.AddLine(antennaRight, smallAntennaTop, lineX, smallAntennaTop);
-				// upward line from small 'antenna' to medium 'antenna', right side
-				Path.AddLine(lineX, smallAntennaTop, lineX, mediumAntennaBottom);
-				// medium 'antenna', right side
-				antennaRight = right - (int)Math.Round(Width / 6f);
-				Path.AddLine(lineX, mediumAntennaBottom, antennaRight, mediumAntennaBottom);
-				Path.AddLine(antennaRight, mediumAntennaBottom, antennaRight, mediumAntennaTop);
-				Path.AddLine(antennaRight, mediumAntennaTop, lineX, mediumAntennaTop);
-				// upward line from medium 'antenna' to large 'antenna', right side
-				Path.AddLine(lineX, mediumAntennaTop, lineX, largeAntennaBottom);
-				// large 'antenna', right side
-				Path.AddLine(lineX, largeAntennaBottom, right, largeAntennaBottom);
-				Path.AddLine(right, largeAntennaBottom, right, largeAntennaTop);
-				Path.AddLine(right, largeAntennaTop, lineX, largeAntennaTop);
-				// upward line from large 'antenna' to top, right side
-				Path.AddLine(lineX, largeAntennaTop, lineX, top);
-				Path.AddLine(lineX, top, -lineWidth, top);
-
+				Path.AddLines(shapeBuffer);
 				Path.CloseFigure();
+
 				return true;
 			}
 			return false;
+		}
+
+
+		private void CalcShapePoints(ref Point[] points) {
+			int left = (int)Math.Round(-Width / 2f);
+			int top = (int)Math.Round(-Height / 2f);
+			int right = left + Width;
+			int bottom = top + Height;
+
+			int lineWidth = LineStyle.LineWidth;
+			int lineX = -lineWidth;
+			int largeAntennaTop = -lineWidth;
+			int largeAntennaBottom = lineWidth;
+			int mediumAntennaTop = bottom - (int)Math.Round(Height / 4f) - lineWidth;
+			int mediumAntennaBottom = Math.Min(bottom, bottom - (int)Math.Round(Height / 4f) + lineWidth);
+			int smallAntennaTop = bottom - lineWidth - lineWidth;
+	
+			if (points == null) points = new Point[25];
+
+			// downward line from top to large 'antenna', left side
+			points[0].X = lineX;
+			points[0].Y = top;
+			points[1].X = lineX;
+			points[1].Y = largeAntennaTop;
+
+			// large 'antenna', left side
+			points[2].X = left;
+			points[2].Y = largeAntennaTop;
+			points[3].X = left;
+			points[3].Y = largeAntennaBottom;
+			points[4].X = lineX;
+			points[4].Y = largeAntennaBottom;
+
+			// downward line from large 'antenna' to medium 'antenna', left side
+			points[5].X = lineX;
+			points[5].Y = mediumAntennaTop;
+			
+			// medium 'antenna', left side
+			int antennaLeft = left + (int)Math.Round(Width / 6f);
+			points[6].X = antennaLeft;
+			points[6].Y = mediumAntennaTop;
+			points[7].X = antennaLeft;
+			points[7].Y = mediumAntennaBottom;
+			points[8].X = lineX;
+			points[8].Y = mediumAntennaBottom;
+			
+			// downward line from medium 'antenna' to small 'antenna', left side				
+			points[9].X = lineX;
+			points[9].Y = smallAntennaTop;
+			
+			// small 'antenna', complete
+			antennaLeft = left + (int)Math.Round(Width / 3f);
+			int antennaRight = right - (int)Math.Round(Width / 3f);
+			points[10].X = antennaLeft;
+			points[10].Y = smallAntennaTop;
+			points[11].X = antennaLeft;
+			points[11].Y = bottom;
+			points[12].X = antennaRight;
+			points[12].Y = bottom;
+			lineX = lineWidth;
+			points[13].X = antennaRight;
+			points[13].Y = smallAntennaTop;
+			points[14].X = lineX;
+			points[14].Y = smallAntennaTop;
+
+			// upward line from small 'antenna' to medium 'antenna', right side
+			points[15].X = lineX;
+			points[15].Y = mediumAntennaBottom;
+
+			// medium 'antenna', right side
+			antennaRight = right - (int)Math.Round(Width / 6f);
+			points[16].X = antennaRight;
+			points[16].Y = mediumAntennaBottom;
+			points[17].X = antennaRight;
+			points[17].Y = mediumAntennaTop;
+			points[18].X = lineX;
+			points[18].Y = mediumAntennaTop;
+
+			// upward line from medium 'antenna' to large 'antenna', right side
+			points[19].X = lineX;
+			points[19].Y = largeAntennaBottom;
+
+			// large 'antenna', right side
+			points[20].X = right;
+			points[20].Y = largeAntennaBottom;
+			points[21].X = right;
+			points[21].Y = largeAntennaTop;
+			points[22].X = lineX;
+			points[22].Y = largeAntennaTop;
+
+			// upward line from large 'antenna' to top, right side
+			points[23].X = lineX;
+			points[23].Y = top;
+			points[24].X =-lineWidth ;
+			points[24].Y = top;
 		}
 
 
@@ -721,7 +845,8 @@ namespace Dataweb.NShape.ElectricalShapes {
 		private const int BottomRightControlPoint = 8;
 		private const int MiddleCenterControlPoint = 9;
 
-		private Rectangle shapeBuffer = Rectangle.Empty;
+		//private Rectangle shapeBuffer = Rectangle.Empty;
+		private Point[] shapeBuffer = null;
 
 		#endregion
 	}
@@ -772,6 +897,48 @@ namespace Dataweb.NShape.ElectricalShapes {
 				return true;
 			}
 			return false;
+		}
+
+
+		protected override Rectangle CalculateBoundingRectangle(bool tight) {
+			// Tight and loose bounding rectangles are equal
+			Rectangle result = Geometry.InvalidRectangle;
+			if (Width >= 0 && Height >= 0) {
+				int left = (int)Math.Round(-Width / 2f);
+				int top = (int)Math.Round(-Height * CenterPosFactorY);
+				int right = left + Width;
+				int bottom = (int)Math.Round(Height - (Height * CenterPosFactorY));
+
+				if (Angle == 0 || Angle == 1800) {
+					result.X = X + left;
+					result.Y = (Angle == 0) ? Y + top : Y - bottom;
+					result.Width = right - left;
+					result.Height = bottom - top;
+				} else if (Angle == 900 || Angle == 2700) {
+					result.X = (Angle == 900) ? X - bottom : result.X = X + top;
+					result.Y = Y + left;
+					result.Width = bottom - top;
+					result.Height = right - left;
+				} else {
+					float angleDeg = Geometry.TenthsOfDegreeToDegrees(Angle);
+					int x1, y1, x2, y2, x3, y3, x4, y4;
+
+					x1 = X + left; y1 = Y + top;
+					x2 = X + right; y2 = Y + top;
+					x3 = X + right; y3 = Y + bottom;
+					x4 = X + left; y4 = Y + bottom;
+					Geometry.RotatePoint(X, Y, angleDeg, ref x1, ref y1);
+					Geometry.RotatePoint(X, Y, angleDeg, ref x2, ref y2);
+					Geometry.RotatePoint(X, Y, angleDeg, ref x3, ref y3);
+					Geometry.RotatePoint(X, Y, angleDeg, ref x4, ref y4);
+
+					result.X = Math.Min(Math.Min(x1, x2), Math.Min(x3, x4));
+					result.Y = Math.Min(Math.Min(y1, y2), Math.Min(y3, y4));
+					result.Width = Math.Max(Math.Max(x1, x2), Math.Max(x3, x4)) - result.X;
+					result.Height = Math.Max(Math.Max(y1, y2), Math.Max(y3, y4)) - result.Y;
+				}
+			}
+			return result;
 		}
 
 

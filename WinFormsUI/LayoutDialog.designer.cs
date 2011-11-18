@@ -124,8 +124,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.expandDescriptionLabel.Size = new System.Drawing.Size(359, 69);
 			this.expandDescriptionLabel.TabIndex = 8;
 			this.expandDescriptionLabel.Text = "Track the sliders to compress or expand the selected shapes without modifying the" +
-				 "ir relative positions.\r\nUse this layouter to assign a larger or smaller area of " +
-				 "the diagram to the selected shapes.";
+    "ir relative positions.\r\nUse this layouter to assign a larger or smaller area of " +
+    "the diagram to the selected shapes.";
 			// 
 			// verticalCompressionLabel
 			// 
@@ -249,6 +249,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// closeButton
 			// 
+			this.closeButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
 			this.closeButton.Location = new System.Drawing.Point(391, 360);
 			this.closeButton.Name = "closeButton";
 			this.closeButton.Size = new System.Drawing.Size(75, 23);
@@ -279,7 +280,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.gridDescriptionLabel.Size = new System.Drawing.Size(340, 51);
 			this.gridDescriptionLabel.TabIndex = 9;
 			this.gridDescriptionLabel.Text = "Positions the shapes on grid intersections that depend on the average shape pieRa" +
-				 "dius and the set distances.";
+    "dius and the set distances.";
 			// 
 			// rowDistanceLabel
 			// 
@@ -417,7 +418,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.label14.Size = new System.Drawing.Size(359, 31);
 			this.label14.TabIndex = 14;
 			this.label14.Text = "Moves connected shapes nearer together and thrusts unconnected shapes further apa" +
-				 "rt.";
+    "rt.";
 			// 
 			// attractionStrengthLabel
 			// 
@@ -559,8 +560,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// 
 			// algorithmListBox
 			// 
-			this.algorithmListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-							| System.Windows.Forms.AnchorStyles.Left)));
+			this.algorithmListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
 			this.algorithmListBox.BackColor = System.Drawing.SystemColors.Control;
 			this.algorithmListBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
 			this.algorithmListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
@@ -590,6 +591,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Window;
+			this.CancelButton = this.closeButton;
 			this.ClientSize = new System.Drawing.Size(475, 394);
 			this.Controls.Add(this.repulsionPanel);
 			this.Controls.Add(this.alignmentPanel);

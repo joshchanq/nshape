@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -41,7 +41,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <ToBeCompleted></ToBeCompleted>
-		[Category("Appearance")]
+		[Category("Layout")]
 		[Description("Enables automatic resizing based on the text's size. If enabled, the WordWrap property of ParagraphStyles has no effect.")]
 		[RequiredPermission(Permission.Layout)]
 		public bool AutoSize {
@@ -67,6 +67,14 @@ namespace Dataweb.NShape.Advanced {
 			base.CopyFrom(source);
 			if (source is TextBase)
 				this.AutoSize = ((TextBase)source).AutoSize;
+		}
+
+
+		/// <override></override>
+		protected override bool MovePointByCore(ControlPointId pointId, int deltaX, int deltaY, ResizeModifiers modifiers) {
+			if (autoSize && pointId != ControlPointId.Reference) 
+				return false;
+			else return base.MovePointByCore(pointId, deltaX, deltaY, modifiers);
 		}
 
 
@@ -134,18 +142,26 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override void DrawThumbnail(Image image, int margin, Color transparentColor) {
 			AutoSize = false;
-			Text = "abc";
+			Text = "ab";
 
 			Size textSize = Size.Empty;
-			// Set proposed Size
-			textSize.Width = Width;
-			textSize.Height = Height;
+
+			// Create a ParameterStyle without padding
+			ParagraphStyle paragraphStyle = new ParagraphStyle();
+			paragraphStyle.Alignment = ContentAlignment.TopLeft;
+			paragraphStyle.Padding = new TextPadding(0);
+			paragraphStyle.Trimming = StringTrimming.None;
+			paragraphStyle.WordWrap = false;
+			ParagraphStyle = paragraphStyle;
 
 			textSize = TextMeasurer.MeasureText(Text, ToolCache.GetFont(CharacterStyle), textSize, ParagraphStyle);
-			Width = textSize.Width + (textSize.Width % 2);
-			Height = textSize.Height + (textSize.Height % 2);
 
-			base.DrawThumbnail(image, margin, transparentColor);
+			Width = textSize.Width;
+			Height = textSize.Height;
+
+			// If the linestyle is transparent, modify margin in order to improve the text's readability
+			int marginCorrection = (LineStyle.ColorStyle.Transparency == 100) ? 3 : 0;
+			base.DrawThumbnail(image, margin - marginCorrection, transparentColor);
 		}
 
 		#endregion
@@ -291,8 +307,8 @@ namespace Dataweb.NShape.Advanced {
 			System.Diagnostics.Debug.Assert(ParagraphStyle != null);
 			if (!string.IsNullOrEmpty(Text) && CharacterStyle != null && ParagraphStyle != null) {
 				Size textSize = TextMeasurer.MeasureText(Text, CharacterStyle, Size.Empty, ParagraphStyle);
-				Width = textSize.Width + ParagraphStyle.Padding.Horizontal + ParagraphStyle.Padding.Horizontal;
-				Height = textSize.Height + ParagraphStyle.Padding.Vertical + ParagraphStyle.Padding.Vertical;
+				Width = textSize.Width + ParagraphStyle.Padding.Horizontal;
+				Height = textSize.Height + ParagraphStyle.Padding.Vertical;
 			}
 		}
 
@@ -341,19 +357,17 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override void CopyFrom(Shape source) {
+			// Prevent recalculating GluePointCalcInfo when moving shape while copying X/Y position
+			followingConnectedShape = true;
 			base.CopyFrom(source);
 			if (source is LabelBase) {
 				LabelBase src = (LabelBase)source;
 				this.maintainOrientation = src.maintainOrientation;
+				this.showGluePointLine = src.showGluePointLine;
 				this.gluePointPos = src.gluePointPos;
 				this.calcInfo = src.calcInfo;
 			}
-		}
-
-
-		/// <override></override>
-		public override void MakePreview(IStyleSet styleSet) {
-			base.MakePreview(styleSet);
+			followingConnectedShape = false;
 		}
 
 
@@ -409,44 +423,45 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override void FollowConnectionPointWithGluePoint(ControlPointId gluePointId, Shape connectedShape, ControlPointId movedPointId) {
 			if (connectedShape == null) throw new ArgumentNullException("connectedShape");
-			// Follow the connected shape
 			try {
 				followingConnectedShape = true;
+
 				Point currGluePtPos = gluePointPos;
 				Point newGluePtPos = Geometry.InvalidPoint;
 				// If the connection is a point-to-shape connection, the shape calculates the new glue point position 
 				// with the help of the connected shape. 
-				if (movedPointId == ControlPointId.Reference) {
+				if (movedPointId == ControlPointId.Reference)
 					newGluePtPos = CalcGluePoint(gluePointId, connectedShape);
-				} else newGluePtPos = connectedShape.GetControlPointPosition(movedPointId);
+				else newGluePtPos = connectedShape.GetControlPointPosition(movedPointId);
+				// Ensure that the glue point is moved to a valid coordinate
 				if (!Geometry.IsValid(newGluePtPos)) {
-					System.Diagnostics.Debug.Fail("Invalid glue point position");
+					//System.Diagnostics.Debug.Fail("Invalid glue point position");
 					newGluePtPos = currGluePtPos;
 				}
+
+				// Calculate new target outline intersection point along with old and new anchor point position
+				int shapeAngle;
+				if (connectedShape is ILinearShape) {
+					Point normalVector = ((ILinearShape)connectedShape).CalcNormalVector(newGluePtPos);
+					shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(newGluePtPos.X, newGluePtPos.Y, normalVector.X, normalVector.Y)) - 900;
+				} else if (connectedShape is IPlanarShape) {
+					shapeAngle = ((IPlanarShape)connectedShape).Angle;
+				} else shapeAngle = 0; // There is no way to get an angle from a generic shape
 
 				// Move the glue point to the new position
 				int dx, dy;
 				dx = newGluePtPos.X - currGluePtPos.X;
 				dy = newGluePtPos.Y - currGluePtPos.Y;
-				if (dx != 0 || dy != 0) {
-					// Calculate new target outline intersection point along with old and new anchor point position
-					int shapeAngle;
-					if (connectedShape is ILinearShape) {
-						Point normalVector = ((ILinearShape)connectedShape).CalcNormalVector(newGluePtPos);
-						shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(newGluePtPos.X, newGluePtPos.Y, normalVector.X, normalVector.Y)) - 900;
-					} else if (connectedShape is IPlanarShape) {
-						shapeAngle = ((IPlanarShape)connectedShape).Angle;
-					} else shapeAngle = 0; // There is no way to get an angle from a generic shape
-
-					// Calculate new position of the GlueLabel (calculation method depends on the desired behavior)
-					Point newCenter = Point.Round(Geometry.CalcPoint(newGluePtPos.X, newGluePtPos.Y, calcInfo.Alpha + Geometry.TenthsOfDegreeToDegrees(shapeAngle), calcInfo.Distance));
-					// move GlueLabel
-					MoveTo(newCenter.X, newCenter.Y);
-					gluePointPos = newGluePtPos;
-					if (!maintainOrientation) {
-						int newAngle = calcInfo.LabelAngle + shapeAngle;
-						if (Angle != newAngle) Angle = newAngle;
-					}
+				// Calculate new position of the GlueLabel (calculation method depends on the desired behavior)
+				Point newCenter = Point.Round(Geometry.CalcPoint(newGluePtPos.X, newGluePtPos.Y, calcInfo.Alpha + Geometry.TenthsOfDegreeToDegrees(shapeAngle), calcInfo.Distance));
+				// Move GlueLabel and update GluePointPos
+				MoveTo(newCenter.X, newCenter.Y);
+				this.gluePointPos = newGluePtPos;
+				
+				// Rotate shape if MaintainOrientation is set to false
+				if (!maintainOrientation) {
+					int newAngle = this.calcInfo.LabelAngle + shapeAngle;
+					if (Angle != newAngle) Angle = newAngle;
 				}
 			} finally { followingConnectedShape = false; }
 		}
@@ -456,6 +471,16 @@ namespace Dataweb.NShape.Advanced {
 		public override void Invalidate() {
 			base.Invalidate();
 			if (DisplayService != null) {
+				// Invalidate line to GluePoint
+				Point p = CalculateConnectionFoot(gluePointPos.X, gluePointPos.Y);
+				Rectangle b = Rectangle.Empty;
+				b.X = Math.Min(gluePointPos.X, p.X);
+				b.Y = Math.Min(gluePointPos.Y, p.Y);
+				b.Width = Math.Max(gluePointPos.X, p.X) - b.X;
+				b.Height = Math.Max(gluePointPos.Y, p.Y) - b.Y;
+				DisplayService.Invalidate(b);
+
+				// Invalidate GluePoint 'Pin' hint
 				int left = Math.Min(gluePointPos.X - (int)Math.Round(pinSize / 2f), X);
 				int right = Math.Max(gluePointPos.X + (int)Math.Round(pinSize / 2f), X);
 				int top = Math.Min(gluePointPos.Y - pinSize, Y);
@@ -467,50 +492,46 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override void Draw(Graphics graphics) {
+			// Draw hint
+			DrawHint(graphics);
+			// Draw shape and text
 			base.Draw(graphics);
-			if (IsConnected(GlueControlPoint, null) == ControlPointId.None) {
-				if (DisplayService != null) {
-					Pen foregroundPen = ToolCache.GetPen(DisplayService.HintForegroundStyle, null, null);
-					Brush backgroundBrush = ToolCache.GetBrush(DisplayService.HintBackgroundStyle);
+			// Draw line to GluePoint
+			if (showGluePointLine) 
+				DrawGluePointLine(graphics, LineStyle, null);
+#if DEBUG_DIAGNOSTICS
+			//else {
+			//    // Draw Line to GluePoint
+			//    graphics.DrawLine(Pens.Green, gluePointPos, Center);
+			//    GdiHelpers.DrawPoint(graphics, Pens.Green, gluePointPos.X, gluePointPos.Y, 3);
 
-					DrawOutline(graphics, foregroundPen);
-					graphics.FillPath(backgroundBrush, pinPath);
-					graphics.DrawPath(foregroundPen, pinPath);
-				}
-			} 
-//#if DEBUG
-//         else {
-//            // Draw Line to GluePoint
-//            graphics.DrawLine(Pens.Green, gluePointPos, Center);
-//            GdiHelpers.DrawPoint(graphics, Pens.Green, gluePointPos.X, gluePointPos.Y, 3);
+			//    ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
+			//    if (ci != ShapeConnectionInfo.Empty) {
+			//        Point absPos = ci.OtherShape.CalculateAbsolutePosition(calcInfo.RelativePosition);
+			//        GdiHelpers.DrawPoint(graphics, Pens.Red, absPos.X, absPos.Y, 3);
+			//        System.Diagnostics.Debug.Print("Relative Position: A = {0}, B = {1}", calcInfo.RelativePosition.A, calcInfo.RelativePosition.B);
+			//        System.Diagnostics.Debug.Print("Absolute Position: {0}", absPos);
+			//    }
 
-//            ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
-//            if (ci != ShapeConnectionInfo.Empty) {
-//               Point absPos = ci.OtherShape.CalculateAbsolutePosition(calcInfo.RelativePosition);
-//               GdiHelpers.DrawPoint(graphics, Pens.Red, absPos.X, absPos.Y, 3);
-//               System.Diagnostics.Debug.Print("Relative Position: A = {0}, B = {1}", calcInfo.RelativePosition.A, calcInfo.RelativePosition.B);
-//               System.Diagnostics.Debug.Print("Absolute Position: {0}", absPos);
-//            }
+			//    //ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
+			//    float shapeAngle = 0;
+			//    if (ci.OtherShape is ILinearShape) {
+			//        ILinearShape line = (ILinearShape)ci.OtherShape;
+			//        Point nv = line.CalcNormalVector(gluePointPos);
+			//        graphics.DrawLine(Pens.Red, gluePointPos, nv);
+			//        shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(gluePointPos.X, gluePointPos.Y, nv.X, nv.Y)) - 900;
+			//    } else if (ci.OtherShape is IPlanarShape) {
+			//        shapeAngle = Geometry.TenthsOfDegreeToDegrees(((IPlanarShape)ci.OtherShape).Angle);
+			//    }
+			//    shapeAngle = shapeAngle / 10f;
+			//    GdiHelpers.DrawAngle(graphics, Brushes.Red, gluePointPos, shapeAngle, 10);
+			//    GdiHelpers.DrawAngle(graphics, Brushes.Purple, gluePointPos, shapeAngle, calcInfo.Alpha, 10);
 
-//            ////ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
-//            //float shapeAngle = 0;
-//            //if (ci.OtherShape is ILinearShape) {
-//            //   ILinearShape line = (ILinearShape)ci.OtherShape;
-//            //   Point nv = line.CalcNormalVector(gluePointPos);
-//            //   graphics.DrawLine(Pens.Red, gluePointPos, nv);
-//            //   shapeAngle = Geometry.RadiansToTenthsOfDegree(Geometry.Angle(gluePointPos.X, gluePointPos.Y, nv.X, nv.Y)) - 900;
-//            //} else if (ci.OtherShape is IPlanarShape) {
-//            //   shapeAngle = Geometry.TenthsOfDegreeToDegrees(((IPlanarShape)ci.OtherShape).Angle);
-//            //}
-//            //shapeAngle = shapeAngle / 10f;
-//            //GdiHelpers.DrawAngle(graphics, Brushes.Red, gluePointPos, shapeAngle, 10);
-//            //GdiHelpers.DrawAngle(graphics, Brushes.Purple, gluePointPos, shapeAngle, calcInfo.Alpha, 10);
-
-//            //string debugStr = string.Format("ShapeAngle: {0}°{1}Alpha: {2}°", shapeAngle, Environment.NewLine, calcInfo.Alpha);
-//            //using (Font font = new Font("Arial", 8))
-//            //   graphics.DrawString(debugStr, font, Brushes.Blue, gluePointPos);
-//         }
-//#endif
+			//    string debugStr = string.Format("Partner Angle: {0}°{1}Alpha: {2}°{1}Angle: {3}", shapeAngle, Environment.NewLine, calcInfo.Alpha, Geometry.TenthsOfDegreeToDegrees(Angle));
+			//    using (Font font = new Font("Arial", 8))
+			//        graphics.DrawString(debugStr, font, Brushes.Blue, gluePointPos);
+			//}
+#endif
 		}
 
 
@@ -527,8 +548,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override void DrawOutline(Graphics graphics, Pen pen) {
 			base.DrawOutline(graphics, pen);
-			Point p = CalculateConnectionFoot(gluePointPos.X, gluePointPos.Y);
-			graphics.DrawLine(pen, gluePointPos, p);
+			DrawGluePointLine(graphics, pen);
 		}
 
 		#endregion
@@ -567,9 +587,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		protected override Rectangle CalculateBoundingRectangle(bool tight) {
 			Rectangle result = base.CalculateBoundingRectangle(tight);
-			if (!tight && IsConnected(GlueControlPoint, null) == ControlPointId.None) {
-				if (Geometry.IsValid(gluePointPos)) {
-					Point tl = Point.Empty, tr = Point.Empty, bl = Point.Empty, br = Point.Empty;
+			if (Geometry.IsValid(gluePointPos)) {
+				if (!tight && IsConnected(GlueControlPoint, null) == ControlPointId.None) {
 					tl.X = bl.X = gluePointPos.X - pinSize / 2;
 					tr.X = br.X = gluePointPos.X + pinSize / 2;
 					tl.Y = tr.Y = gluePointPos.Y - pinSize;
@@ -581,7 +600,8 @@ namespace Dataweb.NShape.Advanced {
 					Rectangle pinBounds;
 					Geometry.CalcBoundingRectangle(tl, tr, br, bl, out pinBounds);
 					result = Geometry.UniteRectangles(result, pinBounds);
-				}
+				} 
+				//else result = Geometry.UniteRectangles(gluePointPos.X, gluePointPos.Y, gluePointPos.X, gluePointPos.Y, result);
 			}
 			return result;
 		}
@@ -589,7 +609,21 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		protected override bool ContainsPointCore(int x, int y) {
-			return base.ContainsPointCore(x, y);
+			bool result = base.ContainsPointCore(x, y);
+			if (!result) {
+				if (showGluePointLine)
+					result = Geometry.LineContainsPoint(gluePointPos.X, gluePointPos.Y, X, Y, true, x, y, (int)Math.Ceiling(LineStyle.LineWidth / 2f));
+				if (IsConnected(GlueControlPoint, null) == ControlPointId.None) {
+					if (pinPath != null) result = pinPath.IsVisible(x, y);
+					else {
+						// Fallback solution: Test on bounding rectangle of the 'pin'
+						float halfPinSize = pinSize / 2;
+						return (gluePointPos.X - halfPinSize <= x && x <= gluePointPos.X + halfPinSize
+							&& gluePointPos.Y - pinSize <= y && y <= gluePointPos.Y);
+					}
+				}
+			}
+			return result;
 		}
 
 
@@ -600,7 +634,8 @@ namespace Dataweb.NShape.Advanced {
 				int boundsX = gluePointPos.X - (pinSize / 2);
 				int boundsY = gluePointPos.Y - pinSize;
 				result = Geometry.RectangleIntersectsWithRectangle(x, y, width, height, boundsX, boundsY, pinSize, pinSize)
-					|| Geometry.RectangleContainsRectangle(x, y, width, height, boundsX, boundsY, pinSize, pinSize);
+					|| Geometry.RectangleContainsRectangle(x, y, width, height, boundsX, boundsY, pinSize, pinSize)
+					|| Geometry.RectangleIntersectsWithLine(x, y, x + width, y + height, X, Y, gluePointPos.X, gluePointPos.Y, true);
 			}
 			return result;
 		}
@@ -658,7 +693,7 @@ namespace Dataweb.NShape.Advanced {
 			ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
 			if (!ci.IsEmpty) {
 				// If the gluePoint is connected, recalculate GluePointCalcInfo
-				calcInfo = GluePointCalcInfo.Empty;
+				this.calcInfo = GluePointCalcInfo.Empty;
 				CalcGluePointCalcInfo(ci.OwnPointId, ci.OtherShape, ci.OtherPointId);
 				InvalidateDrawCache();
 			}
@@ -730,6 +765,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		protected override Point CalcGluePoint(ControlPointId gluePointId, Shape shape) {
+			InvalidateDrawCache();
 			// Get current position of the GluePoint and the new position of the GluePoint
 			Point result = Geometry.InvalidPoint;
 			ControlPointId pointId = IsConnected(gluePointId, shape);
@@ -738,6 +774,39 @@ namespace Dataweb.NShape.Advanced {
 			else result = shape.GetControlPointPosition(pointId);
 			Debug.Assert(Geometry.IsValid(result));
 			return result;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected virtual void DrawGluePointLine(Graphics graphics, ILineStyle lineStyle, ICapStyle capStyle) {
+			if (lineStyle == null) throw new ArgumentNullException("lineStyle");
+			Pen pen = ToolCache.GetPen(LineStyle, null, capStyle);
+			DrawGluePointLine(graphics, pen);
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected virtual void DrawGluePointLine(Graphics graphics, Pen pen){
+			if (graphics == null) throw new ArgumentNullException("graphics");
+			Point p = CalculateConnectionFoot(gluePointPos.X, gluePointPos.Y);
+			if (pen != null && Geometry.IsValid(p)) 
+				graphics.DrawLine(pen, p, gluePointPos);
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		protected virtual void DrawHint(Graphics graphics) {
+			// Draw connection point hints
+			if (IsConnected(GlueControlPoint, null) == ControlPointId.None) {
+				if (DisplayService != null) {
+					Pen foregroundPen = ToolCache.GetPen(DisplayService.HintForegroundStyle, null, null);
+					Brush backgroundBrush = ToolCache.GetBrush(DisplayService.HintBackgroundStyle);
+
+					DrawOutline(graphics, foregroundPen);
+					graphics.FillPath(backgroundBrush, pinPath);
+					graphics.DrawPath(foregroundPen, pinPath);
+				}
+			}
 		}
 
 		#endregion
@@ -784,7 +853,7 @@ namespace Dataweb.NShape.Advanced {
 			labelPos.Offset(X, Y);
 			int labelAngle;
 
-			//calculate target shape's outline intersection point and the relative position of the gluePoint in/on the target shape
+			// Calculate target shape's outline intersection point and the relative position of the gluePoint in/on the target shape
 			float alpha = float.NaN, beta = float.NaN;
 			if (otherShape is ILinearShape) {
 				// ToDo: Check if the point is on the line, if not, calculate an intersection point
@@ -807,11 +876,13 @@ namespace Dataweb.NShape.Advanced {
 			float distance = Geometry.DistancePointPoint(gluePtPos, labelPos);
 
 			// store all calculated values in the GluePointCalcInfo structure
-			calcInfo.Alpha = alpha % 360;
-			calcInfo.Beta = beta % 360;
-			calcInfo.Distance = distance;
-			calcInfo.RelativePosition = relativePos;
-			calcInfo.LabelAngle = labelAngle;
+			this.calcInfo.Alpha = alpha % 360;
+			this.calcInfo.Beta = beta % 360;
+			this.calcInfo.Distance = distance;
+			this.calcInfo.RelativePosition = relativePos;
+			this.calcInfo.LabelAngle = labelAngle;
+
+			Debug.Assert(calcInfo != GluePointCalcInfo.Empty);
 		}
 
 
@@ -895,18 +966,21 @@ namespace Dataweb.NShape.Advanced {
 		/// <ToBeCompleted></ToBeCompleted>
 		protected GluePointCalcInfo calcInfo = GluePointCalcInfo.Empty;
 
+		/// <summary>Specifies wether the shape maintains its orientation if the connected shape is rotated</summary>
+		protected bool maintainOrientation;
+		/// <summary>Specifies wether the shape shows the line between the shape's outline and its GluePoint</summary>
+		protected bool showGluePointLine = false;
+
 		private const int pinSize = 12;
 		private const int pinAngle = 45;
-
-
-		//private Rectangle shapeBuffer = Rectangle.Empty;
 		private GraphicsPath pinPath;
 
-		// Specifies if the shape maintains its orientation if the connected shape is rotated
-		private bool maintainOrientation;
-		// Specifis if the movement of a connected label is due to repositioning or 
+		// Specifies if the movement of a connected label is due to repositioning or 
 		// due to a "FollowConnectionPointWithGluePoint" call
 		private bool followingConnectedShape = false;
+
+		// Buffers
+		Point tl = Point.Empty, tr = Point.Empty, bl = Point.Empty, br = Point.Empty;
 		#endregion
 	}
 

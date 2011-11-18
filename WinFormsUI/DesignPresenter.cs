@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -166,7 +166,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					StyleUITypeEditor.Design = selectedDesign;
 					InitializeStyleCollectionList();
 				}
-				if (DesignSelected != null) DesignSelected(this, eventArgs);
+				if (DesignSelected != null) DesignSelected(this, EventArgs.Empty);
 			}
 		}
 
@@ -215,7 +215,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				if (selectedStyle != value) {
 					selectedStyle = value;
 					if (propertyController != null) propertyController.SetObject(0, selectedStyle);
-					if (StyleSelected != null) StyleSelected(this, eventArgs);
+					if (StyleSelected != null) StyleSelected(this, EventArgs.Empty);
 				}
 			}
 		}
@@ -478,14 +478,17 @@ namespace Dataweb.NShape.WinFormsUI {
 			selectedStyle = null;
 			selectedDesign = null;
 			styleListBox.Items.Clear();
-			propertyController.Project = null;
+			// Only perform a CancalSetproperty if the probject still exists, otherwise the call will fail.
+			if (propertyController.Project != null)
+				propertyController.CancelSetProperty();
 		}
 
 
 		private void designController_StyleCreated(object sender, StyleEventArgs e) {
 			if (!styleListBox.Items.Contains(e.Style)) {
 				styleListBox.SuspendLayout();
-				styleListBox.SelectedIndex = styleListBox.Items.Add(e.Style);
+				styleListBox.Items.Add(e.Style);
+				styleListBox.SelectedItem = e.Style;
 				styleListBox.ResumeLayout();
 			}
 		}
@@ -495,13 +498,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			int idx = styleListBox.Items.IndexOf(e.Style);
 			if (idx >= 0) {
 				bool isSelectedStyle = (styleListBox.SelectedItem == e.Style);
-				if (e.Style is ICapStyle || e.Style is ICharacterStyle || e.Style is ILineStyle) {
-					styleListBox.Items.RemoveAt(idx);
-					styleListBox.Items.Insert(idx, e.Style);
-					styleListBox.SelectedIndex = idx;
-				} else styleListBox.Invalidate();
+				styleListBox.SuspendLayout();
+				styleListBox.Items.RemoveAt(idx);
+				styleListBox.Items.Insert(idx, e.Style);
+				if (isSelectedStyle)
+					styleListBox.SelectedItem = e.Style;
+				styleListBox.ResumeLayout();
 			}
-
 			StyleUITypeEditor.Design = e.Design;
 			if (propertyGrid.SelectedObject == e.Style)
 				propertyGrid.Refresh();
@@ -592,9 +595,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		private DesignController designController = null;
 		private Design selectedDesign = null;
 		private Style selectedStyle = null;
-
-		// EventArgs buffer
-		private EventArgs eventArgs = new EventArgs();
 
 		private bool highlightItems = true;
 		// Colors

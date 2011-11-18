@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -25,6 +25,7 @@ namespace Dataweb.NShape.Advanced {
 	/// <summary>
 	/// Indicates that a property can be used for model-to-shape property mappings.
 	/// </summary>
+	[AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple=true, Inherited=true)]
 	public class PropertyMappingIdAttribute : Attribute {
 
 		/// <summary>
@@ -1263,6 +1264,12 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		/// <override></override>
+		public override string ToString() {
+			return Title;
+		}
+
+
 		/// <summary>
 		/// Creates a new <see cref="T:Dataweb.NShape.Advanced.Template" /> that is a copy of the current instance.
 		/// </summary>
@@ -1286,7 +1293,7 @@ namespace Dataweb.NShape.Advanced {
 			
 			// Clone or copy shape
 			if (this.shape == null)	this.shape = ShapeDuplicator.CloneShapeAndModelObject(source.shape);
-			else this.shape.CopyFrom(source.shape);
+			else this.shape.CopyFrom(source.shape);	// Template will be copied although this is not desirable
 
 			// copy connection point mapping
 			this.connectionPointMappings.Clear();
@@ -1322,8 +1329,8 @@ namespace Dataweb.NShape.Advanced {
 		/// Specifies the culture dependent display name.
 		/// </summary>
 		public string Title {
-			get { return title; }
-			set { title = value; }
+			get { return string.IsNullOrEmpty(title) ? name : title; }
+			set { title = (title == name) ? null : value; }
 		}
 
 

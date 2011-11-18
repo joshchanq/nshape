@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -410,6 +410,7 @@ namespace Dataweb.NShape {
 		
 		/// <summary>Specifies the interior fill color of the cap.</summary>
 		IColorStyle ColorStyle { get; }
+
 	}
 
 
@@ -791,8 +792,8 @@ namespace Dataweb.NShape {
 
 		/// <override></override>
 		[Description("The name of the style, used for identifying this style in the style set. Has to unique inside its style set.")]
-		[RequiredPermission(Permission.ModifyData)]
-		[Category("Identification")]
+		[RequiredPermission(Permission.Designs)]
+		[Category("General")]
 		public string Name {
 			get { return name; }
 			set {
@@ -806,8 +807,8 @@ namespace Dataweb.NShape {
 
 		/// <override></override>
 		[Description("The title of the style.")]
-		[RequiredPermission(Permission.ModifyData)]
-		[Category("Identification")]
+		[RequiredPermission(Permission.Designs)]
+		[Category("General")]
 		public string Title {
 			get {
 				if (string.IsNullOrEmpty(title))
@@ -1055,7 +1056,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Shape of the line cap. If none, the cap of the line depends on the line style's LineJoin setting.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public CapShape CapShape {
 			get { return capShape; }
 			set { capShape = value; }
@@ -1065,7 +1066,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Size of the line cap in display units.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public short CapSize {
 			get { return capSize; }
 			set {
@@ -1079,7 +1080,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Color of the line cap's interior.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public IColorStyle ColorStyle {
 			get { return colorStyle ?? Dataweb.NShape.ColorStyle.Empty; }
 			set {
@@ -1246,7 +1247,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("The color of the style's font.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public IColorStyle ColorStyle {
 			get { return colorStyle ?? Dataweb.NShape.ColorStyle.Empty; }
 			set {
@@ -1260,7 +1261,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Browsable(false)]
 		[Category("Appearance")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public FontFamily FontFamily {
 			get { return fontFamily; }
 			set { fontFamily = value; }
@@ -1270,7 +1271,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Name of the style's font.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		[Editor("Dataweb.NShape.WinFormsUI.FontFamilyUITypeEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public string FontName {
 			get { return fontFamily.Name; }
@@ -1281,7 +1282,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Size of the style's font in display units.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public int Size {
 			get { return fontSize; }
 			set {
@@ -1296,7 +1297,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("Size of the style's font in points.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public float SizeInPoints {
 			get { return fontSizeInPoints; }
 			set {
@@ -1309,7 +1310,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Style of the style's font.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public FontStyle Style {
 			get { return fontStyle; }
 			set {
@@ -1498,7 +1499,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("The style's color.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public Color Color {
 			get { return color; }
 			set {
@@ -1513,7 +1514,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Browsable(false)]
 		[Category("Appearance")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public bool ConvertToGray {
 			get { return convertToGray; }
 			set { convertToGray = value; }
@@ -1525,7 +1526,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("Transparency of the style's color in percentage. 100 is 100% transparent and therefore invisible.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public byte Transparency {
 			get { return transparency; }
 			set {
@@ -1739,7 +1740,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("The additional color of the style. Depends on the style's FillMode: For gradients, it is the color of the upper left edge. In case of a pattern, this is the foreground color. For all other fill modes it will be ignored.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public IColorStyle AdditionalColorStyle {
 			get { return additionalColorStyle ?? Dataweb.NShape.ColorStyle.Empty; }
 			set {
@@ -1753,7 +1754,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("The base color of the style. Depends on the style's FillMode: For gradients, it is the color of the lower right edge. In case of a pattern, this is the background color. For the solid fill mode it is the fill color and otherwise it will be ignored.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public IColorStyle BaseColorStyle {
 			get { return baseColorStyle ?? Dataweb.NShape.ColorStyle.Empty; }
 			set {
@@ -1769,7 +1770,7 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[Category("Appearance")]
 		[Description("Specifies if the style's image should be displayed as grayscale image. Will be ignored if the fill mode is not image.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public bool ConvertToGrayScale {
 			get { return convertToGrayScale; }
 			set { convertToGrayScale = value; }
@@ -1779,7 +1780,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Specifies the fill mode of the style.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public FillMode FillMode {
 			get { return fillMode; }
 			set { fillMode = value; }
@@ -1789,7 +1790,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Specifies the fill pattern of the style. Will be ignored if the fill mode is not pattern.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public HatchStyle FillPattern {
 			get { return fillPattern; }
 			set { fillPattern = value; }
@@ -1806,7 +1807,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("The Image of the fill style. Will be ignored if the fill mode is not image. Supports both bitmap and vector images.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		[Editor("Dataweb.NShape.WinFormsUI.NamedImageUITypeEditor, Dataweb.NShape.WinFormsUI", typeof(UITypeEditor))]
 		public NamedImage Image {
 			get { return image; }
@@ -1820,7 +1821,7 @@ namespace Dataweb.NShape {
 		[Browsable(false)]
 		[Category("Appearance")]
 		[Description("Specifies the compression quality in percentage when saving the style's image with a lossy compression file format. Will be ignored if the fill mode is not image.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public byte ImageCompressionQuality {
 			get { return imageCompressionQuality; }
 			set {
@@ -1834,17 +1835,20 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Gamma correction for the style's image. Will be ignored if the fill mode is not image.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public float ImageGammaCorrection {
 			get { return imageGamma; }
-			set { imageGamma = value; }
+			set {
+				if (value <= 0) throw new ArgumentException("Value has to be greater than 0.");
+				imageGamma = value; 
+			}
 		}
 
 
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Layout of the style's image. Will be ignored if the fill mode is not image.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public ImageLayoutMode ImageLayout {
 			get { return imageLayout; }
 			set { imageLayout = value; }
@@ -1854,7 +1858,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Transparency of the style's image. Will be ignored if the fill mode is not image.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public byte ImageTransparency {
 			get { return imageTransparency; }
 			set {
@@ -2069,7 +2073,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Color of the line.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public IColorStyle ColorStyle {
 			get { return colorStyle ?? Dataweb.NShape.ColorStyle.Empty; }
 			set {
@@ -2083,7 +2087,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Caps of a dashed line's dashes.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public DashCap DashCap {
 			get { return dashCap; }
 			set { dashCap = value; }
@@ -2100,7 +2104,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Dash type of the line.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public DashType DashType {
 			get { return dashStyle; }
 			set {
@@ -2131,7 +2135,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Shape of the line's edges and caps.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public LineJoin LineJoin {
 			get { return lineJoin; }
 			set { lineJoin = value; }
@@ -2141,7 +2145,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Thickness of the line.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public int LineWidth {
 			get { return lineWidth; }
 			set {
@@ -2300,7 +2304,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Alignment of the text.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public ContentAlignment Alignment {
 			get { return alignment; }
 			set { alignment = value; }
@@ -2310,7 +2314,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Trimming of the text if it requires more space than available.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public StringTrimming Trimming {
 			get { return trimming; }
 			set { trimming = value; }
@@ -2320,7 +2324,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Distance of the text from its layout rectangle.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public TextPadding Padding {
 			get { return padding; }
 			set { padding = value; }
@@ -2330,7 +2334,7 @@ namespace Dataweb.NShape {
 		/// <override></override>
 		[Category("Appearance")]
 		[Description("Specifies if automatic line breaks should be enabled.")]
-		[RequiredPermission(Permission.Present)]
+		[RequiredPermission(Permission.Designs)]
 		public bool WordWrap {
 			get { return wordWrap; }
 			set { wordWrap = value; }

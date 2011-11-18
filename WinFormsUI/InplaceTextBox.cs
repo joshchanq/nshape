@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -274,12 +274,12 @@ namespace Dataweb.NShape.WinFormsUI {
 				this.Font = ToolCache.GetFont(characterStyle);
 				this.ZoomFactor = owner.ZoomLevel / 100f;
 
-				DoUpdateBounds();
-
 				// get line height
-				Size textSize = TextRenderer.MeasureText(((IDisplayService)owner).InfoGraphics, "Ig", Font);
+				Size textSize = TextRenderer.MeasureText(((IDisplayService)owner).InfoGraphics, "Iq", Font);
 				owner.DiagramToControl(textSize, out textSize);
 				lineHeight = textSize.Height;
+
+				DoUpdateBounds();
 
 				SelectAll();
 				SelectionAlignment = ConvertToHorizontalAlignment(paragraphStyle.Alignment);
@@ -327,12 +327,12 @@ namespace Dataweb.NShape.WinFormsUI {
 				case ContentAlignment.BottomCenter:
 				case ContentAlignment.BottomLeft:
 				case ContentAlignment.BottomRight:
-					newBounds.Y = layoutArea.Bottom - textSize.Height;
+					newBounds.Y = layoutArea.Bottom - newBounds.Height;
 					break;
 				case ContentAlignment.MiddleCenter:
 				case ContentAlignment.MiddleLeft:
 				case ContentAlignment.MiddleRight:
-					newBounds.Y = layoutArea.Y + (int)Math.Round((layoutArea.Height - textSize.Height) / 2f);
+					newBounds.Y = layoutArea.Y + (int)Math.Round((layoutArea.Height - newBounds.Height) / 2f);
 					break;
 				case ContentAlignment.TopCenter:
 				case ContentAlignment.TopLeft:

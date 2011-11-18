@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -262,7 +262,7 @@ namespace Dataweb.NShape {
 		Diagram GetDiagram(object id);
 
 		/// <summary>
-		/// Fetches a single diagram identified by its projectName.
+		/// Fetches a single diagram identified by its name.
 		/// </summary>
 		Diagram GetDiagram(string name);
 
@@ -308,14 +308,14 @@ namespace Dataweb.NShape {
 		Template GetTemplate(object id);
 		
 		/// <summary>
-		/// Fetches a single template given its projectName.
+		/// Fetches a single template given its name.
 		/// </summary>
 		Template GetTemplate(string name);
 
 		/// <summary>
-		/// Fetches all Templates in the project from the repository.
+		/// Fetches all <see cref="T:Dataweb.NShape.Advanced.Template" /> in the project from the repository.
 		/// </summary>
-		/// <returns>Iterator to step through the Templates list.</returns>
+		/// <returns>Iterator to step through the <see cref="T:Dataweb.NShape.Advanced.Template" /> list.</returns>
 		IEnumerable<Template> GetTemplates();
 
 		/// <ToBeCompleted></ToBeCompleted>
@@ -415,17 +415,17 @@ namespace Dataweb.NShape {
 		void UpdateShape(Shape shape);
 
 		/// <summary>
-		/// SaveChanges the shape's parent, which is now a diagram.
+		/// Updates the shape's parent, which is now a <see cref="T:Dataweb.NShape.Diagram" />.
 		/// </summary>
-		/// <param name="shape">Shape whose parent has changed</param>
-		/// <param name="diagram">New parent of the shape</param>
+		/// <param name="shape"><see cref="T:Dataweb.NShape.Advanced.Shape" /> whose parent has changed</param>
+		/// <param name="diagram">New parent of the <see cref="T:Dataweb.NShape.Advanced.Shape" /></param>
 		void UpdateShapeOwner(Shape shape, Diagram diagram);
 
 		/// <summary>
-		/// SaveChanges the shape's parent, which is now a shape.
+		/// Updates the shape's parent, which is now a <see cref="T:Dataweb.NShape.Advanced.Shape" />.
 		/// </summary>
-		/// <param name="shape">Shape whose parent has changed</param>
-		/// <param name="parent">New parent of the shape</param>
+		/// <param name="shape"><see cref="T:Dataweb.NShape.Advanced.Shape" /> whose parent has changed</param>
+		/// <param name="parent">New parent of the <see cref="T:Dataweb.NShape.Advanced.Shape" /></param>
 		void UpdateShapeOwner(Shape shape, Shape parent);
 
 		/// <ToBeCompleted></ToBeCompleted>

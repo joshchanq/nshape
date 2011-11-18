@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -436,6 +436,104 @@ namespace Dataweb.NShape.WinFormsUI {
 
 	}
 
+	/// <summary>
+	/// NShape UI type editor for adding/removing shapes to/from layers.
+	/// </summary>
+	public class LayerUITypeEditor : UITypeEditor {
+
+		/// <override></override>
+		public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value) {
+			if (context != null && context.Instance != null && provider != null) {
+				IWindowsFormsEditorService edSvc = (IWindowsFormsEditorService)provider.GetService(typeof(IWindowsFormsEditorService));
+				if (edSvc != null && context.Instance is Shape) {
+					Shape shape = (Shape)context.Instance;
+					using (CheckedListBox listBox = new CheckedListBox()) {
+						listBox.BorderStyle = BorderStyle.None;
+						listBox.IntegralHeight = false;
+						listBox.Items.Clear();
+
+						// Add existing layers and check shape's layers
+						foreach (Layer l in shape.Diagram.Layers) {
+							int idx = listBox.Items.Count;
+							listBox.Items.Insert(idx, l);
+							listBox.SetItemChecked(idx, ((shape.Layers & l.Id) != 0));
+						}
+
+						edSvc.DropDownControl(listBox);
+						LayerIds shapeLayers = LayerIds.None;
+						for (int i = listBox.Items.Count - 1; i >= 0; --i) {
+							if (listBox.GetItemChecked(i))
+								shapeLayers |= ((Layer)listBox.Items[i]).Id;
+						}
+						shape.Diagram.RemoveShapeFromLayers(shape, LayerIds.All);
+						shape.Diagram.AddShapeToLayers(shape, shapeLayers);
+
+						value = shapeLayers;
+					}
+				}
+			}
+			return value;
+		}
+
+
+		/// <override></override>
+		public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) {
+			if (context != null && context.Instance != null)
+				return UITypeEditorEditStyle.DropDown;
+			return base.GetEditStyle(context);
+		}
+
+
+		/// <override></override>
+		public override bool GetPaintValueSupported(ITypeDescriptorContext context) {
+			return false;
+		}
+
+
+		///// <override></override>
+		//public override void PaintValue(PaintValueEventArgs e) {
+		//    if (e != null && e.Value != null) {
+		//        // store original values;
+		//        SmoothingMode origSmoothingMode = e.Graphics.SmoothingMode;
+		//        CompositingQuality origCompositingQuality = e.Graphics.CompositingQuality;
+		//        InterpolationMode origInterpolationmode = e.Graphics.InterpolationMode;
+		//        System.Drawing.Text.TextRenderingHint origTextRenderingHint = e.Graphics.TextRenderingHint;
+		//        Matrix origTransform = e.Graphics.Transform;
+
+		//        // set new GraphicsModes
+		//        e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+		//        e.Graphics.CompositingQuality = CompositingQuality.HighQuality;	// CAUTION: Slows down older machines!!
+		//        e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+
+		//        StringFormat formatter = new StringFormat();
+		//        formatter.Alignment = StringAlignment.Center;
+		//        formatter.LineAlignment = StringAlignment.Near;
+
+		//        Font font = new Font(e.Value.ToString(), e.Bounds.Height, FontStyle.Regular, GraphicsUnit.Pixel);
+		//        e.Graphics.DrawString(e.Value.ToString(), font, Brushes.Black, (RectangleF)e.Bounds, formatter);
+
+		//        font.Dispose();
+		//        formatter.Dispose();
+
+		//        // restore original values
+		//        e.Graphics.Transform = origTransform;
+		//        e.Graphics.SmoothingMode = origSmoothingMode;
+		//        e.Graphics.CompositingQuality = origCompositingQuality;
+		//        e.Graphics.InterpolationMode = origInterpolationmode;
+		//        e.Graphics.TextRenderingHint = origTextRenderingHint;
+
+		//        base.PaintValue(e);
+		//    }
+		//}
+
+
+		/// <override></override>
+		public override bool IsDropDownResizable {
+			get { return true; }
+		}
+
+	}
+
 
 	/// <summary>
 	/// NShape UI type editor for editing properties of type System.String or a System.String collection type.
@@ -604,21 +702,25 @@ namespace Dataweb.NShape.WinFormsUI {
 						design = designBuffer;
 
 					// Examine edited instances and determine wether the list item "Default Style" should be displayed.
-					bool showSpecialItems = false;
-					if (context.Instance is Shape)
-						showSpecialItems = ((Shape)context.Instance).Template != null;
-					// Does not work - SetValue will never be called for a null-value
-					//else if (context.Instance is object[]) {
-					//   object[] objArr = (object[])context.Instance;
-					//   int cnt = objArr.Length;
-					//   showItemDefaultStyle = true;
-					//   for (int i = 0; i < cnt; ++i) {
-					//      if (!(objArr[i] is Shape) || ((Shape)objArr[i]).Template == null) {
-					//         showItemDefaultStyle = false;
-					//         break;
-					//      }
-					//   }
-					//}
+					bool showItemDefaultStyle = false;
+					bool showItemOpenEditor = false;
+					if (context.Instance is Shape) {
+						showItemDefaultStyle = ((Shape)context.Instance).Template != null;
+						showItemOpenEditor = project.SecurityManager.IsGranted(Permission.Designs);
+					} else if (context.Instance is object[]) {
+						object[] objArr = (object[])context.Instance;
+						int cnt = objArr.Length;
+						showItemDefaultStyle = true;
+						showItemOpenEditor = project.SecurityManager.IsGranted(Permission.Designs);
+						for (int i = 0; i < cnt; ++i) {
+							Shape shape = objArr[i] as Shape;
+							if (shape == null || shape.Template == null) {
+								showItemDefaultStyle = false;
+								showItemOpenEditor = false;
+								break;
+							}
+						}
+					}
 
 					StyleListBox styleListBox = null;
 					try {
@@ -639,12 +741,12 @@ namespace Dataweb.NShape.WinFormsUI {
 							else throw new NShapeUnsupportedValueException(context.PropertyDescriptor.PropertyType);
 
 							if (project != null)
-								styleListBox = new StyleListBox(editorService, project, styleType, showSpecialItems, showSpecialItems);
-							else styleListBox = new StyleListBox(editorService, design, styleType, showSpecialItems, showSpecialItems);
+								styleListBox = new StyleListBox(editorService, project, styleType, showItemDefaultStyle, showItemOpenEditor);
+							else styleListBox = new StyleListBox(editorService, design, styleType, showItemDefaultStyle, showItemOpenEditor);
 						} else {
 							if (project != null)
-								styleListBox = new StyleListBox(editorService, project, value as Style, showSpecialItems, showSpecialItems);
-							else styleListBox = new StyleListBox(editorService, design, value as Style, showSpecialItems, showSpecialItems);
+								styleListBox = new StyleListBox(editorService, project, value as Style, showItemDefaultStyle, showItemOpenEditor);
+							else styleListBox = new StyleListBox(editorService, design, value as Style, showItemDefaultStyle, showItemOpenEditor);
 						}
 
 						editorService.DropDownControl(styleListBox);
@@ -796,11 +898,13 @@ namespace Dataweb.NShape.WinFormsUI {
 		private void DrawStyleItem(Graphics gfx, Rectangle previewBounds, ILineStyle lineStyle) {
 			Pen linePen = ToolCache.GetPen(lineStyle, null, null);
 			int height = lineStyle.LineWidth + 2;
-			if (height > previewBounds.Height) {
+			bool scalePen = (height > previewBounds.Height);
+			if (scalePen) {
 				float scale = Geometry.CalcScaleFactor(height, height, previewBounds.Width, previewBounds.Height);
 				linePen.ScaleTransform(scale, scale);
 			}
 			gfx.DrawLine(linePen, previewBounds.X, previewBounds.Y + (previewBounds.Height / 2), previewBounds.Right, previewBounds.Y + (previewBounds.Height / 2));
+			if (scalePen) linePen.ResetTransform();
 		}
 
 

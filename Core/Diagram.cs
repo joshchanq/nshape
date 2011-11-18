@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -21,6 +21,7 @@ using System.Drawing;
 using System.Drawing.Design;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+
 using Dataweb.NShape.Advanced;
 
 
@@ -121,7 +122,7 @@ namespace Dataweb.NShape {
 		/// <summary>Layer 31</summary>
 		Layer31 = 0x40000000,
 		/// <summary>All available layers.</summary>
-		All = int.MinValue	// uint.MaxValue and 0xFFFFFFFF result in type mismatch compiler error
+		All = int.MaxValue	// 0xFFFFFFFF results in a type mismatch compiler error
 	}
 
 
@@ -166,12 +167,11 @@ namespace Dataweb.NShape {
 		[RequiredPermission(Permission.Present)]
 		public string Title {
 			get {
-				if (title == string.Empty) return name;
+				if (string.IsNullOrEmpty(title)) return name;
 				else return title; 
 			}
 			set {
-				if (value == null) throw new ArgumentNullException("Title");
-				if (title == name) title = string.Empty;
+				if (title == name) title = null;
 				else title = value;
 			}
 		}
@@ -265,7 +265,7 @@ namespace Dataweb.NShape {
 			if (name == null) throw new ArgumentNullException("name");
 			int cnt = layers.Count;
 			for (int i = 0; i < cnt; ++i) {
-				if (layers[i] != null && layers[i].Name == name)
+				if (layers[i] != null && string.Compare(layers[i].Name, name, StringComparison.InvariantCultureIgnoreCase) == 0)
 					return layers[i];
 			}
 			return null;
@@ -273,18 +273,17 @@ namespace Dataweb.NShape {
 
 
 		public Layer GetLayer(LayerIds layerId) {
-			int layerBit = GetLowestLayerBit(layerId);
-			if (layerBit == -1)
-				throw new NShapeException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
-			return layers[layerBit - 1];
+			int layerBit = GetLayerBit(layerId);
+			if (layerBit < 0) throw new NShapeException("{0} is not a valid {1} to find.", layerId, typeof(LayerIds));
+			return layers[layerBit];
 		}
 
 
 		public IEnumerable<Layer> GetLayers(LayerIds layerId) {
 			foreach (int layerBit in GetLayerBits(layerId)) {
 				if (layerBit == -1) continue;
-				Debug.Assert(layers[layerBit] != null);
-				yield return layers[layerBit];
+				if (layers[layerBit] != null)
+					yield return layers[layerBit];
 			}
 		}
 
@@ -343,9 +342,10 @@ namespace Dataweb.NShape {
 
 		public bool Remove(Layer item) {
 			if (item == null) throw new ArgumentNullException("item");
-			int layerBit = GetLowestLayerBit(item.Id);
-			if (layerBit == -1) return false;
-			layers[layerBit - 1] = null;
+			int layerBit = GetLayerBit(item.Id);
+			if (layerBit < 0) return false;
+			Debug.Assert(item.Id == layers[layerBit].Id);
+			layers[layerBit] = null;
 			return true;
 		}
 
@@ -372,18 +372,10 @@ namespace Dataweb.NShape {
 
 		#region Methods (private)
 
-		private int GetLowestLayerBit(LayerIds layerId) {
-			const int errResult = -1;
-			if (layerId == LayerIds.None) return errResult;
-			int bitNo = 0;
-			foreach (LayerIds id in Enum.GetValues(typeof(LayerIds))) {
-				if ((layerId & id) == layerId)
-					return bitNo;
-				else if ((layerId & id) != 0)
-					throw new ArgumentException("Argument 'layerId' must not be a combination of {1}.", typeof(LayerIds).FullName);
-				++bitNo;
-			}
-			return errResult;
+		private int GetLayerBit(LayerIds layerId) {
+			foreach (int layerBit in GetLayerBits(layerId))
+				return layerBit;
+			return -1;
 		}
 
 
@@ -391,8 +383,9 @@ namespace Dataweb.NShape {
 			if (layerIds == LayerIds.None) yield break;
 			int bitNo = 0;
 			foreach (LayerIds id in Enum.GetValues(typeof(LayerIds))) {
-				if (id == LayerIds.None) continue;
-				if ((layerIds & id) != 0) yield return bitNo;
+				if (id == LayerIds.None || id == LayerIds.All) continue;
+				if ((layerIds & id) != 0)
+					yield return bitNo;
 				++bitNo;
 			}
 		}
@@ -707,7 +700,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Culture invariant name.
 		/// </summary>
-		[Category("Identification")]
+		[Category("General")]
 		[Description("The name of the diagram.")]
 		[RequiredPermission(Permission.ModifyData)]
 		public string Name {
@@ -719,7 +712,7 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Culture depending title.
 		/// </summary>
-		[Category("Identification")]
+		[Category("General")]
 		[Description("The displayed text of the diagram.")]
 		[RequiredPermission(Permission.Present)]
 		public string Title {
@@ -1043,17 +1036,20 @@ namespace Dataweb.NShape {
 		/// <summary>
 		/// Exports the contents of the diagram to an image of the given format.
 		/// </summary>
+		/// <param name="imageFormat">Specifies the format of the graphics file.</param>
 		public Image CreateImage(ImageFileFormat imageFormat) {
-			return CreateImage(imageFormat, null, 0, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
+			return CreateImage(imageFormat, null, 0, false, Color.White, -1);
 		}
 
 
 		/// <summary>
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
-		/// Pass null/Nothing for Parameter shapes in order to export the whole diagram area.
+		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
+		/// <param name="imageFormat">Specifies the format of the graphics file.</param>
+		/// <param name="shapes">The shapes that should be drawn. If null/Nothing, the whole diagram area will be exported.</param>
 		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes) {
-			return CreateImage(imageFormat, shapes, 0, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
+			return CreateImage(imageFormat, shapes, 0, false, Color.White, -1);
 		}
 
 
@@ -1061,8 +1057,11 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
+		/// <param name="imageFormat">Specifies the format of the graphics file.</param>
+		/// <param name="shapes">The shapes that should be drawn. If null/Nothing, the whole diagram area will be exported.</param>
+		/// <param name="withBackground">Specifies wether the diagram's background should be exported to the graphics file.</param>
 		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, bool withBackground) {
-			return CreateImage(imageFormat, shapes, 0, withBackground, Color.White, (int)DisplayService.InfoGraphics.DpiY);
+			return CreateImage(imageFormat, shapes, 0, withBackground, Color.White, -1);
 		}
 
 
@@ -1070,8 +1069,11 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
+		/// <param name="imageFormat">Specifies the format of the graphics file.</param>
+		/// <param name="shapes">The shapes that should be drawn. If null/Nothing, the whole diagram area will be exported.</param>
+		/// <param name="margin">Specifies the thickness of the margin around the exported diagram area.</param>
 		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, int margin) {
-			return CreateImage(imageFormat, shapes, margin, false, Color.White, (int)DisplayService.InfoGraphics.DpiY);
+			return CreateImage(imageFormat, shapes, margin, false, Color.White, -1);
 		}
 
 
@@ -1079,8 +1081,14 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes (plus margin on each side) to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
+		/// <param name="imageFormat">Specifies the format of the graphics file.</param>
+		/// <param name="shapes">The shapes that should be drawn. If null/Nothing, the whole diagram area will be exported.</param>
+		/// <param name="margin">Specifies the thickness of the margin around the exported diagram area.</param>
+		/// <param name="withBackground">Specifies wether the diagram's background should be exported to the graphics file.</param>
+		/// <param name="backgroundColor">Specifies a color for the exported image's background. 
+		/// If the diagram is exported with background, the diagram's background will be drawn over the specified background color.</param>
 		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor) {
-			return CreateImage(imageFormat, shapes, margin, withBackground, backgroundColor, (int)DisplayService.InfoGraphics.DpiY);
+			return CreateImage(imageFormat, shapes, margin, withBackground, backgroundColor, -1);
 		}
 		
 		
@@ -1088,114 +1096,150 @@ namespace Dataweb.NShape {
 		/// Exports the part of the diagram that encloses all given shapes (plus margin on each side) to an image of the given format.
 		/// Pass null/Nothing for Parameter shapes in order to expor the whole diagram area.
 		/// </summary>
+		/// <param name="imageFormat">Specifies the format of the graphics file.</param>
+		/// <param name="shapes">The shapes that should be drawn. If null/Nothing, the whole diagram area will be exported.</param>
+		/// <param name="margin">Specifies the thickness of the margin around the exported diagram area.</param>
+		/// <param name="withBackground">Specifies wether the diagram's background should be exported to the graphics file.</param>
+		/// <param name="backgroundColor">Specifies a color for the exported image's background. 
+		/// If the diagram is exported with background, the diagram's background will be drawn over the specified background color.</param>
+		/// <param name="dpi">Specifies the resolution for the export file. Only applies to pixel based image file formats.</param>
 		public Image CreateImage(ImageFileFormat imageFormat, IEnumerable<Shape> shapes, int margin, bool withBackground, Color backgroundColor, int dpi) {
 			Image result = null;
 			
-			// get bounding rectangle around the given shapes
-			Rectangle imageBounds = Rectangle.Empty;
-			if (shapes == null) {
-				imageBounds.X = imageBounds.Y = 0;
-				imageBounds.Width = Width;
-				imageBounds.Height = Height;
+			// Get/Create info graphics
+			bool disposeInfoGfx;
+			Graphics infoGraphics;
+			if (DisplayService != null) {
+				infoGraphics = DisplayService.InfoGraphics;
+				disposeInfoGfx = false;
 			} else {
-				int left, top, right, bottom;
-				left = top = int.MaxValue;
-				right = bottom = int.MinValue;
-				// Calculate the bounding rectangle of the given shapes
-				Rectangle boundingRect = Rectangle.Empty;
-				foreach (Shape shape in shapes) {
-					boundingRect = shape.GetBoundingRectangle(true);
-					if (boundingRect.Left < left) left = boundingRect.Left;
-					if (boundingRect.Top < top) top = boundingRect.Top;
-					if (boundingRect.Right > right) right = boundingRect.Right;
-					if (boundingRect.Bottom > bottom) bottom = boundingRect.Bottom;
-				}
-				if (Geometry.IsValid(left, top, right, bottom))
-					imageBounds = Rectangle.FromLTRB(left, top, right, bottom);
-			}
-			imageBounds.Inflate(margin, margin);
-			imageBounds.Width += 1;
-			imageBounds.Height += 1;
-
-			bool originalQualitySetting = this.HighQualityRendering;
-			HighQualityRendering = true;
-			UpdateBrushes();
-
-			float scaleX = 1, scaleY = 1;
-			switch (imageFormat) {
-				case ImageFileFormat.Svg:
-					throw new NotImplementedException("Not yet implemented.");
-
-				case ImageFileFormat.Emf:
-				case ImageFileFormat.EmfPlus:
-					// Create MetaFile and graphics context
-					IntPtr hdc = DisplayService.InfoGraphics.GetHdc();
-					try {
-						Rectangle bounds = Rectangle.Empty;
-						bounds.Size = imageBounds.Size;
-						result = new Metafile(hdc, bounds, MetafileFrameUnit.Pixel,
-							imageFormat == ImageFileFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
-							Name);
-					} finally {
-						DisplayService.InfoGraphics.ReleaseHdc(hdc);
-					}
-					break;
-
-				case ImageFileFormat.Bmp:
-				case ImageFileFormat.Gif:
-				case ImageFileFormat.Jpeg:
-				case ImageFileFormat.Png:
-				case ImageFileFormat.Tiff:
-					if (dpi > 0 && dpi != DisplayService.InfoGraphics.DpiX && dpi != DisplayService.InfoGraphics.DpiY) {
-						scaleX = dpi / DisplayService.InfoGraphics.DpiX;
-						scaleY = dpi / DisplayService.InfoGraphics.DpiY;
-						result = new Bitmap(Math.Max(1, (int)Math.Round(scaleX * imageBounds.Width)),
-													Math.Max(1, (int)Math.Round(scaleY * imageBounds.Height)));
-						((Bitmap)result).SetResolution(dpi, dpi);
-					} else result = new Bitmap(imageBounds.Width, imageBounds.Height);
-					break;
-
-				default:
-					throw new NShapeUnsupportedValueException(typeof(ImageFileFormat), imageFormat);
+				infoGraphics = Graphics.FromHwnd(IntPtr.Zero);
+				disposeInfoGfx = true;
 			}
 
-			// Draw diagram
-			using (Graphics gfx = Graphics.FromImage(result)) {
-				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
+			try {
+				// If dpi value is not valid, get current dpi from display service
+				if (dpi <= 0) 
+					dpi = (int)Math.Round((infoGraphics.DpiX + infoGraphics.DpiY) / 2f);
 
-				// Fill background with background color
-				if (backgroundColor.A < 255) {
-					// For image formats that do not support transparency, fill background with the RGB part of 
-					// the given backgropund color
-					if (imageFormat == ImageFileFormat.Bmp || imageFormat == ImageFileFormat.Jpeg)
-						gfx.Clear(Color.FromArgb(255, backgroundColor));
-					else if (backgroundColor.A > 0) gfx.Clear(backgroundColor);
-					// Skip filling background for meta files if transparency is 100%: 
-					// Filling Background with Color.Transparent causes graphical glitches with many applications
-				} else gfx.Clear(backgroundColor);
-
-				// Transform graphics (if necessary)
-				gfx.TranslateTransform(-imageBounds.X, -imageBounds.Y, MatrixOrder.Prepend);
-				if (scaleX != 1 || scaleY != 1) gfx.ScaleTransform(scaleX, scaleY, MatrixOrder.Append);
-
-				// Draw diagram background
-				if (withBackground) DrawBackground(gfx, imageBounds);
-				// Draw diagram shapes
+				// Get bounding rectangle around the given shapes
+				Rectangle imageBounds = Rectangle.Empty;
 				if (shapes == null) {
-					foreach (Shape shape in diagramShapes.BottomUp) shape.Draw(gfx);
+					imageBounds.X = imageBounds.Y = 0;
+					imageBounds.Width = Width;
+					imageBounds.Height = Height;
 				} else {
-					ShapeCollection shapeCollection = new ShapeCollection(shapes);
-					foreach (Shape shape in shapeCollection.BottomUp) shape.Draw(gfx);
-					shapeCollection.Clear();
+					int left, top, right, bottom;
+					left = top = int.MaxValue;
+					right = bottom = int.MinValue;
+					// Calculate the bounding rectangle of the given shapes
+					Rectangle boundingRect = Rectangle.Empty;
+					foreach (Shape shape in shapes) {
+						boundingRect = shape.GetBoundingRectangle(true);
+						if (boundingRect.Left < left) left = boundingRect.Left;
+						if (boundingRect.Top < top) top = boundingRect.Top;
+						if (boundingRect.Right > right) right = boundingRect.Right;
+						if (boundingRect.Bottom > bottom) bottom = boundingRect.Bottom;
+					}
+					if (Geometry.IsValid(left, top, right, bottom))
+						imageBounds = Rectangle.FromLTRB(left, top, right, bottom);
 				}
-				// Reset transformation
-				gfx.ResetTransform();
-			}
-			
-			HighQualityRendering = originalQualitySetting;
-			UpdateBrushes();
+				imageBounds.Inflate(margin, margin);
+				imageBounds.Width += 1;
+				imageBounds.Height += 1;
 
-			return result;
+				bool originalQualitySetting = this.HighQualityRendering;
+				HighQualityRendering = true;
+				UpdateBrushes();
+
+				float scaleX = 1, scaleY = 1;
+				switch (imageFormat) {
+					case ImageFileFormat.Svg:
+						throw new NotImplementedException();
+
+					case ImageFileFormat.Emf:
+					case ImageFileFormat.EmfPlus:
+						// Create MetaFile and graphics context
+						IntPtr hdc = infoGraphics.GetHdc();
+						try {
+							Rectangle bounds = Rectangle.Empty;
+							bounds.Size = imageBounds.Size;
+							result = new Metafile(hdc, bounds, MetafileFrameUnit.Pixel,
+								imageFormat == ImageFileFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
+								Name);
+						} finally {
+							infoGraphics.ReleaseHdc(hdc);
+						}
+						break;
+
+					case ImageFileFormat.Bmp:
+					case ImageFileFormat.Gif:
+					case ImageFileFormat.Jpeg:
+					case ImageFileFormat.Png:
+					case ImageFileFormat.Tiff:
+						if (dpi > 0 && dpi != infoGraphics.DpiX || dpi != infoGraphics.DpiY) {
+							scaleX = dpi / infoGraphics.DpiX;
+							scaleY = dpi / infoGraphics.DpiY;
+							result = new Bitmap(Math.Max(1, (int)Math.Round(scaleX * imageBounds.Width)),
+														Math.Max(1, (int)Math.Round(scaleY * imageBounds.Height)));
+							((Bitmap)result).SetResolution(dpi, dpi);
+						} else result = new Bitmap(imageBounds.Width, imageBounds.Height);
+						break;
+
+					default:
+						throw new NShapeUnsupportedValueException(typeof(ImageFileFormat), imageFormat);
+				}
+
+				// Draw diagram
+				using (Graphics gfx = Graphics.FromImage(result)) {
+					GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.MaximumQuality);
+
+					// Fill background with background color
+					if (backgroundColor.A < 255) {
+						// For image formats that do not support transparency, fill background with the RGB part of 
+						// the given backgropund color
+						if (imageFormat == ImageFileFormat.Bmp || imageFormat == ImageFileFormat.Jpeg)
+							gfx.Clear(Color.FromArgb(255, backgroundColor));
+						else if (backgroundColor.A > 0) gfx.Clear(backgroundColor);
+						// Skip filling background for meta files if transparency is 100%: 
+						// Filling Background with Color.Transparent causes graphical glitches with many applications
+					} else gfx.Clear(backgroundColor);
+
+					// Transform graphics (if necessary)
+					gfx.TranslateTransform(-imageBounds.X, -imageBounds.Y, MatrixOrder.Prepend);
+					if (scaleX != 1 || scaleY != 1) gfx.ScaleTransform(scaleX, scaleY, MatrixOrder.Append);
+
+					// Draw diagram background
+					if (withBackground) DrawBackground(gfx, imageBounds);
+					// Draw diagram shapes
+					if (shapes == null) {
+						foreach (Shape shape in diagramShapes.BottomUp) shape.Draw(gfx);
+					} else {
+						// Add shapes to ShapeCollection (in order to maintain zOrder while drawing)
+						int cnt = (shapes is ICollection) ? ((ICollection)shapes).Count : -1;
+						ShapeCollection shapeCollection = new ShapeCollection(cnt);
+						foreach (Shape s in shapes) {
+							// Sort out duplicate references to shapes (as they can occur in the result of Diagram.FindShapes())
+							if (shapeCollection.Contains(s)) continue;
+							shapeCollection.Add(s, s.ZOrder);
+						}
+						// Draw shapes
+						foreach (Shape shape in shapeCollection.BottomUp) 
+							shape.Draw(gfx);
+						shapeCollection.Clear();
+					}
+					// Reset transformation
+					gfx.ResetTransform();
+				}
+
+				HighQualityRendering = originalQualitySetting;
+				UpdateBrushes();
+
+				return result;
+			} finally {
+				if (disposeInfoGfx) 
+					GdiHelpers.DisposeObject(ref infoGraphics);
+			}
 		}
 
 
@@ -1316,7 +1360,7 @@ namespace Dataweb.NShape {
 		}
 
 
-		[Category("Identification")]
+		[Category("General")]
 		object IEntity.Id {
 			get { return id; }
 		}

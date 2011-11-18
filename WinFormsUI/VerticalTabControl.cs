@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -37,6 +37,7 @@ namespace Dataweb.NShape.WinFormsUI {
 						ControlStyles.ResizeRedraw,
 						true);
 			UpdateStyles();
+			IntegralHeight = false;
 
 			this.formatterFlags = 0 | StringFormatFlags.NoWrap;
 			this.formatter = new StringFormat(formatterFlags);

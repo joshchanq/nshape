@@ -1,5 +1,5 @@
 ﻿/******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -143,7 +143,7 @@ namespace NShapeTest {
 
 				// Create test data, populate repository and save repository
 				string diagramName = "Diagram";
-				RepositoryHelper.CreateDiagram(project1, diagramName, shapesPerRow, shapesPerRow, true, true, true, true);
+				DiagramHelper.CreateDiagram(project1, diagramName, shapesPerRow, shapesPerRow, true, true, true, true);
 				project1.Repository.SaveChanges();
 
 				// Compare the saved data with the loaded data
@@ -188,7 +188,7 @@ namespace NShapeTest {
 				project.AddLibrary(typeof(Dataweb.NShape.GeneralShapes.Circle).Assembly);
 
 				string diagramName = "Large Diagram";
-				RepositoryHelper.CreateLargeDiagram(project, diagramName);
+				DiagramHelper.CreateLargeDiagram(project, diagramName);
 
 				project.Repository.SaveChanges();
 				Trace.WriteLine("Saved!");
@@ -315,7 +315,7 @@ namespace NShapeTest {
 				string colorStyleName = GetName(sourceStyle.BaseColorStyle.Name, EditContentMode.Insert);
 				if (!design.ColorStyles.Contains(colorStyleName))
 					InsertStyle(sourceStyle.BaseColorStyle, design, repository);
-				else newStyle.BaseColorStyle = design.ColorStyles[colorStyleName];
+				newStyle.BaseColorStyle = design.ColorStyles[colorStyleName];
 			}
 			newStyle.ConvertToGrayScale = sourceStyle.ConvertToGrayScale;
 			newStyle.FillMode = sourceStyle.FillMode;

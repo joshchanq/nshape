@@ -1,5 +1,5 @@
 /******************************************************************************
-  Copyright 2009 dataweb GmbH
+  Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
   terms of the GNU General Public License as published by the Free Software 
@@ -14,6 +14,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -232,6 +233,8 @@ namespace Dataweb.NShape.WinFormsUI {
 				else if (listView.BorderStyle == BorderStyle.FixedSingle)
 					hdrWidth -= (2 * SystemInformation.BorderSize.Width);
 				header.Width = hdrWidth;
+			} else {
+				Debug.Print("ColumnHeader '{0}' not found! This will result in an empty toolBox in details view.");
 			}
 		}
 
@@ -259,7 +262,6 @@ namespace Dataweb.NShape.WinFormsUI {
 				imgIdx = smallImageList.Images.IndexOfKey(tool.Name);
 			}
 			item.ImageIndex = imgIdx;
-
 			return item;
 		}
 
@@ -289,7 +291,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void toolBoxController_Cleared(object sender, EventArgs args) {
 			if (listView != null) {
-				listView.Items.Clear();
+				// This try/catch block is a workaround for a strange exception in WPF-Applications when trying to clear an empty tool box.
+				try {
+					listView.Items.Clear();
+				} catch (Exception exc) { 
+					Debug.Fail(exc.Message); 
+				}
 				smallImageList.Images.Clear();
 				largeImageList.Images.Clear();
 			}
