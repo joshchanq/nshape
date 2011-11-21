@@ -570,10 +570,9 @@ namespace Dataweb.NShape.WinFormsUI {
 			if (editorService != null)
 				editorService.CloseDropDown();
 			else {
-				// Notify ToolCache about changed styles only if no
-				// EditorService is set: Otherwise the ToolCache re-creates the 
-				// associated brush, pen, etc each time the user selects a style 
-				// for a shape in the property grid.
+				// Notify ToolCache about changed styles only if no EditorService is set.
+				// Otherwise the ToolCache re-creates the associated brush, pen, etc 
+				// each time the user selects a style for a shape in the property grid.
 				if (SelectedStyle is CapStyle || SelectedStyle is LineStyle)
 					ToolCache.NotifyStyleChanged(SelectedStyle);
 			}

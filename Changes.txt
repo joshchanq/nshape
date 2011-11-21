@@ -1,8 +1,39 @@
 ====================================================================================================
 Changes in 1.0.7:
 ====================================================================================================
+- Bugfix: Events IDiagramPresenter.DiagramChanging and IDiagramPresenter.DiagramChanged were not 
+  raised when assigning Display.Diagram directly
+- Bugfix: Project will be closed now when an exceptions occures while loading
+- Bugfix: LayerPresenter calls Clear() when project closes
+- Bugfix: Internal Exceptions when executing tool actions on a display without diagram
+- Bugfix: Displayed section of the diagram and scrollbar positions were wrong when changing the 
+  diagram of the display component
+- Bugfix: Item "More.." of the style selection comboBox no longer opens the design editor window in 
+  background
+- Bugfix: Some values are invisible after changing their values in design editor's property editor
+- Bugfix: When renaming a line-, cap or character style, the selected style changes when committing 
+  the property change
+- Bugfix: A shape is not selectable by clicking if an other shape, that is hidden by layer settings, 
+  covers it
+- Bugfix: Diagram.CreateImage no longer raises a NullReferenceException when diagram has no 
+  DisplayService
+- Bugfix: NShape Designer's layout dialog now closes when closing the main window
+- Bugfix: NShape Designer's layout dialog now closes when closing the project.
+- Bugfix: NShape Designer's main menu items "Send to Back" / "Bring to Front" are functional now
+- Improvement: All Dialogs of WinFormsUI will now close when Esc key is pressed
+- Improvement: StyleListBox control calculates text size of the label and fills the rest of the item 
+  with the style's graphical representation
+- Bugfix: ToolCache.NotifyStyleChanged will no longer be called when selecting a style for a shape 
+  instance in property editor
+- Bugfix: Diagram's background grid 'wanders' when zooming 
+- Bugfix: LineStyles with LineWidth values > 9 will be rendered a little thinner each time the line 
+  style selection combobox is opened in property editor
+- Bugfix: Diagram.Export() does no longer throw a NullReferenceException in case the diagram has no 
+  DisplayService
+- Bugfix: Saving a diagram as TIFF image will no longer throw an InvalidArgumentException
+- Bugfix: AutoUpgradeEnabled of Save-/LoadFileDialog's will only be set under VISTA (and newer OSes)
 - New defines for debug info: DEBUG_DIAGNOSTICS and DEBUG_UI
-- An exception with proper error message is thrown when trying to save changes in a ChachedRepository 
+- Improvement: An exception with proper error message is thrown when trying to save changes in a ChachedRepository 
   without store
 - Category of the following properties:
 	  CaptionedShapeBase.Text is now "Data" instead of "Text"
@@ -12,13 +43,17 @@ Changes in 1.0.7:
 	  Diagram.Title is now "General" instead of "Identification"
 	  Diagram.Id is now "General" instead of "Identification"
 - Property CaptionedShapeBase.CaptionCount is not visible in PropertyGrid any longer
-- Orientation of Captions's text is corrected only for shape angle >90° and <270° instead of >90° and <=270°
+- BugFix: Orientation of Captions's text is corrected only for shape angle >90° and <270° instead 
+  of >90° and <=270°
 - Changed value of LayerIds.All from int.MinValue to int.MaxValue.
-- BugFix: Display.CreateImage() no longer throws a NullReferenceException if no DisplayService is assigned
+- Bugfix: Display.CreateImage() no longer throws a NullReferenceException if no DisplayService is assigned
   (means: If Diagram is not displayed in a Display
 - New Behavior on Display.ZoomWithMouseWheel = False:
   You can scroll up/down via mouse wheel. When Shift is pressed, you can scroll horizontally and with 
   pressed Ctrl key, you can zoom in/out.
+- NShape Designer: Title of the diagram will be displayed properly on the tab when renameing a diagram
+- Display: Scrolling with arrow keys enabled
+- Display: Improved scroll bar showing/hiding
 - New behavior of the PointerTool: When hovering a shape's caption, you can drag the shape away. When 
   clicking without moving the mouse, you can edit the caption.
   To reflect this change, a move cursor is shown instead of the 'Edit Text' cursor.
@@ -62,26 +97,26 @@ Changes in 1.0.7:
 	  ParagraphStyle.Trimming			Present		-> Design
 	  ParagraphStyle.Padding			Present		-> Design
 	  ParagraphStyle.WordWrap			Present		-> Design
-- BugFix: Diagram now draws correctly if the Display component's Left property is > 0.
-- BugFix: Displays created dynamically via code did not invalidate the grips correctly.
-- BugFix: Lines with thick line styles were not inserted correctly in the diagram's spatial index and
+- Bugfix: Diagram now draws correctly if the Display component's Left property is > 0.
+- Bugfix: Displays created dynamically via code did not invalidate the grips correctly.
+- Bugfix: Lines with thick line styles were not inserted correctly in the diagram's spatial index and
   therefore not clickable sometimes
 - Switched position of the CustomizableMetaFile's connection- and resize control point.
 - Content of Shape.Tag is no longer overwritten when layouting shapes.
 - Changed icons for "Visible/Invisible" and "Active/Inactive" in layer list view
 - Display.CurrentTool can be set even if no diagram is displayed.
-- BugFix: Design editor control did not redraw correctly when resizing the design editor dialog.
+- Bugfix: Design editor control did not redraw correctly when resizing the design editor dialog.
 - Preview images for tool icons of text- and label shapes draw their text bigger
-- BugFix: When switching diagrams in NShape designer, selected shapes of the diagram switched to 
+- Bugfix: When switching diagrams in NShape designer, selected shapes of the diagram switched to 
   are preselected in the property presenter.
 - Shapes can not be dragged outside the display bounds any longer.
 - Splitted source code file "LinearShape.cs" into "LinearShape.cs", "PolyLineBase.cs" and "CircularArcBase.cs"
 - New Behavior: Shapes with editable captions show a "edit text area" hint.
   This is because the methods CaptionedShapeBase.GetCaptionBounds and CaptionedShapeBase.GetCaptionTextBounds 
   always return placeholder bounds in case there is no text in the caption
-- BugFix: When dragging a connection point to the center point of a shape, the connection points were not 
+- Bugfix: When dragging a connection point to the center point of a shape, the connection points were not 
   highlighted correctly.
-- BugFix: Shapes derived from "TextBase" now return false when moving a control point with AutoSize 
+- Bugfix: Shapes derived from "TextBase" now return false when moving a control point with AutoSize 
   enabled.
 - EntityPropertyDefinitions are sorted by type (EntityFieldDefinitions first InnerObjectDefinitions last)
   in the constructor of the ShapeType. When adding new properties to the persistance interface,
@@ -94,7 +129,7 @@ Changes in 1.0.7:
   diagram if no shapes are selected) to the clipboard as PNG and EMF+ file
 - NShape designer: New menu items in "Edit" menu: "Copy as Image", "Select All", "Select all Shapes of Type",
   "Select all Shapes of Template" and "Unselect All"
-- BugFix: Corrected/Improved the calculation of the X axis aligned bounding rectangle of the following 
+- Bugfix: Corrected/Improved the calculation of the X axis aligned bounding rectangle of the following 
   shapes:
 	  ElectricalShapes Transformer
 	  ElectricalShapes AutoSwitch
@@ -127,7 +162,7 @@ Changes in 1.0.7:
   parameter "InvariantCultureIgnoreCase"
 - Marked "CalculateConnectionFoot(int x1, int y1, int x2, int y2)" as [Obsolete] because in the next 
   version it will be replaced
-- BugFix: Diagram's spatial index did store a cell for a shape if a cell with the same cell key already 
+- Bugfix: Diagram's spatial index did store a cell for a shape if a cell with the same cell key already 
   existed
 - NShapeExceptions are serializable now
 - If the permission for executing a command is not granted, a NShapeSecurityException is thrown instead 
@@ -136,7 +171,7 @@ Changes in 1.0.7:
   the name of the image file.
 - New Behavior of Display: If a shape is moded outside the diagram bounds, the display it will not 
   scroll it into view.
-- BugFix: Solved several issues concerning scrolling and scroll bars of the display component.
+- Bugfix: Solved several issues concerning scrolling and scroll bars of the display component.
 - Interface IDisplayPresenter: New Method Update() forces the display to update immediately. 
   This results in a subjectivly faster preview when dragging many shapes, comlpex shapes or picture 
   shapes with large pictures.
@@ -144,7 +179,7 @@ Changes in 1.0.7:
   "Recent Projects" list right after saving.
 - When cancelling or closing the file save dialog while saving, the whole save operation is cancelled 
   and the project will not be closed.
-- BugFix: Padding of TextShape's Paragraph style was calculated twice. Therefore the spacing between 
+- Bugfix: Padding of TextShape's Paragraph style was calculated twice. Therefore the spacing between 
   shape's outline and text was too large.
 - Changed behavior of RepulsionLayouter: The user/the application HAS to select the shapes to be 
   layouted. Labels (which change their relative position to the connected partner shape when moved) 
@@ -156,11 +191,11 @@ Changes in 1.0.7:
   * Added necessary call to Layouter.Prepare() before executing the layouter
   * Changed references to NShape assemblies to "Version Specific" = False
 - Demo program "Shuffle Demo" renamed to "VB Demo"
-- BugFix: SQLStore now stores inner objects "ColumnNames" of SoftwareArchitectureShapes.Entity shapes.
-- BugFix: When redoing an undone create layers command, the re-created layers do not show in layer editor
-- BugFix: AggregatedShape threw Exception when setting Width or Height to 0
-- BugFix: FlowLayouter no longer crashes when layouting in "Bottom Up" mode.
-- BugFix: NShape Designer calls SaveAs when trying to save a new project but database repositories do 
+- Bugfix: SQLStore now stores inner objects "ColumnNames" of SoftwareArchitectureShapes.Entity shapes.
+- Bugfix: When redoing an undone create layers command, the re-created layers do not show in layer editor
+- Bugfix: AggregatedShape threw Exception when setting Width or Height to 0
+- Bugfix: FlowLayouter no longer crashes when layouting in "Bottom Up" mode.
+- Bugfix: NShape Designer calls SaveAs when trying to save a new project but database repositories do 
   not support "SaveAs".
 - Changed behavior: When creating a new template from a shape (via context menu), the shape of the new 
   template is not dependent from any other template.
@@ -168,7 +203,7 @@ Changes in 1.0.7:
   * ... the project is saved in a temporary file ("~ProjectName.xml") that is renamed after saving 
     completed successfully
   * ... when overwriting or saving an existing project, a backup file is created ("ProjectName.bak")
-- BugFix: Changing a template's shape only worked once.
+- Bugfix: Changing a template's shape only worked once.
 
 Known issues:
 - x64/AnyCPU on x64 OS: Customizable metafiles are filled with solid white.
@@ -178,7 +213,6 @@ Known issues:
 ====================================================================================================
 Changes in 1.0.6:
 ====================================================================================================
-
 - Replaced all EventHandler types with generic EventHandler<TEventArgs>:
 	TemplateEditorSelectedEventHandler 	=>  	EventHandler<TemplateEditorEventArgs>
 	ToolEventHandler			=>	EventHandler<ToolEventArgs>
