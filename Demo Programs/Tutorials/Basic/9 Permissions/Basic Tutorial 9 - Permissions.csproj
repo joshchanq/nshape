@@ -31,9 +31,15 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Dataweb.NShape, Version=1.0.6.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL" />
-    <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.6.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL" />
-    <Reference Include="Dataweb.NShape.WinFormsUI, Version=1.0.6.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL" />
+    <Reference Include="Dataweb.NShape, Version=1.0.6.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Dataweb.NShape.GeneralShapes, Version=1.0.6.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Dataweb.NShape.WinFormsUI, Version=1.0.6.0, Culture=neutral, PublicKeyToken=1512080cd664963c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>

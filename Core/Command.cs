@@ -4078,7 +4078,11 @@ namespace Dataweb.NShape {
 			if (!aggregationShapeOwnedByDiagram)
 				// If the aggregation shape was not initialy part of the diagram, remove it.
 				diagram.Shapes.Remove(aggregationShape);
-			diagram.Shapes.AddRange(shapes);
+			if (zOrders != null) {
+				int cnt = shapes.Count;
+				for (int i = 0; i < cnt; ++i)
+					diagram.Shapes.Add(shapes[i], zOrders[i]);
+			} else diagram.Shapes.AddRange(shapes);
 
 			// Delete shapes from repository
 			if (Repository != null) {
@@ -4103,6 +4107,7 @@ namespace Dataweb.NShape {
 		protected Diagram diagram;
 		/// <ToBeCompleted></ToBeCompleted>
 		protected List<Shape> shapes;
+		protected List<int> zOrders;
 		/// <ToBeCompleted></ToBeCompleted>
 		protected LayerIds aggregationLayerIds;
 		/// <ToBeCompleted></ToBeCompleted>

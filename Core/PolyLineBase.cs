@@ -142,7 +142,8 @@ namespace Dataweb.NShape {
 				result.A = GetControlPointId(pointIdx);
 				result.B = Geometry.DegreesToTenthsOfDegree(angleFromA);
 				float segmentLength = Geometry.DistancePointPoint(vertices[pointIdx], vertices[pointIdx + 1]);
-				result.C = (int)Math.Round((distanceFromA / (segmentLength / 100)) * 10);
+				if (segmentLength == 0) result.C = 0;
+				else result.C = (int)Math.Round((distanceFromA / (segmentLength / 100)) * 10);
 				Debug.Assert(result.B >= 0 && result.B <= 3600, "Calculated angle is out of range.");
 			}
 			if (result == RelativePosition.Empty) result.A = result.B = result.C = 0;

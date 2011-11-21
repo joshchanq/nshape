@@ -4583,11 +4583,15 @@ namespace Dataweb.NShape.WinFormsUI {
 			string description = isFeasible ?
 				string.Format("Aggregate {0} shapes into composite shape", shapes.Count - 1)
 				: string.Format(notEnoughShapesSelectedText);
-			Shape clickedShape = shapes.FindShape(position.X, position.Y, ControlPointCapabilities.None, 0, null);
-
+			// Get host for aggregated child shapes
+			Shape compositeShape = shapes.Bottom;
+			if (compositeShape is ILinearShape) {
+				isFeasible = false;
+				description = "Linear shapes may not be the base for a composite shape.";
+			}
 			return new DelegateMenuItemDef("Aggregate Shapes", Properties.Resources.AggregateShapeBtn,
-				description, isFeasible, Permission.Delete, shapes, 
-				(a, p) => PerformAggregateCompositeShape(diagram, clickedShape ?? shapes.Bottom, shapes, activeLayers));
+				description, isFeasible, Permission.Delete, shapes,
+				(a, p) => PerformAggregateCompositeShape(diagram, compositeShape, shapes, activeLayers));
 		}
 
 

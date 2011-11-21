@@ -192,6 +192,7 @@ namespace Dataweb.NShape {
 
 		/// <override></override>
 		public override void Erase() {
+			CreateBackupFiles(ProjectFilePath);
 			File.Delete(ProjectFilePath);
 			// The if prevents exceptions during debugging. The catch concurrency problems.
 			if (Directory.Exists(ImageDirectory)) {
@@ -278,24 +279,80 @@ namespace Dataweb.NShape {
 			if (cache == null) throw new ArgumentNullException("cache");
 			if (!isOpen) throw new NShapeException("Store is not open.");
 			if (string.IsNullOrEmpty(ProjectFilePath)) throw new NShapeException("File name was not specified.");
-			// If it is a new project, we must create the file. Otherwise it is already open.
-			if (cache.ProjectId == null) {
-				CreateFile(cache, ProjectFilePath, false);
-			} else if (cache.LoadedProjects[cache.ProjectId].State == ItemState.Deleted) {
-				// First delete the file, so the image directory still exists, when the file cannot be deleted.
-				if (File.Exists(ProjectFilePath)) File.Delete(ProjectFilePath);
-				if (Directory.Exists(ImageDirectory)) Directory.Delete(ImageDirectory, true);
-			} else {
-				OpenComplete(cache);
-				// TODO 2: We should keep the file open and clear it here instead of re-creating it.
-				CloseFile();
-				CreateFile(cache, ProjectFilePath, true);
+			string tempProjectFilePath = GetTemporaryProjectFilePath();
+			string tempImageDirectory = CalcImageDirectoryName(tempProjectFilePath);
+			try {
+				// Save changes to temporary file
+				DoSaveChanges(tempProjectFilePath, cache);
+				// Backup current project files
+				if (File.Exists(ProjectFilePath))
+					CreateBackupFiles(ProjectFilePath);
+				// Rename temporary files
+				Debug.Assert(File.Exists(tempProjectFilePath));
+				File.Move(tempProjectFilePath, ProjectFilePath);
+				if (Directory.Exists(tempImageDirectory))
+					Directory.Move(tempImageDirectory, ImageDirectory);
+				// Re-Open project file
+				OpenFile(cache, ProjectFilePath);
+			} catch (Exception exc) {
+				Debug.Print(exc.Message);
+				throw;
+			} finally {
+				// Clean up temporary files
+				if (File.Exists(tempProjectFilePath))
+					File.Delete(tempProjectFilePath);
+				if (Directory.Exists(tempImageDirectory))
+					Directory.Exists(tempImageDirectory);
 			}
-			WriteProject(cache);
-			// Close and reopen to update Windows directory and keep file ownership
-			CloseFile();
-			// File has been written successfully
-			OpenFile(cache, ProjectFilePath);
+		}
+
+
+		private string GetTemporaryProjectFilePath() {
+			return Path.Combine(Path.GetDirectoryName(ProjectFilePath), "~" + Path.GetFileName(ProjectFilePath));
+		}
+
+
+		private void CreateBackupFiles(string projectFilePath) {
+			if (!File.Exists(projectFilePath)) throw new FileNotFoundException("Project file does not exist.", projectFilePath);
+			const string backupExtension = ".bak";
+			string projectImageDir = CalcImageDirectoryName(projectFilePath);
+			// Calculate backup file names 
+			string backupFilepath = Path.Combine(Path.GetDirectoryName(projectFilePath), Path.GetFileNameWithoutExtension(projectFilePath) + backupExtension);
+			string backupImageDir = CalcImageDirectoryName(projectFilePath) + backupExtension;
+			// Delete old backup (if one exists)
+			if (File.Exists(backupFilepath)) {
+				File.Delete(backupFilepath);
+				if (Directory.Exists(backupImageDir))
+					Directory.Delete(backupImageDir);
+			}
+			// Rename current files
+			File.Move(projectFilePath, backupFilepath);
+			if (Directory.Exists(projectImageDir))
+				Directory.Move(projectImageDir, backupImageDir);
+		}
+
+
+		private void DoSaveChanges(string filePath, IStoreCache cache) {
+			try {
+				// If it is a new project, we must create the file. Otherwise it is already open.
+				string imageDirectory = CalcImageDirectoryName(filePath);
+				if (cache.ProjectId == null) {
+					CreateFile(cache, filePath, false);
+				} else if (cache.LoadedProjects[cache.ProjectId].State == ItemState.Deleted) {
+					// First delete the file, so the image directory still exists, when the file cannot be deleted.
+					if (File.Exists(filePath)) File.Delete(filePath);
+					if (Directory.Exists(imageDirectory)) Directory.Delete(imageDirectory, true);
+				} else {
+					OpenComplete(cache);
+					// TODO 2: We should keep the file open and clear it here instead of re-creating it.
+					CloseFile();
+					CreateFile(cache, filePath, true);
+				}
+				WriteProject(cache);
+			} finally {
+				// Close and reopen to update Windows directory and keep file ownership
+				CloseFile();
+			}
 		}
 
 
@@ -368,10 +425,12 @@ namespace Dataweb.NShape {
 		/// Calculates the directory for the images given the complete file path.
 		/// </summary>
 		protected string CalcImageDirectoryName() {
-			string result = Path.GetDirectoryName(ProjectFilePath);
-			if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
-			result = UnifyPath(Path.Combine(result, ProjectName + " Images"));
-			return result;
+			return CalcImageDirectoryName(ProjectFilePath);
+
+			//string result = Path.GetDirectoryName(ProjectFilePath);
+			//if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
+			//result = UnifyPath(Path.Combine(result, ProjectName + " Images"));
+			//return result;
 		}
 
 
@@ -898,6 +957,18 @@ namespace Dataweb.NShape {
 				return imageDirectory;
 			}
 		}
+
+
+		#region [Private] Save project files
+
+		private string CalcImageDirectoryName(string projectFilePath) {
+			string result = Path.GetDirectoryName(projectFilePath);
+			if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
+			result = UnifyPath(Path.Combine(result, Path.GetFileNameWithoutExtension(projectFilePath) + " Images"));
+			return result;
+		}
+
+		#endregion
 
 
 		#region [Private] Methods: Read from XML file

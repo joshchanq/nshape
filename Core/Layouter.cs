@@ -261,6 +261,7 @@ namespace Dataweb.NShape.Layouters {
 			result.X = left;
 			result.Y = top;
 			result.Width = right - left;
+			result.Height = bottom - top;
 			return result;
 		}
 		

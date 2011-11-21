@@ -541,6 +541,19 @@ namespace Dataweb.NShape.ElectricalShapes {
 		}
 
 
+		protected override bool ContainsPointCore(int x, int y) {
+			Rectangle upperRing, lowerRing;
+			CalcRingBounds(out upperRing, out lowerRing);
+			upperRing.Offset(X, Y);
+			lowerRing.Offset(X, Y);
+			float radius = upperRing.Width/2f;
+			PointF upperRingCenter = Geometry.RotatePoint(X, Y, Geometry.TenthsOfDegreeToDegrees(Angle),upperRing.X + radius, upperRing.Y + radius);
+			PointF lowerRingCenter = Geometry.RotatePoint(X, Y, Geometry.TenthsOfDegreeToDegrees(Angle),lowerRing.X + radius, lowerRing.Y + radius);
+			return Geometry.CircleContainsPoint(upperRingCenter.X, upperRingCenter.Y, radius, x, y, 0)
+				|| Geometry.CircleContainsPoint(lowerRingCenter.X, lowerRingCenter.Y, radius, x, y, 0);
+		}
+
+
 		public override void Draw(Graphics graphics) {
 			Pen pen = ToolCache.GetPen(LineStyle, null, null);
 			DrawOutline(graphics, pen);

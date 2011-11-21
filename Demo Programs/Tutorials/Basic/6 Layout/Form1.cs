@@ -133,6 +133,7 @@ namespace BasicTutorial {
 			layouter.AllShapes = display1.Diagram.Shapes;
 			layouter.Shapes = display1.Diagram.Shapes;
 			//
+			layouter.Prepare();
 			layouter.Execute(10);
 			layouter.Fit(50, 50, display1.Diagram.Width - 100, display1.Diagram.Height - 100);
 		}
