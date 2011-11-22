@@ -1,6 +1,7 @@
 ====================================================================================================
 Changes in 1.0.7:
 ====================================================================================================
+- Changed project structure (directory hierarchy) and build paths
 - Bugfix: Events IDiagramPresenter.DiagramChanging and IDiagramPresenter.DiagramChanged were not 
   raised when assigning Display.Diagram directly
 - Bugfix: Project will be closed now when an exceptions occures while loading
@@ -62,42 +63,41 @@ Changes in 1.0.7:
   Default behavior: Non-editable properties are read only. 
   Alternative behavior: Non-editable properties are invisible.
 - Changed ReqiredPermissions attributes of the following properties:
-	  Shape.ShapeType:  				None 		-> ModifyData
-	  Style.Name						ModifyData	-> Design
-	  Style.Title						ModifyData	-> Design
-	  CapStyle.CapShape					Present		-> Design
-	  CapStyle.CapSize					Present		-> Design
-	  CapStyle.ColorStyle				Present		-> Design
-	  CharacterStyle.ColorStyle			Present		-> Design
-	  CharacterStyle.FontFamily			Present		-> Design
-	  CharacterStyle.FontName			Present		-> Design
-	  CharacterStyle.Size				Present		-> Design  
-	  CharacterStyle.SizeInPoints		Present		-> Design
-	  CharacterStyle.Style				Present		-> Design
-	  CharacterStyle.					Present		-> Design
-	  ColorStyle.Color					Present		-> Design
-	  ColorStyle.ConvertToGray			Present		-> Design
-	  ColorStyle.Transparency			Present		-> Design
-	  FillStyle.AdditionalColorStyle	Present		-> Design
-	  FillStyle.BaseColorStyle			Present		-> Design
-	  FillStyle.ConvertToGrayScale		Present		-> Design
-	  FillStyle.FillMode				Present		-> Design
-	  FillStyle.FillPattern				Present		-> Design
-	  FillStyle.Image					Present		-> Design
-	  FillStyle.ImageCompressionQuality	Present		-> Design
-	  FillStyle.ImageGammaCorrection	Present		-> Design
-	  FillStyle.ImageLayout				Present		-> Design
-	  FillStyle.ImageTransparency		Present		-> Design
-	  LineStyle.ColorStyle				Present		-> Design
-	  LineStyle.DashCap					Present		-> Design
-	  LineStyle.DashType				Present		-> Design
-	  LineStyle.LineJoin				Present		-> Design
-	  LineStyle.LineWidth				Present		-> Design
-	  ParagraphStyle.Alignment			Present		-> Design
-	  ParagraphStyle.Trimming			Present		-> Design
-	  ParagraphStyle.Padding			Present		-> Design
-	  ParagraphStyle.WordWrap			Present		-> Design
-- Bugfix: Diagram now draws correctly if the Display component's Left property is > 0.
+	  Shape.ShapeType:  				None		-> 	ModifyData
+	  Style.Name					ModifyData	-> 	Design
+	  Style.Title					ModifyData	-> 	Design
+	  CapStyle.CapShape				Present		-> 	Design
+	  CapStyle.CapSize				Present		-> 	Design
+	  CapStyle.ColorStyle				Present		-> 	Design
+	  CharacterStyle.ColorStyle			Present		-> 	Design
+	  CharacterStyle.FontFamily			Present		-> 	Design
+	  CharacterStyle.FontName			Present		-> 	Design
+	  CharacterStyle.Size				Present		-> 	Design  
+	  CharacterStyle.SizeInPoints			Present		-> 	Design
+	  CharacterStyle.Style				Present		-> 	Design
+	  CharacterStyle.				Present		-> 	Design
+	  ColorStyle.Color				Present		-> 	Design
+	  ColorStyle.ConvertToGray			Present		-> 	Design
+	  ColorStyle.Transparency			Present		-> 	Design
+	  FillStyle.AdditionalColorStyle		Present		-> 	Design
+	  FillStyle.BaseColorStyle			Present		-> 	Design
+	  FillStyle.ConvertToGrayScale			Present		-> 	Design
+	  FillStyle.FillMode				Present		-> 	Design
+	  FillStyle.FillPattern				Present		-> 	Design
+	  FillStyle.Image				Present		-> 	Design
+	  FillStyle.ImageCompressionQuality		Present		-> 	Design
+	  FillStyle.ImageGammaCorrection		Present		-> 	Design
+	  FillStyle.ImageLayout				Present		-> 	Design
+	  FillStyle.ImageTransparency			Present		-> 	Design
+	  LineStyle.ColorStyle				Present		-> 	Design
+	  LineStyle.DashCap				Present		-> 	Design
+	  LineStyle.DashType				Present		-> 	Design
+	  LineStyle.LineJoin				Present		-> 	Design
+	  LineStyle.LineWidth				Present		-> 	Design
+	  ParagraphStyle.Alignment			Present		-> 	Design
+	  ParagraphStyle.Trimming			Present		-> 	Design
+	  ParagraphStyle.Padding			Present		-> 	Design
+	  ParagraphStyle.WordWrap			Present		-> 	Design- Bugfix: Diagram now draws correctly if the Display component's Left property is > 0.
 - Bugfix: Displays created dynamically via code did not invalidate the grips correctly.
 - Bugfix: Lines with thick line styles were not inserted correctly in the diagram's spatial index and
   therefore not clickable sometimes
