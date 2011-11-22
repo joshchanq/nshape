@@ -274,7 +274,7 @@ namespace Dataweb.NShape.WinFormsUI {
 				this.Font = ToolCache.GetFont(characterStyle);
 				this.ZoomFactor = owner.ZoomLevel / 100f;
 
-				// get line height
+				// Get line height
 				Size textSize = TextRenderer.MeasureText(((IDisplayService)owner).InfoGraphics, "Iq", Font);
 				owner.DiagramToControl(textSize, out textSize);
 				lineHeight = textSize.Height;

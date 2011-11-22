@@ -3259,7 +3259,7 @@ namespace Dataweb.NShape.WinFormsUI {
 						if (VScrollBarVisible) VScrollBarVisible = false;
 					} else if (!VScrollBarVisible && showScrollBars) VScrollBarVisible = true;
 					// Show/hide horizontal scroll bar
-					if (scrollAreaBounds.Width < drawBoundsDgrmCoords.Width) {
+					if (ScrollAreaBounds.Width < drawBoundsDgrmCoords.Width) {
 						if (HScrollBarVisible) {
 							HScrollBarVisible = false;
 							//Debug.Assert(hScrollBarPanel.Visible == false && scrollBarH.Visible == false);

@@ -227,11 +227,11 @@ namespace Dataweb.NShape.Advanced {
 					pen.DashStyle = System.Drawing.Drawing2D.DashStyle.Custom;
 					pen.DashPattern = lineStyle.DashPattern;
 				}
-				// create LineCaps
+				// Create LineCaps
 				SetLineCap(pen, lineStyle, startCapStyle, true);
 				SetLineCap(pen, lineStyle, endCapStyle, false);
 
-				// add created pen to the PenCache
+				// Add created pen to the PenCache
 				penCache.Add(penKey, pen);
 			}
 			return pen;

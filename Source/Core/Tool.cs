@@ -2376,7 +2376,7 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		// apply the move action
+		// Apply the move action
 		private bool PerformMoveShape(IDiagramPresenter diagramPresenter) {
 			bool result = false;
 			if (SelectedShapeAtCursorInfo.IsEmpty) {
@@ -2442,7 +2442,7 @@ namespace Dataweb.NShape.Advanced {
 			// Reset all preview shapes to start values
 			ResetPreviewShapes(diagramPresenter);
 
-			// move selected shapes
+			// Move selected shapes
 			Point originalPtPos = Point.Empty;
 			foreach (Shape selectedShape in diagramPresenter.SelectedShapes) {
 				Shape previewShape = FindPreviewOfShape(selectedShape);

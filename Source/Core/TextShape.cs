@@ -847,7 +847,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private void CalcGluePointCalcInfo(ControlPointId gluePointId, Shape otherShape, ControlPointId otherPointId) {
-			// calculate GluePoint position and AnchorPoint position
+			// Calculate GluePoint position and AnchorPoint position
 			Point gluePtPos = GetControlPointPosition(gluePointId);
 			Point labelPos = Point.Empty;
 			labelPos.Offset(X, Y);
@@ -875,7 +875,7 @@ namespace Dataweb.NShape.Advanced {
 			RelativePosition relativePos = otherShape.CalculateRelativePosition(gluePtPos.X, gluePtPos.Y);
 			float distance = Geometry.DistancePointPoint(gluePtPos, labelPos);
 
-			// store all calculated values in the GluePointCalcInfo structure
+			// Store all calculated values in the GluePointCalcInfo structure
 			this.calcInfo.Alpha = alpha % 360;
 			this.calcInfo.Beta = beta % 360;
 			this.calcInfo.Distance = distance;

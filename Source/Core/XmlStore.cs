@@ -426,11 +426,6 @@ namespace Dataweb.NShape {
 		/// </summary>
 		protected string CalcImageDirectoryName() {
 			return CalcImageDirectoryName(ProjectFilePath);
-
-			//string result = Path.GetDirectoryName(ProjectFilePath);
-			//if (string.IsNullOrEmpty(result)) throw new ArgumentException("XML repository file name must be a complete path.");
-			//result = UnifyPath(Path.Combine(result, ProjectName + " Images"));
-			//return result;
 		}
 
 
