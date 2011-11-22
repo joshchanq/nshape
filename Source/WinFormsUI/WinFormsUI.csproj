@@ -24,38 +24,38 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\Demo Programs\bin\</OutputPath>
+    <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\Demo Programs\bin\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>..\..\bin\Release\</OutputPath>
     <DefineConstants>
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Demo Programs\bin\x86\</OutputPath>
+    <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
-    <DocumentationFile>..\Demo Programs\bin\x86\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\bin\Release\x86\</OutputPath>
-    <DocumentationFile>..\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <OutputPath>..\..\bin\Release\</OutputPath>
+    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
