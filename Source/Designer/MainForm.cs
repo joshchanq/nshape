@@ -1312,19 +1312,13 @@ namespace Dataweb.NShape.Designer {
 #if DEBUG
 					// Shape libraries
 					//project.AddLibraryByName("Dataweb.NShape.SoftwareArchitectureShapes");
-					project.AddLibraryByName("Dataweb.NShape.FlowChartShapes");
+					//project.AddLibraryByName("Dataweb.NShape.FlowChartShapes");
 					//project.AddLibraryByName("Dataweb.NShape.ElectricalShapes");
 					// ModelObjectTypes libraries
 					//project.AddLibraryByFilePath("Dataweb.NShape.GeneralModelObjects.dll");
 #endif
 					// Mark project as "Not modified" in order to suppress the "Do you want to save changes" question
 				}
-
-#if DEBUG
-				RoleBasedSecurityManager secMgr = project.SecurityManager as RoleBasedSecurityManager;
-				if (secMgr != null)
-					secMgr.SetPermissions('C', StandardRole.Administrator, Permission.Layout | Permission.ModifyData);
-#endif
 
 				UpdateAllMenuItems();
 				UpdateStatusInfo();
