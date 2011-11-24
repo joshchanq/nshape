@@ -505,8 +505,8 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		static ExportDiagramDialog() {
-			emfPlusDescription = "Windows Enhanced Metafile Plus (*.emf)" + Environment.NewLine
-				+ "Creates a high quality vector image file supporting transparency and translucency. The Emf Plus file format is backwards compatible with the classic Emf format.";
+			emfPlusDescription = "Windows Enhanced Metafile Plus Dual (*.emf)" + Environment.NewLine
+				+ "Creates a high quality vector image file supporting transparency, translucency and anti-aliasing. The Emf Plus Dual file format is backwards compatible with the classic Emf format.";
 			emfDescription = "Windows Enhanced Metafile (*.emf)" + Environment.NewLine
 				+ "Creates a low quality vector image file supporting transparency and (emulated) translucency.";
 			pngDescription = "Portable Network graphics (*.png)" + Environment.NewLine
