@@ -295,6 +295,8 @@ namespace Dataweb.NShape.Advanced {
 		#endregion
 
 
+		#region [Protected] Overridden Methods
+
 		/// <ToBeCompleted></ToBeCompleted>
 		protected internal PictureBase(ShapeType shapeType, Template template)
 			: base(shapeType, template) {
@@ -358,7 +360,7 @@ namespace Dataweb.NShape.Advanced {
 				imageAttribs = GdiHelpers.GetImageAttributes(imageLayout, imageGamma, imageTransparency, imageGrayScale, isPreview, transparentColor);
 
 			Image bitmapImg = null;
-			if (image == null)
+			if (image == null || image.Image == null)
 				bitmapImg = Properties.Resources.DefaultBitmapLarge;
 			else if (image.Image is Bitmap)
 				bitmapImg = Image.Image;
@@ -411,6 +413,8 @@ namespace Dataweb.NShape.Advanced {
 				return true;
 			} else return false;
 		}
+
+		#endregion
 
 
 		/// <ToBeCompleted></ToBeCompleted>
@@ -867,7 +871,7 @@ namespace Dataweb.NShape.Advanced {
 			get { return fillStyle ?? ((IPlanarShape)Template.Shape).FillStyle; }
 			set {
 				fillStyle = (Template != null && value == ((IPlanarShape)Template.Shape).FillStyle) ? null : value;
-				caption.InvalidatePath();
+				//caption.InvalidatePath();
 				Invalidate();
 			}
 		}
@@ -1237,6 +1241,7 @@ namespace Dataweb.NShape.Advanced {
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
 			if (source is CustomizableMetaFile) {
+				ReplaceColor = ((CustomizableMetaFile)source).ReplaceColor;
 			}
 		}
 
@@ -1251,21 +1256,26 @@ namespace Dataweb.NShape.Advanced {
 			dstBounds.Width = w;
 			dstBounds.Height = h - ch;
 
-			// Workaround: Create a buffer image to draw
-			if (bufferImage == null) bufferImage = CreateImage();
-			MetafileHeader header = bufferImage.GetMetafileHeader();
-			graphics.DrawImage(bufferImage, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
+			//// Workaround: Create a buffer image to draw
+			//if (bufferImage == null) bufferImage = CreateImage();
+			//MetafileHeader header = bufferImage.GetMetafileHeader();
+			//graphics.DrawImage(bufferImage, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
+
+			MetafileHeader header = ((Metafile)image).GetMetafileHeader();
+			graphics.DrawImage(((Metafile)image), dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
 			
-			//if (h >= ch + 2 * minH) 
-			if (caption != null)
-				caption.Draw(graphics, CharacterStyle, ParagraphStyle);
+			if (caption != null) caption.Draw(graphics, CharacterStyle, ParagraphStyle);
 		}
 
 
 		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
+			isPreview = true;
 			base.MakePreview(styleSet);
-			imageAttribs = GdiHelpers.GetImageAttributes(FillStyle);
+			GdiHelpers.DisposeObject(ref imageAttribs);
+			UpdateImageAttributes(isPreview);
+			//GdiHelpers.DisposeObject(ref bufferImage);
+			//bufferImage = CreateImage();
 		}
 
 
@@ -1285,11 +1295,9 @@ namespace Dataweb.NShape.Advanced {
 			get { return base.FillStyle; }
 			set {
 				brushReplaced = false;
-				if (bufferImage != null) {
-					bufferImage.Dispose();
-					bufferImage = null;
-				}
 				base.FillStyle = value;
+				UpdateImageAttributes();
+				Invalidate();
 			}
 		}
 
@@ -1325,11 +1333,13 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private void Construct() {
-			metafileDelegate = new Graphics.EnumerateMetafileProc(MetafileProc);
+			replaceBrushCallback = new Graphics.EnumerateMetafileProc(ReplaceBrushCallbackProc);
+			findReplaceColorCallback = new Graphics.EnumerateMetafileProc(FindReplaceColorCallbackProc);
+			FindRemapColor();
 		}
 
 
-		private bool MetafileProc(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
+		private bool ReplaceBrushCallbackProc(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
 			try {
 				if (data == IntPtr.Zero)
 					((Metafile)image).PlayRecord(recordType, flags, 0, null);
@@ -1364,6 +1374,51 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		private bool FindReplaceColorCallbackProc(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
+			switch (recordType) {
+				case EmfPlusRecordType.EmfCreateBrushIndirect:
+					if (!brushReplaced) {
+						// Copy the unmanaged record to a managed byte buffer that can be used by PlayRecord.
+						if (dataSize > metafileDataSize) {
+							metafileDataSize = dataSize;
+							metafileData = new byte[metafileDataSize];
+						}
+						Marshal.Copy(data, metafileData, 0, dataSize);
+						// Get the RGB color components of the brush
+						replaceColor = Color.FromArgb(metafileData[8], metafileData[9], metafileData[10]);
+						brushReplaced = true;
+					}
+					break;
+				
+				default:
+					// Nothing to do
+					break;
+			}
+			// No need to play the record as we only search a color to replace
+			//((Metafile)image).PlayRecord(recordType, flags, dataSize, dataArray);    //note that every record gets played even if the dataArray is empty
+			return true;
+		}
+
+
+		// This is the official sample code from MSDN documentation. Does not work on x64 systems. See comment on CreateImage()
+		private bool MetafileCallback(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
+			byte[] dataArray = null;
+			if (data != IntPtr.Zero) {
+				// Copy the unmanaged record to a managed byte buffer 
+				// that can be used by PlayRecord.
+				dataArray = new byte[dataSize];
+				Marshal.Copy(data, dataArray, 0, dataSize);
+			}
+			((Metafile)image).PlayRecord(recordType, flags, dataSize, dataArray);
+			return true;
+		}
+
+
+		// Due to a bug in the .NET wrapper of GDI+, Records using CreateBrushIndirect are not played on x64 systems.
+		// On x86 systems, these records can be played if the record's buffer is enlarged by 8 bytes but we don't
+		// want to rely on this.
+		// So we use EnumerateMetafile for searching a color to replace and do the color replacement via the color 
+		// remapping functionality of the ImageAttributes class.
 		private Metafile CreateImage() {
 			// Create MetaFile and graphics context
 			Metafile metaFile = null;
@@ -1384,11 +1439,14 @@ namespace Dataweb.NShape.Advanced {
 					gfx.ReleaseHdc(hdc);
 				}
 			}
-			imageAttribs = GdiHelpers.GetImageAttributes(FillStyle);
+
+			UpdateImageAttributes();
 			using (Graphics gfx = Graphics.FromImage(metaFile)) {
 				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.HighQuality);
 				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
-				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, metafileDelegate, IntPtr.Zero, imageAttribs);
+				GdiHelpers.DrawImage(gfx, image, imageAttribs, ImageLayoutMode.Original, header.Bounds, header.Bounds);
+				// Deactivated, see comment above
+				//gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, replaceBrushCallback, IntPtr.Zero, imageAttribs);
 			}
 			if (stream != null) {
 				stream.Dispose();
@@ -1398,10 +1456,58 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
-		private Graphics.EnumerateMetafileProc metafileDelegate;
-		private byte[] metafileData = null; // Date for meta file drawing
+		private void FindRemapColor() {
+			using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
+				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
+				gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, findReplaceColorCallback, IntPtr.Zero);
+			}
+		}
+
+
+		private void UpdateImageAttributes() {
+		    UpdateImageAttributes(isPreview);
+		}
+
+
+		private void UpdateImageAttributes(bool isPreview) {
+			GdiHelpers.DisposeObject(ref imageAttribs);
+			if (imageAttribs == null)
+				imageAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original, isPreview);
+			imageAttribs.ClearRemapTable();
+			//if (ReplaceColor != Color.Empty) {
+				colorReplaceMap.OldColor = ReplaceColor;
+				colorReplaceMap.NewColor = FillStyle.BaseColorStyle.Color;
+				ColorMap[] colorMap = { colorReplaceMap };
+				imageAttribs.SetRemapTable(colorMap);
+			//}
+		}
+
+
+		/// <summary>
+		/// Specifies the color of the meta file to replace with the base color of the specified fill style.
+		/// </summary>
+		private Color ReplaceColor {
+			get { return (privateReplaceColor != Color.Empty) ? privateReplaceColor : replaceColor; }
+			set {
+				privateReplaceColor = value;
+				UpdateImageAttributes();
+				Invalidate();
+			}
+		}
+
+
+		// Buffers used for replacing solid brushes in EMF files (not used any longer, see comment on CreateImage())
+		private Graphics.EnumerateMetafileProc replaceBrushCallback;
+		private byte[] metafileData = null; // Data buffer for meta file drawing
 		private int metafileDataSize = 0; // Allocated size for meta file data
 		private bool brushReplaced;
+
+		// Buffers for replacing colors via color remap table
+		private Graphics.EnumerateMetafileProc findReplaceColorCallback;
+		private Color privateReplaceColor = Color.Empty;
+		private Color replaceColor = Color.Empty;
+		private ColorMap colorReplaceMap = new ColorMap();
+		private bool isPreview = false;
 
 		private ImageAttributes imageAttribs;
 		private Metafile bufferImage;

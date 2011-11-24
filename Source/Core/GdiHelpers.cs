@@ -310,8 +310,24 @@ namespace Dataweb.NShape.Advanced {
 		/// <summary>
 		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
 		/// </summary>
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, bool forPreview) {
+			return GetImageAttributes(imageLayout, -1f, 0, false, forPreview, Color.Empty);
+		}
+
+
+		/// <summary>
+		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
+		/// </summary>
 		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, Color transparentColor) {
 			return GetImageAttributes(imageLayout, -1f, 0, false, false, transparentColor);
+		}
+
+
+		/// <summary>
+		/// Get ImageAttributes for drawing an images or creating a TextureBrush.
+		/// </summary>
+		public static ImageAttributes GetImageAttributes(ImageLayoutMode imageLayout, Color transparentColor, bool forPreview) {
+			return GetImageAttributes(imageLayout, -1f, 0, false, forPreview, transparentColor);
 		}
 
 
@@ -350,7 +366,7 @@ namespace Dataweb.NShape.Advanced {
 			if (grayScale || (forPreview && Design.PreviewsAsGrayScale))
 				ApplyGrayScale(colorMatrix);
 			// Add transparency
-			float transparencyFactor = forPreview?Design.GetPreviewTransparency(transparency) / 100f:transparency / 100f;
+			float transparencyFactor = forPreview ? Design.GetPreviewTransparency(transparency) / 100f : transparency / 100f;
 			if (transparencyFactor != 0) ApplyTransparency(colorMatrix, transparencyFactor);
 			// Apply color matrix
 			imageAttribs.SetColorMatrix(colorMatrix);
