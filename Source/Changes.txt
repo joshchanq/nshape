@@ -204,11 +204,14 @@ Changes in 1.0.7:
     completed successfully
   * ... when overwriting or saving an existing project, a backup file is created ("ProjectName.bak")
 - Bugfix: Changing a template's shape only worked once.
+- Workaround: On 64 bit OSes, Metafile.PlayRecord() does not play certain records. Unfortunately, one 
+  of the affected records is "CreateBrushIndirect which is used for replacing colors in the 
+  CustomizableMetafile class. As Microsoft has not corrected the bug yet (nor shown a satisfying 
+  workaround for it), we've changed the CustomizableMetafile.
 
 Known issues:
-- x64/AnyCPU on x64 OS: Customizable metafiles are filled with solid white.
-- x64/AnyCPU on x64 OS: Bitmap images with less than 32 bit color depth are not rendered correctly
-  if transparency > 0 is specified.
+x64/AnyCPU on x64 OS: Bitmap images with 8 bit color depth are not rendered correctly if 
+transparency > 0 is specified.
   
 ====================================================================================================
 Changes in 1.0.6:
