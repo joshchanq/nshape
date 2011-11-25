@@ -4107,6 +4107,7 @@ namespace Dataweb.NShape {
 		protected Diagram diagram;
 		/// <ToBeCompleted></ToBeCompleted>
 		protected List<Shape> shapes;
+		/// <ToBeCompleted></ToBeCompleted>
 		protected List<int> zOrders;
 		/// <ToBeCompleted></ToBeCompleted>
 		protected LayerIds aggregationLayerIds;

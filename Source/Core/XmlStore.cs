@@ -323,7 +323,7 @@ namespace Dataweb.NShape {
 			if (File.Exists(backupFilepath)) {
 				File.Delete(backupFilepath);
 				if (Directory.Exists(backupImageDir))
-					Directory.Delete(backupImageDir);
+					Directory.Delete(backupImageDir, true);
 			}
 			// Rename current files
 			File.Move(projectFilePath, backupFilepath);
@@ -587,11 +587,13 @@ namespace Dataweb.NShape {
 						}
 					} else image.Save(filePath, image.RawFormat);
 
-					string currentDirName = Path.GetDirectoryName(store.ProjectFilePath);
+					string currentDirName = store.UnifyPath(Path.GetDirectoryName(store.ProjectFilePath));
 					if (!string.IsNullOrEmpty(currentDirName))
 						filePath = filePath.Replace(currentDirName, ".");
-					else
-						filePath = filePath.Replace(Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath)), ".");
+					else {
+						currentDirName = store.UnifyPath(Path.GetDirectoryName(Path.GetFullPath(store.ProjectFilePath)));
+						filePath = filePath.Replace(currentDirName, ".");
+					}
 					XmlAddAttributeString(GetXmlAttributeName(PropertyIndex), filePath);
 				}
 			}

@@ -85,9 +85,9 @@
 			// 
 			// previewPanel
 			// 
-			this.previewPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.previewPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.previewPanel.BackColor = System.Drawing.Color.Transparent;
 			this.previewPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.previewPanel.Location = new System.Drawing.Point(3, 19);
@@ -98,9 +98,9 @@
 			// 
 			// FileFormatOptionsGroupBox
 			// 
-			this.FileFormatOptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.FileFormatOptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.FileFormatOptionsGroupBox.Controls.Add(this.descriptionLabel);
 			this.FileFormatOptionsGroupBox.Controls.Add(this.bmpRadioButton);
 			this.FileFormatOptionsGroupBox.Controls.Add(this.jpgRadioButton);
@@ -116,9 +116,9 @@
 			// 
 			// descriptionLabel
 			// 
-			this.descriptionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.descriptionLabel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.descriptionLabel.AutoEllipsis = true;
 			this.descriptionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.descriptionLabel.Location = new System.Drawing.Point(6, 143);
@@ -142,9 +142,9 @@
 			this.jpgRadioButton.AutoSize = true;
 			this.jpgRadioButton.Location = new System.Drawing.Point(6, 88);
 			this.jpgRadioButton.Name = "jpgRadioButton";
-			this.jpgRadioButton.Size = new System.Drawing.Size(186, 17);
+			this.jpgRadioButton.Size = new System.Drawing.Size(179, 17);
 			this.jpgRadioButton.TabIndex = 3;
-			this.jpgRadioButton.Text = "JPEG - Compressed Bitmap Image";
+			this.jpgRadioButton.Text = "JPG - Compressed Bitmap Image";
 			this.jpgRadioButton.UseVisualStyleBackColor = true;
 			this.jpgRadioButton.CheckedChanged += new System.EventHandler(this.jpgRadioButton_CheckedChanged);
 			// 
@@ -183,8 +183,8 @@
 			// 
 			// DestinationOptionsGroupBox
 			// 
-			this.DestinationOptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.DestinationOptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.DestinationOptionsGroupBox.Controls.Add(this.qualityTrackBar);
 			this.DestinationOptionsGroupBox.Controls.Add(this.qualityLabel);
 			this.DestinationOptionsGroupBox.Controls.Add(this.dpiComboBox);
@@ -202,8 +202,8 @@
 			// 
 			// qualityTrackBar
 			// 
-			this.qualityTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.qualityTrackBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.qualityTrackBar.AutoSize = false;
 			this.qualityTrackBar.LargeChange = 10;
 			this.qualityTrackBar.Location = new System.Drawing.Point(71, 118);
@@ -214,7 +214,7 @@
 			this.qualityTrackBar.SmallChange = 5;
 			this.qualityTrackBar.TabIndex = 2;
 			this.qualityTrackBar.TickFrequency = 10;
-			this.qualityTrackBar.Value = 75;
+			this.qualityTrackBar.Value = 95;
 			this.qualityTrackBar.ValueChanged += new System.EventHandler(this.qualityTrackBar_ValueChanged);
 			// 
 			// qualityLabel
@@ -222,9 +222,9 @@
 			this.qualityLabel.AutoSize = true;
 			this.qualityLabel.Location = new System.Drawing.Point(6, 126);
 			this.qualityLabel.Name = "qualityLabel";
-			this.qualityLabel.Size = new System.Drawing.Size(39, 13);
+			this.qualityLabel.Size = new System.Drawing.Size(62, 13);
 			this.qualityLabel.TabIndex = 2;
-			this.qualityLabel.Text = "Quality";
+			this.qualityLabel.Text = "JPG Quality";
 			// 
 			// dpiComboBox
 			// 
@@ -261,8 +261,8 @@
 			// 
 			// filePathTextBox
 			// 
-			this.filePathTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.filePathTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.filePathTextBox.Location = new System.Drawing.Point(6, 65);
 			this.filePathTextBox.Name = "filePathTextBox";
 			this.filePathTextBox.Size = new System.Drawing.Size(230, 20);
@@ -295,8 +295,8 @@
 			// 
 			// ContentOptionsGroupBox
 			// 
-			this.ContentOptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.ContentOptionsGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.ContentOptionsGroupBox.Controls.Add(this.backColorCheckBox);
 			this.ContentOptionsGroupBox.Controls.Add(this.label1);
 			this.ContentOptionsGroupBox.Controls.Add(this.marginUpDown);
@@ -471,9 +471,9 @@
 			// 
 			// splitContainer1
 			// 
-			this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+			this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
 			this.splitContainer1.Location = new System.Drawing.Point(12, 12);
 			this.splitContainer1.Name = "splitContainer1";

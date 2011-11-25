@@ -1165,8 +1165,8 @@ namespace Dataweb.NShape {
 							Rectangle bounds = Rectangle.Empty;
 							bounds.Size = imageBounds.Size;
 							result = new Metafile(hdc, bounds, MetafileFrameUnit.Pixel,
-								imageFormat == ImageFileFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
-								Name);
+												imageFormat == ImageFileFormat.Emf ? EmfType.EmfOnly : EmfType.EmfPlusDual,
+												Name);
 						} finally {
 							infoGraphics.ReleaseHdc(hdc);
 						}

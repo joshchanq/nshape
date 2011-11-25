@@ -71,10 +71,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			marginUpDown.Value = 0;
 			emfPlusRadioButton.Checked = true;
 			toFileRadioButton.Checked = true;
-			exportAllRadioButton.Checked = true;
-
-			//exportSelectedRadioButton.Checked =
-			exportSelectedRadioButton.Enabled = (diagramPresenter.SelectedShapes.Count > 0);
+			if (diagramPresenter.SelectedShapes.Count > 0) {
+				exportSelectedRadioButton.Enabled =
+				exportSelectedRadioButton.Checked = true;
+			} else {
+				exportSelectedRadioButton.Enabled = false;
+				exportAllRadioButton.Checked = true;
+			}
 
 			EnableOkButton();
 		}
@@ -217,9 +220,10 @@ namespace Dataweb.NShape.WinFormsUI {
 					enable = false; break;
 			}
 			dpiLabel.Enabled =
-			dpiComboBox.Enabled =
+			dpiComboBox.Enabled = enable;
+			// Quality has only an effect on JPG images
 			qualityLabel.Enabled =
-			qualityTrackBar.Enabled = enable;
+			qualityTrackBar.Enabled = (imageFormat == ImageFileFormat.Jpeg);
 		}
 
 		#endregion

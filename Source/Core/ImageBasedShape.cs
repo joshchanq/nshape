@@ -1250,7 +1250,7 @@ namespace Dataweb.NShape.Advanced {
 		public override void Draw(Graphics graphics) {
 			if (graphics == null) throw new ArgumentNullException("graphics");
 			if (!captionUpdated) UpdateDrawCache();
-			brushReplaced = false;
+			replaceColorFound = false;
 			Rectangle dstBounds = Rectangle.Empty;
 			dstBounds.Offset((x - w / 2), (y - h / 2));
 			dstBounds.Width = w;
@@ -1260,9 +1260,11 @@ namespace Dataweb.NShape.Advanced {
 			//if (bufferImage == null) bufferImage = CreateImage();
 			//MetafileHeader header = bufferImage.GetMetafileHeader();
 			//graphics.DrawImage(bufferImage, dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
-
+			if (imageAttribs == null) 
+				UpdateImageAttributes();
 			MetafileHeader header = ((Metafile)image).GetMetafileHeader();
-			graphics.DrawImage(((Metafile)image), dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
+			//graphics.DrawImage(((Metafile)image), dstBounds, header.Bounds.X, header.Bounds.Y, header.Bounds.Width, header.Bounds.Height, GraphicsUnit.Pixel, imageAttribs);
+			GdiHelpers.DrawImage(graphics, image, imageAttribs, ImageLayoutMode.Fit, dstBounds, header.Bounds);
 			
 			if (caption != null) caption.Draw(graphics, CharacterStyle, ParagraphStyle);
 		}
@@ -1270,12 +1272,10 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override void MakePreview(IStyleSet styleSet) {
-			isPreview = true;
 			base.MakePreview(styleSet);
+			isPreview = true;
 			GdiHelpers.DisposeObject(ref imageAttribs);
-			UpdateImageAttributes(isPreview);
-			//GdiHelpers.DisposeObject(ref bufferImage);
-			//bufferImage = CreateImage();
+			UpdateImageAttributes();
 		}
 
 
@@ -1294,11 +1294,18 @@ namespace Dataweb.NShape.Advanced {
 		public override IFillStyle FillStyle {
 			get { return base.FillStyle; }
 			set {
-				brushReplaced = false;
+				replaceColorFound = false;
 				base.FillStyle = value;
 				UpdateImageAttributes();
 				Invalidate();
 			}
+		}
+
+
+		/// <override></override>
+		protected override void UpdateDrawCache() {
+			base.UpdateDrawCache();
+			UpdateImageAttributes();
 		}
 
 
@@ -1327,13 +1334,11 @@ namespace Dataweb.NShape.Advanced {
 
 			LineStyle = styleSet.LineStyles.Normal;
 			FillStyle = styleSet.FillStyles.Red;
-
-			imageAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
 		}
 
 
 		private void Construct() {
-			replaceBrushCallback = new Graphics.EnumerateMetafileProc(ReplaceBrushCallbackProc);
+			//replaceBrushCallback = new Graphics.EnumerateMetafileProc(ReplaceBrushCallbackProc);
 			findReplaceColorCallback = new Graphics.EnumerateMetafileProc(FindReplaceColorCallbackProc);
 			FindRemapColor();
 		}
@@ -1355,12 +1360,12 @@ namespace Dataweb.NShape.Advanced {
 						case EmfPlusRecordType.EmfCreateBrushIndirect:
 							// This type of record only appears in WMF and 'classic' EMF files, not in EMF+ files.
 							// Get color of current brush
-							if (!brushReplaced) {
+							if (!replaceColorFound) {
 								Buffers.SetByte(metafileData, 8, FillStyle.BaseColorStyle.Color.R);
 								Buffers.SetByte(metafileData, 9, FillStyle.BaseColorStyle.Color.G);
 								Buffers.SetByte(metafileData, 10, FillStyle.BaseColorStyle.Color.B);
 								Buffers.SetByte(metafileData, 11, FillStyle.BaseColorStyle.Color.A);
-								brushReplaced = true;
+								replaceColorFound = true;
 							}
 							break;
 						default: /* nothing to do */ break;
@@ -1377,7 +1382,7 @@ namespace Dataweb.NShape.Advanced {
 		private bool FindReplaceColorCallbackProc(EmfPlusRecordType recordType, int flags, int dataSize, IntPtr data, PlayRecordCallback callbackData) {
 			switch (recordType) {
 				case EmfPlusRecordType.EmfCreateBrushIndirect:
-					if (!brushReplaced) {
+					if (!replaceColorFound) {
 						// Copy the unmanaged record to a managed byte buffer that can be used by PlayRecord.
 						if (dataSize > metafileDataSize) {
 							metafileDataSize = dataSize;
@@ -1386,7 +1391,7 @@ namespace Dataweb.NShape.Advanced {
 						Marshal.Copy(data, metafileData, 0, dataSize);
 						// Get the RGB color components of the brush
 						replaceColor = Color.FromArgb(metafileData[8], metafileData[9], metafileData[10]);
-						brushReplaced = true;
+						replaceColorFound = true;
 					}
 					break;
 				
@@ -1444,7 +1449,7 @@ namespace Dataweb.NShape.Advanced {
 			using (Graphics gfx = Graphics.FromImage(metaFile)) {
 				GdiHelpers.ApplyGraphicsSettings(gfx, RenderingQuality.HighQuality);
 				MetafileHeader header = ((Metafile)image).GetMetafileHeader();
-				GdiHelpers.DrawImage(gfx, image, imageAttribs, ImageLayoutMode.Original, header.Bounds, header.Bounds);
+				GdiHelpers.DrawImage(gfx, image, imageAttribs, ImageLayoutMode.Fit, header.Bounds, header.Bounds);
 				// Deactivated, see comment above
 				//gfx.EnumerateMetafile((Metafile)image, header.Bounds, header.Bounds, GraphicsUnit.Pixel, replaceBrushCallback, IntPtr.Zero, imageAttribs);
 			}
@@ -1465,15 +1470,11 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private void UpdateImageAttributes() {
-		    UpdateImageAttributes(isPreview);
-		}
-
-
-		private void UpdateImageAttributes(bool isPreview) {
 			GdiHelpers.DisposeObject(ref imageAttribs);
-			if (imageAttribs == null)
-				imageAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original, isPreview);
+			imageAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Fit, isPreview);
 			imageAttribs.ClearRemapTable();
+
+			// As long as we cannot set/unset the color (available in next version), we map every color...
 			//if (ReplaceColor != Color.Empty) {
 				colorReplaceMap.OldColor = ReplaceColor;
 				colorReplaceMap.NewColor = FillStyle.BaseColorStyle.Color;
@@ -1497,20 +1498,23 @@ namespace Dataweb.NShape.Advanced {
 
 
 		// Buffers used for replacing solid brushes in EMF files (not used any longer, see comment on CreateImage())
-		private Graphics.EnumerateMetafileProc replaceBrushCallback;
-		private byte[] metafileData = null; // Data buffer for meta file drawing
-		private int metafileDataSize = 0; // Allocated size for meta file data
-		private bool brushReplaced;
+		//private Graphics.EnumerateMetafileProc replaceBrushCallback;
+		//private Metafile bufferImage;
+		//private bool brushReplaced;
 
 		// Buffers for replacing colors via color remap table
 		private Graphics.EnumerateMetafileProc findReplaceColorCallback;
+		private bool replaceColorFound;
 		private Color privateReplaceColor = Color.Empty;
 		private Color replaceColor = Color.Empty;
 		private ColorMap colorReplaceMap = new ColorMap();
-		private bool isPreview = false;
 
+		// Buffer for metafile record's data
+		private byte[] metafileData = null; // Data buffer for meta file drawing
+		private int metafileDataSize = 0; // Allocated size for meta file data
+
+		private bool isPreview = false;
 		private ImageAttributes imageAttribs;
-		private Metafile bufferImage;
 	}
 
 }
