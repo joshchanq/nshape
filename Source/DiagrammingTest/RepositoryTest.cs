@@ -16,10 +16,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
 using Dataweb.NShape;
 using Dataweb.NShape.Advanced;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.IO;
 
 
 namespace NShapeTest {
