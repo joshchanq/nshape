@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Dataweb.NShape.Advanced;
+using System.Drawing.Imaging;
 
 
 namespace Dataweb.NShape {
@@ -1903,8 +1904,12 @@ namespace Dataweb.NShape {
 				if (value == null) DoWriteValue(DBNull.Value);
 				else {
 					MemoryStream stream = new MemoryStream();
+					ImageFormat format = value.RawFormat;
+					// ArgumentNullException when trying to save a MemoryBitmap in a MemoryStream
+					if (format.Guid == ImageFormat.MemoryBmp.Guid)
+						format = ImageFormat.Png;
 					try {
-						if (value != null) value.Save(stream, value.RawFormat);
+						if (value != null) value.Save(stream, format);
 						DoWriteValue(stream.GetBuffer());
 					} finally {
 						stream.Close();

@@ -145,6 +145,9 @@ namespace NShapeTest {
 				// Create test data, populate repository and save repository
 				string diagramName = "Diagram";
 				DiagramHelper.CreateDiagram(project1, diagramName, shapesPerRow, shapesPerRow, true, true, true, true);
+				Diagram diagram = project1.Repository.GetDiagram(diagramName);
+				diagram.BackgroundImage = new NamedImage(new Bitmap(100, 100), "TestImage");
+				diagram.BackgroundImageLayout = ImageLayoutMode.Center;
 				project1.Repository.SaveChanges();
 
 				// Compare the saved data with the loaded data
@@ -174,12 +177,18 @@ namespace NShapeTest {
 				
 				if (store1 is XmlStore) {
 					// Save project again and check if backup files were created
+					XmlStore xmlStore = (XmlStore)store1;
 					project1.Repository.SaveChanges();
-					XmlStore xmlStore =(XmlStore)store1;
 					Assert.IsTrue(File.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + ".bak")));
 					Assert.IsTrue(File.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + xmlStore.FileExtension)));
-					if (Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images")))
-						Assert.IsTrue(Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images.bak")));
+					Assert.IsTrue(Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images")));
+					Assert.IsTrue(Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images.bak")));
+					// Save project another time and check if backup files can be deleted
+					project1.Repository.SaveChanges();
+					Assert.IsTrue(File.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + ".bak")));
+					Assert.IsTrue(File.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + xmlStore.FileExtension)));
+					Assert.IsTrue(Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images")));
+					Assert.IsTrue(Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images.bak")));
 				}
 			} finally {
 				project1.Close();
