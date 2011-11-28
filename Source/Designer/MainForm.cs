@@ -24,11 +24,17 @@ using System.Xml;
 using Dataweb.NShape.Advanced;
 using Dataweb.NShape.Controllers;
 using Dataweb.NShape.WinFormsUI;
+using System.Runtime.InteropServices;
+using System.Text;
 
 
 namespace Dataweb.NShape.Designer {
 
 	public partial class DiagramDesignerMainForm : Form {
+
+		[DllImport("Shell32.dll")]
+		public extern static int SHGetSpecialFolderPath(IntPtr hwndOwner, StringBuilder lpszPath, int nFolder, int fCreate);
+
 
 		public DiagramDesignerMainForm() {
 			InitializeComponent();
@@ -262,7 +268,10 @@ namespace Dataweb.NShape.Designer {
 			// Setting "Recent Projects"
 			cfgWriter.WriteStartElement(NodeNameProjects);
 			cfgWriter.WriteEndElement();
-			// Setting ToolStrip Positions
+			// Setting "XML Store Directory"
+			cfgWriter.WriteStartElement(NodeNameXmlStoreDirectory);
+			cfgWriter.WriteEndElement();
+			// Setting "Window Settings"
 			cfgWriter.WriteStartElement(NodeNameWindowSettings);
 			cfgWriter.WriteEndElement();
 			cfgWriter.Close();
@@ -1460,8 +1469,13 @@ namespace Dataweb.NShape.Designer {
 
 		private void NewXmlRepositoryProject(bool askUserLoadLibraries) {
 			if (CloseProject()) {
-				if (!Directory.Exists(xmlStoreDirectory)) 
-					xmlStoreDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				if (!Directory.Exists(xmlStoreDirectory)) {
+					StringBuilder path = new StringBuilder(512);
+					const int COMMON_DOCUMENTS = 0x002e;
+					if (SHGetSpecialFolderPath(IntPtr.Zero, path, COMMON_DOCUMENTS, 0) != 0)
+						xmlStoreDirectory = Path.Combine(Path.Combine(path.ToString(), "NShape"), "Demo Projects");
+					else xmlStoreDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+				}
 
 				XmlStore store = new XmlStore(xmlStoreDirectory, ".xml");
 				CreateProject(NewProjectName, store, askUserLoadLibraries);
@@ -1503,8 +1517,10 @@ namespace Dataweb.NShape.Designer {
 
 		private void openXMLRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = FileFilterXmlRepository;
-			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
-				saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
+			// Do not set this property under XP as there are versions that do 
+			// not contain this property (e.g. Windows Server 2003 without the latest updates)
+			if (Environment.OSVersion.Version.Major >= 6)
+				saveFileDialog.AutoUpgradeEnabled = true;
 			if (Directory.Exists(xmlStoreDirectory))
 				openFileDialog.InitialDirectory = xmlStoreDirectory;
 			if (openFileDialog.ShowDialog() == DialogResult.OK && CloseProject()) {
@@ -2136,13 +2152,14 @@ namespace Dataweb.NShape.Designer {
 		private const string FileFilterXmlRepository = "XML Repository Files|*.xml|All Files|*.*";
 
 		private const string QueryNode = "//{0}";
-		private const string QueryNodeAttr = "//{0}[{1}]";
+		private const string QueryNodeAttr = "//{0}[@{1}]";
 
 		private const string NodeNameSettings = "Settings";
 		private const string NodeNameProjectDirectory = "ProjectDirectory";
 		private const string NodeNameProjects = "Projects";
 		private const string NodeNameProject = "Project";
 		private const string NodeNameWindowSettings = "WindowSettings";
+		private const string NodeNameXmlStoreDirectory = "XMLStoreDirectory";
 		
 		private const string AttrNamePath = "Path";
 		private const string AttrNameName = "Name";
