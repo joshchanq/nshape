@@ -66,8 +66,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			openFileDialog.Filter = "Assembly Files|*.dll|All Files|*.*";
 			openFileDialog.FileName = "";
 			openFileDialog.Multiselect = true;
-			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
-				openFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			if (string.IsNullOrEmpty(openFileDialog.InitialDirectory))
 				openFileDialog.InitialDirectory = Application.StartupPath;
 			

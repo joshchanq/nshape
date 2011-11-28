@@ -321,8 +321,6 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 			string fileName = string.Empty;
 			saveFileDialog.Filter = fileFilter;
-			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
-				saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			saveFileDialog.AddExtension = true;
 			saveFileDialog.SupportMultiDottedExtensions = true;
 			if (saveFileDialog.ShowDialog() == DialogResult.OK)

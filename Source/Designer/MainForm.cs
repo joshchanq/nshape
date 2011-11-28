@@ -596,8 +596,6 @@ namespace Dataweb.NShape.Designer {
 				saveFileDialog.CreatePrompt = false;		// Do not ask wether to create the file
 				saveFileDialog.CheckFileExists = false;		// Do not check wether the file does NOT exist
 				saveFileDialog.CheckPathExists = true;		// Ask wether to overwrite existing file
-				if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
-					saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 				saveFileDialog.Filter = FileFilterXmlRepository;
 				if (Directory.Exists(xmlStore.DirectoryName))
 					saveFileDialog.InitialDirectory = xmlStore.DirectoryName;
@@ -1517,10 +1515,6 @@ namespace Dataweb.NShape.Designer {
 
 		private void openXMLRepositoryToolStripMenuItem_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = FileFilterXmlRepository;
-			// Do not set this property under XP as there are versions that do 
-			// not contain this property (e.g. Windows Server 2003 without the latest updates)
-			if (Environment.OSVersion.Version.Major >= 6)
-				saveFileDialog.AutoUpgradeEnabled = true;
 			if (Directory.Exists(xmlStoreDirectory))
 				openFileDialog.InitialDirectory = xmlStoreDirectory;
 			if (openFileDialog.ShowDialog() == DialogResult.OK && CloseProject()) {
@@ -1621,8 +1615,6 @@ namespace Dataweb.NShape.Designer {
 
 		private void ExportMetaFile(ImageFileFormat imageFormat) {
 			saveFileDialog.Filter = "Enhanced Meta Files|*.emf|All Files|*.*";
-			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
-				saveFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			if (saveFileDialog.ShowDialog() == DialogResult.OK) {
 				using (Image image = GetImageFromDiagram(imageFormat)) {
 					if (image != null) GdiHelpers.SaveImageToFile(image, saveFileDialog.FileName, imageFormat);

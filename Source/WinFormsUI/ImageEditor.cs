@@ -132,8 +132,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		
 		private void browseButton_Click(object sender, EventArgs e) {
 			openFileDialog.Filter = "Image Files|*.Bmp;*.Emf;*.Exif;*.Gif;*.Ico;*.Jpg;*.Jpeg;*.Png;*.Tiff;*.Wmf|All files (*.*)|*.*";
-			if (Environment.OSVersion.Version.Major >= 6)	// Do not set this property under XP as there are 
-				openFileDialog.AutoUpgradeEnabled = true;		// versions that do not contain this property
 			if (nameTextBox.Text != string.Empty)
 				openFileDialog.InitialDirectory = Path.GetDirectoryName(nameTextBox.Text);
 			
