@@ -613,13 +613,20 @@ namespace Dataweb.NShape.ElectricalShapes {
 		protected override bool CalculatePath() {
 			Path.Reset();
 
+			int top = -Height / 2;
+			int bottom = -(Height / 2) + Height;
 			CalcRingBounds(out upperRingBounds, out lowerRingBounds);
 
+			// Add the lines between connection point and circles only if 
+			// necessary. Otherwise, DrawPath() throws an OutOfMemoryException 
+			// on Windows Vista when drawing with a pen thicker than 1 pixel...
 			Path.StartFigure();
-			Path.AddLine(0, -Height / 2, 0, upperRingBounds.Top);
+			if (top < upperRingBounds.Top)
+				Path.AddLine(0, top, 0, upperRingBounds.Top);
 			Path.AddEllipse(upperRingBounds);
 			Path.AddEllipse(lowerRingBounds);
-			Path.AddLine(0, lowerRingBounds.Bottom, 0, -(Height / 2) + Height);
+			if (bottom > lowerRingBounds.Bottom)
+				Path.AddLine(0, lowerRingBounds.Bottom, 0, bottom);
 			Path.CloseFigure();
 
 			return true;
