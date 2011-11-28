@@ -283,7 +283,14 @@ namespace Dataweb.NShape {
 			string tempImageDirectory = CalcImageDirectoryName(tempProjectFilePath);
 			try {
 				// Save changes to temporary file
-				DoSaveChanges(tempProjectFilePath, cache);
+				try {
+					// Set imageDirectoryPath to temporary directory, otherwise 
+					// all images will be saved to original image directory
+					imageDirectory = tempImageDirectory;
+					DoSaveChanges(tempProjectFilePath, cache);
+				} finally {
+					imageDirectory = CalcImageDirectoryName(ProjectFilePath);
+				}
 				// Backup current project files
 				if (File.Exists(ProjectFilePath))
 					CreateBackupFiles(ProjectFilePath);
