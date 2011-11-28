@@ -268,9 +268,6 @@ namespace Dataweb.NShape.Designer {
 			// Setting "Recent Projects"
 			cfgWriter.WriteStartElement(NodeNameProjects);
 			cfgWriter.WriteEndElement();
-			// Setting "XML Store Directory"
-			cfgWriter.WriteStartElement(NodeNameXmlStoreDirectory);
-			cfgWriter.WriteEndElement();
 			// Setting "Window Settings"
 			cfgWriter.WriteStartElement(NodeNameWindowSettings);
 			cfgWriter.WriteEndElement();
@@ -2151,7 +2148,6 @@ namespace Dataweb.NShape.Designer {
 		private const string NodeNameProjects = "Projects";
 		private const string NodeNameProject = "Project";
 		private const string NodeNameWindowSettings = "WindowSettings";
-		private const string NodeNameXmlStoreDirectory = "XMLStoreDirectory";
 		
 		private const string AttrNamePath = "Path";
 		private const string AttrNameName = "Name";

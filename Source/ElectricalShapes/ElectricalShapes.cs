@@ -619,7 +619,7 @@ namespace Dataweb.NShape.ElectricalShapes {
 
 			// Add the lines between connection point and circles only if 
 			// necessary. Otherwise, DrawPath() throws an OutOfMemoryException 
-			// on Windows Vista when drawing with a pen thicker than 1 pixel...
+			// on Windows XP/Vista when drawing with a pen thicker than 1 pixel...
 			Path.StartFigure();
 			if (top < upperRingBounds.Top)
 				Path.AddLine(0, top, 0, upperRingBounds.Top);

@@ -97,7 +97,8 @@ Changes in 1.0.7:
 	  ParagraphStyle.Alignment			Present		-> 	Design
 	  ParagraphStyle.Trimming			Present		-> 	Design
 	  ParagraphStyle.Padding			Present		-> 	Design
-	  ParagraphStyle.WordWrap			Present		-> 	Design- Bugfix: Diagram now draws correctly if the Display component's Left property is > 0.
+	  ParagraphStyle.WordWrap			Present		-> 	Design
+- Bugfix: Diagram now draws correctly if the Display component's Left property is > 0.
 - Bugfix: Displays created dynamically via code did not invalidate the grips correctly.
 - Bugfix: Lines with thick line styles were not inserted correctly in the diagram's spatial index and
   therefore not clickable sometimes

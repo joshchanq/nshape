@@ -1331,7 +1331,7 @@ namespace Dataweb.NShape {
 				}
 				this.shapes.Add(shape);
 			}
-			// collect connections to remove temporarily
+			// Collect connections to remove temporarily
 			for (int i = 0; i < this.shapes.Count; ++i) {
 				if (!IsConnectedToNonSelectedShapes(this.shapes[i])) {
 					foreach (ControlPointId gluePointId in this.shapes[i].GetControlPointIds(ControlPointCapabilities.Glue)) {
@@ -2270,14 +2270,14 @@ namespace Dataweb.NShape {
 			this.removedPointId = vertexId;
 			this.nextPointId = ((ILinearShape)shape).GetNextVertexId(vertexId);
 
-			// do not find point position here because if controlPointId is not valid, an exception would be thrown
+			// Do not find point position here because if controlPointId is not valid, an exception would be thrown
 			this.description = string.Format("Remove point at {0}|{1} from {2} ", p.X, p.Y, shape);
 		}
 
 
 		/// <override></override>
 		public override void Execute() {
-			// store point position if not done yet
+			// Store point position if not done yet
 			if (!Geometry.IsValid(p)) p = shape.GetControlPointPosition(removedPointId);
 			shape.Invalidate();
 			((ILinearShape)shape).RemoveVertex(removedPointId);
