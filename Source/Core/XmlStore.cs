@@ -192,14 +192,16 @@ namespace Dataweb.NShape {
 
 		/// <override></override>
 		public override void Erase() {
-			CreateBackupFiles(ProjectFilePath);
-			File.Delete(ProjectFilePath);
-			// The if prevents exceptions during debugging. The catch concurrency problems.
-			if (Directory.Exists(ImageDirectory)) {
-				try {
-					Directory.Delete(ImageDirectory, true);
-				} catch (DirectoryNotFoundException) {
-					// It's ok if the directory does not exist
+			if (File.Exists(ProjectFilePath)) {
+				CreateBackupFiles(ProjectFilePath);
+				File.Delete(ProjectFilePath);
+				// The if prevents exceptions during debugging. The catch concurrency problems.
+				if (Directory.Exists(ImageDirectory)) {
+					try {
+						Directory.Delete(ImageDirectory, true);
+					} catch (DirectoryNotFoundException) {
+						// It's ok if the directory does not exist
+					}
 				}
 			}
 		}

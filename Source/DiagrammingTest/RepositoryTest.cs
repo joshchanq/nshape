@@ -19,6 +19,7 @@ using System.Drawing;
 using Dataweb.NShape;
 using Dataweb.NShape.Advanced;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.IO;
 
 
 namespace NShapeTest {
@@ -169,6 +170,17 @@ namespace NShapeTest {
 				project2.Open();
 				RepositoryComparer.Compare(project1, project2);
 				project2.Close();
+
+				
+				if (store1 is XmlStore) {
+					// Save project again and check if backup files were created
+					project1.Repository.SaveChanges();
+					XmlStore xmlStore =(XmlStore)store1;
+					Assert.IsTrue(File.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + ".bak")));
+					Assert.IsTrue(File.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + xmlStore.FileExtension)));
+					if (Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images")))
+						Assert.IsTrue(Directory.Exists(Path.Combine(xmlStore.DirectoryName, project1.Name + " Images.bak")));
+				}
 			} finally {
 				project1.Close();
 				project2.Close();
