@@ -166,12 +166,10 @@ namespace Dataweb.NShape {
 		/// </summary>
 		[RequiredPermission(Permission.Present)]
 		public string Title {
-			get {
-				if (string.IsNullOrEmpty(title)) return name;
-				else return title; 
-			}
+			get { return string.IsNullOrEmpty(title) ? name : title; }
 			set {
-				if (title == name) title = null;
+				if (value == name || string.IsNullOrEmpty(value))
+					title = null;
 				else title = value;
 			}
 		}
@@ -718,9 +716,9 @@ namespace Dataweb.NShape {
 		public string Title {
 			get { return string.IsNullOrEmpty(title) ? name : title; }
 			set {
-				if (string.IsNullOrEmpty(value))
+				if (value == name || string.IsNullOrEmpty(value))
 					title = null;
-				else title = value; 
+				else title = value;
 			}
 		}
 

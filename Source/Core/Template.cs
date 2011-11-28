@@ -1330,7 +1330,11 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		public string Title {
 			get { return string.IsNullOrEmpty(title) ? name : title; }
-			set { title = (title == name) ? null : value; }
+			set {
+				if (value == name || string.IsNullOrEmpty(value))
+					title = null;
+				else title = value;
+			}
 		}
 
 

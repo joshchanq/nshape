@@ -810,12 +810,12 @@ namespace Dataweb.NShape {
 		[RequiredPermission(Permission.Designs)]
 		[Category("General")]
 		public string Title {
-			get {
-				if (string.IsNullOrEmpty(title))
-					return name;
-				else return title;
+			get { return string.IsNullOrEmpty(title) ? name : title; }
+			set {
+				if (value == name || string.IsNullOrEmpty(value))
+					title = null;
+				else title = value;
 			}
-			set { title = value; }
 		}
 
 
