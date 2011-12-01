@@ -38,7 +38,7 @@ namespace BasicTutorial {
 			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, Path.Combine("NShape", "Demo Projects"));
 			project1.Name = "Circles";
 			// Path to the NShape shape library assemblies
-			string programFilesDir = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+			string programFilesDir = Environment.GetEnvironmentVariable(string.Format("ProgramFiles{0}", (IntPtr.Size == sizeof(long)) ? "(x86)" : ""));
 			project1.LibrarySearchPaths.Add(Path.Combine(programFilesDir, string.Format("dataweb{0}NShape{0}bin", Path.DirectorySeparatorChar)));
 			project1.Open();
 
