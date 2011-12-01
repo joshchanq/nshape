@@ -498,6 +498,7 @@ namespace Dataweb.NShape {
 	/// This class was renamed to RoleBasedSecurityManager. 
 	/// This wrapper maintains compatibility with previous versions.
 	/// </summary>
+	[Obsolete("Use RoleBasedSecurityManager instead")]
 	public class DefaultSecurity : RoleBasedSecurityManager {
 	}
 

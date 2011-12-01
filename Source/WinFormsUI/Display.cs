@@ -2329,6 +2329,10 @@ namespace Dataweb.NShape.WinFormsUI {
 									if (CurrentTool != null && CurrentTool.IsToolActionPending)
 										CurrentTool.Cancel();
 									PerformDelete(Diagram, SelectedShapes, true);
+									// Send a mouseMove event in order to refresh the tool - otherwise it will 
+									// not notice that the deleted shape was deleted...
+									if (CurrentTool != null)
+										CurrentTool.ProcessMouseEvent(this, WinFormHelpers.GetMouseEventArgs(this, MouseEventType.MouseMove, 0, 0));
 									e.Handled = true;
 								}
 								break;
@@ -3531,8 +3535,8 @@ namespace Dataweb.NShape.WinFormsUI {
 				Rectangle bounds = Geometry.UniteRectangles(0, 0, diagramController.Diagram.Width, diagramController.Diagram.Height, diagramController.Diagram.Shapes.GetBoundingRectangle(false));
 				int startX = ((bounds.X >= 0) ? bounds.X : (bounds.X / Diagram.CellSize) - 1) * Diagram.CellSize;
 				int startY = ((bounds.Y >= 0) ? bounds.Y : (bounds.Y / Diagram.CellSize) - 1) * Diagram.CellSize;
-				int endX = (bounds.Width + startX) - (bounds.Width % Diagram.CellSize) + ((bounds.X >= 0) ? 0 : Diagram.CellSize);
-				int endY = (bounds.Height + startY) - (bounds.Height % Diagram.CellSize) + ((bounds.Y >= 0) ? 0 : Diagram.CellSize);
+				int endX = (bounds.Width + startX) - (bounds.Width % Diagram.CellSize) + ((bounds.X >= 0) ? Diagram.CellSize : 2 * Diagram.CellSize);
+				int endY = (bounds.Height + startY) - (bounds.Height % Diagram.CellSize) + ((bounds.Y >= 0) ? Diagram.CellSize : 2 * Diagram.CellSize);
 
 				((ShapeCollection)diagramController.Diagram.Shapes).DrawOccupiedCells(currentGraphics, startX, startY, endX, endY);
 				// Draw cell borders

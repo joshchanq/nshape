@@ -1,6 +1,9 @@
 ====================================================================================================
 Changes in 1.0.7:
 ====================================================================================================
+- Marked class "DefaultSecurity" as [Obsolete]. It will be removed in the next version.
+- BugFix: Moving the mouse over a shape with text, selecting it and deleting it with "Del" did not 
+  remove the highlighted caption bounds.
 - Changed project structure (directory hierarchy) and build paths
 - Bugfix: Events IDiagramPresenter.DiagramChanging and IDiagramPresenter.DiagramChanged were not 
   raised when assigning Display.Diagram directly

@@ -896,6 +896,7 @@ namespace Dataweb.NShape {
 			int pointIndex = GetControlPointIndex(pointId);
 
 			float radiusPtAngle = 0;
+			//float lerpFactor = float.NaN, radiusPtDistance = float.NaN;
 			bool maintainAspect = false;
 			ControlPointId otherGluePtId = ControlPointId.None;
 			ControlPointId nextPtId = ControlPointId.None;
@@ -916,6 +917,11 @@ namespace Dataweb.NShape {
 					GetControlPointPosition(pointId),
 					GetControlPointPosition(otherGluePtId),
 					GetControlPointPosition(nextPtId)));
+
+				//PointF tmpPt = Geometry.IntersectLines(StartPoint.X, StartPoint.Y, EndPoint.X, EndPoint.Y, Center.X, Center.Y, RadiusPoint.X, RadiusPoint.Y);
+				//lerpFactor = (Geometry.DistancePointPoint(StartPoint, tmpPt) / Geometry.DistancePointPoint(StartPoint, EndPoint));
+				//radiusPtDistance = Geometry.DistancePointLine(RadiusPoint, StartPoint, EndPoint, true);
+				//radiusPtAngle = Geometry.RadiansToDegrees(Geometry.Angle(tmpPt, RadiusPoint));
 			}
 
 			// Assign new position to vertex
@@ -929,6 +935,10 @@ namespace Dataweb.NShape {
 					if (VertexCount > 2)
 						vertices[1] = Geometry.VectorLinearInterpolation(StartPoint, EndPoint, 0.5f);
 				} else {
+					//PointF newPos = Geometry.VectorLinearInterpolation(StartPoint, EndPoint, lerpFactor);
+					//newPos = Geometry.RotatePoint(newPos.X, newPos.Y, radiusPtAngle, newPos.X + radiusPtDistance, newPos.Y);
+					//vertices[1] = Point.Round(newPos);
+
 					// Try to maintain angle between StartPoint and RadiusPoint
 					Point movedPtPos = GetControlPointPosition(pointId);
 					Point otherGluePtPos = GetControlPointPosition(otherGluePtId);
@@ -942,8 +952,8 @@ namespace Dataweb.NShape {
 					Geometry.CalcLine(movedPtPos.X, movedPtPos.Y, hX, hY, out aR, out bR, out cR);
 
 					Point newPos = Geometry.IntersectLines(aPb, bPb, cPb, aR, bR, cR);
-					Debug.Assert(Geometry.IsValid(newPos));
-					vertices[1] = newPos;
+					if (Geometry.IsValid(newPos)) vertices[1] = newPos;
+					else Debug.Fail("Lines did not intersect!");
 
 					// After moving the point between the glue points, we have to recalculate the glue point
 					// positions again

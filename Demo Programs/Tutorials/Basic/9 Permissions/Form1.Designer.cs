@@ -25,7 +25,7 @@
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager defaultSecurity1 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.display1 = new Dataweb.NShape.WinFormsUI.Display();
 			this.diagramSetController1 = new Dataweb.NShape.Controllers.DiagramSetController();
 			this.project1 = new Dataweb.NShape.Project(this.components);
@@ -117,7 +117,9 @@
 			// 
 			// toolSetListViewPresenter1
 			// 
+			this.toolSetListViewPresenter1.HideDeniedMenuItems = false;
 			this.toolSetListViewPresenter1.ListView = this.toolListView;
+			this.toolSetListViewPresenter1.ShowDefaultContextMenu = true;
 			this.toolSetListViewPresenter1.ToolSetController = this.toolSetController1;
 			// 
 			// toolListView
@@ -151,27 +153,27 @@
             this.fileLayoutToolStripMenuItem,
             this.fileSaveToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "File";
 			// 
 			// fileLoadStatisticsToolStripMenuItem
 			// 
 			this.fileLoadStatisticsToolStripMenuItem.Name = "fileLoadStatisticsToolStripMenuItem";
-			this.fileLoadStatisticsToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+			this.fileLoadStatisticsToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.fileLoadStatisticsToolStripMenuItem.Text = "Load statistics";
 			this.fileLoadStatisticsToolStripMenuItem.Click += new System.EventHandler(this.fileLoadStatisticsToolStripMenuItem_Click);
 			// 
 			// fileLayoutToolStripMenuItem
 			// 
 			this.fileLayoutToolStripMenuItem.Name = "fileLayoutToolStripMenuItem";
-			this.fileLayoutToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+			this.fileLayoutToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.fileLayoutToolStripMenuItem.Text = "Layout";
 			this.fileLayoutToolStripMenuItem.Click += new System.EventHandler(this.fileLayoutToolStripMenuItem_Click);
 			// 
 			// fileSaveToolStripMenuItem
 			// 
 			this.fileSaveToolStripMenuItem.Name = "fileSaveToolStripMenuItem";
-			this.fileSaveToolStripMenuItem.Size = new System.Drawing.Size(153, 22);
+			this.fileSaveToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
 			this.fileSaveToolStripMenuItem.Text = "Save";
 			this.fileSaveToolStripMenuItem.Click += new System.EventHandler(this.fileSaveToolStripMenuItem_Click);
 			// 

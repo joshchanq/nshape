@@ -35,10 +35,12 @@ namespace BasicTutorial {
 			string sharedDocumentsDir = GetSharedDocumentsPath();
 			sharedDocumentsDir = sharedDocumentsDir.Trim();
 			// Path to the NShape sample diagrams
-			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, string.Format("NShape{0}Demo Projects", Path.DirectorySeparatorChar));
+			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, Path.Combine("NShape", "Demo Projects"));
 			project1.Name = "Circles";
 			// Path to the NShape shape library assemblies
-			project1.LibrarySearchPaths.Add(Path.Combine(sharedDocumentsDir, string.Format("NShape{0}Demo Programs{0}bin", Path.DirectorySeparatorChar)));
+			string programFilesDir = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+			project1.LibrarySearchPaths.Add(Path.Combine(programFilesDir, string.Format("dataweb{0}NShape{0}bin", Path.DirectorySeparatorChar)));
+			project1.LibrarySearchPaths.Add(Path.Combine(programFilesDir + " (x86)", string.Format("dataweb{0}NShape{0}bin", Path.DirectorySeparatorChar)));
 			project1.Open();
 
 			((CapStyle)project1.Design.CapStyles.Arrow).CapSize = 20;
@@ -56,8 +58,8 @@ namespace BasicTutorial {
 
 
 		private void fileLoadStatisticsToolStripMenuItem_Click(object sender, EventArgs e) {
-			string appDir = Path.GetDirectoryName(Application.StartupPath);
-			string statisticsFilePath = Path.GetFullPath(Path.Combine(appDir, @"Tutorials\Basic\Sample Data\Small.txt"));
+			string appDir = Path.GetDirectoryName(Path.GetDirectoryName(Application.StartupPath));
+			string statisticsFilePath = Path.GetFullPath(Path.Combine(appDir, @"Demo Programs\Tutorials\Basic\Sample Data\Small.txt"));
 
 			Dictionary<string, RectangleBase> shapeDict = new Dictionary<string, RectangleBase>(1000);
 			Diagram diagram = new Diagram("D1");
@@ -137,5 +139,7 @@ namespace BasicTutorial {
 			layouter.Execute(10);
 			layouter.Fit(50, 50, display1.Diagram.Width - 100, display1.Diagram.Height - 100);
 		}
+
 	}
+
 }

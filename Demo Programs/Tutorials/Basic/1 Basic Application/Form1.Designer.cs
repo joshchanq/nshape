@@ -25,7 +25,7 @@
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-			Dataweb.NShape.DefaultSecurity defaultSecurity1 = new Dataweb.NShape.DefaultSecurity();
+			Dataweb.NShape.RoleBasedSecurityManager defaultSecurity1 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.display1 = new Dataweb.NShape.WinFormsUI.Display();
 			this.diagramSetController1 = new Dataweb.NShape.Controllers.DiagramSetController();
 			this.project1 = new Dataweb.NShape.Project(this.components);

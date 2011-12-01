@@ -31,10 +31,11 @@ namespace BasicTutorial {
 			string sharedDocumentsDir = GetSharedDocumentsPath();
 			sharedDocumentsDir = sharedDocumentsDir.Trim();
 			// Path to the NShape sample diagrams
-			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, string.Format("NShape{0}Demo Projects", Path.DirectorySeparatorChar));
+			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, Path.Combine("NShape", "Demo Projects"));
 			project1.Name = "Circles";
 			// Path to the NShape shape library assemblies
-			project1.LibrarySearchPaths.Add(Path.Combine(sharedDocumentsDir, string.Format("NShape{0}Demo Programs{0}bin", Path.DirectorySeparatorChar)));
+			string programFilesDir = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+			project1.LibrarySearchPaths.Add(Path.Combine(programFilesDir, string.Format("dataweb{0}NShape{0}bin", Path.DirectorySeparatorChar)));
 			project1.Open();
 			// Display a diagram and enable editing
 			display1.LoadDiagram("Diagram 1");
@@ -47,4 +48,5 @@ namespace BasicTutorial {
 		}
 
 	}
+
 }

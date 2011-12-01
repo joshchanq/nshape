@@ -33,16 +33,18 @@ namespace BasicTutorial {
 		private void Form1_Load(object sender, EventArgs e) {
 			string sharedDocumentsDir = GetSharedDocumentsPath();
 			sharedDocumentsDir = sharedDocumentsDir.Trim();
-			// Open the NShape project
-			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, string.Format("NShape{0}Demo projects", Path.DirectorySeparatorChar));
-			project1.Name = "Circles";
-			project1.LibrarySearchPaths.Add(Path.Combine(sharedDocumentsDir, string.Format("NShape{0}Demo Programs{0}Libraries", Path.DirectorySeparatorChar)));
+			// Path to the NShape sample diagrams
+			xmlStore1.DirectoryName = Path.Combine(sharedDocumentsDir, Path.Combine("NShape", "Demo Projects"));
+			project1.Name = "WebVisits Project";
+			// Path to the NShape shape library assemblies
+			string programFilesDir = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+			project1.LibrarySearchPaths.Add(Path.Combine(programFilesDir, string.Format("dataweb{0}NShape{0}bin", Path.DirectorySeparatorChar)));
 			project1.Create();
 
-			((DefaultSecurity)project1.SecurityManager).SetPermissions('A', "Designer", Permission.All);
-			((DefaultSecurity)project1.SecurityManager).AddDomain('G', "Application generated objects");
-			((DefaultSecurity)project1.SecurityManager).SetPermissions('G', "Designer", Permission.Layout);
-			((DefaultSecurity)project1.SecurityManager).CurrentRole = StandardRole.Designer;
+			((RoleBasedSecurityManager)project1.SecurityManager).SetPermissions('A', "Designer", Permission.All);
+			((RoleBasedSecurityManager)project1.SecurityManager).AddDomain('G', "Application generated objects");
+			((RoleBasedSecurityManager)project1.SecurityManager).SetPermissions('G', "Designer", Permission.Layout);
+			((RoleBasedSecurityManager)project1.SecurityManager).CurrentRole = StandardRole.Designer;
 
 			project1.AddLibrary(typeof(Ellipse).Assembly);
 			((CapStyle)project1.Design.CapStyles.Arrow).CapSize = 20;
@@ -82,8 +84,8 @@ namespace BasicTutorial {
 
 
 		private void fileLoadStatisticsToolStripMenuItem_Click(object sender, EventArgs e) {
-			string appDir = Path.GetDirectoryName(Application.StartupPath);
-			string statisticsFilePath = Path.GetFullPath(Path.Combine(appDir, @"Tutorials\Basic\Sample Data\Small.txt"));
+			string appDir = Path.GetDirectoryName(Path.GetDirectoryName(Application.StartupPath));
+			string statisticsFilePath = Path.GetFullPath(Path.Combine(appDir, @"Demo Programs\Tutorials\Basic\Sample Data\Small.txt"));
 
 			Dictionary<string, RectangleBase> shapeDict = new Dictionary<string, RectangleBase>(1000);
 			Diagram diagram = new Diagram("D1");
@@ -166,5 +168,7 @@ namespace BasicTutorial {
 			layouter.Execute(10);
 			layouter.Fit(50, 50, display1.Diagram.Width - 100, display1.Diagram.Height - 100);
 		}
+
 	}
+
 }

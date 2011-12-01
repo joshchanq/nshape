@@ -937,11 +937,11 @@ namespace Dataweb.NShape.Advanced {
 		/// Calculates the cross product ab x ac
 		/// </summary>
 		public static int VectorCrossProduct(int aX, int aY, int bX, int bY, int cX, int cY) {
-			int abX = bX - aX;
-			int abY = bY - aY;
-			int acX = cX - aX;
-			int acY = cY - aY;
-			return (int)((float)abX * (float)acY - (float)abY * (float)acX);
+			long abX = bX - aX;
+			long abY = bY - aY;
+			long acX = cX - aX;
+			long acY = cY - aY;
+			return (int)((long)abX * (long)acY - (long)abY * (long)acX);
 		}
 
 
@@ -1447,8 +1447,10 @@ namespace Dataweb.NShape.Advanced {
 			if (cnt == 0) return false;
 			else if (cnt == 1) return points[0].X == x && points[0].Y == y;
 			else {
+				// Test intersection of a line between the point and a point far, far away
+				// If the number of intersections is even, the point must be outside, otherwise it is inside.
 				int intersectionCnt = 0;
-				int x2 = int.MaxValue, y2 = int.MaxValue;
+				long x2 = int.MaxValue, y2 = int.MaxValue;
 				int j;
 				for (int i = 0; i < cnt; ++i) {
 					j = i + 1;
@@ -2191,6 +2193,14 @@ namespace Dataweb.NShape.Advanced {
 		/// Bestimmt, ob die beiden Strecken sich schneiden.
 		/// </summary>
 		public static bool LineSegmentIntersectsWithLineSegment(int line1StartX, int line1StartY, int line1EndX, int line1EndY, int line2StartX, int line2StartY, int line2EndX, int line2EndY) {
+			return IsValid(IntersectLineSegments(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY));
+		}
+
+
+		/// <summary>
+		/// Bestimmt, ob die beiden Strecken sich schneiden.
+		/// </summary>
+		public static bool LineSegmentIntersectsWithLineSegment(long line1StartX, long line1StartY, long line1EndX, long line1EndY, long line2StartX, long line2StartY, long line2EndX, long line2EndY) {
 			return IsValid(IntersectLineSegments(line1StartX, line1StartY, line1EndX, line1EndY, line2StartX, line2StartY, line2EndX, line2EndY));
 		}
 
@@ -2942,12 +2952,36 @@ namespace Dataweb.NShape.Advanced {
 			int y13 = p1Y - p3Y;
 			int x43 = p4X - p3X;
 			int y43 = p4Y - p3Y;
-			float d = (float)y43 * (float)x21 - (float)x43 * (float)y21;
+			float d = y43 * x21 - x43 * y21;
 			if (d != 0) {
-				float u2 = (((float)x21 * (float)y13 - (float)y21 * (float)x13) / d);
+				float u2 = ((x21 * y13 - y21 * x13) / d);
 				if (!float.IsNaN(u2) && 0 <= u2 && u2 <= 1) {
-					float u1 = ((float)x43 * (float)y13 - (float)y43 * (float)x13) / d;
+					float u1 = (x43 * y13 - y43 * x13) / d;
 					if (!float.IsNaN(u1) && 0 <= u1 && u1 <= 1) {
+						result.X = (int)Math.Round(p1X + x21 * u1);
+						result.Y = (int)Math.Round(p1Y + y21 * u1);
+					}
+				}
+			}
+			return result;
+		}
+
+
+		/// <ToBeCompleted></ToBeCompleted>
+		public static Point IntersectLineSegments(long p1X, long p1Y, long p2X, long p2Y, long p3X, long p3Y, long p4X, long p4Y) {
+			Point result = InvalidPoint;
+			long x21 = p2X - p1X;
+			long y21 = p2Y - p1Y;
+			long x13 = p1X - p3X;
+			long y13 = p1Y - p3Y;
+			long x43 = p4X - p3X;
+			long y43 = p4Y - p3Y;
+			double d = y43 * x21 - x43 * y21;
+			if (d != 0) {
+				double u2 = ((x21 * y13 - y21 * x13) / d);
+				if (!double.IsNaN(u2) && 0 <= u2 && u2 <= 1) {
+					double u1 = (x43 * y13 - y43 * x13) / d;
+					if (!double.IsNaN(u1) && 0 <= u1 && u1 <= 1) {
 						result.X = (int)Math.Round(p1X + x21 * u1);
 						result.Y = (int)Math.Round(p1Y + y21 * u1);
 					}

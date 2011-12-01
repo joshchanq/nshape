@@ -685,12 +685,12 @@ namespace Dataweb.NShape {
 						Assembly a = null;
 						try {
 							a = Assembly.Load(ln);
-						} catch (FileLoadException flExc) {
+						} catch (FileLoadException) {
 							a = FindAssemblyInSearchPath(ln);
-							if (a == null) throw flExc;
-						} catch (FileNotFoundException fnfExc) {
+							if (a == null) throw;
+						} catch (FileNotFoundException) {
 							a = FindAssemblyInSearchPath(ln);
-							if (a == null) throw fnfExc;
+							if (a == null) throw;
 						}
 						Debug.Assert(a != null);
 						lib = DoLoadLibrary(a);
@@ -698,10 +698,10 @@ namespace Dataweb.NShape {
 					Debug.Assert(lib != null);
 					DoRegisterLibrary(lib, false);
 				}
-			} catch (Exception ex) {
-				Debug.Print(ex.Message);
+			} catch (Exception exc) {
+				Debug.Print(exc.Message);
 				repository.Close();
-				throw ex;
+				throw;
 			}
 			if (Opened != null) Opened(this, EventArgs.Empty);
 		}
