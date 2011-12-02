@@ -105,9 +105,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+    <ProjectReference Include="..\Core\NShape.csproj">
       <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
-      <Name>NShape %28VS 2008%29</Name>
+      <Name>NShape</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -1,25 +1,25 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShape (VS 2008)", "Core\NShape (VS 2008).csproj", "{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShape", "Core\NShape.csproj", "{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinFormsUI (VS 2008)", "WinFormsUI\WinFormsUI (VS 2008).csproj", "{25A96297-808B-430F-9610-02C489167249}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WinFormsUI", "WinFormsUI\WinFormsUI.csproj", "{25A96297-808B-430F-9610-02C489167249}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareArchitectureShapes (VS 2008)", "SoftwareArchitectureShapes\SoftwareArchitectureShapes (VS 2008).csproj", "{E82D0BC5-0F7B-4385-B0A0-9CA29D6283AC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SoftwareArchitectureShapes", "SoftwareArchitectureShapes\SoftwareArchitectureShapes.csproj", "{E82D0BC5-0F7B-4385-B0A0-9CA29D6283AC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShapeTest (VS 2008)", "DiagrammingTest\NShapeTest (VS 2008).csproj", "{C6B06ED8-F703-487B-BBEC-41196BC0E301}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NShapeTest", "Test\NShapeTest.csproj", "{C6B06ED8-F703-487B-BBEC-41196BC0E301}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralShapes (VS 2008)", "GeneralShapes\GeneralShapes (VS 2008).csproj", "{011AA770-3B1E-46FA-9C13-FAF20CA6CE9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralShapes", "GeneralShapes\GeneralShapes.csproj", "{011AA770-3B1E-46FA-9C13-FAF20CA6CE9A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralModelObjects (VS 2008)", "GeneralModelObjects\GeneralModelObjects (VS 2008).csproj", "{B82D8209-6D76-42F7-A1D5-CE476CE27EE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GeneralModelObjects", "GeneralModelObjects\GeneralModelObjects.csproj", "{B82D8209-6D76-42F7-A1D5-CE476CE27EE7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowChartShapes (VS 2008)", "FlowChartShapes\FlowChartShapes (VS 2008).csproj", "{87E929C8-1E90-44DC-8DE1-4F1BE5F0B7F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlowChartShapes", "FlowChartShapes\FlowChartShapes.csproj", "{87E929C8-1E90-44DC-8DE1-4F1BE5F0B7F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricalShapes (VS 2008)", "ElectricalShapes\ElectricalShapes (VS 2008).csproj", "{A60B3D84-E716-44AE-ACD8-6D7D7ED0129E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricalShapes", "ElectricalShapes\ElectricalShapes.csproj", "{A60B3D84-E716-44AE-ACD8-6D7D7ED0129E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricalModelObjects (VS 2008)", "ElectricalModelObjects\ElectricalModelObjects (VS 2008).csproj", "{75E930BF-FE62-4440-98E6-01C42588947C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ElectricalModelObjects", "ElectricalModelObjects\ElectricalModelObjects.csproj", "{75E930BF-FE62-4440-98E6-01C42588947C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Designer (VS 2008)", "Designer\Designer (VS 2008).csproj", "{73CE0213-D7DC-4FFC-8324-EFEAE089B14D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Designer", "Designer\Designer.csproj", "{73CE0213-D7DC-4FFC-8324-EFEAE089B14D}"
 EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution

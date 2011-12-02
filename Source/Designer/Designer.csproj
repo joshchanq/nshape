@@ -190,13 +190,13 @@
     <None Include="Resources\NShapeLogo_403x163.PNG" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+    <ProjectReference Include="..\Core\NShape.csproj">
       <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
-      <Name>NShape %28VS 2008%29</Name>
+      <Name>NShape</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WinFormsUI\WinFormsUI %28VS 2008%29.csproj">
+    <ProjectReference Include="..\WinFormsUI\WinFormsUI.csproj">
       <Project>{25A96297-808B-430F-9610-02C489167249}</Project>
-      <Name>WinFormsUI %28VS 2008%29</Name>
+      <Name>WinFormsUI</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

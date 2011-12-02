@@ -75,29 +75,29 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+    <ProjectReference Include="..\Core\NShape.csproj">
       <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
-      <Name>NShape %28VS 2008%29</Name>
+      <Name>NShape</Name>
     </ProjectReference>
-    <ProjectReference Include="..\ElectricalShapes\ElectricalShapes %28VS 2008%29.csproj">
+    <ProjectReference Include="..\ElectricalShapes\ElectricalShapes.csproj">
       <Project>{A60B3D84-E716-44AE-ACD8-6D7D7ED0129E}</Project>
-      <Name>ElectricalShapes %28VS 2008%29</Name>
+      <Name>ElectricalShapes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FlowChartShapes\FlowChartShapes %28VS 2008%29.csproj">
+    <ProjectReference Include="..\FlowChartShapes\FlowChartShapes.csproj">
       <Project>{87E929C8-1E90-44DC-8DE1-4F1BE5F0B7F3}</Project>
-      <Name>FlowChartShapes %28VS 2008%29</Name>
+      <Name>FlowChartShapes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GeneralModelObjects\GeneralModelObjects %28VS 2008%29.csproj">
+    <ProjectReference Include="..\GeneralModelObjects\GeneralModelObjects.csproj">
       <Project>{B82D8209-6D76-42F7-A1D5-CE476CE27EE7}</Project>
-      <Name>GeneralModelObjects %28VS 2008%29</Name>
+      <Name>GeneralModelObjects</Name>
     </ProjectReference>
-    <ProjectReference Include="..\GeneralShapes\GeneralShapes %28VS 2008%29.csproj">
+    <ProjectReference Include="..\GeneralShapes\GeneralShapes.csproj">
       <Project>{011AA770-3B1E-46FA-9C13-FAF20CA6CE9A}</Project>
-      <Name>GeneralShapes %28VS 2008%29</Name>
+      <Name>GeneralShapes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\SoftwareArchitectureShapes\SoftwareArchitectureShapes %28VS 2008%29.csproj">
+    <ProjectReference Include="..\SoftwareArchitectureShapes\SoftwareArchitectureShapes.csproj">
       <Project>{E82D0BC5-0F7B-4385-B0A0-9CA29D6283AC}</Project>
-      <Name>SoftwareArchitectureShapes %28VS 2008%29</Name>
+      <Name>SoftwareArchitectureShapes</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
