@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</ProjectGuid>
+    <ProjectGuid>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Dataweb.NShape</RootNamespace>
     <AssemblyName>Dataweb.NShape</AssemblyName>

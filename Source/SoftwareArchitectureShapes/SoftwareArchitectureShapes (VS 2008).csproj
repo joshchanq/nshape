@@ -4,7 +4,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{FFC46D3E-DA4E-4214-84C9-53A49C75BA77}</ProjectGuid>
+    <ProjectGuid>{E82D0BC5-0F7B-4385-B0A0-9CA29D6283AC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dataweb.NShape.SoftwareArchitectureShapes</RootNamespace>
@@ -103,9 +103,9 @@
     <EmbeddedResource Include="Resources\Laptop.emf" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape.csproj">
-      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>NShape</Name>
+    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+      <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
+      <Name>NShape %28VS 2008%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

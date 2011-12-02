@@ -4,7 +4,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D8A7182E-BE69-4B4D-B20D-851FE1800C3C}</ProjectGuid>
+    <ProjectGuid>{A60B3D84-E716-44AE-ACD8-6D7D7ED0129E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Dataweb.NShape.ElectricalShapes</RootNamespace>
     <AssemblyName>Dataweb.NShape.ElectricalShapes</AssemblyName>
@@ -103,9 +103,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape.csproj">
-      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>NShape</Name>
+    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+      <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
+      <Name>NShape %28VS 2008%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

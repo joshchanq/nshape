@@ -4,7 +4,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DB90D9B2-D4F8-4D09-92C5-A7C1AC57FA4E}</ProjectGuid>
+    <ProjectGuid>{87E929C8-1E90-44DC-8DE1-4F1BE5F0B7F3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dataweb.NShape.FlowChartShapes</RootNamespace>
@@ -95,9 +95,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Core\NShape.csproj">
-      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>NShape</Name>
+    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+      <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
+      <Name>NShape %28VS 2008%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

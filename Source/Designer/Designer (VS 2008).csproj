@@ -5,7 +5,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{D310A704-CE98-4632-A3B1-1D2305792BB7}</ProjectGuid>
+    <ProjectGuid>{73CE0213-D7DC-4FFC-8324-EFEAE089B14D}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Dataweb.NShape.Designer</RootNamespace>
@@ -88,16 +88,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{B4F97281-0DBD-4835-9ED8-7DFB966E87FF}" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\NShape.csproj">
-      <Project>{9EFE1059-E2DC-4576-B9E3-4AE3F998CB28}</Project>
-      <Name>NShape</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WinFormsUI\WinFormsUI.csproj">
-      <Project>{5EAB131C-1C93-4C3F-A1D8-D711053DE33C}</Project>
-      <Name>WinFormsUI</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="AboutBox.resx">
@@ -198,6 +188,16 @@
     <EmbeddedResource Include="Resources\DebugShowInvalidatedAreas.bmp" />
     <EmbeddedResource Include="Resources\DebugShowCellOccupation.bmp" />
     <None Include="Resources\NShapeLogo_403x163.PNG" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Core\NShape %28VS 2008%29.csproj">
+      <Project>{8A2E39FE-E3D7-474E-8662-6EEAB8A8101C}</Project>
+      <Name>NShape %28VS 2008%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WinFormsUI\WinFormsUI %28VS 2008%29.csproj">
+      <Project>{25A96297-808B-430F-9610-02C489167249}</Project>
+      <Name>WinFormsUI %28VS 2008%29</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
