@@ -130,7 +130,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="MultiHashList.cs" />
-    <Compile Include="Polygone.cs" />
     <Compile Include="PolyLineBase.cs" />
     <Compile Include="ShapeDuplicator.cs" />
     <Compile Include="ShapeGroup.cs" />
