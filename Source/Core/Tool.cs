@@ -3230,7 +3230,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private bool IsMoveShapeFeasible(IDiagramPresenter diagramPresenter, MouseState mouseState, ShapeAtCursorInfo shapeAtCursorInfo) {
-			if (shapeAtCursorInfo.IsEmpty)
+			if (shapeAtCursorInfo.IsEmpty || mouseState.IsEmpty)
 				return false;
 			if (!diagramPresenter.Project.SecurityManager.IsGranted(Permission.Layout, shapeAtCursorInfo.Shape))
 				return false;
@@ -3319,7 +3319,7 @@ namespace Dataweb.NShape.Advanced {
 
 
 		private bool IsEditCaptionFeasible(IDiagramPresenter diagramPresenter, MouseState mouseState, ShapeAtCursorInfo shapeAtCursorInfo) {
-			if (shapeAtCursorInfo.IsEmpty)
+			if (shapeAtCursorInfo.IsEmpty || mouseState.IsEmpty)
 				return false;
 			if (!diagramPresenter.Project.SecurityManager.IsGranted(Permission.ModifyData, shapeAtCursorInfo.Shape))
 				return false;
