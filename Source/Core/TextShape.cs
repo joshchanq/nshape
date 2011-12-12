@@ -657,7 +657,6 @@ namespace Dataweb.NShape.Advanced {
 				if (!followingConnectedShape) {
 					calcInfo = GluePointCalcInfo.Empty;
 					CalcGluePointCalcInfo(ci.OwnPointId, ci.OtherShape, ci.OtherPointId);
-					//InvalidateDrawCache();
 				}
 			}
 			return result;
@@ -695,7 +694,6 @@ namespace Dataweb.NShape.Advanced {
 				// If the gluePoint is connected, recalculate GluePointCalcInfo
 				this.calcInfo = GluePointCalcInfo.Empty;
 				CalcGluePointCalcInfo(ci.OwnPointId, ci.OtherShape, ci.OtherPointId);
-				InvalidateDrawCache();
 			}
 			return result;
 		}

@@ -1513,7 +1513,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		public bool OpenDiagram(string diagramName) {
 			if (diagramName == null) throw new ArgumentNullException("diagramName");
 			bool result = false;
-			// clear current selectedShapes and models
+			// Clear current selectedShapes and models
 			if (Project.Repository == null)
 				throw new NShapeException("Repository is not set to an instance of IRepository.");
 			if (!Project.Repository.IsOpen)
@@ -1538,7 +1538,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		public bool CreateDiagram(string diagramName) {
 			if (diagramName == null) throw new ArgumentNullException("diagramName");
 			bool result = false;
-			// clear current selectedShapes and models
+			// Clear current selectedShapes and models
 			if (Project.Repository == null)
 				throw new NShapeException("Repository is not set to an instance of IRepository.");
 			if (!Project.Repository.IsOpen)

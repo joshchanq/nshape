@@ -402,15 +402,13 @@ namespace Dataweb.NShape {
 		public bool IsGranted(Permission permission, IEnumerable<Shape> shapes) {
 			if (shapes == null) throw new ArgumentNullException("shapes");
 			bool grantedForAllShapes = true;
-			bool shapeCollectionIsEmpty = true;
 			foreach (Shape s in shapes) {
-				if (shapeCollectionIsEmpty) shapeCollectionIsEmpty = false;
 				if (!IsGranted(permission, s)) {
 					grantedForAllShapes = false;
 					break;
 				}
 			}
-			return (!shapeCollectionIsEmpty && grantedForAllShapes);
+			return grantedForAllShapes;
 		}
 
 		#endregion

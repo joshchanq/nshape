@@ -216,7 +216,13 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		/// <override></override>
 		public override void CopyFrom(Shape source) {
 			base.CopyFrom(source);
-
+			// Copy default styles for captions before copying the caption's properties
+			if (source is EntitySymbol) {
+				EntitySymbol src = (EntitySymbol)source;
+				this.ColumnBackgroundColorStyle = src.ColumnBackgroundColorStyle;
+				this.ColumnCharacterStyle = src.ColumnCharacterStyle;
+				this.ColumnParagraphStyle = src.ColumnParagraphStyle;
+			}
 			// Copy captions via the ICaptionedShape interface
 			if (source is ICaptionedShape) {
 				ClearColumns();
@@ -228,12 +234,6 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 					SetCaptionCharacterStyle(i, src.GetCaptionCharacterStyle(i));
 					SetCaptionParagraphStyle(i, src.GetCaptionParagraphStyle(i));
 				}
-			}
-
-			if (source is EntitySymbol) {
-				this.ColumnBackgroundColorStyle = ((EntitySymbol)source).ColumnBackgroundColorStyle;
-				this.ColumnCharacterStyle = ((EntitySymbol)source).ColumnCharacterStyle;
-				this.ColumnParagraphStyle = ((EntitySymbol)source).ColumnParagraphStyle;
 			}
 		}
 
@@ -422,7 +422,26 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public override void SetCaptionCharacterStyle(int index, ICharacterStyle characterStyle) {
 			if (index < base.CaptionCount)
 				base.SetCaptionCharacterStyle(index, characterStyle);
-			else ColumnCharacterStyle = characterStyle;
+			else {
+				int idx = index - 1;
+				// Create if needed
+				if (columnCharacterStyles == null)
+					columnCharacterStyles = new SortedList<int, ICharacterStyle>(1);
+				// Set private style for a single caption
+				if (characterStyle != ColumnCharacterStyle) {
+					if (!columnCharacterStyles.ContainsKey(idx))
+						columnCharacterStyles.Add(idx, characterStyle);
+					else columnCharacterStyles[idx] = characterStyle;
+				} else {
+					if (columnCharacterStyles != null) {
+						if (columnCharacterStyles.ContainsKey(idx))
+							columnCharacterStyles.Remove(idx);
+						// Delete if not needed any more
+						if (columnCharacterStyles.Count == 0)
+							columnCharacterStyles = null;
+					}
+				}
+			}
 		}
 
 
@@ -430,7 +449,26 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public override void SetCaptionParagraphStyle(int index, IParagraphStyle paragraphStyle) {
 			if (index < base.CaptionCount)
 				base.SetCaptionParagraphStyle(index, paragraphStyle);
-			else ColumnParagraphStyle = paragraphStyle;
+			else {
+				int idx = index - 1;
+				// Create if needed
+				if (columnParagraphStyles == null) 
+					columnParagraphStyles = new SortedList<int, IParagraphStyle>(1);
+				// Set private style for a single caption
+				if (paragraphStyle != ColumnParagraphStyle) {
+					if (!columnParagraphStyles.ContainsKey(idx))
+						columnParagraphStyles.Add(idx, paragraphStyle);
+					else columnParagraphStyles[idx] = paragraphStyle;
+				} else {
+					if (columnParagraphStyles != null) {
+						if (columnParagraphStyles.ContainsKey(idx))
+							columnParagraphStyles.Remove(idx);
+						// Delete if not needed any longer
+						if (columnParagraphStyles.Count == 0)
+							columnParagraphStyles = null;
+					}
+				}
+			}
 		}
 
 		#endregion
@@ -597,8 +635,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			int captionIdx = -1;
 			if (ContainsPoint(mouseX, mouseY)) {
 				Point tl, tr, bl, br;
-				for (int i = 0; i < columnCaptions.Count; ++i) {
-					GetCaptionBounds(i, out tl, out tr, out br, out bl);
+				for (int i = columnCaptions.Count - 1; i >= 0; --i) {
+					GetCaptionBounds(i + 1, out tl, out tr, out br, out bl);	// +1 because Text Property is Caption '0'
 					if (Geometry.QuadrangleContainsPoint(tl, tr, br, bl, mouseX, mouseY)) {
 						captionIdx = i;
 						break;
@@ -609,36 +647,12 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			yield return new CommandMenuItemDef("Append Column", null, string.Empty, true,
 				new AddColumnCommand(this, newColumnTxt));
 			
-			//yield return new CommandAction("Edit Column", new EditColumnCommand(this, i, columnCaptions[i].Text));
-			
 			bool isFeasible = captionIdx >= 0;
 			string description = "No caption clicked.";
 			yield return new CommandMenuItemDef("Insert Column", null, description, isFeasible,
 				isFeasible ? new InsertColumnCommand(this, captionIdx, newColumnTxt) : null);
 			yield return new CommandMenuItemDef("Remove Column", null, description, isFeasible,
 				isFeasible ? new RemoveColumnCommand(this, captionIdx, columnCaptions[captionIdx].Text) : null);
-
-			//if (ContainsPoint(mouseX, mouseY)) {
-			//   int left = (int)Math.Round(-Width / 2f);
-			//   int top = (int)Math.Round(-Height / 2f);
-			//   int cornerRadius = CalcCornerRadius();
-			//   int headerHeight = CalcHeaderHeight();
-			//   int columnHeight = CalcColumnHeight();
-			//   int dblLineWidth = LineStyle.LineWidth + LineStyle.LineWidth;
-
-			//   Rectangle captionBounds = Rectangle.Empty;
-			//   captionBounds.X = left + cornerRadius;
-			//   captionBounds.Width = Width - cornerRadius - cornerRadius;
-			//   captionBounds.Height = columnHeight;
-			//   for (int i = 0; i < columnCaptions.Count; ++i) {
-			//      captionBounds.Y = top + headerHeight + (i * columnHeight);
-			//      if (Geometry.RectangleContainsPoint(captionBounds, mouseX, mouseY)) {
-			//         yield return new EditColumnCommandAction("Edit Column", new EditColumnCommand(this, i, columnCaptions[i].Text));
-			//         yield return new InsertColumnCommandAction("Insert Column", new InsertColumnCommand(this, i, null));
-			//         yield return new RemoveColumnCommandAction("Remove Column", new RemoveColumnCommand(this, i, columnCaptions[i].Text));
-			//      }
-			//   }
-			//}
 		}
 
 
@@ -750,9 +764,19 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 				if (columnCaptions.Count > 0) {
 					for (int i = 0; i < columnCaptions.Count; ++i) {
 						// draw all captions that fit into the text area. 
-						if (top + headerHeight + (i * columnHeight) + columnHeight <= bottom - cornerRadius)
-							columnCaptions[i].Draw(graphics, ColumnCharacterStyle, ColumnParagraphStyle);
-						else {
+						if (top + headerHeight + (i * columnHeight) + columnHeight <= bottom - cornerRadius) {
+							// If there are private styles for a single caption, use these
+							if (columnCharacterStyles != null || columnParagraphStyles != null) {
+								ICharacterStyle characterStyle = null;
+								if (columnCharacterStyles != null)
+									columnCharacterStyles.TryGetValue(i, out characterStyle);
+								IParagraphStyle paragraphStyle = null;
+								if (columnParagraphStyles != null)
+									columnParagraphStyles.TryGetValue(i, out paragraphStyle);
+								columnCaptions[i].Draw(graphics, characterStyle ?? ColumnCharacterStyle, paragraphStyle ?? ColumnParagraphStyle);
+							} else 
+								columnCaptions[i].Draw(graphics, ColumnCharacterStyle, ColumnParagraphStyle);
+						} else {
 							// draw ellipsis indicators
 							graphics.DrawLines(pen, upperScrollArrow);
 							graphics.DrawLines(pen, lowerScrollArrow);
@@ -836,25 +860,17 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		/// <override></override>
 		protected override void TransformDrawCache(int deltaX, int deltaY, int deltaAngle, int rotationCenterX, int rotationCenterY) {
 			base.TransformDrawCache(deltaX, deltaY, deltaAngle, rotationCenterX, rotationCenterY);
-			
-			// transform DrawCache only if the drawCache is valid, otherwise it will be recalculated
-			// at the correct position/size
-			if (!drawCacheIsInvalid) {
-				// transform ControlPoints
-				if (columnControlPoints.Length > 0)
-					Matrix.TransformPoints(columnControlPoints);
-
-				// transform column frame
-				Matrix.TransformPoints(columnFrame);
-
-				// transform ellipsis indicator
-				Matrix.TransformPoints(upperScrollArrow);
-				Matrix.TransformPoints(lowerScrollArrow);
-
-				// transform Column paths
-				for (int i = 0; i < columnCaptions.Count; ++i)
-					columnCaptions[i].TransformPath(Matrix);
-			}
+			// transform ControlPoints
+			if (columnControlPoints.Length > 0)
+				Matrix.TransformPoints(columnControlPoints);
+			// transform column frame
+			Matrix.TransformPoints(columnFrame);
+			// transform ellipsis indicator
+			Matrix.TransformPoints(upperScrollArrow);
+			Matrix.TransformPoints(lowerScrollArrow);
+			// transform Column paths
+			for (int i = 0; i < columnCaptions.Count; ++i)
+				columnCaptions[i].TransformPath(Matrix);
 		}
 
 
@@ -870,8 +886,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			if (index == 0) {
 				captionBounds.Y = top;
 				captionBounds.Height = headerHeight;
-			}
-			else {
+			} else {
 				int columnHeight = CalcColumnHeight();
 				captionBounds.Y = top + headerHeight + ((index - 1) * columnHeight);
 				captionBounds.Height = columnHeight;
@@ -994,8 +1009,12 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 
 		private int CalcHeaderHeight() {
-			Size result = TextMeasurer.MeasureText(string.IsNullOrEmpty(Text) ? "Ig" : Text, ToolCache.GetFont(CharacterStyle), Size.Empty, ParagraphStyle);
-			result.Height = (result.Height * 2) + LineStyle.LineWidth + LineStyle.LineWidth;
+			int cornerRadius = CalcCornerRadius() + 1;
+			Size size = Size.Empty;
+			size.Width = Width - (2 * cornerRadius);
+			size.Height = Height - (2 * cornerRadius);
+			Size result = TextMeasurer.MeasureText(string.IsNullOrEmpty(Text) ? "Ig" : Text, ToolCache.GetFont(CharacterStyle), size, ParagraphStyle);
+			result.Height += (cornerRadius + LineStyle.LineWidth + LineStyle.LineWidth);
 			return result.Height;
 		}
 
@@ -1045,6 +1064,8 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		private string[] columnNames = new string[0];
 		private List<Caption> columnCaptions = new List<Caption>(0);
 		private List<Rectangle> columnBounds = new List<Rectangle>(0);
+		private SortedList<int, ICharacterStyle> columnCharacterStyles = null;
+		private SortedList<int, IParagraphStyle> columnParagraphStyles = null;
 		private Point[] columnControlPoints = new Point[0];
 		private IColorStyle privateColumnBackgroundColorStyle = null;
 		private ICharacterStyle privateColumnCharacterStyle = null;
