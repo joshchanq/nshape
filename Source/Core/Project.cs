@@ -53,12 +53,12 @@ namespace Dataweb.NShape {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public static void AssertSupportedVersion(bool save, int version) {
-			if (save) {
-				if (version < FirstSupportedSaveVersion || version > LastSupportedSaveVersion)
-					throw new NShapeException("Unsupported save version");
-			} else {
-				if (version < FirstSupportedLoadVersion || version > LastSupportedLoadVersion)
-					throw new NShapeException("Unsupported load version");
+			int minVersion = save?FirstSupportedSaveVersion:FirstSupportedLoadVersion;
+			int maxVersion = save?LastSupportedSaveVersion:LastSupportedLoadVersion;
+			if (version < minVersion || version > maxVersion){
+				string msg = string.Format("{0}ing repository failed: The repository is version {1} but this application only supports repositories version {2} - {3}.",
+					(save) ? "Save" : "Load", version, minVersion, maxVersion);
+				throw new NShapeException(msg);
 			}
 		}
 
@@ -981,9 +981,9 @@ namespace Dataweb.NShape {
 
 		// Supported repository versions of the Core library
 		internal const int FirstSupportedSaveVersion = 1;
-		internal const int LastSupportedSaveVersion = 4;
+		internal const int LastSupportedSaveVersion = 3;
 		internal const int FirstSupportedLoadVersion = 1;
-		internal const int LastSupportedLoadVersion = 4;
+		internal const int LastSupportedLoadVersion = 3;
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public const string NShapeLibraryInitializerClassName = "NShapeLibraryInitializer";

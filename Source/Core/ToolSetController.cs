@@ -409,7 +409,8 @@ namespace Dataweb.NShape.Controllers {
 				(action, project) => OnTemplateEditorSelected(new TemplateEditorEventArgs(project, clickedTemplate)));
 			
 			isFeasible =  (clickedTemplate != null);
-			if (!isFeasible) description = "No template tool selected";
+			if (!isFeasible) 
+				description = "No template tool selected";
 			else {
 				foreach (Template template in Project.Repository.GetTemplates()) {
 					if (template.Shape.Template == clickedTemplate) {
@@ -429,7 +430,7 @@ namespace Dataweb.NShape.Controllers {
 					}
 				}
 				if (isFeasible) description = string.Format("Delete Template '{0}'", clickedTemplate.Title);
-				else description = string.Format("Template '{0}' is still in use.", clickedTemplate.Title);
+				else description = string.Format("Template '{0}' is in use.", clickedTemplate.Title);
 			}
 			yield return new CommandMenuItemDef("Delete Template...", null, description, isFeasible,
 				isFeasible ? new DeleteTemplateCommand(clickedTemplate) : null);

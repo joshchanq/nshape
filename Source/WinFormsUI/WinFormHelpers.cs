@@ -236,9 +236,9 @@ namespace Dataweb.NShape.WinFormsUI {
 				menuItem.Checked = action.Checked;
 				//menuItem.CheckOnClick = false;
 				menuItem.Enabled = (action.IsFeasible && action.IsGranted(project.SecurityManager));
-				if (action.IsGranted(project.SecurityManager))
-					menuItem.ToolTipText = action.Description;
-				else menuItem.ToolTipText = "Action is not granted.";
+				if (action.IsFeasible && !action.IsGranted(project.SecurityManager))
+					menuItem.ToolTipText = "Action is not granted.";
+				else menuItem.ToolTipText = action.Description;
 				menuItem.Image = action.Image;
 				menuItem.ImageTransparentColor = action.ImageTransparentColor;
 

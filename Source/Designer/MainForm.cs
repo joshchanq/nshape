@@ -922,7 +922,6 @@ namespace Dataweb.NShape.Designer {
 			// Display all diagramControllers of the project
 			bool diagramAdded = false;
 			foreach (Diagram diagram in project.Repository.GetDiagrams()) {
-				project.Repository.GetDiagramShapes(diagram);
 				CreateDisplayForDiagram(diagram);
 				diagramAdded = true;
 			}

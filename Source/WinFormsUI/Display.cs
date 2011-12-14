@@ -4603,8 +4603,13 @@ namespace Dataweb.NShape.WinFormsUI {
 			bool isFeasible = diagramSetController.CanSplitShapeAggregation(diagram, shapes);
 			string description;
 			if (isFeasible) description = "Disaggregate the selected shape aggregation";
-			else description = shapes.Count == 1 ? "No shape aggregation selected" : "Too many shapes selected";
-			
+			else {
+				if (shapes.Count <= 0) 
+					description = noShapesSelectedText;
+				else if (shapes.Count == 1) 
+					description = "Selected shape is not a composite shape.";
+				else description = "Too many shapes selected";
+			}
 			return new DelegateMenuItemDef("Disaggregate Shapes", Properties.Resources.SplitShapeAggregationBtn,
 				description, isFeasible, Permission.Insert, shapes, 
 				(a, p) => PerformSplitCompositeShape(diagram, shapes.Bottom));
