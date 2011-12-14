@@ -301,8 +301,11 @@ namespace Dataweb.NShape.Designer {
 					repositoryInfo.typeName = xmlNode.Attributes[AttrNameRepositoryType].Value;
 					repositoryInfo.computerName = xmlNode.Attributes[AttrNameServerName].Value;
 					repositoryInfo.location = xmlNode.Attributes[AttrNameDataSource].Value;
-					if (repositoryInfo != RepositoryInfo.Empty && !recentProjects.Contains(repositoryInfo))
+					if (repositoryInfo != RepositoryInfo.Empty && !recentProjects.Contains(repositoryInfo)) {
+						if (recentProjects.Count == recentProjectsItemCount)
+							recentProjects.RemoveAt(0);
 						recentProjects.Add(repositoryInfo);
+					}
 				} catch (Exception exc) {
 					Debug.Fail(exc.Message);
 				}
@@ -472,6 +475,8 @@ namespace Dataweb.NShape.Designer {
 			for (int i = recentProjects.Count - 1; i >= 0; --i)
 				if (recentProjects[i] == projectInfo) return false;
 			// If it does not, add it and create a new menu item
+			if (recentProjects.Count == recentProjectsItemCount)
+				recentProjects.RemoveAt(0);
 			recentProjects.Add(projectInfo);
 			PrependRecentProjectsMenuItem(projectInfo);
 			SaveConfigFile();
@@ -2171,6 +2176,9 @@ namespace Dataweb.NShape.Designer {
 
 		#region [Private] Fields
 
+		private const int historyDropDownItemCount = 20;
+		private const int recentProjectsItemCount = 25;
+
 		private EventMonitorForm eventMoniorForm;
 		private LayoutDialog layoutControlForm;
 		private TemplateEditorDialog templateEditorDialog;
@@ -2200,9 +2208,8 @@ namespace Dataweb.NShape.Designer {
 		private string configFolder;
 		private int zoom = 100;
 		private bool highQuality = true;
-		private int historyDropDownItemCount = 20;
 
-		private List<RepositoryInfo> recentProjects = new List<RepositoryInfo>();
+		private List<RepositoryInfo> recentProjects = new List<RepositoryInfo>(recentProjectsItemCount);
 
 		private void settingsToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
 
