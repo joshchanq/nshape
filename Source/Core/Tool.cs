@@ -3487,7 +3487,7 @@ namespace Dataweb.NShape.Advanced {
 				base.SmallIcon.MakeTransparent(transparentColor);
 			}
 			ClearPreview();
-			Title = string.IsNullOrEmpty(Template.Title) ? Template.Name : Template.Title;
+			Title = Template.Title;
 		}
 
 
@@ -3496,7 +3496,7 @@ namespace Dataweb.NShape.Advanced {
 			: base(category) {
 			if (template == null) throw new ArgumentNullException("template");
 			this.template = template;
-			Title = string.IsNullOrEmpty(template.Title) ? template.Name : template.Title;
+			Title = template.Title;
 			ToolTipText = string.Format("Inserts a {0}.", Title);
 			if (!string.IsNullOrEmpty(template.Shape.Type.Description))
 				ToolTipText += Environment.NewLine + template.Shape.Type.Description;

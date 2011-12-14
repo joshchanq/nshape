@@ -402,15 +402,35 @@ namespace Dataweb.NShape.Controllers {
 			yield return new DelegateMenuItemDef("Create Template...", null, description, isFeasible, Permission.Templates,
 				(action, project) => OnTemplateEditorSelected(new TemplateEditorEventArgs(project)));
 
-			isFeasible = (clickedTool is TemplateTool);
-			description = isFeasible ? string.Format("Edit Template '{0}'", clickedTemplate.Name) :
+			isFeasible = (clickedTemplate != null);
+			description = isFeasible ? string.Format("Edit Template '{0}'", clickedTemplate.Title) :
 				"No template tool selected";
 			yield return new DelegateMenuItemDef("Edit Template...", null, description, isFeasible, Permission.Templates,
 				(action, project) => OnTemplateEditorSelected(new TemplateEditorEventArgs(project, clickedTemplate)));
-
-			isFeasible = (clickedTool is TemplateTool);
-			description = isFeasible ? string.Format("Delete Template '{0}'", clickedTemplate.Name) :
-				"No template tool selected";
+			
+			isFeasible =  (clickedTemplate != null);
+			if (!isFeasible) description = "No template tool selected";
+			else {
+				foreach (Template template in Project.Repository.GetTemplates()) {
+					if (template.Shape.Template == clickedTemplate) {
+						isFeasible = false;
+						break;
+					}
+				}
+				if (isFeasible) {
+					// Check if template is in use
+					foreach (Diagram diagram in Project.Repository.GetDiagrams()) {
+						foreach (Shape shape in diagram.Shapes) {
+							if (shape.Template == clickedTemplate) {
+								isFeasible = false;
+								break;
+							}
+						}
+					}
+				}
+				if (isFeasible) description = string.Format("Delete Template '{0}'", clickedTemplate.Title);
+				else description = string.Format("Template '{0}' is still in use.", clickedTemplate.Title);
+			}
 			yield return new CommandMenuItemDef("Delete Template...", null, description, isFeasible,
 				isFeasible ? new DeleteTemplateCommand(clickedTemplate) : null);
 

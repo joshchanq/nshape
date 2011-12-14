@@ -2525,7 +2525,7 @@ namespace Dataweb.NShape {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public CreateTemplateCommand(Template template) :base(template){
-			this.description = string.Format("Create new tempate '{0}' based on '{1}'", template.Name, template.Shape.Type.Name);
+			this.description = string.Format("Create new tempate '{0}' based on '{1}'", template.Title, template.Shape.Type.Name);
 		}
 
 
@@ -2587,7 +2587,7 @@ namespace Dataweb.NShape {
 		/// <ToBeCompleted></ToBeCompleted>
 		public DeleteTemplateCommand(Template template)
 			: base(template) {
-			this.description = string.Format("Delete tempate '{0}' based on '{1}'", template.Name, template.Shape.Type.Name);
+			this.description = string.Format("Delete tempate '{0}' based on '{1}'", template.Title, template.Shape.Type.Name);
 		}
 
 
@@ -2623,7 +2623,7 @@ namespace Dataweb.NShape {
 			: base() {
 			if (originalTemplate == null) throw new ArgumentNullException("originalTemplate");
 			if (changedTemplate == null) throw new ArgumentNullException("changedTemplate");
-			this.description = string.Format("Change tempate '{0}'", originalTemplate.Name);
+			this.description = string.Format("Change tempate '{0}'", originalTemplate.Title);
 			this.originalTemplate = originalTemplate;
 			this.oldTemplate = new Template(originalTemplate.Name, originalTemplate.Shape.Clone());
 			this.oldTemplate.CopyFrom(originalTemplate);
@@ -2736,7 +2736,7 @@ namespace Dataweb.NShape {
 			: base() {
 			if (originalTemplate == null) throw new ArgumentNullException("originalTemplate");
 			if (changedTemplate == null) throw new ArgumentNullException("changedTemplate");
-			this.description = string.Format("Change shape of tempate  '{0}' from '{1}' to '{2}'", originalTemplate.Name, originalTemplate.Shape.Type.Name, changedTemplate.Shape.Type.Name);
+			this.description = string.Format("Change shape of tempate  '{0}' from '{1}' to '{2}'", originalTemplate.Title, originalTemplate.Shape.Type.Name, changedTemplate.Shape.Type.Name);
 			this.originalTemplate = originalTemplate;
 			this.oldTemplate = originalTemplate.Clone();
 			this.newTemplate = changedTemplate;
