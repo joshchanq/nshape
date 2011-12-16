@@ -605,7 +605,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Moves the given ControlPoint by the given offsets. 
 		/// Invalidates the shape and calls FollowConnectionPointWithGluePoint for all ControlPoints affected by the movement.
 		/// </summary>
-		/// <returns>True if the mevement was performed as desired. False if the movement was performed as good as possible.</returns>
+		/// <returns>True if the movement was performed as desired. False if the movement was performed as good as possible.</returns>
 		public override sealed bool MoveControlPointBy(ControlPointId pointId, int deltaX, int deltaY, ResizeModifiers modifiers) {
 			bool result;
 			if (pointId == ControlPointId.None) throw new ArgumentException(string.Format("{0} is not a valid {1} for this operation.", pointId, typeof(ControlPointId).Name));
@@ -635,7 +635,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Moves the shape by the given offsets. 
 		/// Invalidates the shape and calls FollowConnectionPointWithGluePoint for all ControlPoints affected by the movement.
 		/// </summary>
-		/// <returns>True if the mevement was performed as desired. False if the movement was performed as good as possible.</returns>
+		/// <returns>True if the movement was performed as desired. False if the movement was performed as good as possible.</returns>
 		public override sealed bool MoveBy(int deltaX, int deltaY) {
 			bool result;
 			BeginMove();

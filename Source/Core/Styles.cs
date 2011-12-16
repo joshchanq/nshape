@@ -167,7 +167,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Initializes a nwe instance of <see cref="T:Dataweb.NShape.TextPadding" />.
+		/// Initializes a New instance of <see cref="T:Dataweb.NShape.TextPadding" />.
 		/// </summary>
 		public TextPadding(int all) {
 			if (all < 0) throw new ArgumentOutOfRangeException("all");
@@ -177,7 +177,7 @@ namespace Dataweb.NShape {
 
 
 		/// <summary>
-		/// Initializes a nwe instance of <see cref="T:Dataweb.NShape.TextPadding" />.
+		/// Initializes a New instance of <see cref="T:Dataweb.NShape.TextPadding" />.
 		/// </summary>
 		public TextPadding(int left, int top, int right, int bottom) {
 			if (left < 0) throw new ArgumentOutOfRangeException("left");

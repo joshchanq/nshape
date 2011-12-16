@@ -1099,7 +1099,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 					break;
 
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(width, height, 0, CenterPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+					if (!Geometry.MoveRectangleTop(width, height, 0, CenterPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 
@@ -1109,7 +1109,7 @@ namespace Dataweb.NShape.FlowChartShapes {
 					break;
 
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(width, height, 0, CenterPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+					if (!Geometry.MoveRectangleBottom(width, height, 0, CenterPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 
@@ -2402,19 +2402,19 @@ namespace Dataweb.NShape.FlowChartShapes {
 			int height = Height;
 			switch ((int)pointId) {
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+					if (!Geometry.MoveRectangleTop(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 				case MiddleLeftControlPoint:
-					if (!Geometry.MoveRectangleLeft(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width))
+					if (!Geometry.MoveRectangleLeft(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 				case MiddleRightControlPoint:
-					if (!Geometry.MoveRectangleRight(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width))
+					if (!Geometry.MoveRectangleRight(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+					if (!Geometry.MoveRectangleBottom(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 				default:

@@ -710,10 +710,10 @@ namespace Dataweb.NShape.GeneralShapes {
 				case ArrowTopControlPoint:
 				case ArrowBottomControlPoint:
 					if (pointId == ArrowTopControlPoint) {
-						if (!Geometry.MoveRectangleTop(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+						if (!Geometry.MoveRectangleTop(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 							result = false;
 					} else {
-						if (!Geometry.MoveRectangleBottom(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+						if (!Geometry.MoveRectangleBottom(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 							result = false;
 					}
 					int newHeadWidth = HeadWidth + (int)Math.Round(transformedDeltaX);

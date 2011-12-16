@@ -194,7 +194,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region TopCenter
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(size, size, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out vSize))
+					if (!Geometry.MoveRectangleTop(size, size, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = vSize;
 					break;
@@ -213,7 +213,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Middle left
 				case MiddleLeftControlPoint:
-					if (!Geometry.MoveRectangleLeft(size, size, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out hSize))
+					if (!Geometry.MoveRectangleLeft(size, size, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = hSize;
 					break;
@@ -221,7 +221,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Middle right
 				case MiddleRightControlPoint:
-					if (!Geometry.MoveRectangleRight(size, size, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out hSize))
+					if (!Geometry.MoveRectangleRight(size, size, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = hSize;
 					break;
@@ -240,7 +240,7 @@ namespace Dataweb.NShape.Advanced {
 
 				#region Bottom Center
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(size, size, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out vSize))
+					if (!Geometry.MoveRectangleBottom(size, size, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out hSize, out vSize))
 						result = false;
 					size = vSize;
 					break;

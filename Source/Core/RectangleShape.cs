@@ -374,43 +374,45 @@ namespace Dataweb.NShape.Advanced {
 		protected override bool MovePointByCore(ControlPointId pointId, float transformedDeltaX, float transformedDeltaY, float sin, float cos, ResizeModifiers modifiers) {
 			bool result = true;
 			int dx = 0, dy = 0;
-			int newWidth = Width;
-			int newHeight = Height;
+			int width = size.Width; int height = size.Height;
+			int newWidth = -1, newHeight = -1;
 			switch (pointId) {
 				case TopLeftControlPoint:
-					if (!Geometry.MoveRectangleTopLeft(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
+					if (!Geometry.MoveRectangleTopLeft(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(newWidth, newHeight, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newHeight))
+					if (!Geometry.MoveRectangleTop(width, height, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case TopRightControlPoint:
-					if (!Geometry.MoveRectangleTopRight(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
+					if (!Geometry.MoveRectangleTopRight(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case MiddleLeftControlPoint:
-					if (!Geometry.MoveRectangleLeft(newWidth, newHeight, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out newWidth))
+					if (!Geometry.MoveRectangleLeft(width, height, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case MiddleRightControlPoint:
-					if (!Geometry.MoveRectangleRight(newWidth, newHeight, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out newWidth))
+					if (!Geometry.MoveRectangleRight(width, height, transformedDeltaX, 0, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case BottomLeftControlPoint:
-					if (!Geometry.MoveRectangleBottomLeft(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
+					if (!Geometry.MoveRectangleBottomLeft(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(newWidth, newHeight, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newHeight))
+					if (!Geometry.MoveRectangleBottom(width, height, 0, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
 				case BottomRightControlPoint:
-					if (!Geometry.MoveRectangleBottomRight(newWidth, newHeight, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
+					if (!Geometry.MoveRectangleBottomRight(width, height, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out newWidth, out newHeight))
 						result = false;
 					break;
-				default: throw new IndexOutOfRangeException();
+				default:
+					throw new IndexOutOfRangeException();
 			}
+			System.Diagnostics.Debug.Assert(newWidth >= 0 && newHeight >= 0);
 			// Perform Resizing
 			size.Width = newWidth;
 			size.Height = newHeight;
@@ -1040,7 +1042,7 @@ namespace Dataweb.NShape.Advanced {
 			int height = Height;
 			switch (pointId) {
 				case TopCenterControlPoint:
-					if (!Geometry.MoveRectangleTop(width, height, 0, centerPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+					if (!Geometry.MoveRectangleTop(width, height, 0, centerPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 
@@ -1055,7 +1057,7 @@ namespace Dataweb.NShape.Advanced {
 					break;
 
 				case BottomCenterControlPoint:
-					if (!Geometry.MoveRectangleBottom(width, height, 0, centerPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out height))
+					if (!Geometry.MoveRectangleBottom(width, height, 0, centerPosFactorY, transformedDeltaX, transformedDeltaY, cos, sin, modifiers, out dx, out dy, out width, out height))
 						result = false;
 					break;
 

@@ -51,7 +51,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// </summary>
 		public static MouseEventArgsDg GetMouseEventArgs(Control control, MouseEventType eventType, int clicks, int delta) {
 			Point mousePos = control.PointToClient(Control.MousePosition);
-			return GetMouseEventArgs(eventType, Control.MouseButtons, clicks, mousePos.X, mousePos.Y, delta, control.RectangleToClient(control.Bounds));
+			return GetMouseEventArgs(eventType, Control.MouseButtons, clicks, mousePos.X, mousePos.Y, delta, control.Bounds);
 		}
 
 
