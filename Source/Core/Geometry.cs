@@ -155,45 +155,80 @@ namespace Dataweb.NShape.Advanced {
 		}
 
 
+		///// <summary>
+		///// Corrects deltaX and deltaY in order to preserve the aspect ratio of the sources bounds when inflating by deltaX and deltaY.
+		///// </summary>
+		///// <param name="width">The current width</param>
+		///// <param name="height">The current height</param>
+		///// <param name="aspectRatio">The desired aspect ratio.</param>
+		///// <param name="growDirectionX">Specifies if deltaX is added (1) or subtracted (-1) in order to grow the shape.</param>
+		///// <param name="growDirectionY">Specifies if deltaY is added (1) or subtracted (-1) in order to grow the shape.</param>
+		///// <param name="deltaX">Specifies the growth of the shape in X direction.</param>
+		///// <param name="deltaY">Specifies the growth of the shape in Y direction.</param>
+		//public static void MaintainAspectRatio(float width, float height, sbyte growDirectionX, sbyte growDirectionY, ref float deltaX, ref float deltaY) {
+		//    if (width == 0) throw new ArgumentException("width");
+		//    if (height == 0) throw new ArgumentException("height");
+		//    if (!(growDirectionX == 1 || growDirectionX == -1)) throw new ArgumentException("growDirectionX has to be 1 or -1.");
+		//    if (!(growDirectionY == 1 || growDirectionY == -1)) throw new ArgumentException("growDirectionX has to be 1 or -1.");
+		//    // Calculate aspect ratio and resulting rectangles
+		//    float aspectRatio = width / (float)height;
+		//    int dstWidthX = (int)Math.Round(width + (deltaX * growDirectionX), MidpointRounding.ToEven);
+		//    int dstHeightX = (int)Math.Round(dstWidthX / aspectRatio, MidpointRounding.ToEven);
+		//    float dstHeightY = (int)Math.Round(height + (deltaY * growDirectionY), MidpointRounding.ToEven);
+		//    float dstWidthY = (int)Math.Round(dstHeightY * aspectRatio, MidpointRounding.ToEven);
+
+		//    if (dstWidthX <= dstWidthY && dstHeightX <= dstHeightY) {
+		//        deltaY = ((dstWidthX / aspectRatio) - height) * growDirectionY;
+		//    } else if (dstWidthY <= dstWidthX && dstHeightY <= dstHeightX) {
+		//        deltaX = ((dstHeightY * aspectRatio) - width) * growDirectionX;
+		//    } else Debug.Fail("Undefined case!");
+
+		//    //float dstWidth = width + (deltaX * growDirectionX);
+		//    //float dstHeight = height + (deltaY * growDirectionY);
+		//    //float newDeltaX = deltaX;
+		//    //float newDeltaY = deltaY;
+		//    //if (Math.Abs(deltaX) <= Math.Abs(deltaY)) {
+		//    //    newDeltaY = ((dstWidth / aspectRatio) - height) * growDirectionY;
+		//    //} else {
+		//    //    newDeltaX = ((dstHeight * aspectRatio) - width) * growDirectionX;
+		//    //}
+		//    //deltaX = newDeltaX;
+		//    //deltaY = newDeltaY;
+		//}
+
+
 		/// <summary>
 		/// Corrects deltaX and deltaY in order to preserve the aspect ratio of the sources bounds when inflating by deltaX and deltaY.
 		/// </summary>
-		/// <param name="width">The current width</param>
-		/// <param name="height">The current height</param>
-		/// <param name="aspectRatio">The desired aspect ratio.</param>
-		/// <param name="growDirectionX">Specifies if deltaX is added (1) or subtracted (-1) in order to grow the shape.</param>
-		/// <param name="growDirectionY">Specifies if deltaY is added (1) or subtracted (-1) in order to grow the shape.</param>
-		/// <param name="deltaX">Specifies the growth of the shape in X direction.</param>
-		/// <param name="deltaY">Specifies the growth of the shape in Y direction.</param>
-		public static void MaintainAspectRatio(float width, float height, sbyte growDirectionX, sbyte growDirectionY, ref float deltaX, ref float deltaY) {
+		public static void MaintainAspectRatio(float width, float height, float dstWidth, 
+			float dstHeight, ref float deltaX, ref float deltaY) {
+			// TODO 2: This can be faster without calculating the GCF.
 			if (width == 0) throw new ArgumentException("width");
 			if (height == 0) throw new ArgumentException("height");
-			if (!(growDirectionX == 1 || growDirectionX == -1)) throw new ArgumentException("growDirectionX has to be 1 or -1.");
-			if (!(growDirectionY == 1 || growDirectionY == -1)) throw new ArgumentException("growDirectionX has to be 1 or -1.");
-			// Calculate aspect ratio and resulting rectangles
-			float aspectRatio = width / (float)height;
-			int dstWidthX = (int)Math.Round(width + (deltaX * growDirectionX), MidpointRounding.ToEven);
-			int dstHeightX = (int)Math.Round(dstWidthX / aspectRatio, MidpointRounding.ToEven);
-			float dstHeightY = (int)Math.Round(height + (deltaY * growDirectionY), MidpointRounding.ToEven);
-			float dstWidthY = (int)Math.Round(dstHeightY * aspectRatio, MidpointRounding.ToEven);
-
-			if (dstWidthX <= dstWidthY && dstHeightX <= dstHeightY) {
-				deltaY = ((dstWidthX / aspectRatio) - height) * growDirectionY;
-			} else if (dstWidthY <= dstWidthX && dstHeightY <= dstHeightX) {
-				deltaX = ((dstHeightY * aspectRatio) - width) * growDirectionX;
-			} else Debug.Fail("Undefined case!");
-
-			//float dstWidth = width + (deltaX * growDirectionX);
-			//float dstHeight = height + (deltaY * growDirectionY);
-			//float newDeltaX = deltaX;
-			//float newDeltaY = deltaY;
-			//if (Math.Abs(deltaX) <= Math.Abs(deltaY)) {
-			//    newDeltaY = ((dstWidth / aspectRatio) - height) * growDirectionY;
-			//} else {
-			//    newDeltaX = ((dstHeight * aspectRatio) - width) * growDirectionX;
-			//}
-			//deltaX = newDeltaX;
-			//deltaY = newDeltaY;
+			if (width == height) {
+				int dxFactor = deltaX < 0 ? -1 : 1;
+				int dyFactor = deltaY < 0 ? -1 : 1;
+				deltaX = deltaY = Math.Min(Math.Abs(deltaX), Math.Abs(deltaY));
+				if (dxFactor != 1) deltaX *= dxFactor;
+				if (dxFactor != 1) deltaY *= dyFactor;
+			} else {
+				int gcf = CalcGreatestCommonFactor((int)width, (int)height);
+				int minHeight = (int)height / gcf;
+				int minWidth = (int)width / gcf;
+				if (width - minWidth == 0 || height - minHeight == 0)
+					deltaX = deltaY = 0;
+				else {
+					deltaX = (int)(deltaX - (deltaX % minWidth));
+					deltaY = (int)(deltaY - (deltaY % minHeight));
+					if (deltaX > deltaY) {
+						int factor = (int)deltaX / minWidth;
+						deltaY = factor * minHeight;
+					} else {
+						int factor = (int)deltaY / minHeight;
+						deltaX = factor * minWidth;
+					}
+				}
+			}
 		}
 
 
@@ -211,13 +246,11 @@ namespace Dataweb.NShape.Advanced {
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be performed completely because 
 		/// of movement restrictions</returns>
-		public static bool MoveRectangleTopLeft(int width, int height, float deltaX, float deltaY, 
-			float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, 
-			out int centerOffsetY, out int newWidth, out int newHeight) {
+		public static bool MoveRectangleTopLeft(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, 
+			out int centerOffsetX, out int centerOffsetY, out int newWidth, out int newHeight) {
 			int minWidth=0, minHeight=0;
 			GetMinValues(width, height, modifiers,out minWidth, out minHeight);
-			return MoveRectangleTopLeft(width, height, minWidth, minHeight, 0.5f, 0.5f, deltaX, 
-				deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
+			return MoveRectangleTopLeft(width, height, minWidth, minHeight, 0.5f, 0.5f, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
 		}
 
 
@@ -241,9 +274,8 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be performed completely because of movement restrictions</returns>
-		public static bool MoveRectangleTopLeft(int width, int height, int minValueX, 
-			int minValueY, float centerPosFactorX, float centerPosFactorY, float deltaX, 
-			float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, 
+		public static bool MoveRectangleTopLeft(int width, int height, int minValueX, int minValueY, float centerPosFactorX, float centerPosFactorY, 
+			float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, 
 			out int centerOffsetX, out int centerOffsetY, out int newWidth, out int newHeight) {
 			bool result = true;
 			centerOffsetX = centerOffsetY = 0;
@@ -251,7 +283,7 @@ namespace Dataweb.NShape.Advanced {
 			newHeight = height;
 
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(newWidth, newHeight, -1, -1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(newWidth, newHeight, newWidth - deltaX, newHeight - deltaY, ref deltaX, ref deltaY);
 
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newWidth - deltaX - deltaX >= minValueX)
@@ -300,6 +332,28 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="modifiers">Movement modifiers</param>
 		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newHeight">New height of the rectangle</param>
+		/// <returns>Returns true if the movement could be performed as desired. 
+		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
+		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		public static bool MoveRectangleTop(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newHeight) {
+			int newWidth=width;
+			return MoveRectangleTop(width, height, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
+		}
+
+
+		/// <summary>
+		/// Moves the top side of a (rotated) rectangle in order to resize it
+		/// </summary>
+		/// <param name="width">Width of the rectangle</param>
+		/// <param name="height">Height of the rectangle</param>
+		/// <param name="deltaX">Movement on X axis</param>
+		/// <param name="deltaY">Movement on Y axis</param>
+		/// <param name="cosAngle">Cosinus value of the rectangle's rotation angle</param>
+		/// <param name="sinAngle">Sinus value of the rectangle's rotation angle</param>
+		/// <param name="modifiers">Movement modifiers</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -323,7 +377,7 @@ namespace Dataweb.NShape.Advanced {
 			newHeight = height;
 
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(width, height, 1, -1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(width, newHeight, width, newHeight - deltaY, ref deltaX, ref deltaY);
 
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newHeight - deltaY - deltaY >= minValueY)
@@ -384,7 +438,7 @@ namespace Dataweb.NShape.Advanced {
 			newHeight = height;
 			// Aspect maintainance can be combined with both MirroredResizing and normal resizing
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(width, height, 1, -1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(width, height, width + deltaX, height - deltaY, ref deltaX, ref deltaY);
 
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newWidth + deltaX + deltaX >= minValueX)
@@ -434,6 +488,30 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
+		/// <returns>Returns true if the movement could be performed as desired. Returns 
+		/// false if the movement could not be performed completely because of movement 
+		/// restrictions</returns>
+		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		public static bool MoveRectangleLeft(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers,
+			out int centerOffsetX, out int centerOffsetY, out int newWidth) {
+			int newHeight = height;
+			return MoveRectangleLeft(width, height, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
+		}
+
+
+		/// <summary>
+		/// Moves the left side of a (rotated) rectangle in order to resize it
+		/// </summary>
+		/// <param name="width">Width of the rectangle</param>
+		/// <param name="height">Height of the rectangle</param>
+		/// <param name="deltaX">Movement on X axis</param>
+		/// <param name="deltaY">Movement on Y axis</param>
+		/// <param name="cosAngle">Cosinus value of the rectangle's rotation angle</param>
+		/// <param name="sinAngle">Sinus value of the rectangle's rotation angle</param>
+		/// <param name="modifiers">Movement modifiers</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. Returns 
 		/// false if the movement could not be performed completely because of movement 
@@ -458,7 +536,7 @@ namespace Dataweb.NShape.Advanced {
 			newHeight = height;
 			// aspect maintainence can be combined with both MirroredResizing and normal resizing
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(newWidth, height, -1, 1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(newWidth, height, newWidth + deltaX, height - deltaY, ref deltaX, ref deltaY);
 
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newWidth - deltaX - deltaX >= minValueX)
@@ -481,6 +559,30 @@ namespace Dataweb.NShape.Advanced {
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
 				newHeight = (int)Math.Round(newWidth / (width / (float)height));
 			return result;
+		}
+
+
+
+		/// <summary>
+		/// Moves the right side of a (rotated) rectangle in order to resize it
+		/// </summary>
+		/// <param name="width">Width of the rectangle</param>
+		/// <param name="height">Height of the rectangle</param>
+		/// <param name="deltaX">Movement on X axis</param>
+		/// <param name="deltaY">Movement on Y axis</param>
+		/// <param name="cosAngle">Cosinus value of the rectangle's rotation angle</param>
+		/// <param name="sinAngle">Sinus value of the rectangle's rotation angle</param>
+		/// <param name="modifiers">Movement modifiers</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newWidth">New width of the rectangle</param>
+		/// <returns>Returns true if the movement could be performed as desired. 
+		/// Returns false if the movement could not be performed completely because of movement restrictions</returns>
+		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		public static bool MoveRectangleRight(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers,
+			out int centerOffsetX, out int centerOffsetY, out int newWidth) {
+			int newHeight = height;
+			return MoveRectangleRight(width, height, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
 		}
 
 
@@ -520,7 +622,7 @@ namespace Dataweb.NShape.Advanced {
 
 			// aspect maintainence can be combined with both MirroredResizing and normal resizing
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(newWidth, height, 1, 1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(newWidth, height, newWidth + deltaX, height, ref deltaX, ref deltaY);
 			
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newWidth + deltaX + deltaX >= minValueX)
@@ -583,7 +685,7 @@ namespace Dataweb.NShape.Advanced {
 
 			// aspect maintainence can be combined with both MirroredResizing and normal resizing
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(newWidth, newHeight, -1, 1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(newWidth, newHeight, newWidth - deltaX, newHeight + deltaY, ref deltaX, ref deltaY);
 			
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newWidth - deltaX - deltaX >= minValueX)
@@ -635,6 +737,29 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="modifiers">Movement modifiers</param>
 		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newHeight">New height of the rectangle</param>
+		/// <returns>Returns true if the movement could be performed as desired. 
+		/// Returns false if the movement could not be performed completely because of movement restrictions</returns>
+		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		public static bool MoveRectangleBottom(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX,
+			out int centerOffsetY, out int newHeight) {
+			int newWidth = width;
+			return MoveRectangleBottom(width, height, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
+		}
+
+
+		/// <summary>
+		/// Moves the bottom side of a (rotated) rectangle in order to resize it
+		/// </summary>
+		/// <param name="width">Width of the rectangle</param>
+		/// <param name="height">Height of the rectangle</param>
+		/// <param name="deltaX">Movement on X axis</param>
+		/// <param name="deltaY">Movement on Y axis</param>
+		/// <param name="cosAngle">Cosinus value of the rectangle's rotation angle</param>
+		/// <param name="sinAngle">Sinus value of the rectangle's rotation angle</param>
+		/// <param name="modifiers">Movement modifiers</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
@@ -659,7 +784,7 @@ namespace Dataweb.NShape.Advanced {
 
 			// aspect maintainence can be combined with both MirroredResizing and normal resizing
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(width, newHeight, 1, 1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(width, newHeight, width, newHeight + deltaY, ref deltaX, ref deltaY);
 
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newHeight + deltaY + deltaY >= minValueY)
@@ -722,7 +847,7 @@ namespace Dataweb.NShape.Advanced {
 
 			// aspect maintainence can be combined with both MirroredResizing and normal resizing
 			if ((modifiers & ResizeModifiers.MaintainAspect) != 0)
-				MaintainAspectRatio(width, height, 1, 1, ref deltaX, ref deltaY);
+				MaintainAspectRatio(width, height, width + deltaX, height + deltaY, ref deltaX, ref deltaY);
 
 			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
 				if (newWidth + deltaX + deltaX >= minValueX)
@@ -786,6 +911,73 @@ namespace Dataweb.NShape.Advanced {
 			// calculate new width
 			newWidth = (int)Math.Round(DistancePointPoint(fixedPtPos, newPtPos));
 
+			return result;
+		}
+
+
+		/// <summary>
+		/// Moves the TopTeft corner of a (rotated) square in order to resize it
+		/// </summary>
+		/// <param name="size">Size of the square</param>
+		/// <param name="deltaX">Movement on X axis</param>
+		/// <param name="deltaY">Movement on Y axis</param>
+		/// <param name="cosAngle">Cosinus value of the square's rotation angle</param>
+		/// <param name="sinAngle">Sinus value of the square's rotation angle</param>
+		/// <param name="modifiers">Movement modifiers</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newSize">New size of the square</param>
+		/// <returns>Returns true if the movement could be performed as desired. 
+		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
+		[Obsolete("Use MoveRectangleTopLeft instead")]
+		public static bool MoveSquareTopLeft(int size, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newSize) {
+			return MoveSquareTopLeft(size, 0, 0.5f, 0.5f, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newSize);
+		}
+
+
+		/// <summary>
+		/// Moves the TopTeft corner of a (rotated) rectangle in order to resize it
+		/// </summary>
+		/// <param name="size">Size of the square</param>
+		/// <param name="minValue">Minimum size of the square.</param>
+		/// <param name="centerPosFactorX">Specifies where the center is located. Default value is 50% = 0.5</param>
+		/// <param name="centerPosFactorY">Specifies where the center is located. Default value is 50% = 0.5</param>
+		/// <param name="deltaX">Movement on X axis</param>
+		/// <param name="deltaY">Movement on Y axis</param>
+		/// <param name="cosAngle">Cosinus value of the rectangle's rotation angle</param>
+		/// <param name="sinAngle">Sinus value of the rectangle's rotation angle</param>
+		/// <param name="modifiers">Movement modifiers</param>
+		/// <param name="centerOffsetX">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="centerOffsetY">Specifies the movement the rectangle's center has to perform for resizing</param>
+		/// <param name="newSize">New size of the square.</param>
+		/// <returns>Returns true if the movement could be performed as desired. 
+		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
+		[Obsolete("Use MoveRectangleTopLeft instead")]
+		public static bool MoveSquareTopLeft(int size, int minValue, float centerPosFactorX, float centerPosFactorY, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newSize) {
+			bool result = true;
+			centerOffsetX = centerOffsetY = 0;
+			newSize = size;
+
+			MaintainAspectRatio(size, size, size - deltaX, size - deltaY, ref deltaX, ref deltaY);
+			float delta = deltaX;
+			if ((modifiers & ResizeModifiers.MirroredResize) != 0) {
+				if (newSize - delta - delta >= minValue)
+					newSize -= (int)Math.Round(delta + delta);
+				else {
+					newSize = minValue;
+					result = false;
+				}
+			} else {
+				if (newSize - delta >= minValue) {
+					newSize -= (int)Math.Round(delta);
+				} else {
+					delta = newSize;
+					newSize = minValue;
+					result = false;
+				}
+				centerOffsetX = (int)Math.Round((delta * centerPosFactorX * cosAngle) - (delta * (1 - centerPosFactorY) * sinAngle));
+				centerOffsetY = (int)Math.Round((delta * centerPosFactorX * sinAngle) + (delta * (1 - centerPosFactorY) * cosAngle));
+			}
 			return result;
 		}
 
