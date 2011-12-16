@@ -1521,7 +1521,8 @@ namespace Dataweb.NShape.WinFormsUI {
 
 			Diagram d = Project.Repository.GetDiagram(diagramName);
 			if (d != null) {
-				// Use property setter because it updates the shape's display service and loads all diagram shapes from cache
+				// Use property setter because it updates the shape's display service 
+				// and loads all diagram shapes from repository
 				Diagram = d;
 				result = true;
 			}
@@ -2110,14 +2111,12 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		/// <override></override>
 		protected override void OnMouseClick(MouseEventArgs e) {
-			Debug.Print("OnMouseClick");
 			base.OnMouseClick(e);
 			ProcessClickEvent(e, false);
 		}
 
 		/// <override></override>
 		protected override void OnMouseDown(MouseEventArgs e) {
-			Debug.Print("OnMouseDown");
 			base.OnMouseDown(e);
 			mouseEventWasHandled = false;
 			if (inplaceTextbox != null) DoCloseCaptionEditor(true);
@@ -2138,7 +2137,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		/// <override></override>
 		protected override void OnMouseDoubleClick(MouseEventArgs e) {
-			Debug.Print("OnMouseDoubleClick");
 			base.OnMouseDoubleClick(e);
 			ProcessClickEvent(e, true);
 		}
@@ -2198,7 +2196,6 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		/// <override></override>
 		protected override void OnMouseUp(MouseEventArgs e) {
-			Debug.Print("OnMouseUp");
 			base.OnMouseUp(e);
 			this.Focus();
 			if (CurrentTool != null && !ScrollBarContainsPoint(e.Location)) {
@@ -2276,8 +2273,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <override></override>
 		protected override void OnKeyDown(KeyEventArgs e) {
 			base.OnKeyDown(e);
-			Debug.Print("OnKeyDown");
-
 			if (CurrentTool != null) {
 				try {
 					e.Handled = CurrentTool.ProcessKeyEvent(this, WinFormHelpers.GetKeyEventArgs(KeyEventType.KeyDown, e));
@@ -2413,8 +2408,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <override></override>
 		protected override void OnKeyUp(KeyEventArgs e) {
 			base.OnKeyUp(e);
-			Debug.Print("OnKeyUp");
-
 			if (CurrentTool != null) {
 				try {
 					e.Handled = CurrentTool.ProcessKeyEvent(this, WinFormHelpers.GetKeyEventArgs(KeyEventType.KeyUp, e));
@@ -2442,8 +2435,6 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <override></override>
 		protected override void OnKeyPress(KeyPressEventArgs e) {
 			base.OnKeyPress(e);
-			Debug.Print("OnKeyPress");
-			
 			bool isHandled = false;
 			KeyEventArgsDg eventArgs = WinFormHelpers.GetKeyEventArgs(e);
 			if (CurrentTool != null) {

@@ -651,12 +651,13 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		protected ResizeModifiers GetResizeModifier(MouseState mouseState) {
 			ResizeModifiers result = ResizeModifiers.None;
-			if (!mouseState.IsEmpty) {
-				if ((mouseState.Modifiers & KeysDg.Shift) == KeysDg.Shift)
-					result |= ResizeModifiers.MaintainAspect;
-				if ((mouseState.Modifiers & KeysDg.Control) == KeysDg.Control)
-					result |= ResizeModifiers.MirroredResize;
-			}
+			// ToDo: Reactivate resize modifiers
+			//if (!mouseState.IsEmpty) {
+			//    if ((mouseState.Modifiers & KeysDg.Shift) == KeysDg.Shift)
+			//        result |= ResizeModifiers.MaintainAspect;
+			//    if ((mouseState.Modifiers & KeysDg.Control) == KeysDg.Control)
+			//        result |= ResizeModifiers.MirroredResize;
+			//}
 			return result;
 		}
 
@@ -1122,6 +1123,7 @@ namespace Dataweb.NShape.Advanced {
 					yield return s;
 			}
 		}
+
 
 		/// <summary>
 		/// Find the topmost shape that is not selected and has a valid ConnectionPoint (or ReferencePoint) 
@@ -2461,9 +2463,6 @@ namespace Dataweb.NShape.Advanced {
 
 		// prepare drawing preview of resize action 
 		private void PrepareMoveHandlePreview(IDiagramPresenter diagramPresenter, MouseState mouseState) {
-			Debug.Print("Start Mouse Pos: {0}", ActionStartMouseState.Position);
-			Debug.Print("New Mouse Pos: {0}", mouseState.Position);
-			Debug.Print("Distance: {0}, {1}", mouseState.X - ActionStartMouseState.X, mouseState.Y - ActionStartMouseState.Y);
 			previewMouseState = mouseState;
 
 			InvalidateConnectionTargets(diagramPresenter, CurrentMouseState.X, CurrentMouseState.Y);
@@ -2492,10 +2491,6 @@ namespace Dataweb.NShape.Advanced {
 				// Perform movement
 				if (previewShape.HasControlPointCapability(SelectedShapeAtCursorInfo.ControlPointId, ControlPointCapabilities.Resize))
 					previewShape.MoveControlPointBy(SelectedShapeAtCursorInfo.ControlPointId, distanceX, distanceY, resizeModifier);
-
-				Rectangle previewBounds = previewShape.GetBoundingRectangle(false);
-				if ((mouseState.X - previewBounds.Right) > 3 && (mouseState.Y - previewBounds.Bottom) > 3) {
-				}
 			}
 
 			InvalidateConnectionTargets(diagramPresenter, mouseState.X, mouseState.Y);

@@ -332,7 +332,7 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <override></override>
 		public override bool HasControlPointCapability(ControlPointId controlPointId, ControlPointCapabilities controlPointCapabilities) {
-			// Default implementation: every control point is a connection point
+			// Default implementation: Every control point is a connection point
 			if (controlPointId == ControlPointId.None || controlPointId == ControlPointId.Any) return false;
 			else return ((controlPointCapabilities & ControlPointCapabilities.Connect) > 0);
 		}
