@@ -91,7 +91,7 @@ namespace Dataweb.NShape.WinFormsUI {
             this.deleteStyleButton});
 			this.toolStrip2.Location = new System.Drawing.Point(3, 0);
 			this.toolStrip2.Name = "toolStrip2";
-			this.toolStrip2.Size = new System.Drawing.Size(544, 25);
+			this.toolStrip2.Size = new System.Drawing.Size(575, 25);
 			this.toolStrip2.TabIndex = 1;
 			// 
 			// designsComboBox

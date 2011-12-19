@@ -138,7 +138,7 @@
 			this.display.ToolPreviewBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(119)))), ((int)(((byte)(136)))), ((int)(((byte)(153)))));
 			this.display.ToolPreviewColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(70)))), ((int)(((byte)(130)))), ((int)(((byte)(180)))));
 			this.display.ZoomLevel = 100;
-			this.display.ZoomWithMouseWheel = true;
+			this.display.ZoomWithMouseWheel = false;
 			this.display.ZoomChanged += new System.EventHandler(this.display_ZoomChanged);
 			this.display.ShapesSelected += new System.EventHandler(this.display_ShapesSelected);
 			// 
@@ -173,6 +173,7 @@
 			// propertyController
 			// 
 			this.propertyController.Project = this.project;
+			this.propertyController.PropertyDisplayMode = Dataweb.NShape.Controllers.NonEditableDisplayMode.ReadOnly;
 			// 
 			// toolStrip
 			// 

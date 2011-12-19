@@ -441,10 +441,8 @@ namespace Dataweb.NShape {
 					CreateParameter("Name", DbType.String),
 					CreateParameter("Description", DbType.String)));
 			SetCommand(Design.EntityTypeName, RepositoryCommandType.Update,
-				CreateCommand("UPDATE Design SET Project = @Project, Name = @Name, @Description = Description WHERE Id = @Id",
+				CreateCommand("UPDATE Design SET Name = @Name, @Description = Description WHERE Id = @Id",
 					CreateParameter("Id", DbType.Int32),
-					CreateParameter("Project", DbType.Int32),
-					CreateParameter("Id", DbType.Int32),	
 					CreateParameter("Name", DbType.String),
 					CreateParameter("Description", DbType.String)));
 			SetCommand(Design.EntityTypeName, RepositoryCommandType.Delete,

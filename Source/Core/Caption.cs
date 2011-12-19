@@ -494,42 +494,42 @@ namespace Dataweb.NShape.Advanced {
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual string GetCaptionText(int index) {
-			if (index != 0) throw new NShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException(string.Format("Invalid label index: {0}.", index));
 			else return Text;
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual ICharacterStyle GetCaptionCharacterStyle(int index) {
-			if (index != 0) throw new NShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException(string.Format("Invalid label index: {0}.", index));
 			return CharacterStyle;
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual IParagraphStyle GetCaptionParagraphStyle(int index) {
-			if (index != 0) throw new NShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException(string.Format("Invalid label index: {0}.", index));
 			return ParagraphStyle;
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void SetCaptionText(int index, string text) {
-			if (index != 0) throw new NShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException(string.Format("Invalid label index: {0}.", index));
 			else Text = text;
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void SetCaptionCharacterStyle(int index, ICharacterStyle characterStyle) {
-			if (index != 0) throw new NShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException(string.Format("Invalid label index: {0}.", index));
 			CharacterStyle = characterStyle;
 		}
 
 
 		/// <ToBeCompleted></ToBeCompleted>
 		public virtual void SetCaptionParagraphStyle(int index, IParagraphStyle paragraphStyle) {
-			if (index != 0) throw new NShapeException("NotSupported label index.");
+			if (index != 0) throw new NShapeException(string.Format("Invalid label index: {0}.", index));
 			ParagraphStyle = paragraphStyle;
 		}
 

@@ -835,7 +835,7 @@ namespace Dataweb.NShape {
 				|| string.Compare(propertyInfo.Name, "ValueRanges", StringComparison.InvariantCultureIgnoreCase) == 0
 				|| string.Compare(propertyInfo.Name, "Vertices", StringComparison.InvariantCultureIgnoreCase) == 0
 				|| string.Compare(propertyInfo.Name, "ConnectionPoints", StringComparison.InvariantCultureIgnoreCase) == 0
-				|| string.Compare(propertyInfo.Name, "ColumnNames", StringComparison.InvariantCultureIgnoreCase) == 0);
+				|| string.Compare(propertyInfo.Name, "TableColumns", StringComparison.InvariantCultureIgnoreCase) == 0);
 		}
 
 
@@ -1277,6 +1277,7 @@ namespace Dataweb.NShape {
 						}
 						repositoryWriter.Prepare(ei.ObjectRef);
 						repositoryWriter.WriteId(ei.ObjectRef.Id);
+						// Update of owner is handled in the "UpdateOwnerXYZ" methods
 						// repositoryWriter.WriteId(ei.Owner == null? null: ei.Owner.Id);
 						ei.ObjectRef.SaveFields(repositoryWriter, entityType.RepositoryVersion);
 						// Save all the composite inner objects.

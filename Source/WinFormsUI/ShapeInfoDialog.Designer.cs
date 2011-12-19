@@ -27,6 +27,7 @@
 		/// the contents of this method with the code editor.
 		/// </summary>
 		private void InitializeComponent() {
+			this.components = new System.ComponentModel.Container();
 			this.splitContainer1 = new System.Windows.Forms.SplitContainer();
 			this.splitContainer2 = new System.Windows.Forms.SplitContainer();
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
@@ -40,14 +41,14 @@
 			this.shapeTypeLbl = new System.Windows.Forms.Label();
 			this.libraryNameLbl = new System.Windows.Forms.Label();
 			this.fullNameLbl = new System.Windows.Forms.Label();
-			this.ctrlPointListView = new System.Windows.Forms.ListView();
-			this.columnId = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnCapabilities = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.columnConnectedShapes = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-			this.panel1 = new System.Windows.Forms.Panel();
-			this.okButton = new System.Windows.Forms.Button();
 			this.label5 = new System.Windows.Forms.Label();
 			this.permissionsLbl = new System.Windows.Forms.Label();
+			this.ctrlPointListView = new System.Windows.Forms.ListView();
+			this.columnId = new System.Windows.Forms.ColumnHeader();
+			this.columnCapabilities = new System.Windows.Forms.ColumnHeader();
+			this.columnConnectedShapes = new System.Windows.Forms.ColumnHeader();
+			this.panel1 = new System.Windows.Forms.Panel();
+			this.okButton = new System.Windows.Forms.Button();
 			this.splitContainer1.Panel1.SuspendLayout();
 			this.splitContainer1.Panel2.SuspendLayout();
 			this.splitContainer1.SuspendLayout();
@@ -157,15 +158,15 @@
 			this.tableLayoutPanel.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tableLayoutPanel.Location = new System.Drawing.Point(0, 0);
 			this.tableLayoutPanel.Name = "tableLayoutPanel";
-			this.tableLayoutPanel.RowCount = 8;
+			this.tableLayoutPanel.RowCount = 7;
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle());
-			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutPanel.Size = new System.Drawing.Size(264, 174);
 			this.tableLayoutPanel.TabIndex = 6;
 			// 
@@ -238,6 +239,23 @@
 			this.fullNameLbl.Size = new System.Drawing.Size(0, 13);
 			this.fullNameLbl.TabIndex = 7;
 			// 
+			// label5
+			// 
+			this.label5.AutoSize = true;
+			this.label5.Location = new System.Drawing.Point(3, 92);
+			this.label5.Name = "label5";
+			this.label5.Size = new System.Drawing.Size(62, 13);
+			this.label5.TabIndex = 8;
+			this.label5.Text = "Permissions";
+			// 
+			// permissionsLbl
+			// 
+			this.permissionsLbl.AutoSize = true;
+			this.permissionsLbl.Location = new System.Drawing.Point(71, 92);
+			this.permissionsLbl.Name = "permissionsLbl";
+			this.permissionsLbl.Size = new System.Drawing.Size(0, 13);
+			this.permissionsLbl.TabIndex = 9;
+			// 
 			// ctrlPointListView
 			// 
 			this.ctrlPointListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
@@ -289,23 +307,6 @@
 			this.okButton.TabIndex = 0;
 			this.okButton.Text = "OK";
 			this.okButton.UseVisualStyleBackColor = true;
-			// 
-			// label5
-			// 
-			this.label5.AutoSize = true;
-			this.label5.Location = new System.Drawing.Point(3, 92);
-			this.label5.Name = "label5";
-			this.label5.Size = new System.Drawing.Size(62, 13);
-			this.label5.TabIndex = 8;
-			this.label5.Text = "Permissions";
-			// 
-			// permissionsLbl
-			// 
-			this.permissionsLbl.AutoSize = true;
-			this.permissionsLbl.Location = new System.Drawing.Point(71, 92);
-			this.permissionsLbl.Name = "permissionsLbl";
-			this.permissionsLbl.Size = new System.Drawing.Size(0, 13);
-			this.permissionsLbl.TabIndex = 9;
 			// 
 			// ShapeInfoDialog
 			// 

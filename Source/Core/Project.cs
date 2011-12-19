@@ -56,7 +56,7 @@ namespace Dataweb.NShape {
 			int minVersion = save?FirstSupportedSaveVersion:FirstSupportedLoadVersion;
 			int maxVersion = save?LastSupportedSaveVersion:LastSupportedLoadVersion;
 			if (version < minVersion || version > maxVersion){
-				string msg = string.Format("{0}ing repository failed: The repository is version {1} but this application only supports repositories version {2} - {3}.",
+				string msg = string.Format("{0}ing repository failed: The repository is version {1} but this application only supports repositories version {2} to {3}.",
 					(save) ? "Save" : "Load", version, minVersion, maxVersion);
 				throw new NShapeException(msg);
 			}

@@ -131,7 +131,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		public EditColumnCommand(EntitySymbol shape, int columnIndex, string columnText)
 			: base(shape, columnText) {
-			base.description = string.Format("Add edit column in {0}", shape.Type.Name);
+			base.description = string.Format("Edit column '{0}' in {1}", columnText, shape.Type.Name);
 			this.oldColumnText = shape.ColumnNames[columnIndex];
 			this.columnIndex = columnIndex;
 		}
@@ -174,7 +174,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		public RemoveColumnCommand(EntitySymbol shape, int removeColumnIndex, string columnText)
 			: base(shape, columnText) {
-			base.description = string.Format("RemoveRange column from {0}", shape.Type.Name);
+			base.description = string.Format("Remove column '{0}' from {1}", columnText, shape.Type.Name);
 			this.removeIndex = removeColumnIndex;
 		}
 
@@ -183,10 +183,11 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 		/// <override></override>
 		public override void Execute() {
-			for (int i = Shape.CaptionCount - 1; i > removeIndex; --i)
-				Shape.SetCaptionText(i - 1, Shape.GetCaptionText(i));
-			// The shape's Text does count as caption but not as column, that's why CaptionCount-2.
-			Shape.RemoveColumnAt(Shape.CaptionCount - 2);
+			int maxCaptionIdx = Shape.CaptionCount - 1;
+			for (int i = removeIndex; i < maxCaptionIdx; ++i)
+				Shape.SetCaptionText(i, Shape.GetCaptionText(i + 1));
+			// The shape's Text does count as caption but not as column, that's why maxCaptionIdx - 1.
+			Shape.RemoveColumnAt(maxCaptionIdx - 1);
 
 			Shape.Invalidate();
 			if (Repository != null) Repository.UpdateShape(Shape);
@@ -482,7 +483,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 		public virtual IColorStyle ColumnBackgroundColorStyle {
 			get { return privateColumnBackgroundColorStyle ?? ((EntitySymbol)Template.Shape).ColumnBackgroundColorStyle; }
 			set {
-				privateColumnBackgroundColorStyle = (Template != null && value == ((EntitySymbol)Template.Shape).ColumnBackgroundColorStyle) ? null : value;
+				privateColumnBackgroundColorStyle = (Template != null && Template.Shape is EntitySymbol && value == ((EntitySymbol)Template.Shape).ColumnBackgroundColorStyle) ? null : value;
 				Invalidate();
 			}
 		}
@@ -496,7 +497,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			get { return privateColumnCharacterStyle ?? ((EntitySymbol)Template.Shape).ColumnCharacterStyle; }
 			set {
 				Invalidate();
-				privateColumnCharacterStyle = (Template != null && value == ((EntitySymbol)Template.Shape).ColumnCharacterStyle) ? null : value;
+				privateColumnCharacterStyle = (Template != null && Template.Shape is EntitySymbol && value == ((EntitySymbol)Template.Shape).ColumnCharacterStyle) ? null : value;
 				InvalidateDrawCache();
 				Invalidate();
 			}
@@ -512,7 +513,7 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			}
 			set {
 				Invalidate();
-				privateColumnParagraphStyle = (Template != null && value == ((EntitySymbol)Template.Shape).ColumnParagraphStyle) ? null : value;
+				privateColumnParagraphStyle = (Template != null && Template.Shape is EntitySymbol && value == ((EntitySymbol)Template.Shape).ColumnParagraphStyle) ? null : value;
 				InvalidateDrawCache();
 				Invalidate();
 			}
@@ -636,9 +637,11 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 			if (ContainsPoint(mouseX, mouseY)) {
 				Point tl, tr, bl, br;
 				for (int i = columnCaptions.Count - 1; i >= 0; --i) {
-					GetCaptionBounds(i + 1, out tl, out tr, out br, out bl);	// +1 because Text Property is Caption '0'
+					// +1 because Text Property is Caption '0'
+					GetCaptionBounds(i + 1, out tl, out tr, out br, out bl);
 					if (Geometry.QuadrangleContainsPoint(tl, tr, br, bl, mouseX, mouseY)) {
-						captionIdx = i;
+						// +1 because Text Property is Caption '0'
+						captionIdx = i + 1;
 						break;
 					}
 				}
@@ -646,13 +649,14 @@ namespace Dataweb.NShape.SoftwareArchitectureShapes {
 
 			yield return new CommandMenuItemDef("Append Column", null, string.Empty, true,
 				new AddColumnCommand(this, newColumnTxt));
-			
-			bool isFeasible = captionIdx >= 0;
+
+			bool isFeasible = captionIdx > 0;
 			string description = "No caption clicked.";
-			yield return new CommandMenuItemDef("Insert Column", null, description, isFeasible,
-				isFeasible ? new InsertColumnCommand(this, captionIdx, newColumnTxt) : null);
-			yield return new CommandMenuItemDef("Remove Column", null, description, isFeasible,
-				isFeasible ? new RemoveColumnCommand(this, captionIdx, columnCaptions[captionIdx].Text) : null);
+			string columnName = (captionIdx > 0) ? GetCaptionText(captionIdx) : null;
+			yield return new CommandMenuItemDef(string.Format("Insert Column{0}", (captionIdx > 0) ? string.Format(" before '{0}'", columnName) : ""),
+				null, description, isFeasible, isFeasible ? new InsertColumnCommand(this, captionIdx, newColumnTxt) : null);
+			yield return new CommandMenuItemDef(string.Format("Remove Column{0}", (captionIdx > 0) ? string.Format(" '{0}'", GetCaptionText(captionIdx)) : ""),
+				null, description, isFeasible, isFeasible ? new RemoveColumnCommand(this, captionIdx, columnCaptions[captionIdx - 1].Text) : null);
 		}
 
 

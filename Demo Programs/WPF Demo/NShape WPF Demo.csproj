@@ -8,8 +8,8 @@
     <ProjectGuid>{C95D2185-6F1A-41D3-B9A7-2DA6CBFA5552}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>nShape_WPF_Demo</RootNamespace>
-    <AssemblyName>nShape WPF Demo</AssemblyName>
+    <RootNamespace>NShape_WPF_Demo</RootNamespace>
+    <AssemblyName>NShape WPF Demo</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

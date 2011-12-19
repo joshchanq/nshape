@@ -17,6 +17,7 @@ using System.ComponentModel;
 using System.Windows.Forms;
 
 using Dataweb.NShape.Controllers;
+using Dataweb.NShape.Advanced;
 
 
 namespace Dataweb.NShape.WinFormsUI {
@@ -70,7 +71,18 @@ namespace Dataweb.NShape.WinFormsUI {
 		[Category("NShape")]
 		public Project Project {
 			get { return designController.Project; }
-			set { designController.Project = value; }
+			set { 
+				designController.Project = value;
+				if (designController.Project != null) {
+					// Deactivate Creating new Designs for XMLStore because currently it does 
+					// not implement saving multiple designs.
+					if (designController.Project.Repository is CachedRepository
+						&& ((CachedRepository)designController.Project.Repository).Store is XmlStore) {
+						newDesignButton.Enabled = false;
+						newDesignButton.ToolTipText = "XML Stores do not support multiple designs.";
+					}
+				}
+			}
 		}
 
 

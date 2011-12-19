@@ -658,9 +658,24 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// The <see cref="T:Dataweb.NShape.Project" /> providing the <see cref="T:Dataweb.NShape.Design" /> for the <see cref="T:Dataweb.NShape.WinFormsUI.StyleUITypeEditor" />.
 		/// </summary>
 		public static Project Project {
-			set { 
-				projectBuffer = value;
-				Design = projectBuffer.Design;
+			set {
+				if (projectBuffer != value) {
+					projectBuffer = value;
+					designBuffer = projectBuffer.Design;
+				} else {
+					bool replaceDesign = (designBuffer == null);
+					if (!replaceDesign) {
+						replaceDesign = true;
+						// Ensure that the current design is part in the repository:
+						foreach (Design design in projectBuffer.Repository.GetDesigns()) {
+							if (design == designBuffer) {
+								replaceDesign = false;
+								break;
+							}
+						}
+					}
+					if (replaceDesign) designBuffer = projectBuffer.Design;
+				}
 			}
 		}
 
@@ -741,11 +756,11 @@ namespace Dataweb.NShape.WinFormsUI {
 							else throw new NShapeUnsupportedValueException(context.PropertyDescriptor.PropertyType);
 
 							if (project != null)
-								styleListBox = new StyleListBox(editorService, project, styleType, showItemDefaultStyle, showItemOpenEditor);
+								styleListBox = new StyleListBox(editorService, project, design, styleType, showItemDefaultStyle, showItemOpenEditor);
 							else styleListBox = new StyleListBox(editorService, design, styleType, showItemDefaultStyle, showItemOpenEditor);
 						} else {
 							if (project != null)
-								styleListBox = new StyleListBox(editorService, project, value as Style, showItemDefaultStyle, showItemOpenEditor);
+								styleListBox = new StyleListBox(editorService, project, design, value as Style, showItemDefaultStyle, showItemOpenEditor);
 							else styleListBox = new StyleListBox(editorService, design, value as Style, showItemDefaultStyle, showItemOpenEditor);
 						}
 

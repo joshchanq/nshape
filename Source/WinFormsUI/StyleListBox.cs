@@ -69,21 +69,23 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSetProvider styleSetProvider, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem)
+		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSetProvider styleSetProvider, IStyleSet styleSet, Style style, bool showDefaultStyleItem, bool showOpenDesignerItem)
 			: this(editorService) {
 			if (styleSetProvider == null) throw new ArgumentNullException("styleSetProvider");
+			if (styleSet == null) throw new ArgumentNullException("styleSet");
 			if (style == null) throw new ArgumentNullException("style");
 			this.styleSetProvider = styleSetProvider;
-			Initialize(styleSetProvider.StyleSet, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
+			Initialize(styleSet, showDefaultStyleItem, showOpenDesignerItem, style.GetType(), style);
 		}
 
 
-		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSetProvider styleSetProvider, Type selectedStyleType, bool showDefaultStyleItem, bool showOpenDesignerItem)
+		public StyleListBox(IWindowsFormsEditorService editorService, IStyleSetProvider styleSetProvider, IStyleSet styleSet, Type selectedStyleType, bool showDefaultStyleItem, bool showOpenDesignerItem)
 			: this(editorService) {
 			if (styleSetProvider == null) throw new ArgumentNullException("styleSetProvider");
+			if (styleSet == null) throw new ArgumentNullException("styleSet");
 			if (selectedStyleType == null) throw new ArgumentNullException("selectedStyleType");
 			this.styleSetProvider = styleSetProvider;
-			Initialize(styleSetProvider.StyleSet, showDefaultStyleItem, showOpenDesignerItem, selectedStyleType, null);
+			Initialize(styleSet, showDefaultStyleItem, showOpenDesignerItem, selectedStyleType, null);
 		}
 
 

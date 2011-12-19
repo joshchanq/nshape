@@ -584,14 +584,15 @@ namespace Dataweb.NShape {
 					if (image is Metafile) {
 						using (Graphics gfx = Graphics.FromHwnd(IntPtr.Zero)) {
 							IntPtr hdc = gfx.GetHdc();
-							Metafile metaFile = new Metafile(filePath, hdc);
-							gfx.ReleaseHdc(hdc);
-							using (Graphics metaFileGfx = Graphics.FromImage(metaFile)) {
-								Rectangle bounds = Rectangle.Empty;
-								bounds.Width = image.Width;
-								bounds.Height = image.Height;
-								ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
-								GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, ImageLayoutMode.Original, bounds, bounds);
+							using (Metafile metaFile = new Metafile(filePath, hdc)) {
+								gfx.ReleaseHdc(hdc);
+								using (Graphics metaFileGfx = Graphics.FromImage(metaFile)) {
+									Rectangle bounds = Rectangle.Empty;
+									bounds.Width = image.Width;
+									bounds.Height = image.Height;
+									ImageAttributes imgAttribs = GdiHelpers.GetImageAttributes(ImageLayoutMode.Original);
+									GdiHelpers.DrawImage(metaFileGfx, image, imgAttribs, ImageLayoutMode.Original, bounds, bounds);
+								}
 							}
 						}
 					} else image.Save(filePath, image.RawFormat);
@@ -858,6 +859,10 @@ namespace Dataweb.NShape {
 
 			/// <override></override>
 			protected override Image DoReadImage() {
+				// GDI+ only reads the file header and keeps the image file locked for loading the 
+				// image data later on demand. 
+				// So we have to read the entire image to a buffer and create the image from a 
+				// MemoryStream in order to avoid locked (and thus unaccessible) image files.
 				Image result = null;
 				string filePath = xmlReader.GetAttribute(PropertyIndex + xmlAttributeOffset);
 				xmlReader.MoveToNextAttribute();
@@ -1331,10 +1336,15 @@ namespace Dataweb.NShape {
 			Debug.Assert(repositoryWriter == null);
 			string imageDirectoryName = CalcImageDirectoryName();
 			if (!overwrite) {
-				if (File.Exists(pathName))
-					throw new IOException(string.Format("File {0} already exists.", pathName));
-				if (Directory.Exists(imageDirectoryName))
-					throw new IOException(string.Format("Image directory {0} already exists.", imageDirectoryName));
+				string tempPathName = GetTemporaryProjectFilePath();
+				if (File.Exists(pathName)) {
+					if (pathName == tempPathName) File.Delete(pathName);
+					else throw new IOException(string.Format("File {0} already exists.", pathName));
+				}
+				if (Directory.Exists(imageDirectoryName)) {
+					if (imageDirectoryName == CalcImageDirectoryName(tempPathName)) Directory.Delete(imageDirectoryName, true);
+					else throw new IOException(string.Format("Image directory {0} already exists.", imageDirectoryName));
+				}
 			}
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.Indent = true;

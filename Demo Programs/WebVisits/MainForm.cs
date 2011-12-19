@@ -41,21 +41,7 @@ namespace WebVisists {
 			toolBoxAdapter.ToolSetController.Clear();
 			toolBoxAdapter.ListView.ShowGroups = false;
 
-			// Add desired tools
-			toolBoxAdapter.ToolSetController.AddTool(new PointerTool());
-
-			Template t = new Template("Web Page", project.ShapeTypes["Ellipse"].CreateInstance());
-			((RectangleBase)t.Shape).FillStyle = project.Design.FillStyles["Green"];
-			project.Repository.InsertTemplate(t);
-			pageTemplate = t;
-
-			t = new Template("Label", project.ShapeTypes["Label"].CreateInstance());
-			((RectangleBase)t.Shape).CharacterStyle = project.Design.CharacterStyles.Normal;
-			project.Repository.InsertTemplate(t);
-
-			t = new Template("Annotation", project.ShapeTypes["Annotation"].CreateInstance());
-			((RectangleBase)t.Shape).FillStyle = project.Design.FillStyles.Yellow;
-			project.Repository.InsertTemplate(t);
+			FillToolBox();
 		}
 
 
@@ -166,9 +152,50 @@ namespace WebVisists {
 						display.Diagram = d;
 						break;
 					}
-					display.Refresh();
+
+					FillToolBox();
 				}
 			}
+		}
+
+
+		private void FillToolBox() {
+
+			const string templateNameWebPage = "Web Page";
+			const string templateNameLabel = "Label";
+			const string templateNameAnnotation = "Annotation";
+			pageTemplate = null;
+			Template labelTemplate = null;
+			Template annotationTemplate = null;
+
+			foreach (Template template in project.Repository.GetTemplates()) {
+				if (string.Compare(template.Name, templateNameAnnotation, StringComparison.InvariantCultureIgnoreCase) == 0) {
+					annotationTemplate = template;
+				} else if (string.Compare(template.Name, templateNameLabel, StringComparison.InvariantCultureIgnoreCase) == 0)
+					labelTemplate = template;
+				else if (string.Compare(template.Name, templateNameWebPage, StringComparison.InvariantCultureIgnoreCase) == 0)
+					pageTemplate = template;
+			}
+
+			// Add desired tools
+			toolBoxAdapter.ToolSetController.AddTool(new PointerTool());
+			if (pageTemplate == null) {
+				pageTemplate = new Template(templateNameWebPage, project.ShapeTypes["Ellipse"].CreateInstance());
+				((RectangleBase)pageTemplate.Shape).FillStyle = project.Design.FillStyles["Green"];
+				project.Repository.InsertTemplate(pageTemplate);
+			} else toolBoxAdapter.ToolSetController.CreateTemplateTool(pageTemplate);
+
+			if (labelTemplate == null) {
+				labelTemplate = new Template(templateNameLabel, project.ShapeTypes["Label"].CreateInstance());
+				((RectangleBase)labelTemplate.Shape).CharacterStyle = project.Design.CharacterStyles.Normal;
+				project.Repository.InsertTemplate(labelTemplate);
+			} else toolBoxAdapter.ToolSetController.CreateTemplateTool(labelTemplate);
+
+			if (annotationTemplate == null) {
+				annotationTemplate = new Template(templateNameAnnotation, project.ShapeTypes["Annotation"].CreateInstance());
+				((RectangleBase)annotationTemplate.Shape).FillStyle = project.Design.FillStyles.Yellow;
+				project.Repository.InsertTemplate(annotationTemplate);
+			} else toolBoxAdapter.ToolSetController.CreateTemplateTool(annotationTemplate);
 		}
 
 

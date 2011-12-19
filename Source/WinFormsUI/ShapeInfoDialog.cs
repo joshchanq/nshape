@@ -59,7 +59,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void UpdateShapeInfo() {
-			templateNameLbl.Text = shape.Template.Title;
+			templateNameLbl.Text = (shape.Template != null) ? shape.Template.Title : string.Empty;
 			shapeTypeLbl.Text = shape.Type.Name;
 			libraryNameLbl.Text = shape.Type.LibraryName;
 			fullNameLbl.Text = shape.Type.FullName;

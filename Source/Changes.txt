@@ -1,6 +1,9 @@
 ====================================================================================================
 Changes in 1.0.7:
 ====================================================================================================
+- Improved handling of multiple designs (SQL Repository only)
+- Fixed several issues with the column commands of the shape SoftwareArchitectureShapes.EntitySymbol
+- Improvement: Display now supports Ctrl+A shortcut for "Select all shapes"
 - Marked class "DefaultSecurity" as [Obsolete]. It will be removed in the next version.
 - BugFix: Moving the mouse over a shape with text, selecting it and deleting it with "Del" did not 
   remove the highlighted caption bounds.

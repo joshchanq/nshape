@@ -143,9 +143,10 @@ namespace Database_Designer {
 
 		
 		private void MainForm_Load(object sender, EventArgs e) {
-			// connect TurboDiagram components
+			// Connect NShape components
 			propertyPresenter.PrimaryPropertyGrid = propertyWindow.PropertyGrid;
 			toolSetPresenter.ListView = toolBoxWindow.ListView;
+			project.LibrarySearchPaths.Add(Application.StartupPath);
 
 			NewProject();
 		}
@@ -307,6 +308,14 @@ namespace Database_Designer {
 		}
 
 
+		private void ClearLoadedDiagrams() {
+			for (int i = diagramsDropDownButton.DropDown.Items.Count - 1; i >= 0; --i) {
+				diagramsDropDownButton.DropDown.Items[i].Click -= diagramDropDownItem_Click;
+				diagramsDropDownButton.DropDown.Items.RemoveAt(i);
+			}
+		}
+
+
 		private void DeleteDiagram(Diagram diagram) {			
 			for (int i = diagramsDropDownButton.DropDown.Items.Count - 1; i >= 0; --i) {
 				if (diagramsDropDownButton.DropDown.Items[i].Tag == diagram) {
@@ -321,18 +330,16 @@ namespace Database_Designer {
 
 			if (display.Diagram == null && diagramsDropDownButton.DropDown.Items.Count > 0)
 				display.Diagram = diagramsDropDownButton.DropDown.Items[0].Tag as Diagram;
+			else {
+				display.Refresh();
+				diagramsDropDownButton.Text = "<No Diagrams>";
+			}
 		}
 
 
 		private void NewProject(){
 			if (project.IsOpen) {
-				display.UnselectAll();
-				display.Diagram = null;
-				List<Diagram> diagrams = new List<Diagram>(project.Repository.GetDiagrams());
-				for (int i = diagrams.Count - 1; i >= 0; i--)
-					DeleteDiagram(diagrams[i]);
-				diagramsDropDownButton.DropDown.Items.Clear();
-
+				ClearLoadedDiagrams();
 				project.Close();
 			}
 
@@ -355,6 +362,7 @@ namespace Database_Designer {
 			if (dlg.ShowDialog() == DialogResult.OK) {
 				if (!string.IsNullOrEmpty(dlg.FileName) && File.Exists(dlg.FileName)) {
 					project.Close();
+					ClearLoadedDiagrams();
 
 					xmlStore.FileExtension = Path.GetExtension(dlg.FileName);
 					xmlStore.DirectoryName = Path.GetDirectoryName(dlg.FileName);

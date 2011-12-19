@@ -2332,6 +2332,16 @@ namespace Dataweb.NShape.WinFormsUI {
 								}
 								break;
 
+							// Select All
+							case Keys.A:
+								if ((e.Modifiers & Keys.Control) == Keys.Control) {
+									if (Diagram != null && SelectedShapes.Count != Diagram.Shapes.Count) {
+										SelectAll();
+										e.Handled = true;
+									}
+								}
+								break;
+
 							// Copy
 							case Keys.C:
 								if ((e.Modifiers & Keys.Control) == Keys.Control) {

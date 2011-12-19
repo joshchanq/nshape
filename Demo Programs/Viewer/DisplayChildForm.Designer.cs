@@ -29,6 +29,7 @@
 			this.shapeCntLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel7 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.sizeLabel = new System.Windows.Forms.ToolStripStatusLabel();
+			this.toolStripStatusLabel10 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.toolStripStatusLabel8 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.zoomLabel = new System.Windows.Forms.ToolStripStatusLabel();
@@ -39,7 +40,6 @@
 			this.toolStripStatusLabel9 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.bottomRightLabel = new System.Windows.Forms.ToolStripStatusLabel();
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
-			this.toolStripStatusLabel10 = new System.Windows.Forms.ToolStripStatusLabel();
 			this.statusStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -104,6 +104,12 @@
 			this.sizeLabel.Size = new System.Drawing.Size(91, 17);
 			this.sizeLabel.Text = "Diagram Size";
 			this.sizeLabel.ToolTipText = "Size of the diagram";
+			// 
+			// toolStripStatusLabel10
+			// 
+			this.toolStripStatusLabel10.Name = "toolStripStatusLabel10";
+			this.toolStripStatusLabel10.Size = new System.Drawing.Size(176, 17);
+			this.toolStripStatusLabel10.Spring = true;
 			// 
 			// toolStripStatusLabel1
 			// 
@@ -220,12 +226,6 @@
 			this.display.ShapeClick += new System.EventHandler<Dataweb.NShape.Controllers.DiagramPresenterShapeClickEventArgs>(this.display_ShapeClick);
 			this.display.MouseMove += new System.Windows.Forms.MouseEventHandler(this.display_MouseMove);
 			this.display.ShapeDoubleClick += new System.EventHandler<Dataweb.NShape.Controllers.DiagramPresenterShapeClickEventArgs>(this.display_ShapeDoubleClick);
-			// 
-			// toolStripStatusLabel10
-			// 
-			this.toolStripStatusLabel10.Name = "toolStripStatusLabel10";
-			this.toolStripStatusLabel10.Size = new System.Drawing.Size(145, 17);
-			this.toolStripStatusLabel10.Spring = true;
 			// 
 			// DisplayChildForm
 			// 
