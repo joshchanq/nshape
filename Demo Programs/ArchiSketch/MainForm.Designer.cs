@@ -25,7 +25,7 @@ namespace ArchiSketch {
 		private void InitializeComponent() {
 			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
-			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager = new Dataweb.NShape.RoleBasedSecurityManager();
+			Dataweb.NShape.RoleBasedSecurityManager roleBasedSecurityManager2 = new Dataweb.NShape.RoleBasedSecurityManager();
 			this.mainMenuStrip = new System.Windows.Forms.MenuStrip();
 			this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.fileNewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -39,6 +39,7 @@ namespace ArchiSketch {
 			this.toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
 			this.shapeTemplateTtoolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.stylesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.propertiesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.diagramInsertToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.diagramDeleteToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -63,7 +64,6 @@ namespace ArchiSketch {
 			this.toolStrip2 = new System.Windows.Forms.ToolStrip();
 			this.diagramComboBox = new System.Windows.Forms.ToolStripComboBox();
 			this.toolSetController = new Dataweb.NShape.Controllers.ToolSetController();
-			this.propertiesToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
 			this.mainMenuStrip.SuspendLayout();
 			this.toolBoxContextMenuStrip.SuspendLayout();
 			this.mainContextMenuStrip.SuspendLayout();
@@ -95,41 +95,41 @@ namespace ArchiSketch {
             this.fileSaveAsToolStripMenuItem,
             this.exitToolStripMenuItem});
 			this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-			this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
+			this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
 			this.fileToolStripMenuItem.Text = "File";
 			// 
 			// fileNewToolStripMenuItem
 			// 
 			this.fileNewToolStripMenuItem.Name = "fileNewToolStripMenuItem";
-			this.fileNewToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+			this.fileNewToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
 			this.fileNewToolStripMenuItem.Text = "New";
 			this.fileNewToolStripMenuItem.Click += new System.EventHandler(this.fileNewToolStripMenuItem_Click);
 			// 
 			// openToolStripMenuItem
 			// 
 			this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-			this.openToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+			this.openToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
 			this.openToolStripMenuItem.Text = "Open...";
 			this.openToolStripMenuItem.Click += new System.EventHandler(this.fileOpenToolStripMenuItem_Click);
 			// 
 			// saveToolStripMenuItem
 			// 
 			this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-			this.saveToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+			this.saveToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
 			this.saveToolStripMenuItem.Text = "Save";
 			this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
 			// 
 			// fileSaveAsToolStripMenuItem
 			// 
 			this.fileSaveAsToolStripMenuItem.Name = "fileSaveAsToolStripMenuItem";
-			this.fileSaveAsToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+			this.fileSaveAsToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
 			this.fileSaveAsToolStripMenuItem.Text = "Save as...";
 			this.fileSaveAsToolStripMenuItem.Click += new System.EventHandler(this.fileSaveAsToolStripMenuItem_Click);
 			// 
 			// exitToolStripMenuItem
 			// 
 			this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-			this.exitToolStripMenuItem.Size = new System.Drawing.Size(135, 22);
+			this.exitToolStripMenuItem.Size = new System.Drawing.Size(121, 22);
 			this.exitToolStripMenuItem.Text = "Exit";
 			this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
 			// 
@@ -143,43 +143,48 @@ namespace ArchiSketch {
             this.stylesToolStripMenuItem,
             this.propertiesToolStripMenuItem1});
 			this.editToolStripMenuItem.Name = "editToolStripMenuItem";
-			this.editToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+			this.editToolStripMenuItem.Size = new System.Drawing.Size(39, 20);
 			this.editToolStripMenuItem.Text = "Edit";
 			// 
 			// copyToolStripMenuItem
 			// 
 			this.copyToolStripMenuItem.Name = "copyToolStripMenuItem";
-			this.copyToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
-			this.copyToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+			this.copyToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
 			this.copyToolStripMenuItem.Text = "Copy";
 			this.copyToolStripMenuItem.Click += new System.EventHandler(this.copyToolStripMenuItem_Click);
 			// 
 			// deleteToolStripMenuItem
 			// 
 			this.deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-			this.deleteToolStripMenuItem.ShortcutKeys = System.Windows.Forms.Keys.Delete;
-			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+			this.deleteToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
 			this.deleteToolStripMenuItem.Text = "Delete";
 			this.deleteToolStripMenuItem.Click += new System.EventHandler(this.deleteToolStripMenuItem_Click);
 			// 
 			// toolStripMenuItem2
 			// 
 			this.toolStripMenuItem2.Name = "toolStripMenuItem2";
-			this.toolStripMenuItem2.Size = new System.Drawing.Size(159, 6);
+			this.toolStripMenuItem2.Size = new System.Drawing.Size(165, 6);
 			// 
 			// shapeTemplateTtoolStripMenuItem
 			// 
 			this.shapeTemplateTtoolStripMenuItem.Name = "shapeTemplateTtoolStripMenuItem";
-			this.shapeTemplateTtoolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+			this.shapeTemplateTtoolStripMenuItem.Size = new System.Drawing.Size(168, 22);
 			this.shapeTemplateTtoolStripMenuItem.Text = "Shape Template...";
 			this.shapeTemplateTtoolStripMenuItem.Click += new System.EventHandler(this.shapeTemplateToolStripMenuItem_Click);
 			// 
 			// stylesToolStripMenuItem
 			// 
 			this.stylesToolStripMenuItem.Name = "stylesToolStripMenuItem";
-			this.stylesToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
+			this.stylesToolStripMenuItem.Size = new System.Drawing.Size(168, 22);
 			this.stylesToolStripMenuItem.Text = "Styles...";
 			this.stylesToolStripMenuItem.Click += new System.EventHandler(this.stylesToolStripMenuItem_Click);
+			// 
+			// propertiesToolStripMenuItem1
+			// 
+			this.propertiesToolStripMenuItem1.Name = "propertiesToolStripMenuItem1";
+			this.propertiesToolStripMenuItem1.Size = new System.Drawing.Size(168, 22);
+			this.propertiesToolStripMenuItem1.Text = "Properties...";
+			this.propertiesToolStripMenuItem1.Click += new System.EventHandler(this.propertiesToolStripMenuItem_Click);
 			// 
 			// toolStripMenuItem1
 			// 
@@ -187,20 +192,20 @@ namespace ArchiSketch {
             this.diagramInsertToolStripMenuItem,
             this.diagramDeleteToolStripMenuItem});
 			this.toolStripMenuItem1.Name = "toolStripMenuItem1";
-			this.toolStripMenuItem1.Size = new System.Drawing.Size(58, 20);
+			this.toolStripMenuItem1.Size = new System.Drawing.Size(64, 20);
 			this.toolStripMenuItem1.Text = "Diagram";
 			// 
 			// diagramInsertToolStripMenuItem
 			// 
 			this.diagramInsertToolStripMenuItem.Name = "diagramInsertToolStripMenuItem";
-			this.diagramInsertToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+			this.diagramInsertToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
 			this.diagramInsertToolStripMenuItem.Text = "Insert";
 			this.diagramInsertToolStripMenuItem.Click += new System.EventHandler(this.diagramInsertToolStripMenuItem_Click);
 			// 
 			// diagramDeleteToolStripMenuItem
 			// 
 			this.diagramDeleteToolStripMenuItem.Name = "diagramDeleteToolStripMenuItem";
-			this.diagramDeleteToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
+			this.diagramDeleteToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
 			this.diagramDeleteToolStripMenuItem.Text = "Delete";
 			this.diagramDeleteToolStripMenuItem.Click += new System.EventHandler(this.diagramDeleteToolStripMenuItem_Click);
 			// 
@@ -209,13 +214,13 @@ namespace ArchiSketch {
 			this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.aboutArchiSketchToolStripMenuItem});
 			this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-			this.helpToolStripMenuItem.Size = new System.Drawing.Size(40, 20);
+			this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
 			this.helpToolStripMenuItem.Text = "Help";
 			// 
 			// aboutArchiSketchToolStripMenuItem
 			// 
 			this.aboutArchiSketchToolStripMenuItem.Name = "aboutArchiSketchToolStripMenuItem";
-			this.aboutArchiSketchToolStripMenuItem.Size = new System.Drawing.Size(185, 22);
+			this.aboutArchiSketchToolStripMenuItem.Size = new System.Drawing.Size(182, 22);
 			this.aboutArchiSketchToolStripMenuItem.Text = "About ArchiSketch...";
 			this.aboutArchiSketchToolStripMenuItem.Click += new System.EventHandler(this.aboutArchiSketchToolStripMenuItem_Click);
 			// 
@@ -248,26 +253,26 @@ namespace ArchiSketch {
             this.editTemplateToolStripMenuItem,
             this.deleteTemplateToolStripMenuItem});
 			this.toolBoxContextMenuStrip.Name = "toolBoxContextMenuStrip";
-			this.toolBoxContextMenuStrip.Size = new System.Drawing.Size(164, 70);
+			this.toolBoxContextMenuStrip.Size = new System.Drawing.Size(161, 70);
 			// 
 			// addTemplateToolStripMenuItem
 			// 
 			this.addTemplateToolStripMenuItem.Name = "addTemplateToolStripMenuItem";
-			this.addTemplateToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.addTemplateToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
 			this.addTemplateToolStripMenuItem.Text = "Add Template";
 			this.addTemplateToolStripMenuItem.Click += new System.EventHandler(this.addTemplateToolStripMenuItem_Click);
 			// 
 			// editTemplateToolStripMenuItem
 			// 
 			this.editTemplateToolStripMenuItem.Name = "editTemplateToolStripMenuItem";
-			this.editTemplateToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.editTemplateToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
 			this.editTemplateToolStripMenuItem.Text = "Edit Template";
 			this.editTemplateToolStripMenuItem.Click += new System.EventHandler(this.editTemplateToolStripMenuItem_Click);
 			// 
 			// deleteTemplateToolStripMenuItem
 			// 
 			this.deleteTemplateToolStripMenuItem.Name = "deleteTemplateToolStripMenuItem";
-			this.deleteTemplateToolStripMenuItem.Size = new System.Drawing.Size(163, 22);
+			this.deleteTemplateToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
 			this.deleteTemplateToolStripMenuItem.Text = "Delete Template";
 			this.deleteTemplateToolStripMenuItem.Click += new System.EventHandler(this.deleteTemplateToolStripMenuItem_Click);
 			// 
@@ -278,17 +283,17 @@ namespace ArchiSketch {
             this.propertiesToolStripMenuItem});
 			this.mainContextMenuStrip.Name = "mainContextMenuStrip";
 			this.mainContextMenuStrip.ShowItemToolTips = false;
-			this.mainContextMenuStrip.Size = new System.Drawing.Size(180, 32);
+			this.mainContextMenuStrip.Size = new System.Drawing.Size(172, 32);
 			// 
 			// toolStripSeparator2
 			// 
 			this.toolStripSeparator2.Name = "toolStripSeparator2";
-			this.toolStripSeparator2.Size = new System.Drawing.Size(176, 6);
+			this.toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
 			// 
 			// propertiesToolStripMenuItem
 			// 
 			this.propertiesToolStripMenuItem.Name = "propertiesToolStripMenuItem";
-			this.propertiesToolStripMenuItem.Size = new System.Drawing.Size(179, 22);
+			this.propertiesToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
 			this.propertiesToolStripMenuItem.Text = "Shape Properties...";
 			this.propertiesToolStripMenuItem.Click += new System.EventHandler(this.propertiesToolStripMenuItem_Click);
 			// 
@@ -330,12 +335,14 @@ namespace ArchiSketch {
 			this.display.GridColor = System.Drawing.Color.White;
 			this.display.GridSize = 20;
 			this.display.GripSize = 3;
+			this.display.HideDeniedMenuItems = false;
 			this.display.HighQualityBackground = true;
 			this.display.HighQualityRendering = true;
 			this.display.ImeMode = System.Windows.Forms.ImeMode.NoControl;
 			this.display.Location = new System.Drawing.Point(0, 0);
 			this.display.MinRotateRange = 30;
 			this.display.Name = "display";
+			this.display.PropertyController = null;
 			this.display.RenderingQualityHighQuality = Dataweb.NShape.Advanced.RenderingQuality.HighQuality;
 			this.display.RenderingQualityLowQuality = Dataweb.NShape.Advanced.RenderingQuality.DefaultQuality;
 			this.display.ResizeGripShape = Dataweb.NShape.Controllers.ControlPointShape.Square;
@@ -352,7 +359,7 @@ namespace ArchiSketch {
 			this.display.ToolPreviewBackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(119)))), ((int)(((byte)(136)))), ((int)(((byte)(153)))));
 			this.display.ToolPreviewColor = System.Drawing.Color.FromArgb(((int)(((byte)(96)))), ((int)(((byte)(70)))), ((int)(((byte)(130)))), ((int)(((byte)(180)))));
 			this.display.ZoomLevel = 100;
-			this.display.ZoomWithMouseWheel = true;
+			this.display.ZoomWithMouseWheel = false;
 			// 
 			// diagramSetController
 			// 
@@ -362,12 +369,12 @@ namespace ArchiSketch {
 			// project
 			// 
 			this.project.AutoGenerateTemplates = true;
-			this.project.LibrarySearchPaths = ((System.Collections.Generic.List<string>)(resources.GetObject("project.LibrarySearchPaths")));
+			this.project.LibrarySearchPaths = ((System.Collections.Generic.IList<string>)(resources.GetObject("project.LibrarySearchPaths")));
 			this.project.Name = "ArchiSketch Project 1";
 			this.project.Repository = this.repository;
-			roleBasedSecurityManager.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
-			roleBasedSecurityManager.CurrentRoleName = "Administrator";
-			this.project.SecurityManager = roleBasedSecurityManager;
+			roleBasedSecurityManager2.CurrentRole = Dataweb.NShape.StandardRole.Administrator;
+			roleBasedSecurityManager2.CurrentRoleName = "Administrator";
+			this.project.SecurityManager = roleBasedSecurityManager2;
 			// 
 			// repository
 			// 
@@ -408,13 +415,6 @@ namespace ArchiSketch {
 			this.toolSetController.ToolRemoved += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolRemoved);
 			this.toolSetController.ToolSelected += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolSelected);
 			this.toolSetController.ToolChanged += new System.EventHandler<Dataweb.NShape.Controllers.ToolEventArgs>(this.toolSetController_ToolChanged);
-			// 
-			// propertiesToolStripMenuItem1
-			// 
-			this.propertiesToolStripMenuItem1.Name = "propertiesToolStripMenuItem1";
-			this.propertiesToolStripMenuItem1.Size = new System.Drawing.Size(174, 22);
-			this.propertiesToolStripMenuItem1.Text = "Properties...";
-			this.propertiesToolStripMenuItem1.Click += new System.EventHandler(this.propertiesToolStripMenuItem_Click);
 			// 
 			// MainForm
 			// 
