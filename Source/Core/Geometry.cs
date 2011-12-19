@@ -335,7 +335,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be perforormed completely because of movement restrictions</returns>
-		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		[Obsolete("Use the overloaded version with 'out int newWidth' and 'out int newHeight' instead.")]
 		public static bool MoveRectangleTop(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX, out int centerOffsetY, out int newHeight) {
 			int newWidth=width;
 			return MoveRectangleTop(width, height, deltaX, deltaY, cosAngle, sinAngle, modifiers, out centerOffsetX, out centerOffsetY, out newWidth, out newHeight);
@@ -491,7 +491,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <returns>Returns true if the movement could be performed as desired. Returns 
 		/// false if the movement could not be performed completely because of movement 
 		/// restrictions</returns>
-		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		[Obsolete("Use the overloaded version with 'out int newWidth' and 'out int newHeight' instead.")]
 		public static bool MoveRectangleLeft(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers,
 			out int centerOffsetX, out int centerOffsetY, out int newWidth) {
 			int newHeight = height;
@@ -578,7 +578,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="newWidth">New width of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be performed completely because of movement restrictions</returns>
-		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		[Obsolete("Use the overloaded version with 'out int newWidth' and 'out int newHeight' instead.")]
 		public static bool MoveRectangleRight(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers,
 			out int centerOffsetX, out int centerOffsetY, out int newWidth) {
 			int newHeight = height;
@@ -740,7 +740,7 @@ namespace Dataweb.NShape.Advanced {
 		/// <param name="newHeight">New height of the rectangle</param>
 		/// <returns>Returns true if the movement could be performed as desired. 
 		/// Returns false if the movement could not be performed completely because of movement restrictions</returns>
-		[Obsolete("Use the overloaded with 'out int newWidth' and 'out int newHeight' instead.")]
+		[Obsolete("Use the overloaded version with 'out int newWidth' and 'out int newHeight' instead.")]
 		public static bool MoveRectangleBottom(int width, int height, float deltaX, float deltaY, float cosAngle, float sinAngle, ResizeModifiers modifiers, out int centerOffsetX,
 			out int centerOffsetY, out int newHeight) {
 			int newWidth = width;
