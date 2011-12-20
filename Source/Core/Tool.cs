@@ -1512,30 +1512,38 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		public override bool ProcessKeyEvent(IDiagramPresenter diagramPresenter, KeyEventArgsDg e) {
 			if (diagramPresenter == null) throw new ArgumentNullException("diagramPresenter");
-			bool result = base.ProcessKeyEvent(diagramPresenter, e);
 			// if the keyPress was not handled by the base class, try to handle it here
-			if (!result) {
-				switch (e.EventType) {
-					case KeyEventType.PreviewKeyDown:
-					case KeyEventType.KeyPress:
-						// do nothing
-						break;
-					case KeyEventType.KeyDown:
-					case KeyEventType.KeyUp:
-						if (((KeysDg)e.KeyCode & KeysDg.Shift) == KeysDg.Shift
-							|| ((KeysDg)e.KeyCode & KeysDg.ShiftKey) == KeysDg.ShiftKey
-							|| ((KeysDg)e.KeyCode & KeysDg.Control) == KeysDg.Control
-							|| ((KeysDg)e.KeyCode & KeysDg.ControlKey) == KeysDg.ControlKey
-							|| ((KeysDg)e.KeyCode & KeysDg.Alt) == KeysDg.Alt) {
-							MouseState mouseState = CurrentMouseState;
-							mouseState.Modifiers = (KeysDg)e.Modifiers;
-							int cursorId = DetermineCursor(diagramPresenter, mouseState);
-							diagramPresenter.SetCursor(cursorId);
+			bool result = false;
+			switch (e.EventType) {
+				case KeyEventType.PreviewKeyDown:
+				case KeyEventType.KeyPress:
+					// do nothing
+					break;
+				case KeyEventType.KeyDown:
+				case KeyEventType.KeyUp:
+					if ((KeysDg)e.KeyCode == KeysDg.Delete) {
+						// Update selected shape unter the mouse cursor because it was propably deleted
+						if (!SelectedShapeAtCursorInfo.IsEmpty && !diagramPresenter.SelectedShapes.Contains(SelectedShapeAtCursorInfo.Shape)) {
+							SetSelectedShapeAtCursor(diagramPresenter, CurrentMouseState.X, CurrentMouseState.Y, diagramPresenter.ZoomedGripSize, ControlPointCapabilities.All);
+							Invalidate(diagramPresenter);
 						}
-						break;
-					default: throw new NShapeUnsupportedValueException(e.EventType);
-				}
+					}
+
+					// Update Cursor when modifier keys are pressed or released
+					if (((KeysDg)e.KeyCode & KeysDg.Shift) == KeysDg.Shift
+						|| ((KeysDg)e.KeyCode & KeysDg.ShiftKey) == KeysDg.ShiftKey
+						|| ((KeysDg)e.KeyCode & KeysDg.Control) == KeysDg.Control
+						|| ((KeysDg)e.KeyCode & KeysDg.ControlKey) == KeysDg.ControlKey
+						|| ((KeysDg)e.KeyCode & KeysDg.Alt) == KeysDg.Alt) {
+						MouseState mouseState = CurrentMouseState;
+						mouseState.Modifiers = (KeysDg)e.Modifiers;
+						int cursorId = DetermineCursor(diagramPresenter, mouseState);
+						diagramPresenter.SetCursor(cursorId);
+					}
+					break;
+				default: throw new NShapeUnsupportedValueException(e.EventType);
 			}
+			if (base.ProcessKeyEvent(diagramPresenter, e)) result = true;
 			return result;
 		}
 

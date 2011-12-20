@@ -337,66 +337,79 @@ namespace Dataweb.NShape.Designer {
 
 		private void SaveConfigFile() {
 			// Save ToolStrip Positions
-			ToolStripManager.SaveSettings(this);
+			try {
+				ToolStripManager.SaveSettings(this);
 
-			// Create a new config file if it does not exist
-			string filePath = Path.Combine(configFolder, ConfigFileName);
-			if (!File.Exists(filePath)) CreateConfigFile(filePath);
+				// Create a new config file if it does not exist
+				string filePath = Path.Combine(configFolder, ConfigFileName);
+				if (!File.Exists(filePath)) CreateConfigFile(filePath);
 
-			XmlReader cfgReader = OpenCfgReader(filePath);
-			XmlDocument xmlDoc = new XmlDocument();
-			xmlDoc.Load(cfgReader);
-			cfgReader.Close();
+				XmlDocument xmlDoc = new XmlDocument();
+				using (XmlReader cfgReader = OpenCfgReader(filePath)) {
+					xmlDoc.Load(cfgReader);
+					cfgReader.Close();
+				}
 
-			// Find the "Project Directory" node
-			XmlNode projectDirectoryNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameProjectDirectory));
-			Debug.Assert(projectDirectoryNode != null);
-			// Save last project directory
-			projectDirectoryNode.RemoveAll();
-			projectDirectoryNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePath)).Value = xmlStoreDirectory;
-			
-			// Find the "Projects" node
-			XmlNode repositoriesNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameProjects));
-			Debug.Assert(repositoriesNode != null);
-			// Save all recent projects
-			repositoriesNode.RemoveAll();
-			foreach (RepositoryInfo projectInfo in recentProjects) {
-				XmlNode newNode = xmlDoc.CreateNode(XmlNodeType.Element, NodeNameProject, xmlDoc.NamespaceURI);
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameName)).Value = projectInfo.projectName;
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameRepositoryType)).Value = projectInfo.typeName;
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameServerName)).Value = projectInfo.computerName;
-				newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameDataSource)).Value = projectInfo.location;
-				repositoriesNode.AppendChild(newNode);
+				// Find the "Project Directory" node
+				XmlNode projectDirectoryNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameProjectDirectory));
+				Debug.Assert(projectDirectoryNode != null);
+				// Save last project directory
+				projectDirectoryNode.RemoveAll();
+				projectDirectoryNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePath)).Value = xmlStoreDirectory;
+
+				// Find the "Projects" node
+				XmlNode repositoriesNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameProjects));
+				Debug.Assert(repositoriesNode != null);
+				// Save all recent projects
+				repositoriesNode.RemoveAll();
+				foreach (RepositoryInfo projectInfo in recentProjects) {
+					XmlNode newNode = xmlDoc.CreateNode(XmlNodeType.Element, NodeNameProject, xmlDoc.NamespaceURI);
+					newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameName)).Value = projectInfo.projectName;
+					newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameRepositoryType)).Value = projectInfo.typeName;
+					newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameServerName)).Value = projectInfo.computerName;
+					newNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameDataSource)).Value = projectInfo.location;
+					repositoriesNode.AppendChild(newNode);
+				}
+
+				// Find "WindowSettings" node
+				XmlNode wndSettingsNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameWindowSettings));
+				Debug.Assert(wndSettingsNode != null);
+				if (wndSettingsNode.Attributes.Count == 0) {
+					wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePositionX));
+					wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePositionY));
+					wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameWidth));
+					wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameHeight));
+					wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameState));
+				}
+				switch (WindowState) {
+					case FormWindowState.Maximized:
+					case FormWindowState.Minimized:
+						wndSettingsNode.Attributes[AttrNameState].Value = ((int)FormWindowState.Maximized).ToString();
+						break;
+					case FormWindowState.Normal:
+						wndSettingsNode.Attributes[AttrNamePositionX].Value = Left.ToString();
+						wndSettingsNode.Attributes[AttrNamePositionY].Value = Top.ToString();
+						wndSettingsNode.Attributes[AttrNameWidth].Value = Width.ToString();
+						wndSettingsNode.Attributes[AttrNameHeight].Value = Height.ToString();
+						wndSettingsNode.Attributes[AttrNameState].Value = ((int)FormWindowState.Normal).ToString();
+						break;
+				}
+
+				// Save to file
+				using (XmlWriter cfgWriter = OpenCfgWriter(filePath)) {
+					xmlDoc.Save(cfgWriter);
+					cfgWriter.Close();
+				}
+			} catch (System.Configuration.ConfigurationException exc) {
+				// This kind of exception is thrown when multiple instances of the NShape designer are 
+				// closed with the "Close Group" command and all instances try to save their config. 
+				// As Merging the changes of each instance is too much overhead here, the first instance 
+				// that opened the config files may write its changes, all other changes are discarded.
+				Debug.Print(exc.Message);
+			} catch (IOException exc) {
+				// See comment above (this exception deals with the XML config file)
+				Debug.Print(exc.Message);
 			}
-
-			// Find "WindowSettings" node
-			XmlNode wndSettingsNode = xmlDoc.SelectSingleNode(string.Format(QueryNode, NodeNameWindowSettings));
-			Debug.Assert(wndSettingsNode != null);
-			if (wndSettingsNode.Attributes.Count == 0) {
-				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePositionX));
-				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNamePositionY));
-				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameWidth));
-				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameHeight));
-				wndSettingsNode.Attributes.Append(xmlDoc.CreateAttribute(AttrNameState));
-			}
-			switch (WindowState) {
-				case FormWindowState.Maximized:
-				case FormWindowState.Minimized:
-					wndSettingsNode.Attributes[AttrNameState].Value = ((int)FormWindowState.Maximized).ToString();
-					break;
-				case FormWindowState.Normal:
-					wndSettingsNode.Attributes[AttrNamePositionX].Value = Left.ToString();
-					wndSettingsNode.Attributes[AttrNamePositionY].Value = Top.ToString();
-					wndSettingsNode.Attributes[AttrNameWidth].Value = Width.ToString();
-					wndSettingsNode.Attributes[AttrNameHeight].Value = Height.ToString();
-					wndSettingsNode.Attributes[AttrNameState].Value = ((int)FormWindowState.Normal).ToString();
-					break;
-			}
-
-			// Save to file
-			XmlWriter cfgWriter = OpenCfgWriter(filePath);
-			xmlDoc.Save(cfgWriter);
-			cfgWriter.Close();
 		}
 
 

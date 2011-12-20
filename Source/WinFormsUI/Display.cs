@@ -278,6 +278,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
+		/// <override></override>
 		void IDiagramPresenter.Update() {
 			Update();
 		}
@@ -552,7 +553,8 @@ namespace Dataweb.NShape.WinFormsUI {
 			// If cursor was not loaded yet, load it now
 			if (!registeredCursors.ContainsKey(cursorId))
 				LoadRegisteredCursor(cursorId);
-			Cursor = registeredCursors[cursorId] ?? Cursors.Default;
+			if (registeredCursors[cursorId] != Cursor)
+				Cursor = registeredCursors[cursorId] ?? Cursors.Default;
 		}
 
 		#endregion
@@ -2324,10 +2326,10 @@ namespace Dataweb.NShape.WinFormsUI {
 									if (CurrentTool != null && CurrentTool.IsToolActionPending)
 										CurrentTool.Cancel();
 									PerformDelete(Diagram, SelectedShapes, true);
-									// Send a mouseMove event in order to refresh the tool - otherwise it will 
+									// Route event to the current tool in order to refresh the tool - otherwise it will 
 									// not notice that the deleted shape was deleted...
 									if (CurrentTool != null)
-										CurrentTool.ProcessMouseEvent(this, WinFormHelpers.GetMouseEventArgs(this, MouseEventType.MouseMove, 0, 0));
+										CurrentTool.ProcessKeyEvent(this, WinFormHelpers.GetKeyEventArgs(KeyEventType.KeyDown, e));
 									e.Handled = true;
 								}
 								break;
@@ -2401,11 +2403,11 @@ namespace Dataweb.NShape.WinFormsUI {
 							case Keys.ControlKey:
 							case Keys.LControlKey:
 							case Keys.RControlKey:
-								CurrentTool.ProcessMouseEvent(this, WinFormHelpers.GetMouseEventArgs(this, MouseEventType.MouseMove, 0, 0));
+								// Nothing to do here
 								break;
 
 							default:
-								// do nothing
+								// Do nothing
 								break;
 						}
 					} catch (Exception exc) {
@@ -2427,7 +2429,7 @@ namespace Dataweb.NShape.WinFormsUI {
 							case Keys.ControlKey:
 							case Keys.LControlKey:
 							case Keys.RControlKey:
-								CurrentTool.ProcessMouseEvent(this, WinFormHelpers.GetMouseEventArgs(this, MouseEventType.MouseMove, 0, 0));
+								// Nothing to do here
 								break;
 
 							default:
@@ -4308,7 +4310,6 @@ namespace Dataweb.NShape.WinFormsUI {
 				foreach (Shape clickedShape in Diagram.Shapes.FindShapes(mouseX, mouseY, ControlPointCapabilities.All, GripSize)) {
 					if (!shapeBuffer.Contains(clickedShape)) {
 						shapeBuffer.Add(clickedShape);
-
 						// Raise ShapeClick-Events if a shape has been clicked
 						if (isDoubleClickEvent)
 							OnShapeDoubleClick(new DiagramPresenterShapeClickEventArgs(clickedShape, WinFormHelpers.GetMouseEventArgs(MouseEventType.MouseUp, eventArgs)));

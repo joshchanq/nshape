@@ -28,7 +28,7 @@ namespace Dataweb.NShape.WinFormsUI {
 	/// </summary>
 	public static class WinFormHelpers {
 
-		#region Convert EventArgs
+		#region [Public] Convert WinForms MouseEventArgs to NShape MouseEventArgsDg
 
 		/// <summary>
 		/// Extracts and returns NShapeMouseEventArgs from <see cref="T:Windows.Forms.MouseEventArgs" />.
@@ -81,19 +81,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			return mouseEventArgs;
 		}
 
+		#endregion
 
-		private static KeysDg GetModifiers() {
-			// get Modifier Keys
-			KeysDg result = KeysDg.None;
-			if ((Control.ModifierKeys & Keys.Control) != 0)
-				result |= KeysDg.Control;
-			if ((Control.ModifierKeys & Keys.Shift) != 0)
-				result |= KeysDg.Shift;
-			if ((Control.ModifierKeys & Keys.Alt) != 0)
-				result |= KeysDg.Alt;
-			return result;
-		}
 
+		#region [Public] Convert WinForms KeyEventArgs to NShape KeyEventArgsDg
 
 		/// <summary>
 		/// Extracts and returns KeyEventArgs from Windows.Forms.KeyEventArgs
@@ -135,7 +126,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region Build ContextMenus from actions
+		#region [Public] Build WinForms ContextMenus from NShape MenuItemDefs
 
 		/// <summary>
 		/// Creates a collection of ToolStripMenuItems from a collection of MenuItemDefs. Actions that are not allowed will be skipped.
@@ -224,6 +215,23 @@ namespace Dataweb.NShape.WinFormsUI {
 			}
 		}
 
+		#endregion
+
+		
+		#region [Private] Methods
+
+		private static KeysDg GetModifiers() {
+			// get Modifier Keys
+			KeysDg result = KeysDg.None;
+			if ((Control.ModifierKeys & Keys.Control) != 0)
+				result |= KeysDg.Control;
+			if ((Control.ModifierKeys & Keys.Shift) != 0)
+				result |= KeysDg.Shift;
+			if ((Control.ModifierKeys & Keys.Alt) != 0)
+				result |= KeysDg.Alt;
+			return result;
+		}
+
 
 		private static ToolStripItem CreateMenuItemFromAction(MenuItemDef action, Project project) {
 			if (action is SeparatorMenuItemDef) return CreateMenuItemSeparator();
@@ -262,7 +270,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region Types
+		#region [Private] Types
 
 		private class HelperMouseEventArgs : MouseEventArgsDg {
 
@@ -334,7 +342,7 @@ namespace Dataweb.NShape.WinFormsUI {
 		#endregion
 
 
-		#region Fields
+		#region [Private] Fields
 
 		private static HelperMouseEventArgs mouseEventArgs = new HelperMouseEventArgs();
 		private static HelperKeyEventArgs keyEventArgs = new HelperKeyEventArgs();

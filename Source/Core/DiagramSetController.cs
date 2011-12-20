@@ -301,14 +301,22 @@ namespace Dataweb.NShape.Controllers {
 			if (!editBuffer.IsEmpty) {
 				int dx = 40, dy = 40;
 				if (Geometry.IsValid(position)) {
-					if (Geometry.IsValid(editBuffer.initialMousePos)) {
-						dx = position.X - editBuffer.initialMousePos.X;
-						dy = position.Y - editBuffer.initialMousePos.Y;
-					} else {
-						Rectangle rect = editBuffer.shapes.GetBoundingRectangle(true);
-						dx = position.X - rect.X - (rect.Width / 2);
-						dy = position.Y - rect.Y - (rect.Height / 2);
-					}
+					Rectangle rect = editBuffer.shapes.GetBoundingRectangle(true);
+					dx = position.X - (rect.X + (rect.Width / 2));
+					dy = position.Y - (rect.Y + (rect.Height / 2));
+
+					// Old version:
+					// Shifting the shape by the movement of the mouse is not what the user
+					// typically wants: The shape is expected to move where the mouse cursor 
+					// is at the moment.
+					//if (Geometry.IsValid(editBuffer.initialMousePos)) {
+					//    dx = position.X - editBuffer.initialMousePos.X;
+					//    dy = position.Y - editBuffer.initialMousePos.Y;
+					//} else {
+					//    Rectangle rect = editBuffer.shapes.GetBoundingRectangle(true);
+					//    dx = position.X - (rect.X + (rect.Width / 2));
+					//    dy = position.Y - (rect.Y + (rect.Height / 2));
+					//}
 				}
 				Paste(destination, activeLayers, dx, dy);
 				editBuffer.initialMousePos = position;
