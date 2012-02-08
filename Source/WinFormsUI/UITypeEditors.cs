@@ -395,35 +395,14 @@ namespace Dataweb.NShape.WinFormsUI {
 		/// <override></override>
 		public override void PaintValue(PaintValueEventArgs e) {
 			if (e != null && e.Value != null) {
-				// store original values;
-				SmoothingMode origSmoothingMode = e.Graphics.SmoothingMode;
-				CompositingQuality origCompositingQuality = e.Graphics.CompositingQuality;
-				InterpolationMode origInterpolationmode = e.Graphics.InterpolationMode;
-				System.Drawing.Text.TextRenderingHint origTextRenderingHint = e.Graphics.TextRenderingHint;
-				Matrix origTransform = e.Graphics.Transform;
+				if (formatter.Alignment != StringAlignment.Center) formatter.Alignment = StringAlignment.Center;
+				if (formatter.LineAlignment != StringAlignment.Near) formatter.LineAlignment = StringAlignment.Near;
 
-				// set new GraphicsModes
-				e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
-				e.Graphics.CompositingQuality = CompositingQuality.HighQuality;	// CAUTION: Slows down older machines!!
-				e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-
-				StringFormat formatter = new StringFormat();
-				formatter.Alignment = StringAlignment.Center;
-				formatter.LineAlignment = StringAlignment.Near;
-
-				Font font = new Font(e.Value.ToString(), e.Bounds.Height, FontStyle.Regular, GraphicsUnit.Pixel);
-				e.Graphics.DrawString(e.Value.ToString(), font, Brushes.Black, (RectangleF)e.Bounds, formatter);
-
-				font.Dispose();
-				formatter.Dispose();
-
-				// restore original values
-				e.Graphics.Transform = origTransform;
-				e.Graphics.SmoothingMode = origSmoothingMode;
-				e.Graphics.CompositingQuality = origCompositingQuality;
-				e.Graphics.InterpolationMode = origInterpolationmode;
-				e.Graphics.TextRenderingHint = origTextRenderingHint;
-
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.HighQuality);
+				using (Font font = new Font(e.Value.ToString(), e.Bounds.Height, FontStyle.Regular, GraphicsUnit.Pixel))
+					e.Graphics.DrawString(e.Value.ToString(), font, Brushes.Black, (RectangleF)e.Bounds, formatter);
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.DefaultQuality);
+				
 				base.PaintValue(e);
 			}
 		}
@@ -434,6 +413,7 @@ namespace Dataweb.NShape.WinFormsUI {
 			get { return true; }
 		}
 
+		StringFormat formatter = new StringFormat();
 	}
 
 	/// <summary>
@@ -641,7 +621,12 @@ namespace Dataweb.NShape.WinFormsUI {
 					dstRect.X = e.Bounds.X + (int)Math.Round((float)(e.Bounds.Width - dstRect.Width) / 2);
 					dstRect.Y = e.Bounds.Y + (int)Math.Round((float)(e.Bounds.Height - dstRect.Height) / 2);
 
+					// Apply HighQuality rendering settings to avoid false-color images when using
+					// certain image formats (e.g. JPG with 24 bits color depth) on x64 OSes
+					// Revert to default settings afterwards in order to avoid other graphical glitches
+					GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.HighQuality);
 					e.Graphics.DrawImage(img.Image, dstRect, srcRect, GraphicsUnit.Pixel);
+					GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.DefaultQuality);
 				}
 			}
 		}
@@ -716,7 +701,7 @@ namespace Dataweb.NShape.WinFormsUI {
 					if (designBuffer != null && designBuffer != design)
 						design = designBuffer;
 
-					// Examine edited instances and determine wether the list item "Default Style" should be displayed.
+					// Examine edited instances and determine whether the list item "Default Style" should be displayed.
 					bool showItemDefaultStyle = false;
 					bool showItemOpenEditor = false;
 					if (context.Instance is Shape) {
@@ -796,22 +781,17 @@ namespace Dataweb.NShape.WinFormsUI {
 		public override void PaintValue(PaintValueEventArgs e) {
 			//base.PaintValue(e);
 			if (e != null && e.Value != null) {
-				// store original values;
-				SmoothingMode origSmoothingMode = e.Graphics.SmoothingMode;
-				CompositingQuality origCompositingQuality = e.Graphics.CompositingQuality;
-				InterpolationMode origInterpolationmode = e.Graphics.InterpolationMode;
-				System.Drawing.Text.TextRenderingHint origTextRenderingHint = e.Graphics.TextRenderingHint;
-				Matrix origTransform = e.Graphics.Transform;
-
-				// Set new GraphicsModes
-				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.MaximumQuality);
-
 				Rectangle previewRect = Rectangle.Empty;
 				previewRect.X = e.Bounds.X + 1;
 				previewRect.Y = e.Bounds.Y + 1;
 				previewRect.Width = (e.Bounds.Right - 1) - (e.Bounds.Left + 1);
 				previewRect.Height = (e.Bounds.Bottom - 1) - (e.Bounds.Top + 1);
 
+				// Set new GraphicsModes
+				Matrix origTransform = e.Graphics.Transform;
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.HighQuality);
+				
+				// Draw value
 				if (e.Value is ICapStyle) 
 					DrawStyleItem(e.Graphics, previewRect, (ICapStyle)e.Value);
 				else if (e.Value is ICharacterStyle)
@@ -825,12 +805,9 @@ namespace Dataweb.NShape.WinFormsUI {
 				else if (e.Value is IParagraphStyle)
 					DrawStyleItem(e.Graphics, previewRect, (IParagraphStyle)e.Value);
 
-				// restore original values
+				// Restore original values
+				GdiHelpers.ApplyGraphicsSettings(e.Graphics, RenderingQuality.DefaultQuality);
 				e.Graphics.Transform = origTransform;
-				e.Graphics.SmoothingMode = origSmoothingMode;
-				e.Graphics.CompositingQuality = origCompositingQuality;
-				e.Graphics.InterpolationMode = origInterpolationmode;
-				e.Graphics.TextRenderingHint = origTextRenderingHint;
 			}
 		}
 
