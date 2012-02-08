@@ -120,7 +120,7 @@ namespace Dataweb.NShape {
 				+ "Id INT IDENTITY PRIMARY KEY, LastSavedUtc DATETIME);" + Environment.NewLine);
 			cmdText.Append("CREATE TABLE Library ("
 				+ "Project INT REFERENCES Project (Id) ON DELETE CASCADE ON UPDATE CASCADE,"
-				+ "Name VARCHAR(40), AssemblyName VARCHAR(128), Version INT);" + Environment.NewLine);
+				+ "Name VARCHAR(40), AssemblyName VARCHAR(512), Version INT);" + Environment.NewLine);
 			cmdText.Append(CreateCreateTableCommand(storeCache.FindEntityTypeByName(Design.EntityTypeName), "Project", "Project") + ";" + Environment.NewLine);
 			cmdText.Append("CREATE TABLE Style (Design INT REFERENCES Design (Id) ON DELETE CASCADE ON UPDATE CASCADE, Id INT IDENTITY PRIMARY KEY);" + Environment.NewLine);
 			foreach (IEntityType et in storeCache.EntityTypes)
@@ -167,15 +167,16 @@ namespace Dataweb.NShape {
 				SqlTableNameForEntityName(NumericModelMapping.EntityTypeName)));
 			cmdText.Append(string.Format("CREATE TABLE [{0}] ("
 				+ "ModelMapping INT REFERENCES ModelMapping (Id) ON DELETE CASCADE ON UPDATE CASCADE, "
-				+ "ShapePropertyId INT, ModelPropertyId INT, MappingType INT, Format VARCHAR(20));" + Environment.NewLine, 
+				+ "ShapePropertyId INT, ModelPropertyId INT, MappingType INT, Format VARCHAR(120));" + Environment.NewLine, 
 				SqlTableNameForEntityName(FormatModelMapping.EntityTypeName)));
 			cmdText.Append(string.Format("CREATE TABLE [{0}] ("
 				+ "ModelMapping INT REFERENCES ModelMapping (Id) ON DELETE CASCADE ON UPDATE CASCADE, "
 				+ "ShapePropertyId INT, ModelPropertyId INT, MappingType INT, DefaultStyleType INT, "
 				+ "DefaultStyle INT REFERENCES Style (Id) ON DELETE NO ACTION ON UPDATE NO ACTION, "
-				+ "ValueRanges NVARCHAR(1000));" + Environment.NewLine, SqlTableNameForEntityName(StyleModelMapping.EntityTypeName)));
+				+ "ValueRanges NVARCHAR(4000));" + Environment.NewLine, SqlTableNameForEntityName(StyleModelMapping.EntityTypeName)));
 			//
-			cmdText.Append("CREATE TABLE SysCommand (Id INT IDENTITY PRIMARY KEY, Kind VARCHAR(40), EntityType VARCHAR(60), Text VARCHAR(4000))");
+			cmdText.Append(string.Format("CREATE TABLE SysCommand (Id INT IDENTITY PRIMARY KEY, Kind VARCHAR({0}), EntityType VARCHAR({1}), Text NVARCHAR(MAX))", 
+				ColumnSizeSysCmdKind, ColumnSizeSysCmdEntityType, ColumnSizeSysCmdCommandText));
 			cmdText.Append("CREATE TABLE SysParameter (Command INT REFERENCES SysCommand (Id) ON DELETE CASCADE ON UPDATE CASCADE, No INT, Name VARCHAR(40), Type VARCHAR(10))");
 			//
 			return CreateCommand(cmdText.ToString());
@@ -1080,6 +1081,11 @@ namespace Dataweb.NShape {
 
 		private string serverName;
 		private string databaseName;
+
+		// Sizing parameters for command storage tables
+		const int ColumnSizeSysCmdKind = 40;
+		const int ColumnSizeSysCmdEntityType = 120;
+		const int ColumnSizeSysCmdCommandText = int.MaxValue;
 	}
 
 }

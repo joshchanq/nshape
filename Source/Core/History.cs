@@ -267,9 +267,10 @@ namespace Dataweb.NShape.Advanced {
 
 
 		/// <summary>
-		/// Undo the current action
+		/// Undo the latest action
 		/// </summary>
 		public void Undo() {
+			if (UndoCommandCount <= 0) throw new InvalidOperationException("There is no command to be undone");
 			ICommand cmd = PerformUndo();
 			if (CommandExecuted != null) 
 				CommandExecuted(this, GetCommandEventArgs(cmd, true));
@@ -297,6 +298,7 @@ namespace Dataweb.NShape.Advanced {
 		/// Redo the last undone action
 		/// </summary>
 		public void Redo() {
+			if (RedoCommandCount <= 0) throw new InvalidOperationException("There is no command to be redone");
 			ICommand cmd = PerformRedo();
 			if (CommandExecuted != null)
 				CommandExecuted(this, GetCommandEventArgs(cmd, false));

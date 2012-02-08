@@ -118,6 +118,7 @@
     </Compile>
     <Compile Include="Buffers.cs" />
     <Compile Include="CircularArcBase.cs" />
+    <Compile Include="FlowLayouter.cs" />
     <Compile Include="FreeHandTool.cs" />
     <Compile Include="MenuItemDef.cs" />
     <Compile Include="AdoNetStore.cs">

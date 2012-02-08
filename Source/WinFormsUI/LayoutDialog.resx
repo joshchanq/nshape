@@ -120,12 +120,16 @@
   <metadata name="expansionPanel.GenerateMember" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>False</value>
   </metadata>
+  <metadata name="toolTip.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>133, 17</value>
+  </metadata>
   <metadata name="layoutTimer.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
   <data name="flowDescriptionLabel.Text" xml:space="preserve">
     <value>Orders the shapes such that the majority of arrows points in the desired direction.
-Use this Layouter for example for UML class diagrams, electric circuits and other diagrams that are read from left to right or top to bottom.</value>
+Use this Layouter for example for UML class diagrams, electric circuits and other diagrams that are read from left to right or top to bottom.
+Note that the initial configuration strongly influences the result. Center all shapes in one point to get the "neutral" outcome.</value>
   </data>
   <metadata name="$this.TrayHeight" type="System.Int32, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>52</value>

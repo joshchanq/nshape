@@ -432,6 +432,7 @@ namespace Dataweb.NShape.GeneralShapes {
 				this.headWidth = ((ThickArrow)source).headWidth;
 				this.bodyHeightRatio = ((ThickArrow)source).bodyHeightRatio;
 			}
+			InvalidateDrawCache();
 		}
 
 
@@ -691,10 +692,9 @@ namespace Dataweb.NShape.GeneralShapes {
 				else
 					result = Geometry.MoveArrowPoint(Center, endPt, tipPt, angle, headWidth, 0.5f, deltaX, deltaY, modifiers, out dx, out dy, out width, out angle);
 
-				Width = width;
-				Angle = angle;
+				RotateCore(angle - Angle, X, Y);
 				MoveByCore(dx, dy);
-				ControlPointsHaveMoved();
+				Width = width;
 				return result;
 			} else return base.MovePointByCore(pointId, deltaX, deltaY, modifiers);
 		}
@@ -749,10 +749,9 @@ namespace Dataweb.NShape.GeneralShapes {
 				width = headWidth;
 				result = false;
 			}
+			MoveByCore(dx, dy);
 			Width = width;
 			Height = height;
-			MoveByCore(dx, dy);
-			ControlPointsHaveMoved();
 			return result;
 		}
 

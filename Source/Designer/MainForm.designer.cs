@@ -1235,7 +1235,6 @@ namespace Dataweb.NShape.Designer {
 			this.settingsToolStrip.Name = "settingsToolStrip";
 			this.settingsToolStrip.Size = new System.Drawing.Size(195, 25);
 			this.settingsToolStrip.TabIndex = 13;
-			this.settingsToolStrip.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.settingsToolStrip_ItemClicked);
 			// 
 			// prevDiagramButton
 			// 

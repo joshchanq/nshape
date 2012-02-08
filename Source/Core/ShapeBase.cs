@@ -570,9 +570,13 @@ namespace Dataweb.NShape.Advanced {
 			// On the other hand, integer division is >20 times faster than floored float divisions
 			// and for this simple "bounding rectangle" approach, it works ok.
 			int leftIdx = r.Left / cellSize;
+			if (r.Left < 0) --leftIdx;
 			int topIdx = r.Top / cellSize;
+			if (r.Top < 0) --topIdx;
 			int rightIdx = r.Right / cellSize;
+			if (r.Right < 0) --rightIdx;
 			int bottomIdx = r.Bottom / cellSize;
+			if (r.Bottom < 0) --bottomIdx;
 			Point p = Point.Empty;
 			for (p.X = leftIdx; p.X <= rightIdx; p.X += 1)
 				for (p.Y = topIdx; p.Y <= bottomIdx; p.Y += 1)

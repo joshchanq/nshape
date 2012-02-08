@@ -80,10 +80,7 @@ namespace Dataweb.NShape {
 				// (which is *always* from start point to end point)
 				result.A = CalcRelativeAngleFromPoint(p);
 				result.B = (int)Math.Round((Geometry.DistancePointPoint(Center, p) - Radius) * 10);
-				// Ensure that result.A has a valid value
 				if (result.A < 0 || result.A > 1000) {
-					//Debug.Fail(string.Format("Calculated relative position is {0}% ! StartAngle = {1}°, SweepAngle = {2}°", result.A / 10f, StartAngle, SweepAngle));
-					//result.A = (int)Math.Max(0, (int)Math.Min(result.A, 1000));
 				}
 			}
 			return result;
@@ -197,18 +194,13 @@ namespace Dataweb.NShape {
 				segmentBounds[2] = Geometry.RotatePoint(EndPoint.X, EndPoint.Y, angle - 90, EndPoint.X + lineRadius, EndPoint.Y);
 				segmentBounds[3] = Geometry.RotatePoint(EndPoint.X, EndPoint.Y, angle + 90, EndPoint.X + lineRadius, EndPoint.Y);
 
-				Geometry.CalcBoundingRectangle(segmentBounds, out cells);
-				Point cell = Point.Empty;
-				for (cell.X = cells.Left; cell.X <= cells.Right; ++cell.X) {
-					for (cell.Y = cells.Top; cell.Y <= cells.Bottom; ++cell.Y) {
-						if (cellOccupied(cell)) continue;
-						int cellBoundsLeft = cell.X * cellSize;
-						int cellBoundsTop = cell.Y * cellSize;
-						int cellBoundsRight = cellBoundsLeft + cellSize;
-						int cellBoundsBottom = cellBoundsTop + cellSize;
-						if (Geometry.PolygonIntersectsWithRectangle(segmentBounds, cellBoundsLeft, cellBoundsTop, cellBoundsRight, cellBoundsBottom))
-							yield return cell;
-					}
+				Rectangle cellBounds = Rectangle.Empty;
+				Geometry.CalcBoundingRectangle(segmentBounds, out cellBounds);
+				Point cellsLT = Geometry.CalcCell(cellBounds.Left, cellBounds.Top, cellSize);
+				Point cellsRB = Geometry.CalcCell(cellBounds.Right, cellBounds.Bottom, cellSize);
+				foreach (Point cell in GetAreaCells(cellsLT.X, cellsLT.Y, cellsRB.X, cellsRB.Y, cellOccupied)) {
+					if (Geometry.PolygonIntersectsWithRectangle(segmentBounds, cell.X * cellSize, cell.Y * cellSize, (cell.X + 1) * cellSize, (cell.Y + 1) * cellSize))
+						yield return cell;
 				}
 			} else {
 				if (arcIsInvalid) RecalculateArc();
@@ -270,7 +262,7 @@ namespace Dataweb.NShape {
 				description = "No control point was clicked";
 			else description = "Glue control points may not be removed.";
 			yield return new CommandMenuItemDef("Remove Point", null, description, isFeasible,
-				new RemoveVertexCommand(this, range));
+				new RemoveVertexCommand(this, clickedPointId));
 		}
 
 
@@ -1160,14 +1152,12 @@ namespace Dataweb.NShape {
 			if (!Geometry.IsValid(radiusPt)) throw new ArgumentException("radiusPt");
 			startAngle = sweepAngle = float.NaN;
 
+			// Get sorted id's and positions of vertices
 			ControlPointId startPtId, endPtId;
-			GetAngleCalculationStartAndEndPointId(centerPt, startPt, radiusPt, endPt, out startPtId, out endPtId);
+			Point arcStartPt, arcEndPt; 
+			GetAngleCalculationStartAndEndPointId(centerPt, startPt, radiusPt, endPt, out startPtId, out arcStartPt, out endPtId, out arcEndPt);
 
-			// Get positions of (sorted) vertices
-			Point arcStartPt = GetControlPointPosition(startPtId);
-			Point arcEndPt = GetControlPointPosition(endPtId);
-
-			// calculate angles
+			// Calculate angles
 			sweepAngle = Geometry.RadiansToDegrees(Geometry.Angle(centerPt.X, centerPt.Y, arcStartPt.X, arcStartPt.Y, arcEndPt.X, arcEndPt.Y));
 			if (sweepAngle < 0) sweepAngle = (360 + sweepAngle) % 360;
 			if (startPtId == ControlPointId.FirstVertex) {
@@ -1182,8 +1172,10 @@ namespace Dataweb.NShape {
 		}
 
 
-		private void GetAngleCalculationStartAndEndPointId(PointF centerPt, Point startPt, Point radiusPt, Point endPt, out ControlPointId startPtId, out ControlPointId endPtId) {
+		private void GetAngleCalculationStartAndEndPointId(PointF centerPt, Point startPt, Point radiusPt, Point endPt, 
+			out ControlPointId startPtId, out Point startPtPos, out ControlPointId endPtId, out Point endPtPos) {
 			startPtId = ControlPointId.None; endPtId = ControlPointId.None;
+			startPtPos = Geometry.InvalidPoint; endPtPos = Geometry.InvalidPoint;
 
 			// Calculate vertex angles
 			float p0Angle = Geometry.Angle(centerPt.X, centerPt.Y, startPt.X, startPt.Y);
@@ -1196,18 +1188,18 @@ namespace Dataweb.NShape {
 				// Case 1: All angles positive
 				//
 				if (p0Angle < p1Angle && p1Angle < p2Angle) {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				} else if (p0Angle >= p1Angle && p1Angle >= p2Angle) {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				} else {
 					if (p0Angle < p2Angle) {
-						startPtId = ControlPointId.LastVertex;
-						endPtId = ControlPointId.FirstVertex;
+						startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+						endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 					} else {
-						startPtId = ControlPointId.FirstVertex;
-						endPtId = ControlPointId.LastVertex;
+						startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+						endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 					}
 				}
 			} else if (p0Angle <= 0 && p1Angle <= 0 && p2Angle <= 0) {
@@ -1215,18 +1207,18 @@ namespace Dataweb.NShape {
 				// Case 2: All angles negative
 				//
 				if (p0Angle < p1Angle && p1Angle < p2Angle) {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				} else if (p0Angle >= p1Angle && p1Angle >= p2Angle) {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				} else {
 					if (p0Angle > p2Angle) {
-						startPtId = ControlPointId.FirstVertex;
-						endPtId = ControlPointId.LastVertex;
+						startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+						endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 					} else {
-						startPtId = ControlPointId.LastVertex;
-						endPtId = ControlPointId.FirstVertex;
+						startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+						endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 					}
 				}
 			} else if (p0Angle >= 0 && p1Angle >= 0 && p2Angle < 0) {
@@ -1234,73 +1226,73 @@ namespace Dataweb.NShape {
 				// Case 3: startPt's angle positive, radiusPt's angle positive, endPt's angle negative
 				//
 				if (p0Angle < p1Angle) {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				} else {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				}
 			} else if (p0Angle >= 0 && p1Angle < 0 && p2Angle < 0) {
 				//===============================================================================
 				// Case 4: startPt's angle positive, radiusPt's angle negative, endPt's angle negative
 				//
 				if (p1Angle < p2Angle) {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				} else {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				}
 			} else if (p0Angle < 0 && p1Angle < 0 && p2Angle >= 0) {
 				//===============================================================================
 				// Case 5: startPt's angle negative, radiusPt's angle negative, endPt's angle positive
 				//
 				if (p0Angle < p1Angle) {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				} else {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				}
 			} else if (p0Angle < 0 && p1Angle >= 0 && p2Angle >= 0) {
 				//===============================================================================
 				// Case 6: startPt's angle negative, radiusPt's angle positive, endPt's angle positive
 				//
 				if (p1Angle < p2Angle) {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				} else {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				}
 			} else if (p0Angle >= 0 && p1Angle < 0 && p2Angle >= 0) {
 				//===============================================================================
 				// Case 7: startPt's angle positive, radiusPt's angle negative, endPt's angle positive
 				//
 				if (p0Angle < p2Angle) {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				} else {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				}
 			} else if (p0Angle < 0 && p1Angle >= 0 && p2Angle < 0) {
 				//===============================================================================
 				// Case 8: startPt's angle negative, radiusPt's angle positive, endPt's angle negative
 				//
 				if (p0Angle < p2Angle) {
-					startPtId = ControlPointId.LastVertex;
-					endPtId = ControlPointId.FirstVertex;
+					startPtId = ControlPointId.LastVertex; startPtPos = endPt;
+					endPtId = ControlPointId.FirstVertex; endPtPos = startPt;
 				} else {
-					startPtId = ControlPointId.FirstVertex;
-					endPtId = ControlPointId.LastVertex;
+					startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+					endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				}
 			} else if (float.IsNaN(p0Angle) && float.IsNaN(p1Angle) && float.IsNaN(p2Angle)) {
 				//===============================================================================
 				// Case 9: No Solution: Arc is not defined
 				//
-				startPtId = ControlPointId.FirstVertex;
-				endPtId = ControlPointId.LastVertex;
+				startPtId = ControlPointId.FirstVertex; startPtPos = startPt;
+				endPtId = ControlPointId.LastVertex; endPtPos = endPt;
 				throw new NShapeInternalException("Unable to calculate drawCache.");
 			} else throw new NShapeInternalException("Unable to calculate drawCache.");
 		}
@@ -1390,16 +1382,17 @@ namespace Dataweb.NShape {
 
 
 		private int CalcRelativeAngleFromPoint(Point p) {
-			// Calculate absolute angle to the given point
-			float angleToPt = Geometry.RadiansToDegrees(Geometry.Angle(Center, p));
-			if (angleToPt < 0) angleToPt += 360;
-			if (angleToPt < StartAngle && StartAngle + SweepAngle > 360)
-				angleToPt += 360;
-			// Calculate sweep angle to the given point relative to the (absolute and positive) start angle
-			float resultAngle = angleToPt - ((360 + StartAngle) % 360);
+			// Calculate a new radius point between the StartPoint and p
+			Point tmpP = Geometry.VectorLinearInterpolation(StartPoint.X, StartPoint.Y, p.X, p.Y, 0.5f);
+			Point rp = Point.Round(Geometry.CalcPointOnLine(Center.X, Center.Y, tmpP.X, tmpP.Y, Radius));
+			
+			// Calculate sweep angle between start point and the given point
+			float strtAngle, swpAngle;
+			CalculateAngles(Center, StartPoint, rp, p, out strtAngle, out swpAngle);
+
 			// Encode angle to the given point as percentage of the current sweepangle 
-			// (which is *always* from start point to end point)
-			return (int)Math.Round((resultAngle / (SweepAngle / 100f)) * 10);
+			int result = (int)Math.Round(Math.Abs(swpAngle) / (Math.Abs(SweepAngle) / 100f)) * 10;
+			return result;
 		}
 
 
@@ -1416,18 +1409,22 @@ namespace Dataweb.NShape {
 			float angleToPt = SweepAngle * (relativeAngle / 1000f);
 
 			// Calculate absolute position on the arc
-			float radius = Radius + (radiusOffset / 10f);
-			float x = Center.X + radius;
+			float ptRadius = Radius + (radiusOffset / 10f);
+			float x = Center.X + ptRadius;
 			float y = Center.Y;
 			Geometry.RotatePoint(Center.X, Center.Y, StartAngle + angleToPt, ref x, ref y);
-
+			
 			Point result = Point.Empty;
 			result.Offset((int)Math.Round(x), (int)Math.Round(y));
+#if DEBUG
+			RelativePosition relPos = CalculateRelativePosition(result.X, result.Y);
+			Debug.Assert(relPos.A == relativeAngle && Math.Abs(relPos.B - radiusOffset) < 10);
+#endif
 			return result;
 		}
 
 
-		// Delegate for checking wether CalculateCells has processed a certain cell or not.
+		// Delegate for checking whether CalculateCells has processed a certain cell or not.
 		private delegate bool CheckCellOccupationDelegate(Point p);
 
 

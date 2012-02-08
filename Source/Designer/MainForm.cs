@@ -210,6 +210,39 @@ namespace Dataweb.NShape.Designer {
 		}
 
 
+		public Display CurrentDisplay {
+			get { return currentDisplay; }
+			set {
+				if (currentDisplay != null)
+					UnregisterDisplayEvents(currentDisplay);
+				currentDisplay = value;
+				if (currentDisplay != null) {
+					RegisterDisplayEvents(currentDisplay);
+
+					currentDisplay.HighQualityRendering = HighQuality;
+					currentDisplay.ShowGrid = ShowGrid;
+					currentDisplay.HighQualityBackground = HighQuality;
+					currentDisplay.ZoomLevel = Zoom;
+					if (currentDisplay.Diagram != null) {
+						currentDisplay.CurrentTool = toolSetController.SelectedTool;
+						if (currentDisplay.SelectedShapes.Count > 0)
+							propertyController.SetObjects(0, currentDisplay.SelectedShapes);
+						else propertyController.SetObject(0, currentDisplay.Diagram);
+					}
+					layerPresenter.DiagramPresenter = CurrentDisplay;
+
+					if (layoutControlForm != null) {
+						if (currentDisplay.Diagram != null)
+							layoutControlForm.Diagram = currentDisplay.Diagram;
+						else layoutControlForm.Close();
+					}
+
+					display_ShapesSelected(currentDisplay, EventArgs.Empty);
+				}
+			}
+		}
+
+
 #if DEBUG_UI
 
 		public bool ShowCellOccupation {
@@ -238,6 +271,52 @@ namespace Dataweb.NShape.Designer {
 #endif
 
 		#endregion
+
+
+		private void CheckFrameworkVersion() {
+			System.Reflection.Assembly exeAssembly = this.GetType().Assembly;
+			System.Reflection.Assembly coreAssembly = typeof(Project).Assembly;
+			System.Reflection.Assembly uiAssembly = typeof(Display).Assembly;
+
+			if (exeAssembly == null || coreAssembly == null || uiAssembly == null) {
+				throw new Exception("Failed to retrive component's assemblies.");
+			} else {
+				// Check installed .NET framework version
+				Version coreAssemblyVersion = new Version(coreAssembly.ImageRuntimeVersion.Replace("v", ""));
+				Version uiAssemblyVersion = new Version(uiAssembly.ImageRuntimeVersion.Replace("v", ""));
+				Version exeAssemblyVersion = new Version(exeAssembly.ImageRuntimeVersion.Replace("v", ""));
+				if (Environment.Version < coreAssemblyVersion
+					|| Environment.Version < uiAssemblyVersion
+					|| Environment.Version < exeAssemblyVersion) {
+					string msg = string.Empty;
+					msg += string.Format("The installed .NET framework version does not meet the requirements:{0}", Environment.NewLine);
+					msg += string.Format(".NET Framework {0} is installed, version {1} is required.", Environment.Version, coreAssembly.ImageRuntimeVersion);
+					throw new NShapeException(msg);
+				}
+
+				System.Reflection.AssemblyName designerAssemblyName = this.GetType().Assembly.GetName();
+				System.Reflection.AssemblyName coreAssemblyName = typeof(Project).Assembly.GetName();
+				System.Reflection.AssemblyName uiAssemblyName = typeof(Display).Assembly.GetName();
+				// Check nShape framework library versions
+				if (coreAssemblyName.Version != uiAssemblyName.Version) {
+					string msg = string.Empty;
+					msg += "The versions of the loaded nShape framework libraries do not match:" + Environment.NewLine;
+					msg += string.Format("{0}: Version {1}{2}", coreAssemblyName.Name, coreAssemblyName.Version, Environment.NewLine);
+					msg += string.Format("{0}: Version {1}{2}", uiAssemblyName.Name, uiAssemblyName.Version, Environment.NewLine);
+					throw new NShapeException(msg);
+				}
+				// Check program against used nShape framework library versions
+				if (coreAssemblyName.Version != designerAssemblyName.Version
+					|| uiAssemblyName.Version != designerAssemblyName.Version) {
+					string msg = string.Empty;
+					msg += "The version of this program does not match the versions of the loaded nShape framework libraries:" + Environment.NewLine;
+					msg += string.Format("{0}: Version {1}{2}", designerAssemblyName.Name, designerAssemblyName.Version, Environment.NewLine);
+					msg += string.Format("{0}: Version {1}{2}", coreAssemblyName.Name, coreAssemblyName.Version, Environment.NewLine);
+					msg += string.Format("{0}: Version {1}{2}", uiAssemblyName.Name, uiAssemblyName.Version, Environment.NewLine);
+					MessageBox.Show(this, msg, "Assembly Version Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				}
+			}
+		}
 
 
 		#region [Private] Implementation: ConfigFile, Project and Store
@@ -608,9 +687,9 @@ namespace Dataweb.NShape.Designer {
 				XmlStore xmlStore = (XmlStore)((CachedRepository)project.Repository).Store;
 
 				// Select a file name
-				saveFileDialog.CreatePrompt = false;		// Do not ask wether to create the file
-				saveFileDialog.CheckFileExists = false;		// Do not check wether the file does NOT exist
-				saveFileDialog.CheckPathExists = true;		// Ask wether to overwrite existing file
+				saveFileDialog.CreatePrompt = false;		// Do not ask whether to create the file
+				saveFileDialog.CheckFileExists = false;		// Do not check whether the file does NOT exist
+				saveFileDialog.CheckPathExists = true;		// Ask whether to overwrite existing file
 				saveFileDialog.Filter = FileFilterXmlRepository;
 				if (Directory.Exists(xmlStore.DirectoryName))
 					saveFileDialog.InitialDirectory = xmlStore.DirectoryName;
@@ -624,7 +703,7 @@ namespace Dataweb.NShape.Designer {
 						xmlStore.DirectoryName = Path.GetDirectoryName(saveFileDialog.FileName);
 						project.Name = Path.GetFileNameWithoutExtension(saveFileDialog.FileName);
 						Text = string.Format("{0} - {1}", AppTitle, project.Name);
-						// Delete file if it exists, because the user was prompted wether to overwrite it before (SaveFileDialog.CheckPathExists).
+						// Delete file if it exists, because the user was prompted whether to overwrite it before (SaveFileDialog.CheckPathExists).
 						if (project.Repository.Exists()) project.Repository.Erase();
 					}
 					saveMenuItem.Enabled = true;
@@ -678,16 +757,16 @@ namespace Dataweb.NShape.Designer {
 
 				// clear all displays and diagramControllers
 				for (int i = displayTabControl.TabPages.Count - 1; i >= 0; --i) {
-					if (displayTabControl.TabPages[i].Controls[0] is Display) {
+					if (displayTabControl.TabPages[i].Controls.Count > 0) {
 						Display display = (Display)displayTabControl.TabPages[i].Controls[0];
-						displayTabControl.TabPages.RemoveAt(i);
-
-						display.MouseMove -= display_MouseMove;
-						display.ShapesSelected -= display_ShapesSelected;
-						display.Clear();
-						display.Dispose();
-						display = null;
+						if (display != null) {
+							UnregisterDisplayEvents(display);
+							display.Clear();
+							display.Dispose();
+							display = null;
+						}
 					}
+					displayTabControl.TabPages.RemoveAt(i);
 				}
 			}
 
@@ -697,51 +776,7 @@ namespace Dataweb.NShape.Designer {
 		#endregion
 
 
-		private void CheckFrameworkVersion() {
-			System.Reflection.Assembly exeAssembly = this.GetType().Assembly;
-			System.Reflection.Assembly coreAssembly = typeof(Project).Assembly;
-			System.Reflection.Assembly uiAssembly = typeof(Display).Assembly;
-
-			if (exeAssembly == null || coreAssembly == null || uiAssembly == null) {
-				throw new Exception("Failed to retrive component's assemblies.");
-			} else {
-				// Check installed .NET framework version
-				Version coreAssemblyVersion = new Version(coreAssembly.ImageRuntimeVersion.Replace("v", ""));
-				Version uiAssemblyVersion = new Version(uiAssembly.ImageRuntimeVersion.Replace("v", ""));
-				Version exeAssemblyVersion = new Version(exeAssembly.ImageRuntimeVersion.Replace("v", ""));
-				if (Environment.Version < coreAssemblyVersion 
-					|| Environment.Version < uiAssemblyVersion
-					|| Environment.Version < exeAssemblyVersion) {
-					string msg = string.Empty;
-					msg += string.Format("The installed .NET framework version does not meet the requirements:{0}", Environment.NewLine);
-					msg += string.Format(".NET Framework {0} is installed, version {1} is required.", Environment.Version, coreAssembly.ImageRuntimeVersion);
-					throw new NShapeException(msg);
-				}
-
-				System.Reflection.AssemblyName designerAssemblyName = this.GetType().Assembly.GetName();
-				System.Reflection.AssemblyName coreAssemblyName = typeof(Project).Assembly.GetName();
-				System.Reflection.AssemblyName uiAssemblyName = typeof(Display).Assembly.GetName();
-				// Check nShape framework library versions
-				if (coreAssemblyName.Version != uiAssemblyName.Version) {
-					string msg = string.Empty;
-					msg += "The versions of the loaded nShape framework libraries do not match:" + Environment.NewLine;
-					msg += string.Format("{0}: Version {1}{2}", coreAssemblyName.Name, coreAssemblyName.Version, Environment.NewLine);
-					msg += string.Format("{0}: Version {1}{2}", uiAssemblyName.Name, uiAssemblyName.Version, Environment.NewLine);
-					throw new NShapeException(msg);
-				}
-				// Check program against used nShape framework library versions
-				if (coreAssemblyName.Version != designerAssemblyName.Version
-					|| uiAssemblyName.Version != designerAssemblyName.Version) {
-					string msg = string.Empty;
-					msg += "The version of this program does not match the versions of the loaded nShape framework libraries:" + Environment.NewLine;
-					msg += string.Format("{0}: Version {1}{2}", designerAssemblyName.Name, designerAssemblyName.Version, Environment.NewLine);
-					msg += string.Format("{0}: Version {1}{2}", coreAssemblyName.Name, coreAssemblyName.Version, Environment.NewLine);
-					msg += string.Format("{0}: Version {1}{2}", uiAssemblyName.Name, uiAssemblyName.Version, Environment.NewLine);
-					MessageBox.Show(this, msg, "Assembly Version Mismatch", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				}
-			}
-		}
-
+		#region [Private] Methods: Update Controls states and visibility
 
 		private void DisplayMouseCoordinates(int x, int y) {
 			statusLabelPosition.Text = string.Format(PointFormatStr, x, y);
@@ -758,8 +793,8 @@ namespace Dataweb.NShape.Designer {
 				diagramSize = currentDisplay.Diagram.Size;
 				shapeCnt = currentDisplay.Diagram.Shapes.Count;
 			}
-			statusLabelTopLeft.Text =string.Format(PointFormatStr, bounds.Left, bounds.Top);
-			statusLabelBottomRight.Text =string.Format(PointFormatStr,  bounds.Right, bounds.Bottom);
+			statusLabelTopLeft.Text = string.Format(PointFormatStr, bounds.Left, bounds.Top);
+			statusLabelBottomRight.Text = string.Format(PointFormatStr, bounds.Right, bounds.Bottom);
 			statusLabelPosition.Text = string.Format(PointFormatStr, mousePos.X, mousePos.X);
 			statusLabelDiagramSize.Text = string.Format(SizeFormatStr, diagramSize.Width, diagramSize.Height);
 			statusLabelShapeCount.Text = string.Format(ShapeCntFormatStr, shapeCnt, shapeCnt > 1 ? "s" : "");
@@ -809,7 +844,7 @@ namespace Dataweb.NShape.Designer {
 				toForegroundMenuItem.Enabled =
 				toBackgroundMenuItem.Enabled = CurrentDisplay.DiagramSetController.CanLiftShapes(CurrentDisplay.Diagram, CurrentDisplay.SelectedShapes);
 				// Selection
-				selectAllToolStripMenuItem.Enabled = (CurrentDisplay.Diagram.Shapes.Count > 0 
+				selectAllToolStripMenuItem.Enabled = (CurrentDisplay.Diagram.Shapes.Count > 0
 													&& CurrentDisplay.SelectedShapes.Count < CurrentDisplay.Diagram.Shapes.Count);
 				unselectAllToolStripMenuItem.Enabled = (CurrentDisplay.SelectedShapes.Count > 0);
 				selectAllOfTypeToolStripMenuItem.Enabled = (CurrentDisplay.SelectedShapes.Count == 1);
@@ -839,9 +874,9 @@ namespace Dataweb.NShape.Designer {
 				toForegroundMenuItem.Enabled =
 				toBackgroundMenuItem.Enabled = false;
 				// Selection
-				selectAllToolStripMenuItem.Enabled = 
-				unselectAllToolStripMenuItem.Enabled = 
-				selectAllOfTypeToolStripMenuItem.Enabled = 
+				selectAllToolStripMenuItem.Enabled =
+				unselectAllToolStripMenuItem.Enabled =
+				selectAllOfTypeToolStripMenuItem.Enabled =
 				selectAllOfTemplateToolStripMenuItem.Enabled = false;
 			}
 		}
@@ -855,6 +890,10 @@ namespace Dataweb.NShape.Designer {
 				propertyWindowTabControl.TabPages.Remove(propertyWindowModelTab);
 		}
 
+		#endregion
+
+
+		#region [Private] Methods: Manage Display Controls
 
 		private void CreateDisplayForDiagram(Diagram diagram) {
 			if (FindDisplayTabPage(diagram) == null) {
@@ -940,41 +979,17 @@ namespace Dataweb.NShape.Designer {
 			}
 			// If the project has no ownerDisplay, create the default one.
 			if (!diagramAdded) {
-				Diagram diagram = new Diagram(string.Format("Diagram {0}", displayTabControl.TabPages.Count + 1));
+				Diagram diagram = new Diagram(string.Format(DefaultDiagramNameFmt, displayTabControl.TabPages.Count + 1));
 				project.Repository.InsertDiagram(diagram);
 				CreateDisplayForDiagram(diagram);
 				showDiagramSettingsToolStripMenuItem_Click(this, EventArgs.Empty);
 			}
 		}
 
-
-		private Display CurrentDisplay {
-			get { return currentDisplay; }
-			set {
-				if (currentDisplay != null)
-					UnregisterDisplayEvents(currentDisplay);
-				currentDisplay = value;
-				if (currentDisplay != null) {
-					RegisterDisplayEvents(currentDisplay);
-
-					currentDisplay.HighQualityRendering = HighQuality;
-					currentDisplay.ShowGrid = ShowGrid;
-					currentDisplay.HighQualityBackground = HighQuality;
-					currentDisplay.ZoomLevel = Zoom;
-					if (currentDisplay.Diagram != null) {
-						currentDisplay.CurrentTool = toolSetController.SelectedTool;
-						if (currentDisplay.SelectedShapes.Count > 0)
-							propertyController.SetObjects(0, currentDisplay.SelectedShapes);
-						else propertyController.SetObject(0, currentDisplay.Diagram);
-					}
-
-					display_ShapesSelected(currentDisplay, EventArgs.Empty);
-				}
-			}
-		}
+		#endregion
 
 
-		#region [Private] Register event handlers
+		#region [Private] Register Event handlers
 
 		private void RegisterRepositoryEvents() {
 			if (project.Repository != null) {
@@ -2149,13 +2164,15 @@ namespace Dataweb.NShape.Designer {
 
 		#region [Private] Constants
 
-		private const string NewProjectName = "New NShape Project";
 		private const string AppTitle = "NShape Designer";
 		private const string SqlServerProviderName = "SQL Server";
 		private const string DefaultDatabaseName = "NShape";
 		private const string DefaultServerName = ".\\SQLEXPRESS";
 		private const string ConfigFileName = "Config.cfg";
 		private const string FileFilterXmlRepository = "XML Repository Files|*.xml|All Files|*.*";
+
+		private const string NewProjectName = "New NShape Project";
+		private const string DefaultDiagramNameFmt = "Diagram {0}";
 
 		private const string QueryNode = "//{0}";
 		private const string QueryNodeAttr = "//{0}[@{1}]";
@@ -2222,10 +2239,6 @@ namespace Dataweb.NShape.Designer {
 		private bool highQuality = true;
 
 		private List<RepositoryInfo> recentProjects = new List<RepositoryInfo>(recentProjectsItemCount);
-
-		private void settingsToolStrip_ItemClicked(object sender, ToolStripItemClickedEventArgs e) {
-
-		}
 
 #if TdbRepository
 		private const string fileFilterAllRepositories = "NShape Repository Files|*.xml;*.tdbd|XML Repository Files|*.xml|TurboDB Repository Databases|*.tdbd|All Files|*.*";

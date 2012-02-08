@@ -1,4 +1,4 @@
-/******************************************************************************
+/**************************************************************************************************
   Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
@@ -10,7 +10,7 @@
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
   NShape. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************/
+***************************************************************************************************/
 
 using System;
 using System.Collections.Generic;
@@ -64,6 +64,8 @@ namespace Dataweb.NShape.WinFormsUI {
 				leftToRightRadioButton.Checked = ((FlowLayouter)layouter).Direction == FlowLayouter.FlowDirection.LeftToRight;
 				topDownRadioButton.Checked = ((FlowLayouter)layouter).Direction == FlowLayouter.FlowDirection.TopDown;
 				rightToLeftRadioButton.Checked = ((FlowLayouter)layouter).Direction == FlowLayouter.FlowDirection.RightToLeft;
+				flowLayerDistanceTrackBar.Value = ((FlowLayouter)layouter).LayerDistance;
+				flowRowDistanceTrackBar.Value = ((FlowLayouter)layouter).RowDistance;
 			}
 
 			this.layouter = layouter;
@@ -85,13 +87,15 @@ namespace Dataweb.NShape.WinFormsUI {
 			set { project = value; }
 		}
 
-
 		/// <summary>
 		/// Specifies the diagram of the layouted shapes.
 		/// </summary>
 		public Diagram Diagram {
 			get { return diagram; }
-			set { diagram = value; }
+			set {
+				selectedShapes.Clear();
+				diagram = value; 
+			}
 		}
 
 
@@ -149,6 +153,8 @@ namespace Dataweb.NShape.WinFormsUI {
 					else if (leftToRightRadioButton.Checked) fl.Direction = FlowLayouter.FlowDirection.LeftToRight;
 					else if (topDownRadioButton.Checked) fl.Direction = FlowLayouter.FlowDirection.TopDown;
 					else if (rightToLeftRadioButton.Checked) fl.Direction = FlowLayouter.FlowDirection.RightToLeft;
+					fl.LayerDistance = flowLayerDistanceTrackBar.Value;
+					fl.RowDistance = flowRowDistanceTrackBar.Value;
 					break;
 				default:
 					Debug.Assert(false);
@@ -166,33 +172,42 @@ namespace Dataweb.NShape.WinFormsUI {
 		}
 
 
-		private void Restore() {
-			layouter.RestoreState();
-			OnLayoutChanged();
-			SwitchToOriginal();
-		}
-
-
-		private void PreviewFast() {
+		private void DoPreview(int operation, bool fit) {
 			try {
+				if ((operation == 1 || operation == 4) && lastOperation == operation 
+				&& project.History.IsNextUndoCommand(lastCommand))
+					project.History.Undo();
 				SetShapes();
-				layouter.SaveState();
 				layouter.Prepare();
 				layouter.Execute(10);
-				layouter.Fit(0, 0, diagram.Size.Width, diagram.Size.Height);
+				if (fit) layouter.Fit(0, 0, diagram.Size.Width, diagram.Size.Height);
+				lastCommand = layouter.CreateLayoutCommand();
+				lastOperation = operation;
+				project.ExecuteCommand(lastCommand);
 				OnLayoutChanged();
-				SwitchToPreview();
 			} catch (NShapeException exc) {
 				MessageBox.Show(exc.Message, "Cannot Layout");
 			}
 		}
 
 
-		private void PreviewIfRequired() {
+		// Returns false, if there are no more steps to execute.
+		private bool DoPreviewStep(int operation) {
+			bool undo = lastOperation == operation && project.History.IsNextUndoCommand(lastCommand);
+			bool finished = !layouter.ExecuteStep();
+			lastCommand = layouter.CreateLayoutCommand();
+			lastOperation = operation;
+			if (undo) project.History.Undo();
+			project.ExecuteCommand(lastCommand);
+			OnLayoutChanged();
+			return !finished;
+		}
+
+
+		private void PreviewIfImmediate() {
 			if (immediateRadioButton.Checked) {
-				if (isPreview) Restore();
 				PrepareLayouter();
-				PreviewFast();
+				DoPreview(1, false);
 			}
 		}
 
@@ -223,19 +238,7 @@ namespace Dataweb.NShape.WinFormsUI {
 
 		private void FinishAnimatedPreview() {
 			layoutTimer.Stop();
-			SwitchToPreview();
-		}
-
-
-		private void SwitchToPreview() {
-			isPreview = true;
-			previewButton.Text = "Original";
-		}
-
-
-		private void SwitchToOriginal() {
-			isPreview = false;
-			previewButton.Text = "Preview";
+			previewButton.Text = "Execute";
 		}
 
 		#endregion
@@ -248,8 +251,8 @@ namespace Dataweb.NShape.WinFormsUI {
 				algorithmListBox.SelectedIndex = 0;
 
 			// Update labels
-			columnDistanceLabel.Text = columnDistanceTrackBar.Value.ToString();
-			rowDistanceLabel.Text = rowDistanceTrackBar.Value.ToString();
+			gridColumnDistanceLabel.Text = columnDistanceTrackBar.Value.ToString() + " %";
+			gridRowDistanceLabel.Text = rowDistanceTrackBar.Value.ToString() + " %";
 			attractionStrengthLabel.Text = attractionStrengthTrackBar.Value.ToString();
 			repulsionStrengthLabel.Text = repulsionStrengthTrackBar.Value.ToString();
 			repulsionRangeLabel.Text = repulsionRangeTrackBar.Value.ToString();
@@ -264,7 +267,8 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void applyButton_Click(object sender, EventArgs e) {
-			SwitchToOriginal();
+			// This way we "forget" that the last operation was an immediate one or a step.
+			lastOperation = 0;
 		}
 
 
@@ -273,6 +277,10 @@ namespace Dataweb.NShape.WinFormsUI {
 			SetShapes();
 			layouter.Prepare();
 			layouter.Fit(0, 0, diagram.Size.Width, diagram.Size.Height);
+			lastCommand = layouter.CreateLayoutCommand();
+			lastOperation = 0;
+			project.ExecuteCommand(lastCommand);
+			OnLayoutChanged();
 		}
 
 
@@ -282,82 +290,103 @@ namespace Dataweb.NShape.WinFormsUI {
 
 
 		private void layoutTimer_Tick(object sender, EventArgs e) {
-			bool stop = !layouter.ExecuteStep();
-			OnLayoutChanged();
-			if (stop) FinishAnimatedPreview();
+			if (!DoPreviewStep(3)) FinishAnimatedPreview();
 		}
 
 
 		private void columnDistanceTrackBar_ValueChanged(object sender, EventArgs e) {
-			columnDistanceLabel.Text = columnDistanceTrackBar.Value.ToString();
-			PreviewIfRequired();
+			gridColumnDistanceLabel.Text = columnDistanceTrackBar.Value.ToString();
+			PreviewIfImmediate();
 		}
 
 
 		private void rowDistanceTrackBar_ValueChanged(object sender, EventArgs e) {
-			rowDistanceLabel.Text = rowDistanceTrackBar.Value.ToString();
-			PreviewIfRequired();
+			gridRowDistanceLabel.Text = rowDistanceTrackBar.Value.ToString();
+			PreviewIfImmediate();
 		}
 
 
 		private void attractionStrengthTrackBar_ValueChanged(object sender, EventArgs e) {
 			attractionStrengthLabel.Text = attractionStrengthTrackBar.Value.ToString();
-			PreviewIfRequired();
+			PreviewIfImmediate();
 		}
 
 
 		private void repulsionStrengthTrackBar_ValueChanged(object sender, EventArgs e) {
 			repulsionStrengthLabel.Text = repulsionStrengthTrackBar.Value.ToString();
-			PreviewIfRequired();
+			PreviewIfImmediate();
 		}
 
 
 		private void repulsionRangeTrackBar_ValueChanged(object sender, EventArgs e) {
 			repulsionRangeLabel.Text = repulsionRangeTrackBar.Value.ToString();
-			PreviewIfRequired();
+			PreviewIfImmediate();
 		}
 
 
+		private void flowLayerDistanceTrackBar_ValueChanged(object sender, EventArgs e) {
+			flowLayerDistanceLabel.Text = flowLayerDistanceTrackBar.Value.ToString();
+			PreviewIfImmediate();
+		}
+
+
+		private void flowRowDistanceTrackBar_ValueChanged(object sender, EventArgs e) {
+			flowRowDistanceLabel.Text = flowRowDistanceTrackBar.Value.ToString();
+			PreviewIfImmediate();
+		}
+		
+
 		private void horizontalCompressionTrackBar_ValueChanged(object sender, EventArgs e) {
 			horizontalCompressionLabel.Text = horizontalCompressionTrackBar.Value.ToString();
-			PreviewIfRequired();
+			if (keepAspectRationCheckBox.Checked) verticalCompressionTrackBar.Value = horizontalCompressionTrackBar.Value;
+			PreviewIfImmediate();
 		}
 
 
 		private void verticalCompressionTrackBar_ValueChanged(object sender, EventArgs e) {
 			verticalCompressionLabel.Text = verticalCompressionTrackBar.Value.ToString();
-			PreviewIfRequired();
+			if (keepAspectRationCheckBox.Checked) horizontalCompressionTrackBar.Value = verticalCompressionTrackBar.Value;
+			PreviewIfImmediate();
 		}
 
 
 		private void keepAspectRationCheckBox_CheckedChanged(object sender, EventArgs e) {
 			if (keepAspectRationCheckBox.Checked) {
 				verticalCompressionTrackBar.Value = horizontalCompressionTrackBar.Value;
-				PreviewIfRequired();
+				PreviewIfImmediate();
 			}
 		}
 
 
 		private void previewButton_Click(object sender, EventArgs e) {
-			if (isPreview)
-				Restore();
-			else if (layoutTimer.Enabled)
-				FinishAnimatedPreview();
-			else {
-				PrepareLayouter();
-				if (animatedRadioButton.Checked) {
-					SetShapes();
-					layouter.SaveState();
-					layouter.Prepare();
-					previewButton.Text = "Running";
-#if DEBUG
-					//layoutTimer.Interval = 1000;
-					layoutTimer.Interval = 50;
-#else
-					layoutTimer.Interval = 50;
-#endif
-					layoutTimer.Start();
-				} else PreviewFast();
+			try {
+				if (layoutTimer.Enabled)
+					FinishAnimatedPreview();
+				else {
+					PrepareLayouter();
+					if (fastRadioButton.Checked) {
+						DoPreview(2, true);
+					} else if (animatedRadioButton.Checked) {
+						SetShapes();
+						layouter.Prepare();
+						previewButton.Text = "Running";
+						layoutTimer.Interval = animationInterval;
+						layoutTimer.Start();
+					} else if (stepRadioButton.Checked) {
+						// TODO 2: This will not take into account, if selection changes between steps
+						// But that would be difficult to handle anyway.
+						if (lastOperation != 4 || !project.History.IsNextUndoCommand(lastCommand)) {
+							SetShapes();
+							layouter.Prepare();
+						}
+						DoPreviewStep(4);
+					} else {
+						Debug.Fail("Unexpected option");
+						DoPreview(2, true);
+					}
+				}
+			} catch (Exception exc) {
+				MessageBox.Show(exc.Message, "Error During Layout");
 			}
 		}
 
@@ -367,19 +396,51 @@ namespace Dataweb.NShape.WinFormsUI {
 			else Close();
 		}
 
+
+		private void immediateRadioButton_CheckedChanged(object sender, EventArgs e) {
+			previewButton.Enabled = !immediateRadioButton.Checked;
+		}
+
+
+		private void undoButton_Click(object sender, EventArgs e) {
+			try {
+				project.History.Undo();
+			} catch (Exception exc) {
+				MessageBox.Show(this, exc.Message, "Cannot Undo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+
+		private void redoButton_Click(object sender, EventArgs e) {
+			try {
+				project.History.Redo();
+			} catch (Exception exc) {
+				MessageBox.Show(this, exc.Message, "Cannot Redo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
 		#endregion
 
 
 		#region Fields
 
-		private Panel currentPanel;
-		private bool isPreview;
+#if DEBUG
+		const int animationInterval = 50;
+#else
+		const int animationInterval = 50;
+#endif
 
 		private Project project;
 		private Diagram diagram;
 		private List<Shape> selectedShapes = new List<Shape>(100);
+
+		private Panel currentPanel;
 		private ILayouter layouter;
+		private ICommand lastCommand;
+		// 1 == immediate, 2 = fast, 3 = animated, 4 = step
+		private int lastOperation;
 
 		#endregion
+
 	}
 }

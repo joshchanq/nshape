@@ -47,7 +47,7 @@ namespace Dataweb.NShape.Advanced {
 					if (ChildrenCollection != null) ChildrenCollection.NotifyParentSized(delta, 0);
 					if (Owner != null) Owner.NotifyChildResized(this);
 					ControlPointsHaveMoved();
-					Invalidate();
+					//Invalidate();
 				}
 			}
 		}

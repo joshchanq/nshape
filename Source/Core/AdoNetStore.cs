@@ -279,7 +279,7 @@ namespace Dataweb.NShape {
 			Debug.Assert(transaction == null);
 			if (transactional) transaction = Connection.BeginTransaction();
 			try {
-				//// -- Zeroth Step: Insert or update the project --
+				// -- Zeroth Step: Insert or update the project --
 				IDbCommand projectCommand;
 				if (cache.ProjectId == null) {
 					// project is a new one
@@ -322,31 +322,9 @@ namespace Dataweb.NShape {
 				DeleteEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
 				DeleteEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
 				//
-				// -- Second Step: Updated --
+				// -- Second Step: Insert --
 				// Owners first, children afterwards
-				UpdateEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
-				UpdateEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ColorStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CapStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CapStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(LineStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is LineStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is FillStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CharacterStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CharacterStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ParagraphStyle);
-				UpdateEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.LoadedModels, null);
-				foreach (EntityType et in cache.EntityTypes)
-					if (et.Category == EntityCategory.ModelObject)
-						UpdateEntities<IModelObject>(cache, et, cache.LoadedModelObjects, delegate(IModelObject s, IEntity o) { return s.Type.FullName == et.FullName; });
-				UpdateEntities<Template>(cache, cache.FindEntityTypeByName(Template.EntityTypeName), cache.LoadedTemplates, null);
-				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is NumericModelMapping);
-				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is FormatModelMapping);
-				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(StyleModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is StyleModelMapping);
-				UpdateEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.LoadedDiagrams, null);
-				foreach (EntityType et in cache.EntityTypes)
-					if (et.Category == EntityCategory.Shape)
-						UpdateEntities<Shape>(cache, et, cache.LoadedShapes, delegate(Shape s, IEntity o) { return s.Type.FullName == et.FullName; });
-				//
-				// -- Third Step: Insert --
-				// Owners first, children afterwards
+				// Insert new entities before the update phase - otherwise updating entities referencing these entities will fail.
 				InsertEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.NewProjects, null);
 				InsertEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.NewDesigns, null);
 				InsertEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.NewStyles, (s, o) => s is ColorStyle);
@@ -375,7 +353,6 @@ namespace Dataweb.NShape {
 				InsertEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.NewModelMappings, (s, o) => s is NumericModelMapping);
 				InsertEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.NewModelMappings, (s, o) => s is FormatModelMapping);
 				InsertEntities<IModelMapping>(cache, cache.FindEntityTypeByName(StyleModelMapping.EntityTypeName), cache.NewModelMappings, (s, o) => s is StyleModelMapping);
-
 				// Flush model
 				InsertEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.NewModels, null);
 				// Flush model objects
@@ -387,7 +364,6 @@ namespace Dataweb.NShape {
 						InsertEntities<IModelObject>(cache, et, cache.NewModelObjects, GetCommand(et.FullName, RepositoryCommandType.InsertModelModelObject),
 							(m, o) => (m.Parent != null && m.Type.FullName == et.FullName && !(o is Template)));
 					}
-
 				// Flush diagrams and their shapes
 				InsertEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.NewDiagrams, null);
 				foreach (EntityType et in cache.EntityTypes)
@@ -410,6 +386,28 @@ namespace Dataweb.NShape {
 				InsertShapeConnections(cache);
 				UpdateShapeOwners(cache);
 				//
+				// -- Third Step: Update --
+				// Owners first, children afterwards
+				UpdateEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
+				UpdateEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ColorStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CapStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CapStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(LineStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is LineStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is FillStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CharacterStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CharacterStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ParagraphStyle);
+				UpdateEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.LoadedModels, null);
+				foreach (EntityType et in cache.EntityTypes)
+					if (et.Category == EntityCategory.ModelObject)
+						UpdateEntities<IModelObject>(cache, et, cache.LoadedModelObjects, delegate(IModelObject s, IEntity o) { return s.Type.FullName == et.FullName; });
+				UpdateEntities<Template>(cache, cache.FindEntityTypeByName(Template.EntityTypeName), cache.LoadedTemplates, null);
+				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is NumericModelMapping);
+				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is FormatModelMapping);
+				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(StyleModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is StyleModelMapping);
+				UpdateEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.LoadedDiagrams, null);
+				foreach (EntityType et in cache.EntityTypes)
+					if (et.Category == EntityCategory.Shape)
+						UpdateEntities<Shape>(cache, et, cache.LoadedShapes, delegate(Shape s, IEntity o) { return s.Type.FullName == et.FullName; });
 				if (transactional) transaction.Commit();
 			} catch (Exception exc) {
 				Debug.Print(exc.Message);

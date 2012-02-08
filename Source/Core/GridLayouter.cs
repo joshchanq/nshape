@@ -1,4 +1,4 @@
-﻿/******************************************************************************
+﻿/**************************************************************************************************
   Copyright 2009-2011 dataweb GmbH
   This file is part of the NShape framework.
   NShape is free software: you can redistribute it and/or modify it under the 
@@ -10,7 +10,7 @@
   A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
   You should have received a copy of the GNU General Public License along with 
   NShape. If not, see <http://www.gnu.org/licenses/>.
-******************************************************************************/
+**************************************************************************************************/
 
 using System;
 using System.Collections;
@@ -66,6 +66,7 @@ namespace Dataweb.NShape.Layouters {
 
 		/// <override></override>
 		public override void Prepare() {
+			base.Prepare();
 		}
 
 
@@ -75,7 +76,7 @@ namespace Dataweb.NShape.Layouters {
 
 
 		/// <override></override>
-		public override bool ExecuteStep() {
+		protected override bool ExecuteStepCore() {
 			// If executing multiple times in a row, we want the layouter to restart from the
 			// original situation.
 			if (lastCommand != null && project.History.IsNextUndoCommand(lastCommand))
@@ -84,13 +85,15 @@ namespace Dataweb.NShape.Layouters {
 
 			Rectangle boundingRectangle = CalcLayoutArea();
 			// Find the optimal fit horizontal origin and spacing
-			int origH = boundingRectangle.Left; int spaceH = 1000;
-			FindSpacing2(ref origH, ref spaceH, (boundingRectangle.Left + boundingRectangle.Right) / 2, true);
+			int originX;
+			int spacingX;
+			FindSpacing2((boundingRectangle.Left + boundingRectangle.Right) / 2, true, out originX, out spacingX);
 			// Find the optimal fit vertical origin and spacing
-			int origV = boundingRectangle.Top; int spaceV = 1000;
-			FindSpacing2(ref origV, ref spaceV, (boundingRectangle.Top + boundingRectangle.Bottom)/2, false);
+			int originY;
+			int spacingY;
+			FindSpacing2((boundingRectangle.Top + boundingRectangle.Bottom)/2, false, out originY, out spacingY);
 			// Arrange the shapes in the calculated grid
-			ArrangeShapes(origH, origV, spaceH, spaceV);
+			ArrangeShapes(originX, originY, spacingX, spacingY);
 			return false;
 		}
 
@@ -137,25 +140,41 @@ namespace Dataweb.NShape.Layouters {
 		}
 
 
-		/// <ToBeCompleted></ToBeCompleted>
-		protected virtual void FindSpacing2(ref int origin, ref int spacing, int center, bool horizontal) {
+		/// <summary>
+		/// Calculates the best spacing for the shapes
+		/// </summary>
+		/// <param name="origin">start coordinate</param>
+		/// <param name="spacing">distance between shapes</param>
+		/// <param name="center"></param>
+		/// <param name="horizontal"></param>
+		/// <remarks>Tries all possible spacings between a minimum and maximum value and calculates the one
+		/// where the optimization function has its minimum value.</remarks>
+		protected virtual void FindSpacing2(int center, bool horizontal, out int origin, out int spacing) {
 			int bestEnergy = int.MaxValue;
+			origin = 0;
+			spacing = 1;
 			for (int s = 1; s < 1000; ++s) {
-				int o;
-				int energy = CalcEnergy(out o, ref s, center, horizontal);
-				if (energy < bestEnergy) {
+				int o = OptimizeOrigin(center, s, horizontal);
+				int e = CalcEnergy(o, s, center, horizontal);
+				if (e < bestEnergy) {
 					origin = o;
 					spacing = s;
-					bestEnergy = energy;
+					bestEnergy = e;
 				}
 			}
 		}
 
 
-		/// <ToBeCompleted></ToBeCompleted>
-		protected virtual int CalcEnergy(out int origin, ref int spacing, int center, bool horizontal) {
-			origin = OptimizeOrigin(center, spacing, horizontal);
-			return CalcDistanceSum(origin, spacing, horizontal) / selectedShapes.Count + (horizontal? CoarsenessX: CoarsenessY) / spacing;
+		/// <summary>
+		/// Calculates the optimization value for a given spacing.
+		/// </summary>
+		/// <param name="origin"></param>
+		/// <param name="spacing"></param>
+		/// <param name="center"></param>
+		/// <param name="horizontal"></param>
+		/// <returns></returns>
+		protected virtual int CalcEnergy(int origin, int spacing, int center, bool horizontal) {
+			return CalcDistanceSum(origin, spacing, horizontal) / selectedShapes.Count + (horizontal? CoarsenessX: CoarsenessY) * 50 / spacing;
 		}
 
 

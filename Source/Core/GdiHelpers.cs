@@ -556,27 +556,19 @@ namespace Dataweb.NShape.Advanced {
 		/// </summary>
 		public static Image GetBrushImage(Image image, int desiredWidth, int desiredHeight) {
 			if (image == null) throw new ArgumentNullException("image");
+			if (desiredWidth <= 0) desiredWidth = 1;
+			if (desiredHeight <= 0) desiredHeight = 1;
 			float scaleFactor = Geometry.CalcScaleFactor(
 				image.Width,
 				image.Height,
 				image.Width / Math.Max(1, (image.Width / desiredWidth)),
 				image.Height / Math.Max(1, (image.Height / desiredHeight)));
-			if (scaleFactor > 0.5)
+			if (scaleFactor > 0.75)
 				return image;
 			else {
 				int scaledWidth = (int)Math.Round(image.Width * scaleFactor);
 				int scaledHeight = (int)Math.Round(image.Height * scaleFactor);
-				Stopwatch w = new Stopwatch();
-				w.Reset();
-				w.Start();
-				Image newImage = image.GetThumbnailImage(scaledWidth, scaledHeight, null, IntPtr.Zero);
-				w.Stop();
-				Debug.Print(string.Format("GetThumbnailImage: {0}", w.Elapsed));
-				w.Reset();
-				w.Start();
-				newImage = new Bitmap(image, scaledWidth, scaledHeight);
-				w.Stop();
-				Debug.Print(string.Format("Create new Bitmap: {0}", w.Elapsed));
+				Bitmap newImage = (Bitmap)image.GetThumbnailImage(scaledWidth, scaledHeight, null, IntPtr.Zero);
 				return newImage;
 			}
 		}

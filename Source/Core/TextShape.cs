@@ -689,11 +689,13 @@ namespace Dataweb.NShape.Advanced {
 		/// <override></override>
 		protected override bool RotateCore(int deltaAngle, int x, int y) {
 			bool result = base.RotateCore(deltaAngle, x, y);
-			ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
-			if (!ci.IsEmpty) {
-				// If the gluePoint is connected, recalculate GluePointCalcInfo
-				this.calcInfo = GluePointCalcInfo.Empty;
-				CalcGluePointCalcInfo(ci.OwnPointId, ci.OtherShape, ci.OtherPointId);
+			if (!followingConnectedShape) {
+				ShapeConnectionInfo ci = GetConnectionInfo(GlueControlPoint, null);
+				if (!ci.IsEmpty) {
+					// If the gluePoint is connected, recalculate GluePointCalcInfo
+					this.calcInfo = GluePointCalcInfo.Empty;
+					CalcGluePointCalcInfo(ci.OwnPointId, ci.OtherShape, ci.OtherPointId);
+				}
 			}
 			return result;
 		}
