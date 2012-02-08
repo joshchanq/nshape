@@ -41,9 +41,9 @@ namespace BasicTutorial {
 			project1.LibrarySearchPaths.Add(Path.Combine(programFilesDir, string.Format("dataweb{0}NShape{0}bin", Path.DirectorySeparatorChar)));
 			project1.Create();
 
-			((RoleBasedSecurityManager)project1.SecurityManager).SetPermissions('A', "Designer", Permission.All);
+			((RoleBasedSecurityManager)project1.SecurityManager).SetPermissions('A', StandardRole.Designer, Permission.All);
 			((RoleBasedSecurityManager)project1.SecurityManager).AddDomain('G', "Application generated objects");
-			((RoleBasedSecurityManager)project1.SecurityManager).SetPermissions('G', "Designer", Permission.Layout);
+			((RoleBasedSecurityManager)project1.SecurityManager).SetPermissions('G', StandardRole.Designer, Permission.Layout);
 			((RoleBasedSecurityManager)project1.SecurityManager).CurrentRole = StandardRole.Designer;
 
 			project1.AddLibrary(typeof(Ellipse).Assembly);

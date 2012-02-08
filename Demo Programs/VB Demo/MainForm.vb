@@ -25,7 +25,7 @@ Public Class MainForm
 		diagram.Width = 3 * rectSize
 		diagram.Height = 3 * rectSize
 		diagram.BackgroundImage = New NamedImage(NShape_Shuffle_Game.My.Resources.Background, "Background")
-		diagram.BackgroundImageLayout = ImageLayoutMode.FlipTile
+		diagram.BackgroundImageLayout = ImageLayoutMode.Tile
 
 		' Prepare visual styles
 		' Create a fill style for the stones

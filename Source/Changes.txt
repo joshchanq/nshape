@@ -1,4 +1,41 @@
 ====================================================================================================
+Known issues:
+====================================================================================================
+- x64/AnyCPU on x64 OS: Bitmap images with 8 bit color depth are not rendered correctly if 
+  transparency > 0 is specified.
+
+====================================================================================================
+Changes in 1.0.8:
+====================================================================================================
+- Bugfix: Exception when clicking a CircularArc consisting of only 2 points.
+- BugFix: CircularArc consisting of only 2 points did not calculate their spacial index cells 
+  correctly and were therefore not clickable.
+- BugFix: Planar shapes did not calculate their spacial index cells correctly for X/Y < 0 and were 
+  therefore not clickable
+- BugFix: FlowLayouter did not calculate the flow direction correctly
+- BugFix: Shape "ThickArrow" in library "GeneralShapes" now resizes correctly when other shapes
+  are connected via Point-To-Shape connection.
+- Improvement: Improved Layouters produce better layouts 
+- Improvement: Changes made by layouters are undoable now.
+- Improvement: Layouter Dialog was improved.
+- Improvement: New Demo Project "Layouter Demos"
+- BugFix: Corrected calculation of RelativePosition/Absolute position of CircularArcs
+  Labels attached to a CircularArc via Point-To-Shape connection no longer "wander around" when
+  changing the arc's outline.
+- Improvement: SQLStore now uses larger text columns for command text storage
+- BugFix: Saving a project to an SQLStore will fail if all of the following conditions apply:
+  a) The project was loaded
+  b) New objects were created
+  c) Loaded objects referenced these new objects 
+- BugFix: Shape "RTU" in library "SoftwareArchitectureShapes" did not apply color of assigned FillStyle
+- Improvement: Updated most Demo Projects to version 3. 
+- Updated Documentation: Keywords for all topics (for index search)
+- Updated Documentation: New Topics "Shape Connections" and "Security" in "Concepts"
+- Updated Documentation: New Topic "Controlling User Access", "Customizing Context Menus" and 
+  "Customizing the ToolBox" in "Programmer Tasks"
+- Updated Documentation: Topics updated and added in "Reference"
+
+====================================================================================================
 Changes in 1.0.7:
 ====================================================================================================
 - Improved handling of multiple designs (SQL Repository only)
@@ -216,10 +253,6 @@ Changes in 1.0.7:
   CustomizableMetafile class. As Microsoft has not corrected the bug yet (nor shown a satisfying 
   workaround for it), we've changed the CustomizableMetafile.
 
-Known issues:
-x64/AnyCPU on x64 OS: Bitmap images with 8 bit color depth are not rendered correctly if 
-transparency > 0 is specified.
-  
 ====================================================================================================
 Changes in 1.0.6:
 ====================================================================================================

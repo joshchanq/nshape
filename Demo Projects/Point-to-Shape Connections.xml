@@ -248,7 +248,7 @@
       </template>
     </templates>
     <diagrams>
-      <diagram id="6db04dc1-5822-4afd-969f-ef6a25e4ac73" name="Diagram 1" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="10" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="6db04dc1-5822-4afd-969f-ef6a25e4ac73" name="Point-To-Shape Connections" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="10" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers />
         <shapes>
           <ellipse id="fb89b340-c59e-48bd-99a4-14a376c342b9" template="d40d66df-16aa-41bc-bf09-4f35cc1d40ed" model_object="00000000-0000-0000-0000-000000000000" x="250" y="260" z_order="90" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="Text" width="60" height="40"></ellipse>

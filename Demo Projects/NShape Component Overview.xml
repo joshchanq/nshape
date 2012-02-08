@@ -584,7 +584,7 @@
       </template>
     </templates>
     <diagrams>
-      <diagram id="d5194b90-2057-433c-ba56-5aac6dc56a83" name="Diagram 1" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
+      <diagram id="d5194b90-2057-433c-ba56-5aac6dc56a83" name="NShape Components Overview" width="1000" height="1000" background_color="-1" background_gradient_end_color="-1" background_image_file_name="" background_image="" image_layout="0" image_gamma="1" image_transparency="0" image_gray_scale="False" image_transparent_color="0">
         <layers />
         <shapes>
           <software_architecture_shapes._database id="1ef1996d-83c8-4f19-967b-30b7f3fa87ce" template="2e2ac8f3-2d89-44a2-a233-c88583932d9c" model_object="00000000-0000-0000-0000-000000000000" x="80" y="320" z_order="570" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="XML Store" width="80" height="80">

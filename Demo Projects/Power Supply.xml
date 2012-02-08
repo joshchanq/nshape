@@ -371,7 +371,7 @@
       </template>
     </templates>
     <diagrams>
-      <diagram id="58b6ce90-9d27-4332-81aa-6b3f9d534b0f" name="P500 Schaltplan" width="3000" height="1800" background_color="16777215" background_gradient_end_color="16777215" background_image_file_name="NewYork" background_image="C:/dev/NShape/Demo Projects/Power Supply Images/NewYork (58b6ce90-9d27-4332-81aa-6b3f9d534b0f).png" image_layout="2" image_gamma="1" image_transparency="75" image_gray_scale="True" image_transparent_color="0">
+      <diagram id="58b6ce90-9d27-4332-81aa-6b3f9d534b0f" name="Subway Power Supply" width="3000" height="1800" background_color="16777215" background_gradient_end_color="16777215" background_image_file_name="NewYork" background_image="C:/dev/NShape/Demo Projects/Power Supply Images/NewYork (58b6ce90-9d27-4332-81aa-6b3f9d534b0f).png" image_layout="2" image_gamma="1" image_transparency="75" image_gray_scale="True" image_transparent_color="0">
         <layers />
         <shapes>
           <electrical_shapes._disconnector id="41ea4e05-134f-4cb2-8be2-6be0cfb8d5f3" template="a0e97518-a8b2-4d22-879e-07662d803f6c" model_object="00000000-0000-0000-0000-000000000000" x="440" y="320" z_order="10" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="40"></electrical_shapes._disconnector>

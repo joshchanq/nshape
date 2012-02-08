@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <dataweb_nshape version="2">
-  <project id="eaaa8518-c3ca-4e27-a0f4-6d293584e514" last_saved_utc="2010-03-23 16:05:20">
+  <project id="eaaa8518-c3ca-4e27-a0f4-6d293584e514" last_saved_utc="2012-02-07 13:26:21">
     <libraries>
       <library name="GeneralShapes" assembly_name="Dataweb.NShape.GeneralShapes, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1512080cd664963c" repository_version="2" />
     </libraries>
@@ -96,7 +96,7 @@
       </template>
       <template id="4479640f-5502-45b8-b0ef-f7ac56d86192" name="Text" description="">
         <no_model></no_model>
-        <text id="60ca679e-f0bb-4a24-9c83-fa37a4ee165d" template="00000000-0000-0000-0000-000000000000" model_object="00000000-0000-0000-0000-000000000000" x="0" y="0" z_order="0" layers="0" security_domain_name="A" line_style="9a742298-1992-40b5-84c5-07f6fdd1334e" angle="0" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="09a8f7aa-d07c-4660-913c-9c15c9be1c98" paragraph_style="1c448ad6-cc54-4008-8b53-bfecccf02ca5" text="Text" width="38" height="27" auto_size="True"></text>
+        <text id="60ca679e-f0bb-4a24-9c83-fa37a4ee165d" template="00000000-0000-0000-0000-000000000000" model_object="00000000-0000-0000-0000-000000000000" x="0" y="0" z_order="0" layers="0" security_domain_name="A" line_style="9a742298-1992-40b5-84c5-07f6fdd1334e" angle="0" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="09a8f7aa-d07c-4660-913c-9c15c9be1c98" paragraph_style="1c448ad6-cc54-4008-8b53-bfecccf02ca5" text="Text" width="32" height="21" auto_size="True"></text>
         <connection_point_mappings>
           <connection_point_mapping point_id="9" terminal_id="0" />
         </connection_point_mappings>
@@ -104,7 +104,7 @@
       </template>
       <template id="4ac2c03e-42ee-4a84-abe1-4a1eee33d7be" name="Label" description="">
         <no_model></no_model>
-        <label id="1675296e-fe48-44ba-a032-1a89c063bd55" template="00000000-0000-0000-0000-000000000000" model_object="00000000-0000-0000-0000-000000000000" x="0" y="0" z_order="0" layers="0" security_domain_name="A" line_style="9a742298-1992-40b5-84c5-07f6fdd1334e" angle="0" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="09a8f7aa-d07c-4660-913c-9c15c9be1c98" paragraph_style="1c448ad6-cc54-4008-8b53-bfecccf02ca5" text="Text" width="38" height="27" auto_size="True" glue_point_x="-35" glue_point_y="-27"></label>
+        <label id="1675296e-fe48-44ba-a032-1a89c063bd55" template="00000000-0000-0000-0000-000000000000" model_object="00000000-0000-0000-0000-000000000000" x="0" y="0" z_order="0" layers="0" security_domain_name="A" line_style="9a742298-1992-40b5-84c5-07f6fdd1334e" angle="0" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="09a8f7aa-d07c-4660-913c-9c15c9be1c98" paragraph_style="1c448ad6-cc54-4008-8b53-bfecccf02ca5" text="Text" width="32" height="21" auto_size="True" glue_point_x="-35" glue_point_y="-27"></label>
         <connection_point_mappings>
           <connection_point_mapping point_id="9" terminal_id="0" />
         </connection_point_mappings>
@@ -256,63 +256,63 @@
           <layer id="8" name="Calculation origin" title="Calculation origin" lower_visibility_threshold="0" upper_visibility_threshold="5000" />
         </layers>
         <shapes>
-          <circle id="2b2de213-530e-4e94-b3b1-893bb380e83c" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="342" y="374" z_order="60" layers="1" security_domain_name="A" line_style="74955f7f-f2bc-47eb-abf5-3f947800f5b3" angle="0" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="280"></circle>
-          <ellipse id="ef83ecef-1fb1-4d63-90bb-ad4193471942" template="f34ed19c-2836-42d9-b542-9be1e51b7fd0" model_object="00000000-0000-0000-0000-000000000000" x="458" y="295" z_order="0" layers="3" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="60" height="40"></ellipse>
-          <isosceles_triangle id="2af413fe-a677-43f9-b77f-3a39f7c5faf6" template="8e0eaf1d-3c19-4b79-8c52-744efcb9ad14" model_object="00000000-0000-0000-0000-000000000000" x="168" y="260" z_order="70" layers="2" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="40" height="40"></isosceles_triangle>
-          <circle id="43383c28-09ac-481e-b001-d7a211a498f2" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="292" y="454" z_order="80" layers="6" security_domain_name="A" line_style="5aeda48b-929f-4510-bea6-c113cedcefa8" angle="70" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="460"></circle>
-          <circle id="304bbc23-f984-499c-9f0a-5288e1a6209e" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="359" y="235" z_order="30" layers="1" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="6c7a5593-8ce0-411e-bc69-f272f8ad7735" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="4"></circle>
-          <circle id="8bd68426-1ab5-4407-af80-9f42171d8c50" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="458" y="295" z_order="50" layers="1" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="6c7a5593-8ce0-411e-bc69-f272f8ad7735" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="4"></circle>
-          <isosceles_triangle id="5e96bb88-87b8-4dc1-9b9f-2b0ce5ddcb4d" template="8e0eaf1d-3c19-4b79-8c52-744efcb9ad14" model_object="00000000-0000-0000-0000-000000000000" x="248" y="270" z_order="10" layers="1" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" angle="0" fill_style="cd50eea8-af81-4b15-b19e-fa6b91fd1776" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="40" height="40"></isosceles_triangle>
-          <circle id="622a16e4-efb8-49d6-8abd-c6d991510c39" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="248" y="270" z_order="40" layers="1" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="6c7a5593-8ce0-411e-bc69-f272f8ad7735" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="4"></circle>
-          <polyline id="af1df6e4-e8c8-45ad-a424-9b078d2d9472" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="168" y="260" z_order="110" layers="4" security_domain_name="A" line_style="93746ac8-e2b2-400a-a68b-da2cc2b4309a" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <circle id="2b2de213-530e-4e94-b3b1-893bb380e83c" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="354" y="419" z_order="60" layers="1" security_domain_name="A" line_style="74955f7f-f2bc-47eb-abf5-3f947800f5b3" angle="0" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="280"></circle>
+          <ellipse id="ef83ecef-1fb1-4d63-90bb-ad4193471942" template="f34ed19c-2836-42d9-b542-9be1e51b7fd0" model_object="00000000-0000-0000-0000-000000000000" x="470" y="340" z_order="0" layers="3" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="60" height="40"></ellipse>
+          <isosceles_triangle id="2af413fe-a677-43f9-b77f-3a39f7c5faf6" template="8e0eaf1d-3c19-4b79-8c52-744efcb9ad14" model_object="00000000-0000-0000-0000-000000000000" x="180" y="305" z_order="70" layers="2" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="40" height="40"></isosceles_triangle>
+          <circle id="43383c28-09ac-481e-b001-d7a211a498f2" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="304" y="499" z_order="80" layers="6" security_domain_name="A" line_style="5aeda48b-929f-4510-bea6-c113cedcefa8" angle="70" fill_style="0d5d2d7a-177b-422a-94db-03a8de1c98e4" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="460"></circle>
+          <circle id="304bbc23-f984-499c-9f0a-5288e1a6209e" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="371" y="280" z_order="30" layers="1" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="6c7a5593-8ce0-411e-bc69-f272f8ad7735" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="4"></circle>
+          <circle id="8bd68426-1ab5-4407-af80-9f42171d8c50" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="470" y="340" z_order="50" layers="1" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="6c7a5593-8ce0-411e-bc69-f272f8ad7735" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="4"></circle>
+          <isosceles_triangle id="5e96bb88-87b8-4dc1-9b9f-2b0ce5ddcb4d" template="8e0eaf1d-3c19-4b79-8c52-744efcb9ad14" model_object="00000000-0000-0000-0000-000000000000" x="260" y="315" z_order="10" layers="1" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" angle="0" fill_style="cd50eea8-af81-4b15-b19e-fa6b91fd1776" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" width="40" height="40"></isosceles_triangle>
+          <circle id="622a16e4-efb8-49d6-8abd-c6d991510c39" template="83494df6-175f-42b0-8573-6ef499e4bbb5" model_object="00000000-0000-0000-0000-000000000000" x="260" y="315" z_order="40" layers="1" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="6c7a5593-8ce0-411e-bc69-f272f8ad7735" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="00000000-0000-0000-0000-000000000000" text="" diameter="4"></circle>
+          <polyline id="af1df6e4-e8c8-45ad-a424-9b078d2d9472" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="180" y="305" z_order="110" layers="4" security_domain_name="A" line_style="93746ac8-e2b2-400a-a68b-da2cc2b4309a" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="168" y="260" />
-              <point point_index="1" point_id="2" x="496" y="185" />
+              <point point_index="0" point_id="1" x="180" y="305" />
+              <point point_index="1" point_id="2" x="508" y="230" />
             </vertices>
           </polyline>
-          <polyline id="9685da13-60cb-425e-8e11-f495ef2f82c4" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="458" y="295" z_order="100" layers="4" security_domain_name="A" line_style="93746ac8-e2b2-400a-a68b-da2cc2b4309a" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="9685da13-60cb-425e-8e11-f495ef2f82c4" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="470" y="340" z_order="100" layers="4" security_domain_name="A" line_style="93746ac8-e2b2-400a-a68b-da2cc2b4309a" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="458" y="295" />
-              <point point_index="1" point_id="2" x="148" y="139" />
+              <point point_index="0" point_id="1" x="470" y="340" />
+              <point point_index="1" point_id="2" x="160" y="184" />
             </vertices>
           </polyline>
-          <polyline id="55faf613-ac19-4bec-94bf-727aa913d222" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="168" y="260" z_order="90" layers="4" security_domain_name="A" line_style="93746ac8-e2b2-400a-a68b-da2cc2b4309a" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="55faf613-ac19-4bec-94bf-727aa913d222" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="180" y="305" z_order="90" layers="4" security_domain_name="A" line_style="93746ac8-e2b2-400a-a68b-da2cc2b4309a" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="168" y="260" />
-              <point point_index="1" point_id="2" x="458" y="295" />
+              <point point_index="0" point_id="1" x="180" y="305" />
+              <point point_index="1" point_id="2" x="470" y="340" />
             </vertices>
           </polyline>
-          <polyline id="77176331-bcbc-4ce9-a271-f23597915410" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="328" y="153" z_order="120" layers="4" security_domain_name="A" line_style="0eddb876-e232-430a-8c79-291745a99ed5" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="77176331-bcbc-4ce9-a271-f23597915410" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="340" y="198" z_order="120" layers="4" security_domain_name="A" line_style="0eddb876-e232-430a-8c79-291745a99ed5" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="328" y="153" />
-              <point point_index="1" point_id="2" x="281" y="553" />
+              <point point_index="0" point_id="1" x="340" y="198" />
+              <point point_index="1" point_id="2" x="293" y="598" />
             </vertices>
           </polyline>
-          <polyline id="3154f224-56dd-42b8-ae05-2cfa2c5769c2" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="342" y="373" z_order="160" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="3154f224-56dd-42b8-ae05-2cfa2c5769c2" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="354" y="418" z_order="160" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="342" y="373" />
-              <point point_index="1" point_id="2" x="380" y="59" />
+              <point point_index="0" point_id="1" x="354" y="418" />
+              <point point_index="1" point_id="2" x="392" y="104" />
             </vertices>
           </polyline>
-          <polyline id="ce598f76-07ac-4d7b-858a-2eaf9ec3bdd3" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="222" y="267" z_order="150" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="ce598f76-07ac-4d7b-858a-2eaf9ec3bdd3" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="234" y="312" z_order="150" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="222" y="267" />
-              <point point_index="1" point_id="2" x="508" y="301" />
+              <point point_index="0" point_id="1" x="234" y="312" />
+              <point point_index="1" point_id="2" x="520" y="346" />
             </vertices>
           </polyline>
-          <polyline id="46d81ffc-67cc-44b7-be44-a6fbf1f2ba7e" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="248" y="270" z_order="140" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="46d81ffc-67cc-44b7-be44-a6fbf1f2ba7e" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="260" y="315" z_order="140" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="248" y="270" />
-              <point point_index="1" point_id="2" x="483" y="193" />
+              <point point_index="0" point_id="1" x="260" y="315" />
+              <point point_index="1" point_id="2" x="495" y="238" />
             </vertices>
           </polyline>
-          <polyline id="516fd6f4-c352-437f-892a-7bd816f3034b" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="458" y="295" z_order="130" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
+          <polyline id="516fd6f4-c352-437f-892a-7bd816f3034b" template="f36c965b-e4b7-4ecb-82e8-f70c0bb608db" model_object="00000000-0000-0000-0000-000000000000" x="470" y="340" z_order="130" layers="8" security_domain_name="A" line_style="94977d7c-f87a-48b0-98b5-378629b2c96d" start_cap_style="00000000-0000-0000-0000-000000000000" end_cap_style="00000000-0000-0000-0000-000000000000">
             <vertices>
-              <point point_index="0" point_id="1" x="458" y="295" />
-              <point point_index="1" point_id="2" x="260" y="173" />
+              <point point_index="0" point_id="1" x="470" y="340" />
+              <point point_index="1" point_id="2" x="272" y="218" />
             </vertices>
           </polyline>
-          <text id="c2fbba81-1a32-4a9d-921f-f2da0d8a1fa7" template="4479640f-5502-45b8-b0ef-f7ac56d86192" model_object="00000000-0000-0000-0000-000000000000" x="300" y="80" z_order="170" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="09d503c2-d4ae-4d82-895c-fe3a52c62bd9" text="This diagram demonstrates the usage of layers:&#xA;- Switch to the &quot;Layers&quot; tab (lower right of the NShape Designer main window)&#xA;- Click on the eye icon of a layer to toggle its visibility&#xA;&#xA;If you want to add shapes to a layer, you have to activate a layer by clicking the sphere icon of one (or more) layer(s). New shapes will be assigned to the active layers.&#xA;Shapes can be part of multiple layers. If one of the layers, a shape belongs to, is visible, the shape is visible, too." width="559" height="121" auto_size="False"></text>
+          <text id="c2fbba81-1a32-4a9d-921f-f2da0d8a1fa7" template="4479640f-5502-45b8-b0ef-f7ac56d86192" model_object="00000000-0000-0000-0000-000000000000" x="301" y="91" z_order="170" layers="0" security_domain_name="A" line_style="00000000-0000-0000-0000-000000000000" angle="0" fill_style="00000000-0000-0000-0000-000000000000" character_style="00000000-0000-0000-0000-000000000000" paragraph_style="09d503c2-d4ae-4d82-895c-fe3a52c62bd9" text="This diagram demonstrates the usage of layers:&#xA;- Switch to the &quot;Layers&quot; tab (lower right of the NShape Designer main window)&#xA;- Click on the checkbox in the &quot;Visibility&quot; column of a layer to toggle its visibility&#xA;&#xA;If you want to add shapes to a layer, you have to activate a layer by clicking the checkbox in the &quot;Active&quot; column of one (or more) layer(s). &#xA;You can assign existing shapes to the aactive layers via the context menu of the selected shapes (&quot;Add/Assign shapes to layers&quot;). New shapes will be assigned to the active layers. &#xA;Shapes can be part of multiple layers. If one of the layers, a shape belongs to, is visible, the shape is visible, too." width="559" height="139" auto_size="False"></text>
         </shapes>
         <shape_connections></shape_connections>
       </diagram>
