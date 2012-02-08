@@ -53,7 +53,6 @@ namespace ArchiSketch {
 			this.editTemplateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.deleteTemplateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.mainContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
-			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.propertiesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolStripContainer = new System.Windows.Forms.ToolStripContainer();
 			this.display = new Dataweb.NShape.WinFormsUI.Display();
@@ -279,16 +278,10 @@ namespace ArchiSketch {
 			// mainContextMenuStrip
 			// 
 			this.mainContextMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripSeparator2,
             this.propertiesToolStripMenuItem});
 			this.mainContextMenuStrip.Name = "mainContextMenuStrip";
 			this.mainContextMenuStrip.ShowItemToolTips = false;
-			this.mainContextMenuStrip.Size = new System.Drawing.Size(172, 32);
-			// 
-			// toolStripSeparator2
-			// 
-			this.toolStripSeparator2.Name = "toolStripSeparator2";
-			this.toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
+			this.mainContextMenuStrip.Size = new System.Drawing.Size(172, 26);
 			// 
 			// propertiesToolStripMenuItem
 			// 
@@ -328,6 +321,7 @@ namespace ArchiSketch {
 			this.display.BackColorGradient = System.Drawing.SystemColors.Control;
 			this.display.BackgroundGradientAngle = 45;
 			this.display.ConnectionPointShape = Dataweb.NShape.Controllers.ControlPointShape.Circle;
+			this.display.ContextMenuStrip = this.mainContextMenuStrip;
 			this.display.ControlPointAlpha = ((byte)(255));
 			this.display.DiagramSetController = this.diagramSetController;
 			this.display.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -461,7 +455,6 @@ namespace ArchiSketch {
 		private System.Windows.Forms.ToolStrip toolBoxStrip;
 		private System.Windows.Forms.ToolStripMenuItem propertiesToolStripMenuItem;
 		private System.Windows.Forms.ContextMenuStrip mainContextMenuStrip;
-		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private System.Windows.Forms.ToolStripMenuItem aboutArchiSketchToolStripMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem deleteToolStripMenuItem;
 		private System.Windows.Forms.ToolStripSeparator toolStripMenuItem2;

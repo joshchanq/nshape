@@ -53,9 +53,9 @@ namespace WebVisists {
 
 
 		private void loadWebStatisticsToolStripMenuItem_Click(object sender, EventArgs e) {
-			string statsDir = Path.Combine("WebVisits", "Sample Web Statistics");
+			string statsDir = Path.Combine("Demo Programs", Path.Combine("WebVisits", "Sample Web Statistics"));
 			openFileDialog.Filter = "Web Statistics|*.xml|All files|*.*";
-			openFileDialog.InitialDirectory = Path.Combine(Path.GetDirectoryName(Application.StartupPath), statsDir);
+			openFileDialog.InitialDirectory = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Application.StartupPath)), statsDir);
 			openFileDialog.FileName = string.Empty;
 			if (openFileDialog.ShowDialog() == DialogResult.OK) {
 				// Create a new diagram
@@ -178,7 +178,7 @@ namespace WebVisists {
 			}
 
 			// Add desired tools
-			toolBoxAdapter.ToolSetController.AddTool(new PointerTool());
+			toolBoxAdapter.ToolSetController.AddTool(new PointerTool(), true);
 			if (pageTemplate == null) {
 				pageTemplate = new Template(templateNameWebPage, project.ShapeTypes["Ellipse"].CreateInstance());
 				((RectangleBase)pageTemplate.Shape).FillStyle = project.Design.FillStyles["Green"];
@@ -196,6 +196,8 @@ namespace WebVisists {
 				((RectangleBase)annotationTemplate.Shape).FillStyle = project.Design.FillStyles.Yellow;
 				project.Repository.InsertTemplate(annotationTemplate);
 			} else toolBoxAdapter.ToolSetController.CreateTemplateTool(annotationTemplate);
+			
+			toolBoxAdapter.ToolSetController.SelectedTool = toolBoxAdapter.ToolSetController.DefaultTool;
 		}
 
 

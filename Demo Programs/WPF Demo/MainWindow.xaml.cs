@@ -66,7 +66,7 @@ namespace nShape_WPF_Demo {
 
 		private void ActivateMenuItems() {
 			openProjectMenuItem.IsEnabled = !project.IsOpen;
-			saveProjectAsMenuItem.IsEnabled = 
+			saveProjectMenuItem.IsEnabled = 
 			saveProjectAsMenuItem.IsEnabled = 
 			closeProjectMenuItem.IsEnabled = project.IsOpen;
 		}
