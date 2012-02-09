@@ -23,10 +23,6 @@ Changes in 1.0.8:
   Labels attached to a CircularArc via Point-To-Shape connection no longer "wander around" when
   changing the arc's outline.
 - Improvement: SQLStore now uses larger text columns for command text storage
-- BugFix: Saving a project to an SQLStore will fail if all of the following conditions apply:
-  a) The project was loaded
-  b) New objects were created
-  c) Loaded objects referenced these new objects 
 - BugFix: Shape "RTU" in library "SoftwareArchitectureShapes" did not apply color of assigned FillStyle
 - Improvement: Updated most Demo Projects to version 3. 
 - Updated Documentation: Keywords for all topics (for index search)
