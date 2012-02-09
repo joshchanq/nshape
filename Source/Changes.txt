@@ -35,6 +35,11 @@ Changes in 1.0.8:
   "Customizing the ToolBox" in "Programmer Tasks"
 - Updated Documentation: Topics updated and added in "Reference"
 
+Known issues:
+- When assigning a new entity to a loaded entity (e.g. a new style to a loaded shape), saving changes 
+  will fail. Upcoming version 1.1.0 will address this issue. As a workaround, just save after 
+  adding new objects when using AdoNetStore.
+
 ====================================================================================================
 Changes in 1.0.7:
 ====================================================================================================
