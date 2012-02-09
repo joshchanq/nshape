@@ -322,9 +322,36 @@ namespace Dataweb.NShape {
 				DeleteEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
 				DeleteEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
 				//
-				// -- Second Step: Insert --
+				// -- Second Step: Update --
+				// See Comment on insert phase below
+				//
 				// Owners first, children afterwards
-				// Insert new entities before the update phase - otherwise updating entities referencing these entities will fail.
+				UpdateEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
+				UpdateEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ColorStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CapStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CapStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(LineStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is LineStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is FillStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CharacterStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CharacterStyle);
+				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ParagraphStyle);
+				UpdateEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.LoadedModels, null);
+				foreach (EntityType et in cache.EntityTypes)
+					if (et.Category == EntityCategory.ModelObject)
+						UpdateEntities<IModelObject>(cache, et, cache.LoadedModelObjects, delegate(IModelObject s, IEntity o) { return s.Type.FullName == et.FullName; });
+				UpdateEntities<Template>(cache, cache.FindEntityTypeByName(Template.EntityTypeName), cache.LoadedTemplates, null);
+				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is NumericModelMapping);
+				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is FormatModelMapping);
+				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(StyleModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is StyleModelMapping);
+				UpdateEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.LoadedDiagrams, null);
+				foreach (EntityType et in cache.EntityTypes)
+					if (et.Category == EntityCategory.Shape)
+						UpdateEntities<Shape>(cache, et, cache.LoadedShapes, delegate(Shape s, IEntity o) { return s.Type.FullName == et.FullName; });
+				//
+				// ToDo: Check if new entities should be inserted before the update phase
+				// In this version, updating loaded entities referencing new entities will fail because the new entities don't have an Id until they are inserted!
+				//
+				// -- Third Step: Insert --
+				// Owners first, children afterwards
 				InsertEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.NewProjects, null);
 				InsertEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.NewDesigns, null);
 				InsertEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.NewStyles, (s, o) => s is ColorStyle);
@@ -385,29 +412,8 @@ namespace Dataweb.NShape {
 				} while (!allInserted);
 				InsertShapeConnections(cache);
 				UpdateShapeOwners(cache);
-				//
-				// -- Third Step: Update --
-				// Owners first, children afterwards
-				UpdateEntities<ProjectSettings>(cache, cache.FindEntityTypeByName(ProjectSettings.EntityTypeName), cache.LoadedProjects, null);
-				UpdateEntities<Design>(cache, cache.FindEntityTypeByName(Design.EntityTypeName), cache.LoadedDesigns, null);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ColorStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ColorStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CapStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CapStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(LineStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is LineStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(FillStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is FillStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(CharacterStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is CharacterStyle);
-				UpdateEntities<IStyle>(cache, cache.FindEntityTypeByName(ParagraphStyle.EntityTypeName), cache.LoadedStyles, (s, o) => s is ParagraphStyle);
-				UpdateEntities<Model>(cache, cache.FindEntityTypeByName(Model.EntityTypeName), cache.LoadedModels, null);
-				foreach (EntityType et in cache.EntityTypes)
-					if (et.Category == EntityCategory.ModelObject)
-						UpdateEntities<IModelObject>(cache, et, cache.LoadedModelObjects, delegate(IModelObject s, IEntity o) { return s.Type.FullName == et.FullName; });
-				UpdateEntities<Template>(cache, cache.FindEntityTypeByName(Template.EntityTypeName), cache.LoadedTemplates, null);
-				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(NumericModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is NumericModelMapping);
-				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(FormatModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is FormatModelMapping);
-				UpdateEntities<IModelMapping>(cache, cache.FindEntityTypeByName(StyleModelMapping.EntityTypeName), cache.LoadedModelMappings, (s, o) => s is StyleModelMapping);
-				UpdateEntities<Diagram>(cache, cache.FindEntityTypeByName(Diagram.EntityTypeName), cache.LoadedDiagrams, null);
-				foreach (EntityType et in cache.EntityTypes)
-					if (et.Category == EntityCategory.Shape)
-						UpdateEntities<Shape>(cache, et, cache.LoadedShapes, delegate(Shape s, IEntity o) { return s.Type.FullName == et.FullName; });
+
+				// Commit changes
 				if (transactional) transaction.Commit();
 			} catch (Exception exc) {
 				Debug.Print(exc.Message);
