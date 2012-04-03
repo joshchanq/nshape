@@ -45,7 +45,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Debug\Dataweb.NShape.XML</DocumentationFile>
+    <DocumentationFile>..\..\bin\Debug\Dataweb.NShape.XML</DocumentationFile>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -57,7 +57,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Release\Dataweb.NShape.xml</DocumentationFile>
+    <DocumentationFile>..\..\bin\Release\Dataweb.NShape.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
@@ -66,7 +66,7 @@
     <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Debug\Dataweb.NShape.XML</DocumentationFile>
+    <DocumentationFile>..\..\bin\Debug\Dataweb.NShape.XML</DocumentationFile>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -74,7 +74,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\bin\Release\</OutputPath>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Release\Dataweb.NShape.xml</DocumentationFile>
+    <DocumentationFile>..\..\bin\Release\Dataweb.NShape.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>

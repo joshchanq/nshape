@@ -28,7 +28,7 @@
     <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>..\..\bin\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -39,7 +39,7 @@
     </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>..\..\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
@@ -47,7 +47,7 @@
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;DEBUG_UI</DefineConstants>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>..\..\bin\Debug\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
@@ -55,7 +55,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>..\..\bin\Release\</OutputPath>
-    <DocumentationFile>C:\dev\NShape 1.0.7\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
+    <DocumentationFile>..\..\bin\Release\Dataweb.NShape.WinFormsUI.xml</DocumentationFile>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
